@@ -6,3 +6,5 @@ export { default as StyledButton } from "./StyledButton/StyledButton";
 export { default as SubmitButton } from "./SubmitButton/SubmitButton";
 export { default as Breadcrumbs } from './Breadcrumbs/Breadcrumbs'
 export { default as StyledCheckbox } from './StyledCheckBox/StyledCheckBox'
+export { default as Table } from './Table/Table'
+export { default as CustomCell } from './Table/CustomCell'
