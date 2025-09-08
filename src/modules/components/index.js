@@ -1,10 +1,10 @@
 export { default as Appbar } from "./Appbar/Appbar";
-export { default as Drawer } from "./MobileDrawer/Drawer";
+export { default as MobileDrawer } from "./MobileDrawer/Drawer";
 export { default as ScrollToTop } from "./ScrollToTop/ScrollUp";
 export { default as SideMenu } from "./SideMenu/SideMenu";
 export { default as StyledButton } from "./StyledButton/StyledButton";
 export { default as SubmitButton } from "./SubmitButton/SubmitButton";
 export { default as Breadcrumbs } from './Breadcrumbs/Breadcrumbs'
-export { default as StyledCheckbox } from './StyledCheckBox/StyledCheckBox'
+export { default as StyledCheckBox } from './StyledCheckBox/StyledCheckBox'
 export { default as Table } from './Table/Table'
 export { default as CustomCell } from './Table/CustomCell'

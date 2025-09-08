@@ -10,7 +10,6 @@ const CustomCell = styled(Box)(({ theme }) => ({
   paddingBlock: 2,
   borderRadius: "5px",
   fontWeight: 600,
-  fontSize: "0.875rem",
   lineHeight: 1.2,
   boxShadow: theme.palette.primary.main + " 0px 0px 0px 1px;",
   fontSize: 12
