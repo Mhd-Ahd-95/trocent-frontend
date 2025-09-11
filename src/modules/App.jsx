@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Login, Dashboard } from "./views";
+import { Login, Dashboard, Orders } from "./views";
 import { ScrollToTop } from "./components";
 
 function App() {
@@ -9,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/login" Component={Login} />
         <Route path="/" Component={Dashboard} />
+        <Route path="/orders" Component={Orders} />
       </Routes>
     </Router>
   );
