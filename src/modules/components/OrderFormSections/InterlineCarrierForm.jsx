@@ -1,12 +1,11 @@
 import React from "react";
 import { Grid, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment } from "@mui/material";
-import { TextInput } from "./DefaultOrder";
+import { TextInput } from "../";
 import PropTypes from "prop-types";
 import { useTheme, styled } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 const Appbar = styled(AppBar)(({ theme }) => ({

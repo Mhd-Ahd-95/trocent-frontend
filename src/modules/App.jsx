@@ -11,6 +11,7 @@ function App () {
         <Route path='/' Component={Dashboard} />
         <Route path='/orders' Component={Orders} />
         <Route path='/new-order' Component={NewOrder} />
+        <Route path='/customers' Component={Customers} />
       </Routes>
     </Router>
   )
