@@ -68,7 +68,7 @@ export default function OrderForm (props) {
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='References' minHeight={500}>
-          <References register={register} />
+          <References register={register} setValue={setValue} watch={watch} />
         </WizardCard>
       </Grid>
 

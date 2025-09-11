@@ -6,11 +6,12 @@ export const defaultOrderValue = {
     terminal: '',
     quote: false,
     is_crossdock: false,
-    order_entity: '',
-    order_status: '',
+    order_entity: 'Order Entry',
+    order_status: 'Entered',
     internal_note: ''
   },
   client_info: {
+    customer_id: '',
     customer: '',
     name: '',
     email: '',
@@ -21,7 +22,7 @@ export const defaultOrderValue = {
     postal_code: ''
   },
   references: {
-    reference_number: '',
+    reference_numbers: [],
     caller: ''
   },
   shipper_details: {

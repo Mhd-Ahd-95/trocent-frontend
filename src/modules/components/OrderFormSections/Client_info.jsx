@@ -22,6 +22,7 @@ export default function ClientInfo (props) {
                 options={customerData}
                 onChange={(_, value) => {
                   field.onChange(value)
+                  setValue('client_info.customer_id', value?.id || '')
                   setValue('client_info.name', value?.name || '')
                   setValue('client_info.email', value?.email || '')
                   setValue('client_info.address', value?.address || '')

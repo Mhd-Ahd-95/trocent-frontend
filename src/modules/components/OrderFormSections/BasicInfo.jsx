@@ -98,7 +98,11 @@ export default function BasicInfo (props) {
                 onChange={e => {
                   const checked = e.target.checked
                   setValue('basic_info.quote', checked)
-                  if (checked) setValue('basic_info.is_crossdock', false)
+                  if (checked) {
+                    setValue('basic_info.is_crossdock', false)
+                    setValue('basic_info.order_status', 'Quote')
+                    setValue('basic_info.order_entity', 'Order Entry')
+                  }
                 }}
               />
             }
@@ -116,7 +120,11 @@ export default function BasicInfo (props) {
                 onChange={e => {
                   const checked = e.target.checked
                   setValue('basic_info.is_crossdock', checked)
-                  if (checked) setValue('basic_info.quote', false)
+                  if (checked) {
+                    setValue('basic_info.quote', false)
+                    setValue('basic_info.order_status', 'Approved')
+                    setValue('basic_info.order_entity', 'Order Billing')
+                  }
                 }}
               />
             }
