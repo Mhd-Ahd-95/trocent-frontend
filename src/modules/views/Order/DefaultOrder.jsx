@@ -71,7 +71,8 @@ export const defaultOrderValue = {
   },
   interline_carrier: {
     pickup: false,
-    delivery: false
+    delivery: false,
+    same_carrier_for_both: false
   },
   freight_details: {
     service_type: '',

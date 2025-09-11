@@ -93,6 +93,23 @@ const globalVariables = {
           }
         ]
       }
+    ],
+    address_book: [
+      {
+        company_location: 'MESSAGERS',
+        contact_name: 'ROSS',
+        phone_number: '(514) 937-0505',
+        email_address: 'OPERATIONS@MESSAGERS.CA',
+        street_address: '2985 DOUGLAS B. FLOREANI',
+        city: 'ST LAURENT',
+        province: 'Quebec',
+        postal_code: 'H4S 1Y7',
+        special_instructions: 'THIS IS TEST',
+        hour_from: '07:00 PM',
+        hour_to: '07:00 PM',
+        require_appointment: true,
+        no_waiting_charge_time: true
+      }
     ]
   }
 }

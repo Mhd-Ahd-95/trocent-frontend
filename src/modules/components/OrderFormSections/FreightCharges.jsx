@@ -17,9 +17,10 @@ import {
 import { useFieldArray } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
+import { useWatch, Controller } from 'react-hook-form'
 
-export default function OrderForm (props) {
-  const { register, watch, control, errors } = props
+function FreightCharges (props) {
+  const { register, watch, control } = props
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
@@ -32,12 +33,50 @@ export default function OrderForm (props) {
     name: 'freight_charges.additional_service_charges'
   })
 
+  const isNoCharge = useWatch({
+    control: control,
+    name: 'freight_charges.no_charge',
+    defaultValue: false
+  })
+
+  const isManualCharges = useWatch({
+    control: control,
+    name: 'freight_charges.manual_charges'
+  })
+
+  const isManualFuelCharges = useWatch({
+    control: control,
+    name: 'freight_charges.manual_fuel_surcharges',
+    defaultValue: false
+  })
+
+  const isCustomerAccessorials =
+    useWatch({
+      name: 'client_info.customer',
+      control
+    }) || {}
+
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <FormControl>
           <CustomFormControlLabel
-            control={<Switch {...register('freight_charges.no_charges')} />}
+            control={
+              <Controller
+                name='freight_charges.no_charge'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                    }}
+                  />
+                )}
+              />
+            }
             label='No Charges'
           />
         </FormControl>
@@ -45,7 +84,22 @@ export default function OrderForm (props) {
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <FormControl>
           <CustomFormControlLabel
-            control={<Switch {...register('freight_charges.manual_charges')} />}
+            control={
+              <Controller
+                name='freight_charges.manual_charges'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                    }}
+                  />
+                )}
+              />
+            }
             label='Manual Charges'
             sx={{
               whiteSpace: 'nowrap'
@@ -57,13 +111,26 @@ export default function OrderForm (props) {
         <FormControl>
           <CustomFormControlLabel
             control={
-              <Switch {...register('freight_charges.manual_fuel_surcharge')} />
+              <Controller
+                name='freight_charges.manual_fuel_surcharges'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                    }}
+                  />
+                )}
+              />
             }
             label='Manual Fuel Surcharges'
           />
         </FormControl>
       </Grid>
-      {!watch('freight_charges.no_charges') && (
+      {!isNoCharge && (
         <Grid size={12}>
           <Grid
             container
@@ -96,7 +163,7 @@ export default function OrderForm (props) {
                     fullWidth
                     type='number'
                     {...register('freight_charges.freight_rate')}
-                    disabled={!watch('freight_charges.manual_charges')}
+                    disabled={!isManualCharges}
                     slotProps={{
                       input: {
                         endAdornment: (
@@ -115,7 +182,7 @@ export default function OrderForm (props) {
                     fullWidth
                     type='number'
                     {...register('freight_charges.fuel_surcharge')}
-                    disabled={!watch('freight_charges.manual_fuel_surcharge')}
+                    disabled={!isManualFuelCharges}
                     slotProps={{
                       input: {
                         endAdornment: (
@@ -155,87 +222,84 @@ export default function OrderForm (props) {
               Customer-specific accessorial charges and fees
             </Typography>
           </Grid>
-          {watch('client_info.customer') &&
-            watch('client_info.customer')?.accessorials && (
-              <Grid size={12} sx={{ py: 2, px: 3 }}>
-                <Grid container spacing={2}>
-                  {watch('client_info.customer')?.accessorials.map(
-                    (access, index) => (
-                      <Grid
-                        container
-                        spacing={2}
-                        key={index}
-                        sx={{
-                          border: `1px solid ${theme.palette.grey[200]}`,
-                          py: 2,
-                          px: 2,
-                          borderRadius: 3
-                        }}
-                        justifyContent={'center'}
-                        alignItems={'center'}
+          {isCustomerAccessorials && isCustomerAccessorials?.accessorials && (
+            <Grid size={12} sx={{ py: 2, px: 3 }}>
+              <Grid container spacing={2}>
+                {isCustomerAccessorials?.accessorials.map((access, index) => (
+                  <Grid
+                    container
+                    spacing={2}
+                    key={index}
+                    sx={{
+                      border: `1px solid ${theme.palette.grey[200]}`,
+                      py: 2,
+                      px: 2,
+                      borderRadius: 3
+                    }}
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                  >
+                    <Grid size={{ xs: 12, sm: 6, md: 5 }}>
+                      <Typography
+                        variant='caption'
+                        sx={{ fontSize: 12, fontWeight: 400 }}
                       >
-                        <Grid size={{ xs: 12, sm: 6, md: 5 }}>
-                          <Typography
-                            variant='caption'
-                            sx={{ fontSize: 12, fontWeight: 400 }}
-                          >
-                            {formatAccessorial(
-                              access.accessorial_name,
-                              access.amount
-                            )}
-                          </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                          <FormControl>
-                            <CustomFormControlLabel
-                              control={
-                                <Switch
-                                  {...register(
-                                    `freight_charges.customer_accessorials.${index}.is_included`
-                                  )}
-                                />
-                              }
-                              label='Is included'
+                        {formatAccessorial(
+                          access.accessorial_name,
+                          access.amount
+                        )}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                      <FormControl>
+                        <CustomFormControlLabel
+                          control={
+                            <Switch
+                              {...register(
+                                `freight_charges.customer_accessorials.${index}.is_included`
+                              )}
                             />
-                          </FormControl>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 2 }} pl={2}>
-                          <TextInput
-                            label='Qty'
-                            variant='outlined'
-                            fullWidth
-                            size='small'
-                            {...register(
-                              `freight_charges.customer_accessorials.${index}.quantity`
-                            )}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <TextInput
-                            label='Amount'
-                            variant='outlined'
-                            fullWidth
-                            size='small'
-                            {...register(
-                              `freight_charges.customer_accessorials.${index}.amount`
-                            )}
-                            slotProps={{
-                              input: {
-                                endAdornment: (
-                                  <InputAdornment position='end'>
-                                    <AttachMoney />
-                                  </InputAdornment>
-                                )
-                              }
-                            }}
-                          />
-                        </Grid>
-                      </Grid>
-                    )
-                  )}
-                </Grid>
+                          }
+                          label='Is included'
+                        />
+                      </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }} pl={2}>
+                      <TextInput
+                        label='Qty'
+                        variant='outlined'
+                        fullWidth
+                        size='small'
+                        {...register(
+                          `freight_charges.customer_accessorials.${index}.quantity`
+                        )}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <TextInput
+                        label='Amount'
+                        variant='outlined'
+                        fullWidth
+                        size='small'
+                        {...register(
+                          `freight_charges.customer_accessorials.${index}.amount`
+                        )}
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <AttachMoney />
+                              </InputAdornment>
+                            )
+                          }
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                ))}
               </Grid>
-            )}
+            </Grid>
+          )}
           <Grid size={12} sx={{ py: 2, px: 3 }}>
             <AccordionComponent
               defaultExpanded
@@ -643,3 +707,5 @@ export default function OrderForm (props) {
     </Grid>
   )
 }
+
+export default React.memo(FreightCharges)

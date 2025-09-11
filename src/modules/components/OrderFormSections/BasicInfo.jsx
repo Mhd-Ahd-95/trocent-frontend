@@ -11,11 +11,8 @@ import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 
-export default function BasicInfo (props) {
-  const { register, errors, control, setValue, watch } = props
-
-  const quote = watch('basic_info.quote');
-  const isCrossdock = watch('basic_info.is_crossdock');
+function BasicInfo (props) {
+  const { register, errors, control, setValue } = props
 
   return (
     <Grid container spacing={3}>
@@ -79,7 +76,7 @@ export default function BasicInfo (props) {
           render={({ field, fieldState }) => (
             <Autocomplete
               {...field}
-              options={['TREM MTL', 'TREM OTT', 'TREM TOR']}
+              options={['TREM-MTL', 'TREM-OTT', 'TREM-TOR']}
               onChange={(_, value) => field.onChange(value)}
               renderInput={params => (
                 <TextInput {...params} label='Terminal' fullWidth />
@@ -92,18 +89,24 @@ export default function BasicInfo (props) {
         <FormControl>
           <CustomFormControlLabel
             control={
-              <Switch
-                {...register('basic_info.quote')}
-                checked={quote}
-                onChange={e => {
-                  const checked = e.target.checked
-                  setValue('basic_info.quote', checked)
-                  if (checked) {
-                    setValue('basic_info.is_crossdock', false)
-                    setValue('basic_info.order_status', 'Quote')
-                    setValue('basic_info.order_entity', 'Order Entry')
-                  }
-                }}
+              <Controller
+                name='basic_info.quote'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                      if (checked) {
+                        setValue('basic_info.is_crossdock', false)
+                        setValue('basic_info.order_status', 'Quote')
+                        setValue('basic_info.order_entity', 'Order Entry')
+                      }
+                    }}
+                  />
+                )}
               />
             }
             label='Quote'
@@ -114,18 +117,24 @@ export default function BasicInfo (props) {
         <FormControl>
           <CustomFormControlLabel
             control={
-              <Switch
-                {...register('basic_info.is_crossdock')}
-                checked={isCrossdock}
-                onChange={e => {
-                  const checked = e.target.checked
-                  setValue('basic_info.is_crossdock', checked)
-                  if (checked) {
-                    setValue('basic_info.quote', false)
-                    setValue('basic_info.order_status', 'Approved')
-                    setValue('basic_info.order_entity', 'Order Billing')
-                  }
-                }}
+              <Controller
+                name='basic_info.is_crossdock'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                      if (checked) {
+                        setValue('basic_info.quote', false)
+                        setValue('basic_info.order_status', 'Approved')
+                        setValue('basic_info.order_entity', 'Order Billing')
+                      }
+                    }}
+                  />
+                )}
               />
             }
             label='Is Crossdock'
@@ -210,3 +219,5 @@ export default function BasicInfo (props) {
     </Grid>
   )
 }
+
+export default React.memo(BasicInfo)

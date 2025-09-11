@@ -79,7 +79,13 @@ export default function OrderForm (props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Extra Shop' minHeight={500}>
-          <ExtraShop watch={watch} register={register} errors={errors} />
+          <ExtraShop
+            watch={watch}
+            register={register}
+            errors={errors}
+            control={control}
+            setValue={setValue}
+          />
         </WizardCard>
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
@@ -91,16 +97,23 @@ export default function OrderForm (props) {
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Pickup Details' minHeight={500}>
           <PickupDetails
-            control={control}
             register={register}
+            control={control}
             errors={errors}
+            setValue={setValue}
+            watch={watch}
           />
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Interline Carrier' minHeight={500}>
-          <InterlineCarrier watch={watch} register={register} errors={errors} />
+          <InterlineCarrier
+            watch={watch}
+            register={register}
+            errors={errors}
+            control={control}
+          />
         </WizardCard>
       </Grid>
 
@@ -110,6 +123,8 @@ export default function OrderForm (props) {
             register={register}
             control={control}
             errors={errors}
+            setValue={setValue}
+            watch={watch}
           />
         </WizardCard>
       </Grid>

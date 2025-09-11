@@ -4,10 +4,9 @@ import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import global from '../../global'
 
-export default function ClientInfo (props) {
+function ClientInfo (props) {
   const { setValue, control } = props
   const customerData = global.static.customers
-
   return (
     <Grid container spacing={4}>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
@@ -140,3 +139,5 @@ export default function ClientInfo (props) {
     </Grid>
   )
 }
+
+export default React.memo(ClientInfo)

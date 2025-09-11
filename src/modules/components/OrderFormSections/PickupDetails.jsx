@@ -2,12 +2,25 @@ import React from 'react'
 import { Grid, Autocomplete, FormControl, Switch } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers'
-import { Controller } from 'react-hook-form'
+import { Controller, useWatch } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
+import InputWrapper from '../CustomComponents/InputWrapper'
 
-export default function PickupDetails (props) {
-  const { register, errors, control } = props
+function PickupDetails (props) {
+  const { register, errors, control, setValue } = props
+
+  const isAppointment = useWatch({
+    control: control,
+    name: 'pickup_details.appointment',
+    defaultValue: false
+  })
+
+  const appointment_numbers = useWatch({
+    control: control,
+    name: 'pickup_details.appointment_numbers',
+    defaultValue: []
+  })
 
   return (
     <Grid container spacing={4}>
@@ -127,11 +140,41 @@ export default function PickupDetails (props) {
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <FormControl>
           <CustomFormControlLabel
-            control={<Switch {...register('pickup_details.appointment')} />}
+            control={
+              <Controller
+                name='pickup_details.appointment'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                    }}
+                  />
+                )}
+              />
+            }
             label='Appointment'
           />
         </FormControl>
       </Grid>
+      {isAppointment && (
+        <Grid size={12}>
+          <InputWrapper
+            placeholder='Appointment Numbers'
+            textHelper='Add multiple appointment numbers separated by commas'
+            noSpace
+            setValue={setValue}
+            field='pickup_details.appointment_numbers'
+            data={appointment_numbers}
+          />
+        </Grid>
+      )}
     </Grid>
   )
 }
+
+
+export default React.memo(PickupDetails)

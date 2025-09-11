@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles'
 
 export default function InputWrapper (props) {
   const theme = useTheme()
-  const { setValue, data, field, placeholder, textHelper } = props
+  const { setValue, data, field, placeholder, textHelper, noSpace } = props
   const [inputValue, setInputValue] = React.useState('')
   const [focus, setFocus] = React.useState(false)
 
@@ -21,9 +21,15 @@ export default function InputWrapper (props) {
     setInputValue(value)
     const splitComma = value.includes(',')
     const splitSpace = value.includes(' ')
-    if (splitComma || splitSpace) {
+    if (splitComma) {
       setValue(field, [...data, value])
       setInputValue('')
+    }
+    if (!noSpace) {
+      if (splitSpace) {
+        setValue(field, [...data, value])
+        setInputValue('')
+      }
     }
   }
 
@@ -39,7 +45,7 @@ export default function InputWrapper (props) {
               ? `2px solid ${theme.palette.primary.main}`
               : 'none',
           borderRadius: 1,
-          width: '100%',
+          width: '100%'
         }}
       >
         <Grid size={12}>

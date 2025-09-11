@@ -4,10 +4,23 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
-import { Controller } from 'react-hook-form'
+import { Controller, useWatch } from 'react-hook-form'
+import InputWrapper from '../CustomComponents/InputWrapper'
 
-export default function DeliveryDetails (props) {
-  const { register, control, errors } = props
+function DeliveryDetails (props) {
+  const { register, control, setValue } = props
+
+  const isAppointment = useWatch({
+    control: control,
+    name: 'delivery_details.appointment',
+    defaultValue: false
+  })
+
+  const appointment_numbers = useWatch({
+    control: control,
+    name: 'delivery_details.appointment_numbers',
+    defaultValue: []
+  })
 
   return (
     <Grid container spacing={4}>
@@ -127,11 +140,40 @@ export default function DeliveryDetails (props) {
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <FormControl>
           <CustomFormControlLabel
-            control={<Switch {...register('delivery_details.appointment')} />}
+            control={
+              <Controller
+                name='delivery_details.appointment'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    {...field}
+                    checked={field.value || false}
+                    onChange={e => {
+                      const checked = e.target.checked
+                      field.onChange(checked)
+                    }}
+                  />
+                )}
+              />
+            }
             label='Appointment'
           />
         </FormControl>
       </Grid>
+      {isAppointment && (
+        <Grid size={12}>
+          <InputWrapper 
+            placeholder='Appointment Numbers'
+            textHelper='Add multiple appointment numbers separated by commas'
+            noSpace
+            setValue={setValue}
+            field='delivery_details.appointment_numbers'
+            data={appointment_numbers}
+          />
+        </Grid>
+      )}
     </Grid>
   )
 }
+
+export default React.memo(DeliveryDetails)
