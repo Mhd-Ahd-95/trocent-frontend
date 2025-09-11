@@ -25,7 +25,7 @@ const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
         color: colors.grey[400],
         fontSize: 22,
         marginBottom: -7,
-        transform: expanded ? "rotate(180deg)" : "",
+        transform: expanded === 'true' ? "rotate(180deg)" : "",
         transition: theme.transitions.create("transform", {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,
@@ -224,7 +224,7 @@ export default function SideMenu(props) {
                     setExpandItem({ ...expandItem, [text]: !expandItem[text] })
                   }
                   className="item-opt"
-                  expanded={expandItem[text]}
+                  expanded={expandItem[text] ? 'true' : 'false'}
                 >
                   <Typography component={"li"} className="item-opt">
                     <span
