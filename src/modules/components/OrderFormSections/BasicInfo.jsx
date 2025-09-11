@@ -4,7 +4,7 @@ import {
   TextField,
   Autocomplete,
   FormControl,
-  Switch,
+  Switch
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller } from 'react-hook-form'
@@ -12,8 +12,10 @@ import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 
 export default function BasicInfo (props) {
+  const { register, errors, control, setValue, watch } = props
 
-    const {register, errors, control} = props
+  const quote = watch('basic_info.quote');
+  const isCrossdock = watch('basic_info.is_crossdock');
 
   return (
     <Grid container spacing={3}>
@@ -89,7 +91,17 @@ export default function BasicInfo (props) {
       <Grid size={{ xs: 12, sm: 6, md: 6 }}>
         <FormControl>
           <CustomFormControlLabel
-            control={<Switch {...register('basic_info.quote')} />}
+            control={
+              <Switch
+                {...register('basic_info.quote')}
+                checked={quote}
+                onChange={e => {
+                  const checked = e.target.checked
+                  setValue('basic_info.quote', checked)
+                  if (checked) setValue('basic_info.is_crossdock', false)
+                }}
+              />
+            }
             label='Quote'
           />
         </FormControl>
@@ -97,7 +109,17 @@ export default function BasicInfo (props) {
       <Grid size={{ xs: 12, sm: 6, md: 6 }}>
         <FormControl>
           <CustomFormControlLabel
-            control={<Switch {...register('basic_info.is_crossdock')} />}
+            control={
+              <Switch
+                {...register('basic_info.is_crossdock')}
+                checked={isCrossdock}
+                onChange={e => {
+                  const checked = e.target.checked
+                  setValue('basic_info.is_crossdock', checked)
+                  if (checked) setValue('basic_info.quote', false)
+                }}
+              />
+            }
             label='Is Crossdock'
           />
         </FormControl>
