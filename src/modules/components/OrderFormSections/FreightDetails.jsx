@@ -1,32 +1,49 @@
 import React from 'react'
-import {
-  Grid,
-  Autocomplete,
-  FormControl,
-  Switch,
-  Typography,
-  Button,
-  MenuItem,
-  InputAdornment,
-  IconButton
-} from '@mui/material'
+import { Grid, Autocomplete, Typography, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { AccordionComponent, StyledButton } from '../../components'
-import { Controller, useFieldArray } from 'react-hook-form'
-import { Add, Calculate, Sync } from '@mui/icons-material'
+import { StyledButton } from '../../components'
+import { Controller, useFieldArray, useWatch } from 'react-hook-form'
+import { Add, Calculate } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
-import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
+import FreightRow from './FreightRow'
 
-export default function FreightDetails (props) {
-  const { control, register, watch } = props
+function FreightDetails (props) {
+  const { control, register, watch, setValue } = props
   const theme = useTheme()
-  const [converted, setConverted] = React.useState(false)
   const [mode, setMode] = React.useState(false)
+
+  const freights = useWatch({ control, name: 'freight_details.freights' })
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'freight_details.freights'
   })
+
+  const totals = React.useMemo(() => {
+    const totalPieces =
+      freights?.reduce((acc, f) => acc + Number(f.pieces || 0), 0) || 0
+    const totalWeight =
+      freights?.reduce((acc, f) => acc + Number(f.weight || 0), 0).toFixed(2) ||
+      0
+    const totalSkids = freights?.filter(f => f.type === 'Skid')?.length || 0
+    return { totalPieces, totalWeight, totalSkids }
+  }, [freights])
+
+  const handleAddFreight = React.useCallback(() => {
+    append({
+      type: 'Skid',
+      description: 'FAK',
+      pieces: 1,
+      weight: '',
+      unit: 'lbs',
+      length: '',
+      width: '',
+      height: '',
+      dim_unit: 'in',
+      not_stack: false,
+      is_converted: false
+    })
+  }, [append])
 
   return (
     <Grid container spacing={3}>
@@ -68,218 +85,30 @@ export default function FreightDetails (props) {
               Freights
             </Typography>
             {fields.map((item, index) => (
-              <AccordionComponent
-                fieldsLength={fields.length}
-                handleDelete={() => remove(index)}
+              <FreightRow
                 key={item.id}
-                title={`${watch(
-                  `freight_details.freights.${index}.type`
-                )}: ${watch(
-                  `freight_details.freights.${index}.pieces`
-                )} pcs, ${watch(
-                  `freight_details.freights.${index}.weight`
-                )} ${watch(
-                  `freight_details.freights.${index}.unit`
-                )?.toLowerCase()}`}
-                content={
-                  <Grid container spacing={1}>
-                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                      <Controller
-                        name={`freight_details.freights.${index}.type`}
-                        control={control}
-                        rules={{ required: 'Type is a required field' }}
-                        render={({ field, fieldState }) => (
-                          <Autocomplete
-                            {...field}
-                            options={['Skid', 'Box', 'Envelope']}
-                            onChange={(_, value) => field.onChange(value)}
-                            defaultValue={'Skid'}
-                            renderInput={params => (
-                              <TextInput
-                                {...params}
-                                label='Type*'
-                                fullWidth
-                                error={!!fieldState.error}
-                                helperText={fieldState.error?.message}
-                              />
-                            )}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                      <TextInput
-                        label='Description'
-                        variant='outlined'
-                        fullWidth
-                        {...register(
-                          `freight_details.freights.${index}.description`
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        label='Pieces'
-                        variant='outlined'
-                        type='number'
-                        fullWidth
-                        {...register(
-                          `freight_details.freights.${index}.pieces`
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        label='Weight'
-                        variant='outlined'
-                        type='number'
-                        fullWidth
-                        {...register(
-                          `freight_details.freights.${index}.weight`
-                        )}
-                        helperText={'Vol: 0.00 lbs'}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        select
-                        label='Unit'
-                        variant='outlined'
-                        fullWidth
-                        {...register(`freight_details.freights.${index}.unit`)}
-                        defaultValue={'lbs'}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <IconButton
-                                  onClick={() => setConverted(!converted)}
-                                  color={converted ? 'success' : 'default'}
-                                >
-                                  <Sync />
-                                </IconButton>
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                        helperText={converted ? 'Conv.: ON' : 'Conv.: OFF'}
-                        sx={{
-                          position: 'relative',
-                          '& button': {
-                            borderLeft: `1px solid ${theme.palette.grey[200]}`,
-                            borderRadius: 0,
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            height: '100%',
-                            // marginLeft: 2,
-                            '& svg': {
-                              fontSize: 18,
-                              marginTop: 0.3
-                            }
-                          },
-                          '& .MuiSelect-icon': {
-                            position: 'absolute',
-                            top: 14,
-                            right: 35,
-                            fontSize: 20
-                            // marginRight: 4
-                          }
-                        }}
-                      >
-                        <MenuItem value='lbs'>LBS</MenuItem>
-                        <MenuItem value='kg'>KG</MenuItem>
-                      </TextInput>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        label='Length'
-                        variant='outlined'
-                        fullWidth
-                        {...register(
-                          `freight_details.freights.${index}.length`
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        label='Width'
-                        variant='outlined'
-                        fullWidth
-                        {...register(`freight_details.freights.${index}.width`)}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        label='Height'
-                        variant='outlined'
-                        fullWidth
-                        {...register(
-                          `freight_details.freights.${index}.height`
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <TextInput
-                        select
-                        label='Dim Unit'
-                        variant='outlined'
-                        fullWidth
-                        {...register(
-                          `freight_details.freights.${index}.dim_unit`
-                        )}
-                        defaultValue={'in'}
-                      >
-                        <MenuItem value='in'>IN</MenuItem>
-                        <MenuItem value='cm'>CM</MenuItem>
-                      </TextInput>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <FormControl>
-                        <CustomFormControlLabel
-                          control={
-                            <Switch
-                              {...register(
-                                `freight_details.freights.${index}.not_stack`
-                              )}
-                            />
-                          }
-                          label='Not Stack'
-                          sx={{
-                            '& span': {
-                              fontSize: 12,
-                              whiteSpace: 'nowrap'
-                            }
-                          }}
-                        />
-                      </FormControl>
-                    </Grid>
-                  </Grid>
-                }
-                icons
+                remove={remove}
+                control={control}
+                register={register}
+                watch={watch}
+                index={index}
+                fields={fields}
+                setValue={setValue}
               />
             ))}
           </Grid>
           <Grid size={12}>
-            <Grid container justifyContent={'center'} alignItems={'center'}>
+            <Grid
+              container
+              justifyContent={'center'}
+              alignItems={'center'}
+              pb={2}
+            >
               <Grid size='auto'>
                 <Button
                   startIcon={<Add />}
                   sx={{ textTransform: 'capitalize' }}
-                  onClick={() =>
-                    append({
-                      type: '',
-                      description: '',
-                      Pieces: 1,
-                      weight: '',
-                      units: '',
-                      length: '',
-                      width: '',
-                      height: '',
-                      dim_unit: '',
-                      not_stack: false
-                    })
-                  }
+                  onClick={() => handleAddFreight()}
                 >
                   Add To Freights
                 </Button>
@@ -340,9 +169,7 @@ export default function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Total Pieces'
-                  value={watch('freight_details.freights')
-                    .map(freight => freight.pieces)
-                    .reduce((acc, pcs) => (acc += Number(pcs)), 0)}
+                  value={totals.totalPieces}
                   variant='outlined'
                   disabled
                   fullWidth
@@ -358,11 +185,7 @@ export default function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Total Chargeable Skids'
-                  value={
-                    watch('freight_details.freights').filter(
-                      freight => freight.type === 'Skid'
-                    )?.length
-                  }
+                  value={totals.totalSkids}
                   variant='outlined'
                   disabled={!mode}
                   fullWidth
@@ -378,10 +201,7 @@ export default function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Total Actual Weight'
-                  value={watch('freight_details.freights')
-                    .map(freight => freight.weight)
-                    ?.reduce((acc, pcs) => (acc += Number(pcs)), 0)
-                    ?.toFixed(2)}
+                  value={totals.totalWeight}
                   variant='outlined'
                   disabled
                   fullWidth
@@ -413,10 +233,7 @@ export default function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Total Chargeable Weight'
-                  value={watch('freight_details.freights')
-                    .map(freight => freight.weight)
-                    ?.reduce((acc, pcs) => (acc += Number(pcs)), 0)
-                    ?.toFixed(2)}
+                  value={totals.totalWeight}
                   variant='outlined'
                   disabled
                   fullWidth
@@ -432,10 +249,7 @@ export default function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Weight In KG'
-                  value={watch('freight_details.freights')
-                    .map(freight => freight.weight)
-                    ?.reduce((acc, pcs) => (acc += Number(pcs)), 0)
-                    ?.toFixed(2)}
+                  value={totals.totalWeight}
                   variant='outlined'
                   disabled
                   fullWidth
@@ -455,3 +269,5 @@ export default function FreightDetails (props) {
     </Grid>
   )
 }
+
+export default React.memo(FreightDetails)

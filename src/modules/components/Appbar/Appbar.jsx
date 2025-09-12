@@ -132,6 +132,7 @@ export default function Appbar(props) {
                 <Grid>
                   <CustomInput
                     placeholder="Search"
+                    type="number"
                     startAdornment={
                       <InputAdornment position="end">
                         <Search />

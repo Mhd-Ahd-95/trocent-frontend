@@ -87,7 +87,8 @@ export const defaultOrderValue = {
         width: '',
         height: '',
         dim_unit: 'IN',
-        not_stack: false
+        not_stack: false,
+        is_converted: false,
       }
     ]
   },
