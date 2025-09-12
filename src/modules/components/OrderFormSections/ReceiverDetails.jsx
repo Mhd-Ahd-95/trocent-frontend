@@ -14,10 +14,10 @@ export default function ReceiverDetails (props) {
           name='receiver_details.receiver'
           control={control}
           onSelect={value => {
-            setValue('receiver_details.email', value?.email || '')
+            setValue('receiver_details.email', value?.email_address || '')
             setValue('receiver_details.contact_name', value?.contact_name || '')
             setValue('receiver_details.phone_number', value?.phone_number || '')
-            setValue('receiver_details.address', value?.address || '')
+            setValue('receiver_details.address', value?.street_address || '')
             setValue('receiver_details.city', value?.city || '')
             setValue('receiver_details.province', value?.province || '')
             setValue('receiver_details.postal_code', value?.postal_code || '')

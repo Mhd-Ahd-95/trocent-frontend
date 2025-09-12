@@ -4,6 +4,7 @@ import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import global from '../../global'
 import { Controller, useWatch } from 'react-hook-form'
+import SearchableInput from '../CustomComponents/SearchableInput'
 
 function ExtraShop (props) {
   const address_book = global.static.address_book[0]
@@ -65,75 +66,132 @@ function ExtraShop (props) {
       {isExtraShop && (
         <>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
+            <SearchableInput
+              name='extra_shop.crossdock'
+              control={control}
+              onSelect={value => {
+                setValue('extra_shop.email', value?.email_address || '')
+                setValue('extra_shop.contact_name', value?.contact_name || '')
+                setValue('extra_shop.phone_number', value?.phone_number || '')
+                setValue('extra_shop.address', value?.street_address || '')
+                setValue('extra_shop.city', value?.city || '')
+                setValue('extra_shop.province', value?.province || '')
+                setValue('extra_shop.postal_code', value?.postal_code || '')
+              }}
               label='Crossdock'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.crossdock')}
+              placeholder='Type name...'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='Email'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.email')}
+            <Controller
+              control={control}
+              name='extra_shop.email'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Email'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='Contact Name'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.contact_name')}
+            <Controller
+              control={control}
+              name='extra_shop.contact_name'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Contact Name'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='Phone Number'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.phone_number')}
+            <Controller
+              control={control}
+              name='extra_shop.phone_number'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Phone Number'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-            <TextInput
-              label='Address'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.address')}
+            <Controller
+              control={control}
+              name='extra_shop.address'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Address'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='Suite'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.suite')}
+            <Controller
+              control={control}
+              name='extra_shop.suite'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Suite'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='City'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.city')}
+            <Controller
+              control={control}
+              name='extra_shop.city'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='City'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='Province/State*'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.province')}
+            <Controller
+              control={control}
+              name='extra_shop.province'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Province'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <TextInput
-              label='Postal code*'
-              variant='outlined'
-              fullWidth
-              {...register('extra_shop.postal_code')}
+            <Controller
+              control={control}
+              name='extra_shop.postal_code'
+              render={({ field, fieldState }) => (
+                <TextInput
+                  {...field}
+                  label='Postal Code'
+                  variant='outlined'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
         </>

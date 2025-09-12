@@ -44,7 +44,7 @@ export default function SearchableInput (props) {
             if (value) {
               setSelectedValue(value)
               field.onChange(value)
-              const selected = options.find((op) => op.company_location === value)
+              const selected = options.find(op => op.company_location === value)
               onSelect(selected)
             }
           }}
