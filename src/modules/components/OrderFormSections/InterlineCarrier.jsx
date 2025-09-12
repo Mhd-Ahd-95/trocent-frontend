@@ -1,8 +1,15 @@
 import React from 'react'
-import { Grid, FormControl, Switch, FormHelperText } from '@mui/material'
+import {
+  Grid,
+  FormControl,
+  Switch,
+  FormHelperText,
+  Typography
+} from '@mui/material'
 import { InterlineCarrierForm, TabInterlineForm } from './InterlineCarrierForm'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import { Controller, useWatch } from 'react-hook-form'
+import {useTheme} from '@mui/material/styles'
 
 function InterlineCarrier (props) {
   const { setValue, register, control } = props
@@ -24,6 +31,8 @@ function InterlineCarrier (props) {
     name: 'interline_carrier.isSameCarrier',
     defaultValue: false
   })
+
+  const theme = useTheme()
 
   return (
     <Grid container spacing={2}>
@@ -83,34 +92,52 @@ function InterlineCarrier (props) {
       </Grid>
       <Grid size={12}>
         {isPickup && isDelivery && (
-          <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-            <FormControl>
-              <CustomFormControlLabel
-                control={
-                  <Controller
-                    name='interline_carrier.isSameCarrier'
-                    control={control}
-                    render={({ field }) => (
-                      <Switch
-                        {...field}
-                        checked={field.value || false}
-                        onChange={e => {
-                          const checked = e.target.checked
-                          field.onChange(checked)
-                          setValue('interline_carrier.delivery', {})
-                          setValue('interline_carrier.pickup', {})
-                          if (!checked) setValue('interline_carrier.sameCarrier', {})
-                        }}
-                      />
-                    )}
-                  />
-                }
-                label='Same Carrier for Both'
-              />
-              <FormHelperText>
-                Uncheck to use different carriers for pickup and delivery
-              </FormHelperText>
-            </FormControl>
+          <FormControl>
+            <CustomFormControlLabel
+              control={
+                <Controller
+                  name='interline_carrier.isSameCarrier'
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      {...field}
+                      checked={field.value || false}
+                      onChange={e => {
+                        const checked = e.target.checked
+                        field.onChange(checked)
+                        setValue('interline_carrier.delivery', {})
+                        setValue('interline_carrier.pickup', {})
+                        if (!checked)
+                          setValue('interline_carrier.sameCarrier', {})
+                      }}
+                    />
+                  )}
+                />
+              }
+              label='Same Carrier for Both'
+            />
+            <FormHelperText>
+              Uncheck to use different carriers for pickup and delivery
+            </FormHelperText>
+          </FormControl>
+        )}
+      </Grid>
+      <Grid size={12}>
+        {!isPickup && !isDelivery && (
+          <Grid container>
+            <Grid size={12}>
+              <Typography
+                component={'p'}
+                sx={{ fontSize: 14, fontWeight: 600, py: 1 }}
+                gutterBottom
+              >
+                Interline Information
+              </Typography>
+              <Typography component='p' sx={{ fontSize: 13, fontWeight: theme.typography.fontWeightLight }} gutterBottom>
+                Enable pickup and/or delivery toggles above to configure
+                interline carrier details.
+              </Typography>
+            </Grid>
           </Grid>
         )}
         {isPickup && !isDelivery && !isSameCarrierForBoth && (
