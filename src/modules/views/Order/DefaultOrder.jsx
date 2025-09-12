@@ -70,12 +70,62 @@ export const defaultOrderValue = {
     appointment: false
   },
   interline_carrier: {
-    pickup: false,
-    delivery: false,
-    same_carrier_for_both: false
+    isPickup: false,
+    isDelivery: false,
+    isSameCarrier: false,
+    sameCarrier: {
+      interline: '',
+      email: '',
+      contact_name: '',
+      phone_number: '',
+      address: '',
+      suite: '',
+      city: '',
+      province: '',
+      postal_code: '',
+      special_intructions: '',
+      charge_amount: '',
+      invoice: ''
+    },
+    pickup: {
+      interline: '',
+      email: '',
+      contact_name: '',
+      phone_number: '',
+      address: '',
+      suite: '',
+      city: '',
+      province: '',
+      postal_code: '',
+      special_intructions: '',
+      charge_amount: '',
+      invoice: ''
+    },
+    delivery: {
+      interline: '',
+      email: '',
+      contact_name: '',
+      phone_number: '',
+      address: '',
+      suite: '',
+      city: '',
+      province: '',
+      postal_code: '',
+      special_intructions: '',
+      charge_amount: '',
+      invoice: ''
+    }
+  },
+   delivery_details: {
+    delivery_date: null,
+    time_from: null,
+    time_to: null,
+    driver_assigned: '',
+    delivery_terminal: '',
+    appointment: false
   },
   freight_details: {
-    service_type: '',
+    service_type: 'Regular',
     freights: [
       {
         type: 'Skid',
@@ -88,7 +138,7 @@ export const defaultOrderValue = {
         height: '',
         dim_unit: 'IN',
         not_stack: false,
-        is_converted: false,
+        is_converted: false
       }
     ]
   },

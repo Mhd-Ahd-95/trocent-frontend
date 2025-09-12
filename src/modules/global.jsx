@@ -101,6 +101,7 @@ const globalVariables = {
         phone_number: '(514) 937-0505',
         email_address: 'OPERATIONS@MESSAGERS.CA',
         street_address: '2985 DOUGLAS B. FLOREANI',
+        suite: '',
         city: 'ST LAURENT',
         province: 'Quebec',
         postal_code: 'H4S 1Y7',
@@ -116,6 +117,7 @@ const globalVariables = {
         phone_number: '(514) 937-0505',
         email_address: 'OPERATIONS@MESSAGERS.CA',
         street_address: '2985 DOUGLAS B. FLOREANI',
+        suite: 'suite',
         city: 'ST LAURENT',
         province: 'Quebec',
         postal_code: 'H4S 1Y7',
@@ -124,6 +126,30 @@ const globalVariables = {
         hour_to: '07:00 PM',
         require_appointment: true,
         no_waiting_charge_time: true
+      }
+    ],
+    interliners: [
+      {
+        company_name: 'ROGUE',
+        contact_person: '',
+        email: '',
+        phone_number: '905-362-9401',
+        address: '255 COURTNEY PARK WEST',
+        suite: '',
+        city: 'MISSISSAUGA',
+        province: 'ON',
+        postal_code: 'L5W 0A5'
+      },
+      {
+        company_name: 'ALM CROWN MOVING AND DELIVERY LIMITED',
+        contact_person: 'JASON CROWN',
+        email: 'jcrown@almcrown.ca',  
+        phone_number: '866-825-0927',
+        address: '6355 DANVILLE ROAD',
+        city: 'MISSISSAUGA',
+        suite: '',
+        province: 'ON',
+        postal_code: 'L5T 2L4'
       }
     ]
   }

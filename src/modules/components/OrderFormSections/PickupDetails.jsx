@@ -123,7 +123,7 @@ function PickupDetails (props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <Controller
-          name='pickup_details.terminal'
+          name='pickup_details.pickup_terminal'
           control={control}
           render={({ field, fieldState }) => (
             <Autocomplete

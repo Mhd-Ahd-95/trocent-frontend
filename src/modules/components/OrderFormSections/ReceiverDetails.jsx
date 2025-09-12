@@ -3,6 +3,7 @@ import { Grid, TextField } from '@mui/material'
 import TextInput from '../CustomComponents/TextInput'
 import SearchableInput from '../CustomComponents/SearchableInput'
 import { Controller } from 'react-hook-form'
+import global from '../../global'
 
 export default function ReceiverDetails (props) {
   const { register, control, errors, watch, setValue } = props
@@ -13,12 +14,15 @@ export default function ReceiverDetails (props) {
         <SearchableInput
           name='receiver_details.receiver'
           control={control}
+          fieldProp='company_location'
+          options={global.static.address_book}
           onSelect={value => {
             setValue('receiver_details.email', value?.email_address || '')
             setValue('receiver_details.contact_name', value?.contact_name || '')
             setValue('receiver_details.phone_number', value?.phone_number || '')
             setValue('receiver_details.address', value?.street_address || '')
             setValue('receiver_details.city', value?.city || '')
+            setValue('receiver_details.suite', value?.suite || '')
             setValue('receiver_details.province', value?.province || '')
             setValue('receiver_details.postal_code', value?.postal_code || '')
             setValue(

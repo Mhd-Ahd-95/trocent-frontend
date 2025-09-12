@@ -69,12 +69,15 @@ function ExtraShop (props) {
             <SearchableInput
               name='extra_shop.crossdock'
               control={control}
+              options={global.static.address_book}
+              fieldProp='company_location'
               onSelect={value => {
                 setValue('extra_shop.email', value?.email_address || '')
                 setValue('extra_shop.contact_name', value?.contact_name || '')
                 setValue('extra_shop.phone_number', value?.phone_number || '')
                 setValue('extra_shop.address', value?.street_address || '')
                 setValue('extra_shop.city', value?.city || '')
+                setValue('extra_shop.suite', value?.suite || '')
                 setValue('extra_shop.province', value?.province || '')
                 setValue('extra_shop.postal_code', value?.postal_code || '')
               }}

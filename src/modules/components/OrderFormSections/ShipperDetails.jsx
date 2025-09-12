@@ -3,6 +3,7 @@ import { Grid, TextField } from '@mui/material'
 import TextInput from '../CustomComponents/TextInput'
 import SearchableInput from '../CustomComponents/SearchableInput'
 import { Controller } from 'react-hook-form'
+import global from '../../global'
 
 export default function ShipperDetails (props) {
   const { register, control, errors, watch, setValue } = props
@@ -13,11 +14,14 @@ export default function ShipperDetails (props) {
         <SearchableInput
           name='shipper_details.shipper'
           control={control}
+          options={global.static.address_book}
+          fieldProp='company_location'
           onSelect={value => {
             setValue('shipper_details.email', value?.email_address || '')
             setValue('shipper_details.contact_name', value?.contact_name || '')
             setValue('shipper_details.phone_number', value?.phone_number || '')
             setValue('shipper_details.address', value?.street_address || '')
+            setValue('shipper_details.suite', value?.suite || '')
             setValue('shipper_details.city', value?.city || '')
             setValue('shipper_details.province', value?.province || '')
             setValue('shipper_details.postal_code', value?.postal_code || '')

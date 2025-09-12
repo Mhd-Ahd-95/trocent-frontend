@@ -5,23 +5,23 @@ import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import { Controller, useWatch } from 'react-hook-form'
 
 function InterlineCarrier (props) {
-  const { watch, register, control } = props
+  const { setValue, register, control } = props
 
   const isPickup = useWatch({
     control: control,
-    name: 'interline_carrier.pickup',
+    name: 'interline_carrier.isPickup',
     defaultValue: false
   })
 
   const isDelivery = useWatch({
     control: control,
-    name: 'interline_carrier.delivery',
+    name: 'interline_carrier.isDelivery',
     defaultValue: false
   })
 
   const isSameCarrierForBoth = useWatch({
     control: control,
-    name: 'interline_carrier.same_carrier_for_both',
+    name: 'interline_carrier.isSameCarrier',
     defaultValue: false
   })
 
@@ -32,7 +32,7 @@ function InterlineCarrier (props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='interline_carrier.pickup'
+                name='interline_carrier.isPickup'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -41,6 +41,10 @@ function InterlineCarrier (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      if (!checked) {
+                        setValue('interline_carrier.isSameCarrier', false)
+                        setValue('interline_carrier.pickup', {})
+                      }
                     }}
                   />
                 )}
@@ -55,7 +59,7 @@ function InterlineCarrier (props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='interline_carrier.delivery'
+                name='interline_carrier.isDelivery'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -64,6 +68,10 @@ function InterlineCarrier (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      if (!checked) {
+                        setValue('interline_carrier.isSameCarrier', false)
+                        setValue('interline_carrier.delivery', {})
+                      }
                     }}
                   />
                 )}
@@ -80,7 +88,7 @@ function InterlineCarrier (props) {
               <CustomFormControlLabel
                 control={
                   <Controller
-                    name='interline_carrier.same_carrier_for_both'
+                    name='interline_carrier.isSameCarrier'
                     control={control}
                     render={({ field }) => (
                       <Switch
@@ -89,6 +97,9 @@ function InterlineCarrier (props) {
                         onChange={e => {
                           const checked = e.target.checked
                           field.onChange(checked)
+                          setValue('interline_carrier.delivery', {})
+                          setValue('interline_carrier.pickup', {})
+                          if (!checked) setValue('interline_carrier.sameCarrier', {})
                         }}
                       />
                     )}
@@ -103,13 +114,28 @@ function InterlineCarrier (props) {
           </Grid>
         )}
         {isPickup && !isDelivery && !isSameCarrierForBoth && (
-          <InterlineCarrierForm register={register} interline_type='pickup' />
+          <InterlineCarrierForm
+            register={register}
+            setValue={setValue}
+            control={control}
+            interline_type='pickup'
+          />
         )}
         {!isPickup && isDelivery && !isSameCarrierForBoth && (
-          <InterlineCarrierForm register={register} interline_type='delivery' />
+          <InterlineCarrierForm
+            register={register}
+            setValue={setValue}
+            control={control}
+            interline_type='delivery'
+          />
         )}
         {isPickup && isDelivery && isSameCarrierForBoth && (
-          <InterlineCarrierForm register={register} />
+          <InterlineCarrierForm
+            register={register}
+            setValue={setValue}
+            control={control}
+            interline_type='sameCarrier'
+          />
         )}
         {isPickup && isDelivery && !isSameCarrierForBoth && (
           <TabInterlineForm
@@ -117,11 +143,15 @@ function InterlineCarrier (props) {
             contents={[
               <InterlineCarrierForm
                 register={register}
+                setValue={setValue}
+                control={control}
                 label='Pickup'
                 interline_type='pickup'
               />,
               <InterlineCarrierForm
                 register={register}
+                setValue={setValue}
+                control={control}
                 label='Delivery'
                 interline_type='delivery'
               />

@@ -123,7 +123,7 @@ function DeliveryDetails (props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <Controller
-          name='delivery_details.terminal'
+          name='delivery_details.delivery_terminal'
           control={control}
           render={({ field, fieldState }) => (
             <Autocomplete
@@ -162,7 +162,7 @@ function DeliveryDetails (props) {
       </Grid>
       {isAppointment && (
         <Grid size={12}>
-          <InputWrapper 
+          <InputWrapper
             placeholder='Appointment Numbers'
             textHelper='Add multiple appointment numbers separated by commas'
             noSpace

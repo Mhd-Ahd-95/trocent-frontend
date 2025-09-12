@@ -125,6 +125,7 @@ export default function OrderForm (props) {
             register={register}
             errors={errors}
             control={control}
+            setValue={setValue}
           />
         </WizardCard>
       </Grid>
