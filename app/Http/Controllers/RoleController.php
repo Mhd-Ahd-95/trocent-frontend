@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+
     function index()
     {
 
@@ -17,11 +18,12 @@ class RoleController extends Controller
     function store(RoleRequest $request)
     {
         $data = $request->validated();
+        logger($data);
         $role = Role::create([
-            'name' => $data->name,
-            'guard_name' => $data->guard_name,
+            'name' => $data['name'],
+            'guard_name' => $data['guard_name'],
         ]);
-        $role->givePermissionTo($data->permissions);
+        $role->givePermissionTo($data['permissions']);
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         return response()->json(['data' => $role], 200);
     }

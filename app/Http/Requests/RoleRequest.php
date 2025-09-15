@@ -11,7 +11,8 @@ class RoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+
+        return true;
     }
 
     /**
@@ -24,7 +25,7 @@ class RoleRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'unique:roles,name'],
             'permissions' => ['required', 'array'],
-            'permissions.*' => ['exists:permissions, id'],
+            'permissions.*' => ['exists:permissions,name'],
             'guard_name' => ['required', 'in:web,api']
         ];
     }

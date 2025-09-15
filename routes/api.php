@@ -11,3 +11,4 @@ Route::get('/user', function (Request $request) {
 // Route::middleware(['auth:sanctum', 'setapplang'])->prefix('{locale}')->group(function(){
 // });
 Route::post('/role', [RoleController::class, 'store']);
+
