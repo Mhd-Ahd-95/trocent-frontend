@@ -10,5 +10,9 @@ Route::get('/user', function (Request $request) {
 
 // Route::middleware(['auth:sanctum', 'setapplang'])->prefix('{locale}')->group(function(){
 // });
-Route::post('/role', [RoleController::class, 'store']);
+Route::post('/roles', [RoleController::class, 'store']);
+Route::put('/roles/{id}', [RoleController::class, 'update']);
+Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
+Route::get('/roles/{id}', [RoleController::class, 'show']);
+Route::get('/roles', [RoleController::class, 'index']);
 

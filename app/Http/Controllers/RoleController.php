@@ -12,7 +12,8 @@ class RoleController extends Controller
 
     function index()
     {
-
+        $roles = Role::with('permissions')->get();
+        return response()->json($roles);
     }
 
     function store(RoleRequest $request)
@@ -28,15 +29,33 @@ class RoleController extends Controller
         return response()->json(['data' => $role], 200);
     }
 
-    function update(Request $request)
+    function update(int $id, Request $request)
     {
+        $orole = Role::findOrFail($id);
+        $nrole = $request->validate([
+            'name' => 'sometimes|string',
+            'guard_name' => 'sometimes|in:web,api',
+            'permissions.*' => 'required|exists:permissions,name',
+            'permissions' => 'sometimes|array'
+        ]);
+        $orole->fill($nrole);
+        $orole->save();
+        if (isset($nrole['permissions'])) {
+            $orole->syncPermissions($nrole['permissions']);
+        }
+        return response()->json($orole);
     }
 
-    function destroy()
+    function destroy(int $id)
     {
+        $role = Role::findOrFail($id);
+        $role->delete();
+        return response()->json(true);
     }
 
-    function show()
+    function show(int $id)
     {
+        $role = Role::with('permissions')->findOrFail($id);
+        return response()->json($role);
     }
 }
