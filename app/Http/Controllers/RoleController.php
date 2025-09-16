@@ -58,4 +58,9 @@ class RoleController extends Controller
         $role = Role::with('permissions')->findOrFail($id);
         return response()->json($role);
     }
+
+    function load_permissions(){
+        $pers = Permission::all();
+        return response()->json($pers);
+    }
 }

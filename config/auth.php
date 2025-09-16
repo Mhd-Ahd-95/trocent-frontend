@@ -41,7 +41,7 @@ return [
             'provider' => 'users',
         ],
         'api' => [
-            'driver' => 'token',        // or 'sanctum' if you're using :contentReference[oaicite:1]{index=1}
+            'driver' => 'sanctum',        // or 'sanctum' if you're using :contentReference[oaicite:1]{index=1}
             'provider' => 'users',      // must match the provider below
         ],
     ],
