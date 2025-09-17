@@ -27,6 +27,7 @@ import {
   ArrowForwardIos,
 } from "@mui/icons-material";
 import { useTheme } from "@emotion/react";
+import { AuthContext } from "../../contexts";
 
 const CustomInput = styled(OutlinedInput)(({ theme }) => ({
   borderRadius: 8,
@@ -63,6 +64,7 @@ export default function Appbar(props) {
   const theme = useTheme();
   const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
   const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+  const authContext = React.useContext(AuthContext)
 
   const handleOpenSide = () => {
     setOpen(!open);
@@ -220,7 +222,7 @@ export default function Appbar(props) {
                         color: theme.palette.grey[500],
                       },
                     }}
-                    onClick={() => console.log("Sign out")}
+                    onClick={() => authContext.handleLogout()}
                   >
                     Sign out
                   </Button>

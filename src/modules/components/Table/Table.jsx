@@ -79,6 +79,7 @@ export default function Table(props) {
         columns={columns}
         rows={data || []}
         rowHeight={45}
+        loading={props.loading}
         sx={{
           width: "100%",
           borderRadius: 3,
@@ -86,7 +87,7 @@ export default function Table(props) {
         pageSizeOptions={props.pageSizeOptions}
         columnHeaderHeight={45}
         slots={{
-          toolbar: () => <CustomToolbar title={title} options={options} />, // pass the component, NOT a function
+          // toolbar: () => <CustomToolbar title={title} options={options} />, // pass the component, NOT a function
           noRowsOverlay: () => <CustomNoRows row={props.row} />,
           noResultsOverlay: CustomNoResultsOverlay,
         }}

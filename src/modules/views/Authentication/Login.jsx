@@ -1,6 +1,6 @@
-import React from "react";
-import { AuthLayout } from "../../layouts";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import React from 'react'
+import { AuthLayout } from '../../layouts'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 import {
   FormControlLabel,
   IconButton,
@@ -12,108 +12,156 @@ import {
   TextField,
   FormControl,
   InputLabel,
-  OutlinedInput,
-} from "@mui/material";
-import { StyledCheckBox, SubmitButton } from "../../components";
+  OutlinedInput
+} from '@mui/material'
+import { StyledCheckBox, SubmitButton } from '../../components'
+import { AuthContext } from '../../contexts'
+import LoginAPI from '../../apis/login.api'
+import { useSnackbar } from 'notistack'
+import { useNavigate } from 'react-router-dom'
 
+export default function Login () {
+  const [showPassword, setShowPassword] = React.useState(false)
+  const handleClickShowPassword = () => setShowPassword(show => !show)
+  const usernameRef = React.useRef()
+  const passwordRef = React.useRef()
+  const [remember, setRemember] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const authContext = React.useContext(AuthContext)
+  const { enqueueSnackbar } = useSnackbar()
+  const navigate = useNavigate()
 
-export default function Login() {
-  const [showPassword, setShowPassword] = React.useState(false);
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const usernameRef = React.useRef();
-  const passwordRef = React.useRef();
+  const handleSubmit = e => {
+    e.preventDefault()
+    setIsLoading(true)
+    const formData = new FormData(e.target)
+    const email = formData.get('username')
+    const password = formData.get('password')
+    LoginAPI.login(email, password, remember)
+      .then(res => {
+        localStorage.setItem('token', res.data.access_token)
+        authContext.handleAuth(true, JSON.stringify(res.data))
+        navigate('/')
+      })
+      .catch(err => {
+        console.log(err.response)
+        err.response.status === 401
+          ? enqueueSnackbar('Invalid email or password', { variant: 'warning' })
+          : enqueueSnackbar(
+              'Error while processing your request, please try again',
+              { variant: 'error' }
+            )
+        emailRef.current.value = ''
+        passwordRef.current.value = ''
+      })
+
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }
 
   return (
-    <AuthLayout title="Sign in">
+    <AuthLayout title='Sign in'>
       <Grid
         container
-        component={"form"}
-        justifyContent={"flex-start"}
-        alignItems={"flex-start"}
+        component={'form'}
+        justifyContent={'flex-start'}
+        alignItems={'flex-start'}
         spacing={2}
+        onSubmit={handleSubmit}
       >
         <Grid size={12}>
           <TextField
-            label="Username or Email"
-            variant="outlined"
+            label='Username or Email'
+            variant='outlined'
             required
             fullWidth
+            disabled={isLoading}
+            name='username'
             inputRef={usernameRef}
-            type="text"
+            type='text'
             sx={{
-              "& .MuiInputBase-root": {
-                height: 45,
+              '& .MuiInputBase-root': {
+                height: 45
               },
-              "& .MuiOutlinedInput-input": {
-                fontSize: "14px",
+              '& .MuiOutlinedInput-input': {
+                fontSize: '14px'
               },
-              "& .MuiInputLabel-root": {
-                fontSize: "13px",
+              '& .MuiInputLabel-root': {
+                fontSize: '13px'
               },
-              "& .MuiInputLabel-shrink": {
-                fontSize: "14px",
-              },
+              '& .MuiInputLabel-shrink': {
+                fontSize: '14px'
+              }
             }}
           />
         </Grid>
         <Grid size={12}>
           <FormControl
-            variant="outlined"
+            variant='outlined'
             fullWidth
             required
             sx={{
-              "& .MuiInputBase-root": {
-                height: 45,
+              '& .MuiInputBase-root': {
+                height: 45
               },
-              "& .MuiOutlinedInput-input": {
-                fontSize: "14px",
+              '& .MuiOutlinedInput-input': {
+                fontSize: '14px'
               },
-              "& .MuiInputLabel-root": {
-                fontSize: "13px",
+              '& .MuiInputLabel-root': {
+                fontSize: '13px'
               },
-              "& .MuiInputLabel-shrink": {
-                fontSize: "14px",
-              },
+              '& .MuiInputLabel-shrink': {
+                fontSize: '14px'
+              }
             }}
           >
-            <InputLabel htmlFor="outlined-adornment-password">
+            <InputLabel htmlFor='outlined-adornment-password'>
               Password
             </InputLabel>
             <OutlinedInput
               fullWidth
+              name='password'
               required
+              disabled={isLoading}
               inputRef={passwordRef}
-              id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
+              id='outlined-adornment-password'
+              type={showPassword ? 'text' : 'password'}
               endAdornment={
-                <InputAdornment position="end">
+                <InputAdornment position='end'>
                   <IconButton
                     aria-label={
                       showPassword
-                        ? "hide the password"
-                        : "display the password"
+                        ? 'hide the password'
+                        : 'display the password'
                     }
                     onClick={handleClickShowPassword}
-                    edge="end"
+                    edge='end'
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               }
-              label="Password"
+              label='Password'
             />
           </FormControl>
         </Grid>
 
         <Grid size={12} component={Box} pt={1} pl={0.5}>
           <FormControlLabel
-            control={<StyledCheckBox />}
+            control={
+              <StyledCheckBox
+                checked={remember}
+                onChange={() => setRemember(!remember)}
+                disabled={isLoading}
+              />
+            }
             label={
               <Typography
                 sx={{
                   fontWeight: 500,
-                  fontSize: "15px",
-                  color: colors.grey[800],
+                  fontSize: '15px',
+                  color: colors.grey[800]
                 }}
               >
                 Remember me
@@ -123,16 +171,17 @@ export default function Login() {
         </Grid>
         <Grid size={12} component={Box} pt={1}>
           <SubmitButton
-            type="submit"
+            type='submit'
             fullWidth
-            variant="contained"
-            color="primary"
-            textTransform="capitalize"
+            variant='contained'
+            color='primary'
+            textTransform='capitalize'
+            isLoading={isLoading}
           >
             Sign In
           </SubmitButton>
         </Grid>
       </Grid>
     </AuthLayout>
-  );
+  )
 }

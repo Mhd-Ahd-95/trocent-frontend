@@ -70,7 +70,7 @@ export default function MainLayout(props) {
           />
         )}
         {!isMdDown && (
-          <SideMenu open={openSide} active={props.activeDrawer.active} />
+          <SideMenu open={openSide} active={props.activeDrawer.active} chipRole={props.chip} />
         )}
         <Grid container sx={{ width: "100%" }}>
           <Grid size={12}>

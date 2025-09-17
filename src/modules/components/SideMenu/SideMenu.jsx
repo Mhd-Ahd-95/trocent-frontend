@@ -1,200 +1,200 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Box, Paper, Typography, Collapse, Chip, colors } from "@mui/material";
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { Box, Paper, Typography, Collapse, Chip, colors } from '@mui/material'
 import {
   HomeOutlined as Dashboard,
   LocalShippingOutlined as Order,
   GroupsOutlined as Customer,
   SettingsOutlined as Setting,
   GppGoodOutlined as Access,
-  ExpandMore,
-} from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
-import { useTheme } from "@emotion/react";
-import { ThemeContext } from "../../contexts";
+  ExpandMore
+} from '@mui/icons-material'
+import { styled } from '@mui/material/styles'
+import { useTheme } from '@emotion/react'
+import { ThemeContext } from '../../contexts'
 
 const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
-  listStyle: "none",
-  textDecoration: "none",
-  "& .item-opt": {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    "& .expand": {
-      "& svg": {
+  listStyle: 'none',
+  textDecoration: 'none',
+  '& .item-opt': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    '& .expand': {
+      '& svg': {
         color: colors.grey[400],
         fontSize: 22,
         marginBottom: -7,
-        transform: expanded === 'true' ? "rotate(180deg)" : "",
-        transition: theme.transitions.create("transform", {
+        transform: expanded === 'true' ? 'rotate(180deg)' : '',
+        transition: theme.transitions.create('transform', {
           easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
-        }),
-      },
-    },
+          duration: theme.transitions.duration.leavingScreen
+        })
+      }
+    }
   },
-  "& li": {
+  '& li': {
     color:
-      active === "true" ? theme.palette.primary.main : theme.palette.grey[700],
+      active === 'true' ? theme.palette.primary.main : theme.palette.grey[700],
     fontSize: 14,
-    width: "100%",
-    whiteSpace: "nowrap",
+    width: '100%',
+    whiteSpace: 'nowrap',
     fontWeight: 600,
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "center",
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
     gap: 10,
     paddingBlock: 7,
     marginBottom: 10,
-    backgroundColor: active === "true" ? theme.palette.grey[200] : "",
+    backgroundColor: active === 'true' ? theme.palette.grey[200] : '',
     borderRadius: 7,
     // borderLeft:
     //   active === "true" ? "3px solid " + theme.palette.primary.main : "",
-    "& svg": {
+    '& svg': {
       color:
-        active === "true"
+        active === 'true'
           ? theme.palette.primary.main
           : theme.palette.grey[600],
       fontSize: 25,
       paddingInline: 8,
-      marginLeft: 2,
+      marginLeft: 2
     },
-    "&:hover": {
-      backgroundColor: theme.palette.grey[200],
-    },
-  },
-}));
+    '&:hover': {
+      backgroundColor: theme.palette.grey[200]
+    }
+  }
+}))
 
 const SubRouterLink = styled(Link)(({ theme, active }) => ({
-  listStyle: "none",
-  textDecoration: "none",
+  listStyle: 'none',
+  textDecoration: 'none',
 
   color:
-    active === "true" ? theme.palette.primary.main : theme.palette.grey[600],
-  "& li": {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    "& .chip": {
-      width: "auto",
+    active === 'true' ? theme.palette.primary.main : theme.palette.grey[600],
+  '& li': {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    '& .chip': {
+      width: 'auto',
       backgroundColor: colors.orange[50],
-      height: "auto",
-      "& span": {
+      height: 'auto',
+      '& span': {
         paddingBlock: 2,
         paddingInline: 6,
         fontSize: 10,
-        textAlign: "center",
-        marginBottom: -1,
-      },
+        textAlign: 'center',
+        marginBottom: -1
+      }
     },
     marginBlock: 3,
     fontSize: 14,
-    whiteSpace: "nowrap",
+    whiteSpace: 'nowrap',
     fontWeight: 500,
     paddingBlock: 7,
     paddingLeft: 50,
     borderRadius: 7,
-    backgroundColor: active === "true" ? theme.palette.grey[200] : "",
-    "&:hover": {
-      backgroundColor: theme.palette.grey[200],
+    backgroundColor: active === 'true' ? theme.palette.grey[200] : '',
+    '&:hover': {
+      backgroundColor: theme.palette.grey[200]
     },
-    position: "relative",
-    "&:before": {
+    position: 'relative',
+    '&:before': {
       content: `''`,
-      position: "absolute",
+      position: 'absolute',
       height: 7,
       width: 7,
       backgroundColor: theme.palette.grey[500],
       borderRadius: 25,
       top: 15,
-      left: 20,
-    },
-  },
-}));
+      left: 20
+    }
+  }
+}))
 
-const ListItem = styled("ul")(({ theme, active }) => ({
+const ListItem = styled('ul')(({ theme, active }) => ({
   margin: 0,
   padding: 0,
   paddingLeft: 4,
   paddingBottom: 10,
-  "& a": {
-    position: "relative",
-    "&:not(:last-child):after": {
+  '& a': {
+    position: 'relative',
+    '&:not(:last-child):after': {
       content: `''`,
-      position: "absolute",
+      position: 'absolute',
       height: 31,
       width: 0.5,
       backgroundColor: theme.palette.grey[500],
       left: 23,
       top: 22,
-      zIndex: 100,
-    },
-  },
-}));
+      zIndex: 100
+    }
+  }
+}))
 
-export default function SideMenu(props) {
-  const theme = useTheme();
+export default function SideMenu (props) {
+  const theme = useTheme()
 
-  const { expandItem, setExpandItem } = React.useContext(ThemeContext);
+  const { expandItem, setExpandItem } = React.useContext(ThemeContext)
 
   const itemsLinks = [
-    { text: "Dashboard", icon: <Dashboard />, url: "/" },
-    { text: "Orders", icon: <Order />, url: "/orders" },
+    { text: 'Dashboard', icon: <Dashboard />, url: '/' },
+    { text: 'Orders', icon: <Order />, url: '/orders' },
     {
-      text: "Customers",
+      text: 'Customers',
       icon: <Customer />,
       options: [
-        { text: "Customers", url: "/customers" },
-        { text: "Fuel Surcharges", url: "/fuel-surcharge" },
-        { text: "Rate Sheets", url: "/rate-sheets" },
-      ],
+        { text: 'Customers', url: '/customers' },
+        { text: 'Fuel Surcharges', url: '/fuel-surcharge' },
+        { text: 'Rate Sheets', url: '/rate-sheets' }
+      ]
     },
     {
-      text: "Fleet Management",
+      text: 'Fleet Management',
       icon: <Order />,
       options: [
-        { text: "Companies", url: "/companies" },
-        { text: "Drivers", url: "/drivers" },
-        { text: "Interliners", url: "/interliners" },
-      ],
+        { text: 'Companies', url: '/companies' },
+        { text: 'Drivers', url: '/drivers' },
+        { text: 'Interliners', url: '/interliners' }
+      ]
     },
     {
-      text: "Settings",
+      text: 'Settings',
       icon: <Setting />,
       options: [
-        { text: "Accessorials", url: "/accessorials" },
-        { text: "Vehicle Types", url: "/vehicle-types" },
-        { text: "Address Book", url: "/address-book", chip: 2 },
-      ],
+        { text: 'Accessorials', url: '/accessorials' },
+        { text: 'Vehicle Types', url: '/vehicle-types' },
+        { text: 'Address Book', url: '/address-book', chip: 2 }
+      ]
     },
     {
-      text: "Access Management",
+      text: 'Access Management',
       icon: <Access />,
       options: [
-        { text: "Roles", url: "/roles", chip: 4 },
-        { text: "Users", url: "/users" },
-      ],
-    },
-  ];
+        { text: 'Roles', url: '/roles', chip: props.chipRole ?? 0 },
+        { text: 'Users', url: '/users' }
+      ]
+    }
+  ]
 
   return (
     <Paper
       elevation={props.open ? 2 : 0}
       sx={{
         width: props.open ? 290 : 57,
-        height: "calc(100vh - 115px)",
-        position: "sticky",
+        height: 'calc(100vh - 115px)',
+        position: 'sticky',
         borderRadius: 0,
         top: 65,
         marginTop: 2,
         flexShrink: 0,
         paddingBlock: 3,
         zIndex: 100,
-        overflow: "hidden auto",
-        transition: theme.transitions.create(["width"], {
+        overflow: 'hidden auto',
+        transition: theme.transitions.create(['width'], {
           easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
-        }),
+          duration: theme.transitions.duration.leavingScreen
+        })
       }}
     >
       <Box>
@@ -202,11 +202,11 @@ export default function SideMenu(props) {
           {itemsLinks.map(({ text, icon, url, options }, index) =>
             url ? (
               <RouterLink
-                active={text === props.active ? "true" : "false"}
+                active={text === props.active ? 'true' : 'false'}
                 key={index}
                 to={url}
               >
-                <Typography component={"li"}>
+                <Typography component={'li'}>
                   {icon} {text}
                 </Typography>
               </RouterLink>
@@ -215,31 +215,31 @@ export default function SideMenu(props) {
                 <RouterLink
                   active={
                     !props.open &&
-                    options.map((op) => op.text).includes(props.active)
-                      ? "true"
-                      : "false"
+                    options.map(op => op.text).includes(props.active)
+                      ? 'true'
+                      : 'false'
                   }
                   key={index}
                   onClick={() =>
                     setExpandItem({ ...expandItem, [text]: !expandItem[text] })
                   }
-                  className="item-opt"
+                  className='item-opt'
                   expanded={expandItem[text] ? 'true' : 'false'}
                 >
-                  <Typography component={"li"} className="item-opt">
+                  <Typography component={'li'} className='item-opt'>
                     <span
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10 }}
                     >
                       {icon} {text}
                     </span>
-                    <Box className="expand">
+                    <Box className='expand'>
                       <ExpandMore />
                     </Box>
                   </Typography>
                 </RouterLink>
                 <Collapse
                   in={props.open ? expandItem[text] : false}
-                  timeout={"auto"}
+                  timeout={'auto'}
                   unmountOnExit
                 >
                   <ListItem>
@@ -247,17 +247,18 @@ export default function SideMenu(props) {
                       <SubRouterLink
                         key={index}
                         to={option.url}
-                        active={props.active === option.text ? "true" : "false"}
+                        active={props.active === option.text ? 'true' : 'false'}
                       >
-                        <Typography component={"li"}>
+                        <Typography component={'li'}>
                           {option.text}
-                          {option.chip && (
+                          {option.chip > 0 && (
                             <Chip
-                              className="chip"
+                              className='chip'
                               label={option.chip}
-                              size="small"
-                              color={"primary"}
-                              variant="outlined"
+                              size='small'
+                              color={'primary'}
+                              variant='outlined'
+                              sx={{ marginRight: 1 }}
                             />
                           )}
                         </Typography>
@@ -271,5 +272,5 @@ export default function SideMenu(props) {
         </ul>
       </Box>
     </Paper>
-  );
+  )
 }

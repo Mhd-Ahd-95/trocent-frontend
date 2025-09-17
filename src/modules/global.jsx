@@ -1,6 +1,12 @@
 const globalVariables = {
   auth: {},
-  apis: {},
+  apis: {
+    baseURL: 'http://localhost:8000',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  },
   methods: {
     formatNumber: nb => (isNaN(nb) ? Number(0).toFixed : Number(nb).toFixed(2)),
     formatAccessorial: (n, a) =>
@@ -143,7 +149,7 @@ const globalVariables = {
       {
         company_name: 'ALM CROWN MOVING AND DELIVERY LIMITED',
         contact_person: 'JASON CROWN',
-        email: 'jcrown@almcrown.ca',  
+        email: 'jcrown@almcrown.ca',
         phone_number: '866-825-0927',
         address: '6355 DANVILLE ROAD',
         city: 'MISSISSAUGA',

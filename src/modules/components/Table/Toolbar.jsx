@@ -1,7 +1,6 @@
-import * as React from "react";
-import { styled } from "@mui/material/styles";
+import * as React from 'react'
+import { styled } from '@mui/material/styles'
 import {
-  DataGrid,
   Toolbar,
   ToolbarButton,
   ColumnsPanelTrigger,
@@ -11,75 +10,77 @@ import {
   QuickFilter,
   QuickFilterControl,
   QuickFilterClear,
-  QuickFilterTrigger,
-} from "@mui/x-data-grid";
-import Tooltip from "@mui/material/Tooltip";
-import Menu from "@mui/material/Menu";
-import Badge from "@mui/material/Badge";
-import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import MenuItem from "@mui/material/MenuItem";
-import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import CancelIcon from "@mui/icons-material/Cancel";
-import SearchIcon from "@mui/icons-material/Search";
-import Typography from "@mui/material/Typography";
+  QuickFilterTrigger
+} from '@mui/x-data-grid'
+import Tooltip from '@mui/material/Tooltip'
+import Menu from '@mui/material/Menu'
+import Badge from '@mui/material/Badge'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import MenuItem from '@mui/material/MenuItem'
+import Divider from '@mui/material/Divider'
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
+import CancelIcon from '@mui/icons-material/Cancel'
+import SearchIcon from '@mui/icons-material/Search'
+import Typography from '@mui/material/Typography'
 
 const StyledQuickFilter = styled(QuickFilter)({
-  display: "grid",
-  alignItems: "center",
-});
+  display: 'grid',
+  alignItems: 'center'
+})
 
 const StyledToolbarButton = styled(ToolbarButton)(({ theme, ownerState }) => ({
-  gridArea: "1 / 1",
-  width: "min-content",
-  height: "min-content",
+  gridArea: '1 / 1',
+  width: 'min-content',
+  height: 'min-content',
   zIndex: 1,
   opacity: ownerState.expanded ? 0 : 1,
-  pointerEvents: ownerState.expanded ? "none" : "auto",
-  transition: theme.transitions.create(["opacity"]),
-}));
+  pointerEvents: ownerState.expanded ? 'none' : 'auto',
+  transition: theme.transitions.create(['opacity'])
+}))
 
 const StyledTextField = styled(TextField)(({ theme, ownerState }) => ({
-  gridArea: "1 / 1",
-  overflowX: "clip",
-  width: ownerState.expanded ? 260 : "var(--trigger-width)",
+  gridArea: '1 / 1',
+  overflowX: 'clip',
+  width: ownerState.expanded ? 260 : 'var(--trigger-width)',
   opacity: ownerState.expanded ? 1 : 0,
-  transition: theme.transitions.create(["width", "opacity"]),
-}));
+  transition: theme.transitions.create(['width', 'opacity'])
+}))
 
-export default function CustomToolbar(props) {
-  const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
-  const exportMenuTriggerRef = React.useRef(null);
+export default function CustomToolbar (props) {
+  const [exportMenuOpen, setExportMenuOpen] = React.useState(false)
+  const exportMenuTriggerRef = React.useRef(null)
 
   return (
     <Toolbar>
-      <Typography
-        fontWeight="medium"
-        sx={{ flex: 1, mx: 0.5, fontWeight: 600 }}
-      >
-        {props.title && props.title}
-      </Typography>
+      {props.title && (
+        <Typography
+          fontWeight='medium'
+          sx={{ flex: 1, mx: 0.5, fontWeight: 600 }}
+        >
+          {props.title}
+        </Typography>
+      )}
       {props.options?.columns && (
-        <Tooltip title="Columns">
+        <Tooltip title='Columns'>
           <ColumnsPanelTrigger render={<ToolbarButton />}>
-            <ViewColumnIcon fontSize="small" />
+            <ViewColumnIcon fontSize='small' />
           </ColumnsPanelTrigger>
         </Tooltip>
       )}
       {props.options.filtering && (
-        <Tooltip title="Filters">
+        <Tooltip title='Filters'>
           <FilterPanelTrigger
             render={(props, state) => (
-              <ToolbarButton {...props} color="default">
+              <ToolbarButton {...props} color='default'>
                 <Badge
                   badgeContent={state.filterCount}
-                  color="primary"
-                  variant="dot"
+                  color='primary'
+                  variant='dot'
                 >
-                  <FilterListIcon fontSize="small" />
+                  <FilterListIcon fontSize='small' />
                 </Badge>
               </ToolbarButton>
             )}
@@ -88,38 +89,38 @@ export default function CustomToolbar(props) {
       )}
       {props.options?.divider && (
         <Divider
-          orientation="vertical"
-          variant="middle"
+          orientation='vertical'
+          variant='middle'
           flexItem
           sx={{ mx: 0.5 }}
         />
       )}
       {props.options?.export && (
-        <Tooltip title="Export">
+        <Tooltip title='Export'>
           <ToolbarButton
             ref={exportMenuTriggerRef}
-            id="export-menu-trigger"
-            aria-controls="export-menu"
-            aria-haspopup="true"
-            aria-expanded={exportMenuOpen ? "true" : undefined}
+            id='export-menu-trigger'
+            aria-controls='export-menu'
+            aria-haspopup='true'
+            aria-expanded={exportMenuOpen ? 'true' : undefined}
             onClick={() => setExportMenuOpen(true)}
           >
-            <FileDownloadIcon fontSize="small" />
+            <FileDownloadIcon fontSize='small' />
           </ToolbarButton>
         </Tooltip>
       )}
 
       <Menu
-        id="export-menu"
+        id='export-menu'
         anchorEl={exportMenuTriggerRef.current}
         open={exportMenuOpen}
         onClose={() => setExportMenuOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{
           list: {
-            "aria-labelledby": "export-menu-trigger",
-          },
+            'aria-labelledby': 'export-menu-trigger'
+          }
         }}
       >
         <ExportPrint
@@ -140,14 +141,14 @@ export default function CustomToolbar(props) {
         <StyledQuickFilter>
           <QuickFilterTrigger
             render={(triggerProps, state) => (
-              <Tooltip title="Search" enterDelay={0}>
+              <Tooltip title='Search' enterDelay={0}>
                 <StyledToolbarButton
                   {...triggerProps}
                   ownerState={{ expanded: state.expanded }}
-                  color="default"
+                  color='default'
                   aria-disabled={state.expanded}
                 >
-                  <SearchIcon fontSize="small" />
+                  <SearchIcon fontSize='small' />
                 </StyledToolbarButton>
               </Tooltip>
             )}
@@ -158,31 +159,31 @@ export default function CustomToolbar(props) {
                 {...controlProps}
                 ownerState={{ expanded: state.expanded }}
                 inputRef={ref}
-                aria-label="Search"
-                placeholder="Search..."
-                size="small"
+                aria-label='Search'
+                placeholder='Search...'
+                size='small'
                 slotProps={{
                   input: {
                     startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon fontSize="small" />
+                      <InputAdornment position='start'>
+                        <SearchIcon fontSize='small' />
                       </InputAdornment>
                     ),
                     endAdornment: state.value ? (
-                      <InputAdornment position="end">
+                      <InputAdornment position='end'>
                         <QuickFilterClear
-                          edge="end"
-                          size="small"
-                          aria-label="Clear search"
+                          edge='end'
+                          size='small'
+                          aria-label='Clear search'
                           material={{ sx: { marginRight: -0.75 } }}
                         >
-                          <CancelIcon fontSize="small" />
+                          <CancelIcon fontSize='small' />
                         </QuickFilterClear>
                       </InputAdornment>
                     ) : null,
-                    ...controlProps.slotProps?.input,
+                    ...controlProps.slotProps?.input
                   },
-                  ...controlProps.slotProps,
+                  ...controlProps.slotProps
                 }}
               />
             )}
@@ -190,5 +191,5 @@ export default function CustomToolbar(props) {
         </StyledQuickFilter>
       )}
     </Toolbar>
-  );
+  )
 }
