@@ -37,7 +37,9 @@ class UserController extends Controller
 
     function update(int $id, Request $request)
     {
+        logger($id);
         $ouser = User::findOrFail($id);
+        logger($ouser);
         $data = $request->validate([
             'name' => 'sometimes|string',
             'username' => 'sometimes|string',
