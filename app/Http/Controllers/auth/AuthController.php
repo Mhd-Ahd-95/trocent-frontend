@@ -11,6 +11,7 @@ class AuthController extends Controller
 {
     function login(LoginRequest $credentials)
     {
+        logger($credentials);
         $data = $credentials->validated();
         $remember = (bool) ($data['remember'] ?? false);
         if (
@@ -28,12 +29,14 @@ class AuthController extends Controller
             ['*'],
             $remember ? now()->addDay(30) : now()->addHours(2)
         )->plainTextToken;
-        return response()->json(['message' => 'Login successfully', 'access_token' => $token]);
+
+        // $response = array_merge($user, ['token' => $token]);
+        return response()->json([...$user->toArray(), 'access_token' => $token]);
     }
 
     function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logout successfully']);
+        return response()->json(true);
     }
 }
