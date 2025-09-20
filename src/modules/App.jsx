@@ -6,7 +6,7 @@ import {
   Outlet,
   Navigate
 } from 'react-router-dom'
-import { Login, Dashboard, Orders, Customers, NewOrder, RoleView, Users } from './views'
+import { Login, Dashboard, Orders, Customers, NewOrder, RoleView, Users, VehicleTypes, AddressBook, Accessorials } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
 
@@ -29,6 +29,9 @@ function App () {
           <Route path='/customers' Component={Customers} />
           <Route path='/roles' Component={RoleView} />
           <Route path='/users' Component={Users} />
+          <Route path='/vehicle-types' Component={VehicleTypes} />
+          <Route path='/address-books' Component={AddressBook} />
+          <Route path='/accessorials' Component={Accessorials} />
         </Route>
       </Routes>
     </Router>
