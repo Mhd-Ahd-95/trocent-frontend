@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
+use App\Services\MemCache;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,10 +13,18 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    protected $cache;
+
+    protected string $cache_key = 'users';
+    public function __construct()
+    {
+        $this->cache = new MemCache();
+    }
     function index()
     {
         try {
-            $users = User::with(['roles.permissions', 'roles.widgets'])->get();
+            // $users = User::with(['roles.permissions', 'roles.widgets'])->get();
+            $users = $this->cache->get_entities($this->cache_key, User::class, ['roles.permissions', 'roles.widgets']);
             return UserResource::collection($users);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
@@ -25,7 +34,7 @@ class UserController extends Controller
     function show(int $id)
     {
         try {
-            $user = User::with('role')->findOrFail($id);
+            $user = $this->cache->get_entity_id($this->cache_key, $id, User::class, ['roles.permissions', 'roles.widgets']);
             return new UserResource($user);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);

@@ -79,7 +79,7 @@ class RoleController extends Controller
     public function show(int $id)
     {
         try {
-            $role = Role::with('permissions')->findOrFail($id);
+            $role = Role::with(['permissions', 'widgets'])->findOrFail($id);
             return new RoleResource($role);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
