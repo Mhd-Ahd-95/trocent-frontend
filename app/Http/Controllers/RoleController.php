@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RoleRequest;
+use App\Http\Resources\PermissionResource;
+use App\Http\Resources\RoleResource;
+use App\Http\Resources\WidgetResource;
+use App\Models\Widget;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use App\Models\Role;
@@ -10,13 +14,13 @@ use App\Models\Role;
 class RoleController extends Controller
 {
 
-    function index()
+    public function index()
     {
         $roles = Role::with(['permissions', 'widgets'])->get();
-        return response()->json($roles);
+        return RoleResource::collection($roles);
     }
 
-    function store(RoleRequest $request)
+    public function store(RoleRequest $request)
     {
         $data = $request->validated();
         logger($data);
@@ -29,10 +33,10 @@ class RoleController extends Controller
             $role->widgets()->attach($data['widgets'])->pluck('id');
         }
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-        return response()->json(['data' => $role], 200);
+        return new RoleResource($role);
     }
 
-    function update(int $id, Request $request)
+    public function update(int $id, Request $request)
     {
         $orole = Role::findOrFail($id);
         $nrole = $request->validate([
@@ -52,25 +56,29 @@ class RoleController extends Controller
         if (isset($nrole['widgets'])) {
             $orole->widgets()->sync($nrole['widgets']);
         }
-        return response()->json($orole->load(['permissions', 'widgets']));
+        return new RoleResource($orole->load(['permissions', 'widgets']));
     }
 
-    function destroy(int $id)
+    public function destroy(int $id)
     {
         $role = Role::findOrFail($id);
         $role->delete();
-        return response()->json(true);
+        return true;
     }
 
-    function show(int $id)
+    public function show(int $id)
     {
         $role = Role::with('permissions')->findOrFail($id);
-        return response()->json($role);
+        return new RoleResource($role);
     }
 
-    function load_permissions()
+    public function load_permissions()
     {
-        $pers = Permission::all();
-        return response()->json($pers);
+        return PermissionResource::collection(Permission::all());
+    }
+
+    public function load_widgets()
+    {
+        return WidgetResource::collection(Widget::all());
     }
 }

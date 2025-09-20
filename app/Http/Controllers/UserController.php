@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -12,18 +13,14 @@ class UserController extends Controller
 {
     function index()
     {
-        logger(auth()->user());
-        $users = User::with([
-            'roles.permissions',
-            'roles.widgets'
-        ])->get();
-        return response()->json($users);
+        $users = User::with(['roles.permissions', 'roles.widgets'])->get();
+        return UserResource::collection($users);
     }
 
     function show(int $id)
     {
         $user = User::with('role')->findOrFail($id);
-        return response()->json($user);
+        return new UserResource($user);
     }
 
     function store(UserRequest $request)
@@ -37,7 +34,7 @@ class UserController extends Controller
             'type' => $data['type'],
         ]);
         $user->assignRole($data['role']);
-        return response()->json($user);
+        return new UserResource($user);
     }
 
     function update(int $id, Request $request)
@@ -59,7 +56,7 @@ class UserController extends Controller
         if (isset($data['role'])) {
             $ouser->syncRoles($data['role']);
         }
-        return response()->json($ouser);
+        return new UserResource($ouser);
     }
 
     function destroy(int $id)
