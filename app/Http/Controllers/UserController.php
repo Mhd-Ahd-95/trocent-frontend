@@ -24,8 +24,12 @@ class UserController extends Controller
 
     function show(int $id)
     {
-        $user = User::with('role')->findOrFail($id);
-        return new UserResource($user);
+        try {
+            $user = User::with('role')->findOrFail($id);
+            return new UserResource($user);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     function store(UserRequest $request)
