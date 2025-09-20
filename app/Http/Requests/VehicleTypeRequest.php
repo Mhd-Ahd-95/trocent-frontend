@@ -4,14 +4,13 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RoleRequest extends FormRequest
+class VehicleTypeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-
         return true;
     }
 
@@ -23,12 +22,8 @@ class RoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'unique:roles,name'],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string', 'exists:permissions,name'],
-            'guard_name' => ['required', 'in:web,api'],
-            'widgets' => ['nullable', 'array'],
-            'widgets.*' => ['integer', 'exists:widgets,id']
+            'name' => ['required', 'string', 'unique:vehicleTypes,name'],
+            'rate' => ['required', 'numeric']
         ];
     }
 }

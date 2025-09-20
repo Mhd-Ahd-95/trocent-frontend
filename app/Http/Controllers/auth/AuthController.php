@@ -27,7 +27,7 @@ class AuthController extends Controller
         $token = $user->createToken(
             'auth_token',
             ['*'],
-            $remember ? now()->addDay(30) : now()->addHours(2)
+            $remember ? now()->addDays(30) : now()->addHours(2)
         )->plainTextToken;
 
         // $response = array_merge($user, ['token' => $token]);
@@ -36,7 +36,7 @@ class AuthController extends Controller
 
     function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()->delete();
         return response()->json(true);
     }
 }

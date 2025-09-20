@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,7 +12,11 @@ class UserController extends Controller
 {
     function index()
     {
-        $users = User::with('roles')->get();
+        logger(auth()->user());
+        $users = User::with([
+            'roles.permissions',
+            'roles.widgets'
+        ])->get();
         return response()->json($users);
     }
 
@@ -37,14 +42,12 @@ class UserController extends Controller
 
     function update(int $id, Request $request)
     {
-        logger($id);
         $ouser = User::findOrFail($id);
-        logger($ouser);
         $data = $request->validate([
             'name' => 'sometimes|string',
             'username' => 'sometimes|string',
             'email' => 'sometimes|email',
-            'type' => 'sometimes|string|in:customer,admin,driver',
+            'type' => 'sometimes|string|in:customer,staff,admin,driver',
             'password' => 'sometimes|string',
             'role' => 'sometimes|exists:roles,name'
         ]);

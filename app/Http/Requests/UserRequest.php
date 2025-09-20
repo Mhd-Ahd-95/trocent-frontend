@@ -25,7 +25,7 @@ class UserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'username' => 'required|string|unique:users,username',
             'email' => 'required|email|unique:users,email',
-            'type' => 'required|string|in:admin,customer,driver',
+            'type' => 'required|string|in:admin,staff,customer,driver',
             'password' => 'required|string|min:6',
             'role' => 'required|exists:roles,name'
         ];

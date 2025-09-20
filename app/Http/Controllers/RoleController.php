@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RoleRequest;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class RoleController extends Controller
 {
 
     function index()
     {
-        $roles = Role::with('permissions')->get();
+        $roles = Role::with(['permissions', 'widgets'])->get();
         return response()->json($roles);
     }
 
@@ -25,6 +25,9 @@ class RoleController extends Controller
             'guard_name' => $data['guard_name'],
         ]);
         $role->givePermissionTo($data['permissions']);
+        if (isset($data['widgets'])) {
+            $role->widgets()->attach($data['widgets'])->pluck('id');
+        }
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         return response()->json(['data' => $role], 200);
     }
@@ -35,15 +38,21 @@ class RoleController extends Controller
         $nrole = $request->validate([
             'name' => 'sometimes|string',
             'guard_name' => 'sometimes|in:web,api',
-            'permissions.*' => 'required|exists:permissions,name',
-            'permissions' => 'sometimes|array'
+            'permissions.*' => 'sometimes|exists:permissions,name',
+            'permissions' => 'sometimes|array',
+            'widgets.*' => 'sometimes|exists:widgets,id',
+            'widgets' => 'sometimes|array'
         ]);
         $orole->fill($nrole);
         $orole->save();
         if (isset($nrole['permissions'])) {
             $orole->syncPermissions($nrole['permissions']);
         }
-        return response()->json($orole);
+        logger($nrole['widgets']);
+        if (isset($nrole['widgets'])) {
+            $orole->widgets()->sync($nrole['widgets']);
+        }
+        return response()->json($orole->load(['permissions', 'widgets']));
     }
 
     function destroy(int $id)
@@ -59,7 +68,8 @@ class RoleController extends Controller
         return response()->json($role);
     }
 
-    function load_permissions(){
+    function load_permissions()
+    {
         $pers = Permission::all();
         return response()->json($pers);
     }

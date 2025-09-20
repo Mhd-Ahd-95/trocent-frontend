@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Widget;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -15,6 +16,10 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $permissions = Permission::all();
-        Role::create(['name' => 'super admin', 'guard_name' => 'api'])->givePermissionTo($permissions);
+        $widgets = Widget::all();
+        $role_admin = Role::create(['name' => 'Admin', 'guard_name' => 'api'])->givePermissionTo($permissions);
+        $role_admin->widgets()->attach($widgets->pluck('id'));
+        Role::create(['name' => 'Power User', 'guard_name' => 'api'])->givePermissionTo(['create_order', 'create_customer', 'update_order']);
+        Role::create(['name' => 'Rating', 'guard_name' => 'api'])->givePermissionTo(['create_order', 'create_customer', 'update_order']);
     }
 }
