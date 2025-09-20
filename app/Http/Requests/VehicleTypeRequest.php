@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class VehicleTypeRequest extends FormRequest
 {
@@ -21,6 +22,15 @@ class VehicleTypeRequest extends FormRequest
      */
     public function rules(): array
     {
+        $vtId = $this->route('id');
+
+        if ($this->isMethod('put')) {
+            return [
+                'name' => ['sometimes', 'string', Rule::unique('vehicleTypes', 'name')->ignore($vtId)],
+                'rate' => 'sometimes|float'
+            ];
+        }
+
         return [
             'name' => ['required', 'string', 'unique:vehicleTypes,name'],
             'rate' => ['required', 'numeric']

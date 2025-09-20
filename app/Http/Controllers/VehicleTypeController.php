@@ -3,46 +3,65 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\VehicleTypeRequest;
+use App\Http\Resources\VehicleTypeResource;
 use App\Models\VehicleType;
+use Exception;
 use Illuminate\Http\Request;
 
 class VehicleTypeController extends Controller
 {
     public function index()
     {
-        $vtypes = VehicleType::all();
-        return response()->json($vtypes);
+        try {
+            $vtypes = VehicleType::all();
+            return VehicleTypeResource::collection($vtypes);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     public function show(int $id)
     {
-        $vtype = VehicleType::findOrFail($id);
-        return response()->json($vtype);
+        try {
+            $vtype = VehicleType::findOrFail($id);
+            return new VehicleTypeResource($vtype);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     public function store(VehicleTypeRequest $request)
     {
-        $data = $request->validated();
-        $vtype = VehicleType::create($data);
-        return response()->json($vtype);
+        try {
+            $data = $request->validated();
+            $vtype = VehicleType::create($data);
+            return new VehicleTypeResource($vtype);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
-    public function update(int $id, Request $request)
+    public function update(int $id, VehicleTypeRequest $request)
     {
-        $ovt = VehicleType::findOrFail($id);
-        $validate = $request->validate([
-            'name' => 'sometimes|string',
-            'rate' => 'sometimes|float'
-        ]);
-        $ovt->fill($validate);
-        $ovt->save();
-        return response()->json($ovt);
+        try {
+            $ovt = VehicleType::findOrFail($id);
+            $validate = $request->validated();
+            $ovt->fill($validate);
+            $ovt->save();
+            return new VehicleTypeResource($ovt);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     public function destroy(int $id)
     {
-        $vtype = VehicleType::findOrFail($id);
-        $vtype->delete();
-        return true;
+        try {
+            $vtype = VehicleType::findOrFail($id);
+            $vtype->delete();
+            return true;
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 }

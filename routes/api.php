@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+});
 
 // Route::middleware(['auth:sanctum', 'setapplang'])->prefix('{locale}')->group(function(){
 // });
@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // roles api
     Route::prefix('/roles')->group(function () {
         Route::get('/permissions', [RoleController::class, 'load_permissions']);
         Route::get('/widgets', [RoleController::class, 'load_widgets']);
@@ -30,7 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', [RoleController::class, 'index']);
     });
 
-
+    // users api
     Route::prefix('/users')->group(function () {
         Route::post('', [UserController::class, 'store']);
         Route::put('/{id}', [UserController::class, 'update']);
@@ -39,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [UserController::class, 'show']);
     });
 
+    // vehicle types api
     Route::prefix('/vehicle-types')->group(function () {
         Route::post('', [VehicleTypeController::class, 'store']);
         Route::put('/{id}', [VehicleTypeController::class, 'update']);
@@ -51,10 +53,5 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::fallback(function () {
-    return response()->json([
-        'data' => [],
-        'success' => false,
-        'status' => 404,
-        'message' => 'Invalid Route'
-    ]);
+    return response()->json(['status' => 404, 'message' => 'Invalid Route']);
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -13,8 +14,12 @@ class UserController extends Controller
 {
     function index()
     {
-        $users = User::with(['roles.permissions', 'roles.widgets'])->get();
-        return UserResource::collection($users);
+        try {
+            $users = User::with(['roles.permissions', 'roles.widgets'])->get();
+            return UserResource::collection($users);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     function show(int $id)
@@ -25,44 +30,49 @@ class UserController extends Controller
 
     function store(UserRequest $request)
     {
-        $data = $request->validated();
-        $user = User::create([
-            'name' => $data['name'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'type' => $data['type'],
-        ]);
-        $user->assignRole($data['role']);
-        return new UserResource($user);
+        try {
+            $data = $request->validated();
+            $user = User::create([
+                'name' => $data['name'],
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'type' => $data['type'],
+            ]);
+            $user->assignRole($data['role']);
+            return new UserResource($user);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
-    function update(int $id, Request $request)
+    function update(int $id, UserRequest $request)
     {
-        $ouser = User::findOrFail($id);
-        $data = $request->validate([
-            'name' => 'sometimes|string',
-            'username' => 'sometimes|string',
-            'email' => 'sometimes|email',
-            'type' => 'sometimes|string|in:customer,staff,admin,driver',
-            'password' => 'sometimes|string',
-            'role' => 'sometimes|exists:roles,name'
-        ]);
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
+        try {
+            $ouser = User::findOrFail($id);
+            $data = $request->validated();
+            if (isset($data['password'])) {
+                $data['password'] = Hash::make($data['password']);
+            }
+            $ouser->fill($data);
+            $ouser->save();
+            if (isset($data['role'])) {
+                $ouser->syncRoles($data['role']);
+            }
+            return new UserResource($ouser);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
         }
-        $ouser->fill($data);
-        $ouser->save();
-        if (isset($data['role'])) {
-            $ouser->syncRoles($data['role']);
-        }
-        return new UserResource($ouser);
     }
 
     function destroy(int $id)
     {
-        $user = User::findOrFail($id);
-        $user->delete();
-        return true;
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
+            return true;
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 }

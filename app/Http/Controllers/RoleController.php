@@ -7,6 +7,7 @@ use App\Http\Resources\PermissionResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\WidgetResource;
 use App\Models\Widget;
+use Exception;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use App\Models\Role;
@@ -16,60 +17,73 @@ class RoleController extends Controller
 
     public function index()
     {
-        $roles = Role::with(['permissions', 'widgets'])->get();
-        return RoleResource::collection($roles);
+        try {
+            $roles = Role::with(['permissions', 'widgets'])->get();
+            return RoleResource::collection($roles);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     public function store(RoleRequest $request)
     {
-        $data = $request->validated();
-        logger($data);
-        $role = Role::create([
-            'name' => $data['name'],
-            'guard_name' => $data['guard_name'],
-        ]);
-        $role->givePermissionTo($data['permissions']);
-        if (isset($data['widgets'])) {
-            $role->widgets()->attach($data['widgets'])->pluck('id');
+        try {
+            $data = $request->validated();
+            logger($data);
+            $role = Role::create([
+                'name' => $data['name'],
+                'guard_name' => $data['guard_name'],
+            ]);
+            $role->givePermissionTo($data['permissions']);
+            if (isset($data['widgets'])) {
+                $role->widgets()->attach($data['widgets'])->pluck('id');
+            }
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+            return new RoleResource($role);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
         }
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-        return new RoleResource($role);
     }
 
-    public function update(int $id, Request $request)
+    public function update(int $id, RoleRequest $request)
     {
-        $orole = Role::findOrFail($id);
-        $nrole = $request->validate([
-            'name' => 'sometimes|string',
-            'guard_name' => 'sometimes|in:web,api',
-            'permissions.*' => 'sometimes|exists:permissions,name',
-            'permissions' => 'sometimes|array',
-            'widgets.*' => 'sometimes|exists:widgets,id',
-            'widgets' => 'sometimes|array'
-        ]);
-        $orole->fill($nrole);
-        $orole->save();
-        if (isset($nrole['permissions'])) {
-            $orole->syncPermissions($nrole['permissions']);
+        try {
+            $orole = Role::findOrFail($id);
+            $nrole = $request->validated();
+            $orole->fill($nrole);
+            $orole->save();
+            if (isset($nrole['permissions'])) {
+                $orole->syncPermissions($nrole['permissions']);
+            }
+            logger($nrole['widgets']);
+            if (isset($nrole['widgets'])) {
+                $orole->widgets()->sync($nrole['widgets']);
+            }
+            return new RoleResource($orole->load(['permissions', 'widgets']));
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
         }
-        logger($nrole['widgets']);
-        if (isset($nrole['widgets'])) {
-            $orole->widgets()->sync($nrole['widgets']);
-        }
-        return new RoleResource($orole->load(['permissions', 'widgets']));
     }
 
     public function destroy(int $id)
     {
-        $role = Role::findOrFail($id);
-        $role->delete();
-        return true;
+        try {
+            $role = Role::findOrFail($id);
+            $role->delete();
+            return true;
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     public function show(int $id)
     {
-        $role = Role::with('permissions')->findOrFail($id);
-        return new RoleResource($role);
+        try {
+            $role = Role::with('permissions')->findOrFail($id);
+            return new RoleResource($role);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
     }
 
     public function load_permissions()
