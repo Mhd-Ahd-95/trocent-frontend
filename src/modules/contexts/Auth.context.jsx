@@ -1,5 +1,4 @@
-import React, { createContext, useState } from 'react'
-import AuthAPI from '../apis/login.api'
+import { createContext, useState } from 'react'
 
 const AuthContext = createContext()
 
@@ -10,16 +9,6 @@ const AuthContextProvider = props => {
       : false,
     user: localStorage.getItem('authedUser')
   })
-
-  const handleLogout = () => {
-    AuthAPI.logout()
-      .then(res => {
-        if (res.data) handleAuth(false)
-      })
-      .catch(err => {
-        console.log('failed to logout')
-      })
-  }
 
   const handleAuth = (isAuth, user = null) => {
     let loggedOut = false
@@ -39,7 +28,12 @@ const AuthContextProvider = props => {
   }
 
   return (
-    <AuthContext.Provider value={{ ...authState, handleAuth, handleLogout }}>
+    <AuthContext.Provider
+      value={{
+        ...authState,
+        handleAuth
+      }}
+    >
       {props.children}
     </AuthContext.Provider>
   )

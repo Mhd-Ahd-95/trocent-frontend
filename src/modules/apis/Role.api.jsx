@@ -10,10 +10,16 @@ const createRole = role => CustomAxios.post('/api/roles', role)
 
 const deleteRole = rid => CustomAxios.delete(`/api/roles/${id}`)
 
+const permissions = () => CustomAxios.get('/api/roles/permissions')
+
+const widgets = () => CustomAxios.get('/api/roles/widgets')
+
 export default {
   getRole,
   getRoles,
   updateRole,
   createRole,
-  deleteRole
+  deleteRole,
+  permissions,
+  widgets
 }

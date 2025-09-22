@@ -109,10 +109,10 @@ export function ThemeContextProvider(props) {
   const [themeState, setThemeState] = useState(() => initialTheme());
 
   const [expandItem, setExpandItem] = React.useState({
-    Customers: false,
-    "Fleet Management": false,
-    Settings: false,
-    "Access Management": false,
+    Customers: true,
+    "Fleet Management": true,
+    Settings: true,
+    "Access Management": true,
   });
 
   const handleToggleType = () => {

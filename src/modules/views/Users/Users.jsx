@@ -118,7 +118,7 @@ export default function Users () {
 
   const loadUsers = React.useCallback(() => {
     UserAPI.getUsers()
-      .then(res => setUsers(res.data))
+      .then(res => setUsers(res.data.data))
       .catch(err =>
         enqueueSnackbar('Failed to load users', { variant: 'error' })
       )

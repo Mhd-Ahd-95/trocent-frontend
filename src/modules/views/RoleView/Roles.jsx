@@ -6,25 +6,11 @@ import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
 import moment from 'moment'
 import { useNavigate } from 'react-router-dom'
-import RoleAPI from '../../apis/Role.api'
-import { useSnackbar } from 'notistack'
+import { RoleContext } from '../../contexts'
 
 export default function Roles () {
   const navigate = useNavigate()
-  const [roles, setRoles] = React.useState([])
-  const [loading, setLoading] = React.useState(true)
-  const { enqueueSnackbar } = useSnackbar()
-
-  const loadRoles = React.useCallback(() => {
-    RoleAPI.getRoles()
-      .then(res => setRoles(res.data))
-      .catch(err =>
-        enqueueSnackbar('Failed to load role', { variant: 'error' })
-      )
-      .finally(() => setLoading(false))
-  }, [enqueueSnackbar])
-
-  React.useEffect(() => loadRoles(), [loadRoles])
+  const { roles, loading } = React.useContext(RoleContext)
 
   return (
     <MainLayout
@@ -38,7 +24,7 @@ export default function Roles () {
       }
       grid
       button
-      btnProps={{ label: 'New Role', onClick: () => navigate('/new-role') }}
+      btnProps={{ label: 'New Role', onClick: () => navigate('/roles/create') }}
     >
       <Grid container spacing={2}>
         <Grid size={12}>
@@ -63,7 +49,9 @@ export default function Roles () {
                 field: 'permissions',
                 minWidth: 200,
                 renderCell: params => (
-                  <CustomCell color='green'>{params.value.length ?? 0}</CustomCell>
+                  <CustomCell color='green'>
+                    {params.value?.length ?? 0}
+                  </CustomCell>
                 ),
                 flex: 1
               },
@@ -91,7 +79,7 @@ export default function Roles () {
                   >
                     <Button
                       startIcon={<EditSquareIcon />}
-                      onClick={() => console.log(params)}
+                      onClick={() => navigate(`/roles/edit/${params.row.id}`)}
                       variant='text'
                       size='small'
                       sx={{
@@ -125,7 +113,9 @@ export default function Roles () {
               }
             ]}
             loading={loading}
-            data={[...roles]}
+            data={[...roles].sort(
+              (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+            )}
           />
         </Grid>
       </Grid>

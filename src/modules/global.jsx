@@ -4,7 +4,7 @@ const globalVariables = {
     baseURL: 'http://localhost:8000',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      Accept: 'application/json'
     }
   },
   methods: {
@@ -40,6 +40,44 @@ const globalVariables = {
         return lst[0][0] + lst[1][0] + lst[2][0]
       }
     }
+  },
+  prefix: {
+    resources: [
+      'accessorial',
+      'address_book',
+      'company',
+      'driver',
+      'fuel_surcharge',
+      'rate_sheet',
+      'interliner',
+      'order',
+      'customer',
+      'role',
+      'user',
+      'vehicle_type'
+    ],
+    // permissions: [
+    //   'view',
+    //   'view_any',
+    //   'create',
+    //   'update',
+    //   'restore',
+    //   'restore_any',
+    //   'replicate',
+    //   'reorder',
+    //   'delete',
+    //   'delete_any',
+    //   'force_delete',
+    //   'force_delete_any'
+    // ],
+    permissions: [
+      'view',
+      'view_any',
+      'create',
+      'update',
+      'delete',
+      'delete_any'
+    ]
   },
   static: {
     customers: [

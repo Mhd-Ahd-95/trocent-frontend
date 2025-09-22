@@ -1,12 +1,15 @@
 import { ThemeContextProvider, ThemeContext } from './Theme.context'
 import { AuthContextProvider, AuthContext } from './Auth.context'
+import { RoleContextProvider, RoleContext } from './Role.context'
 import { AlertProvider } from '../components'
 
 const ContextProvider = props => {
   return (
     <ThemeContextProvider>
       <AlertProvider>
-        <AuthContextProvider>{props.children}</AuthContextProvider>
+        <AuthContextProvider>
+          <RoleContextProvider>{props.children}</RoleContextProvider>
+        </AuthContextProvider>
       </AlertProvider>
     </ThemeContextProvider>
   )
@@ -17,5 +20,7 @@ export {
   ThemeContextProvider,
   ThemeContext,
   AuthContextProvider,
-  AuthContext
+  AuthContext,
+  RoleContextProvider,
+  RoleContext
 }

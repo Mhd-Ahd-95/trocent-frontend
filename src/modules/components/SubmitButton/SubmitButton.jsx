@@ -7,7 +7,7 @@ function SubmitButton(props) {
     isLoading,
     tooltip,
     hideOnLoading,
-    spacing = false,
+    spacing = false,  
     ...newProps
   } = props;
   return (
@@ -21,7 +21,7 @@ function SubmitButton(props) {
       {isLoading && (
         <CircularProgress style={{ marginRight: "10px" }} size={20} />
       )}
-      {isLoading && hideOnLoading ? "Processing" : children}
+      {isLoading ? "Processing" : children}
     </Button>
   );
 }

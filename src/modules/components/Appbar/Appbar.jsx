@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 import {
   Grid,
   Typography,
@@ -14,9 +14,9 @@ import {
   IconButton,
   Divider,
   Tooltip,
-  useMediaQuery,
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
+  useMediaQuery
+} from '@mui/material'
+import { styled } from '@mui/material/styles'
 import {
   AccountCircle,
   DarkMode,
@@ -24,71 +24,82 @@ import {
   Logout,
   Search,
   ArrowBackIos,
-  ArrowForwardIos,
-} from "@mui/icons-material";
-import { useTheme } from "@emotion/react";
-import { AuthContext } from "../../contexts";
+  ArrowForwardIos
+} from '@mui/icons-material'
+import { useTheme } from '@emotion/react'
+import { AuthContext } from '../../contexts'
+import AuthAPI from '../../apis/login.api'
 
 const CustomInput = styled(OutlinedInput)(({ theme }) => ({
   borderRadius: 8,
-  fontSize: "16px",
+  fontSize: '16px',
   height: 40, // consistent height
-  ".MuiOutlinedInput-notchedOutline": {
-    borderColor: colors.grey[300], // yellow
+  '.MuiOutlinedInput-notchedOutline': {
+    borderColor: colors.grey[300] // yellow
   },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: colors.grey[500], // yellow
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: colors.grey[500] // yellow
   },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
     borderColor: theme.palette.primary.main,
-    borderWidth: 2,
+    borderWidth: 2
   },
-  ".MuiInputAdornment-root": {
+  '.MuiInputAdornment-root': {
     marginRight: 8,
     marginLeft: 4,
     color: theme.palette.grey[500],
     svg: {
-      fontSize: 20,
-    },
+      fontSize: 20
+    }
   },
-  ".MuiOutlinedInput-input": {
-    paddingLeft: 8,
-  },
-}));
+  '.MuiOutlinedInput-input': {
+    paddingLeft: 8
+  }
+}))
 
-export default function Appbar(props) {
-  const { open, setOpen } = props;
-  const [anchor, setAnchor] = React.useState(null);
-  const handleClick = (e) => setAnchor(e.currentTarget);
-  const handleClose = () => setAnchor(null);
-  const theme = useTheme();
-  const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
-  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+export default function Appbar (props) {
+  const { open, setOpen } = props
+  const [anchor, setAnchor] = React.useState(null)
+  const handleClick = e => setAnchor(e.currentTarget)
+  const handleClose = () => setAnchor(null)
+  const theme = useTheme()
+  const isMdDown = useMediaQuery(theme.breakpoints.down('md'))
+  const isSmDown = useMediaQuery(theme.breakpoints.down('sm'))
   const authContext = React.useContext(AuthContext)
 
   const handleOpenSide = () => {
-    setOpen(!open);
-    localStorage.setItem("shrinkMenu", !open);
-  };
+    setOpen(!open)
+    localStorage.setItem('shrinkMenu', !open)
+  }
+
+  const handleLogout = () => {
+    AuthAPI.logout()
+      .then(res => {
+        if (res.data) authContext.handleAuth(false)
+      })
+      .catch(err => {
+        console.log('failed to logout')
+      })
+  }
 
   return (
     <AppBar
-      position="fixed"
+      position='fixed'
       sx={{
-        background: "#fff",
+        background: '#fff',
         pl: 1,
         pr: 8,
         boxShadow:
-          "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;",
+          'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;'
       }}
     >
-      <Toolbar style={{ minHeight: 65, width: "100%" }}>
-        <Grid container width={"100%"}>
+      <Toolbar style={{ minHeight: 65, width: '100%' }}>
+        <Grid container width={'100%'}>
           <Grid size={2}>
             <Grid
               container
               spacing={2}
-              sx={{ justifyContent: "space-between", alignItems: "center" }}
+              sx={{ justifyContent: 'space-between', alignItems: 'center' }}
             >
               {isMdDown ? (
                 <Grid size={12}>{props.drawer}</Grid>
@@ -105,9 +116,9 @@ export default function Appbar(props) {
                     <>
                       <Grid>
                         <Typography
-                          variant="h6"
+                          variant='h6'
                           gutterBottom
-                          color="textPrimary"
+                          color='textPrimary'
                           sx={{ fontWeight: 600 }}
                         >
                           Trocent
@@ -128,15 +139,15 @@ export default function Appbar(props) {
             <Grid
               container
               spacing={2}
-              sx={{ justifyContent: "flex-end", alignItems: "center" }}
+              sx={{ justifyContent: 'flex-end', alignItems: 'center' }}
             >
               {!isSmDown && (
                 <Grid>
                   <CustomInput
-                    placeholder="Search"
-                    type="number"
+                    placeholder='Search'
+                    type='number'
                     startAdornment={
-                      <InputAdornment position="end">
+                      <InputAdornment position='end'>
                         <Search />
                       </InputAdornment>
                     }
@@ -148,10 +159,10 @@ export default function Appbar(props) {
                   sx={{
                     color: theme.palette.background.paper,
                     background: theme.palette.common.black,
-                    cursor: "pointer  ",
+                    cursor: 'pointer  ',
                     fontSize: 15,
                     height: 35,
-                    width: 35,
+                    width: 35
                   }}
                   onClick={handleClick}
                 >
@@ -161,28 +172,28 @@ export default function Appbar(props) {
                   anchorEl={anchor}
                   open={Boolean(anchor)}
                   onClose={handleClose}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                  transformOrigin={{ vertical: "top", horizontal: "right" }}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                   PaperProps={{
                     sx: {
-                      width: 200,
+                      width: 200
                       // paddingY: 1,
-                    },
+                    }
                   }}
                 >
                   <Button
                     fullWidth
                     startIcon={<AccountCircle />}
                     sx={{
-                      justifyContent: "flex-start",
-                      textTransform: "capitalize",
+                      justifyContent: 'flex-start',
+                      textTransform: 'capitalize',
                       px: 2,
-                      color: "text.secondary",
-                      "& svg": {
-                        color: theme.palette.grey[500],
-                      },
+                      color: 'text.secondary',
+                      '& svg': {
+                        color: theme.palette.grey[500]
+                      }
                     }}
-                    onClick={() => console.log("Go to profile")}
+                    onClick={() => console.log('Go to profile')}
                   >
                     Profile
                   </Button>
@@ -190,20 +201,20 @@ export default function Appbar(props) {
                   <Divider sx={{ my: 0.5 }} />
 
                   <Box
-                    display="flex"
-                    justifyContent="space-between"
+                    display='flex'
+                    justifyContent='space-between'
                     px={2}
                     gap={1}
                     py={0.5}
                   >
-                    <Tooltip title="Enable Light Theme">
-                      <IconButton size="small" color="primary">
-                        <LightMode fontSize="small" />
+                    <Tooltip title='Enable Light Theme'>
+                      <IconButton size='small' color='primary'>
+                        <LightMode fontSize='small' />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Enable Dark Theme">
-                      <IconButton size="small">
-                        <DarkMode fontSize="small" />
+                    <Tooltip title='Enable Dark Theme'>
+                      <IconButton size='small'>
+                        <DarkMode fontSize='small' />
                       </IconButton>
                     </Tooltip>
                   </Box>
@@ -214,15 +225,15 @@ export default function Appbar(props) {
                     fullWidth
                     startIcon={<Logout />}
                     sx={{
-                      justifyContent: "flex-start",
-                      textTransform: "capitalize",
+                      justifyContent: 'flex-start',
+                      textTransform: 'capitalize',
                       px: 2,
-                      color: "text.secondary",
-                      "& svg": {
-                        color: theme.palette.grey[500],
-                      },
+                      color: 'text.secondary',
+                      '& svg': {
+                        color: theme.palette.grey[500]
+                      }
                     }}
-                    onClick={() => authContext.handleLogout()}
+                    onClick={() => handleLogout()}
                   >
                     Sign out
                   </Button>
@@ -233,5 +244,5 @@ export default function Appbar(props) {
         </Grid>
       </Toolbar>
     </AppBar>
-  );
+  )
 }

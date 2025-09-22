@@ -42,7 +42,7 @@ export default function AccordionComponent (props) {
             }
           }}
         >
-          <Typography component='span' sx={{ fontSize: 14, fontWeight: 500 }}>
+          <Typography component='span' sx={{ fontSize: 14, fontWeight: props.bold ?? 500 }}>
             {props.title}
           </Typography>
           {props.subtitle && (
@@ -88,7 +88,7 @@ export default function AccordionComponent (props) {
           )}
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ paddingBlock: 5 }}>
+      <AccordionDetails sx={{ paddingBlock: props.paddingBlock ?? 5 }}>
         {props.content}
       </AccordionDetails>
     </Accordion>
