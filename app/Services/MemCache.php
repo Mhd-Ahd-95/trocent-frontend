@@ -62,7 +62,7 @@ class MemCache
     public function get_entities(string $key, string $model, array $rel = [])
     {
         $items = $this->get_cache($key);
-
+        
         if ($items->isEmpty()) {
             $query = $model::query();
             if (!empty($rel)) {

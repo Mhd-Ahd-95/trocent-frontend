@@ -14,15 +14,21 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $parents = ['order', 'customer', 'company', 'user', 'role', 'interliner', 'driver', 'fuel surcharge', 'rate sheet', 'accessorial', 'address book', 'vehicle type'];
+        $parents = ['order', 'customer', 'company', 'user', 'role', 'interliner', 'driver', 'fuel_surcharge', 'rate_sheet', 'accessorial', 'address_book', 'vehicle_type'];
 
         $permissions = [
+            'view',
+            'view_any',
             'create',
             'update',
+            // 'restore',
+            // 'restore_any',
+            // 'replicate',
+            // 'reorder',
             'delete',
-            'view',
-            'view any',
-            'delete any'
+            'delete_any',
+            // 'force_delete',
+            // 'force_delete_any',
         ];
 
         $collect_data = [];
@@ -32,7 +38,8 @@ class PermissionSeeder extends Seeder
                 return ['name' => $permission . '_' . $parent, 'guard_name' => 'api'];
             });
             $collect_data = [...$collect_data, ...$map_permissions->toArray()];
-        };
+        }
+        ;
         // dd($collect_data);
         Permission::truncate();
         Permission::insert($collect_data);

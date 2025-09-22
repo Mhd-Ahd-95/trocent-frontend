@@ -20,10 +20,10 @@ class RoleResource extends JsonResource
             'guard_name' => $this->guard_name,
             'updated_at' => $this->updated_at,
             'permissions' => $this->whenLoaded('permissions', function () {
-                return PermissionResource::collection($this->permissions);
+                return PermissionResource::collection($this->permissions)->pluck('name');
             }),
             'widgets' => $this->whenLoaded('widgets', function () {
-                return WidgetResource::collection($this->widgets);
+                return WidgetResource::collection($this->widgets)->pluck('id');
             }),
         ];
     }

@@ -3,22 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RoleRequest;
-use App\Http\Resources\PermissionResource;
 use App\Http\Resources\RoleResource;
-use App\Http\Resources\WidgetResource;
 use App\Models\Widget;
+use App\Services\MemCache;
 use Exception;
-use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
+    protected $cache_key = 'roles';
+    protected $cache;
+    public function __construct()
+    {
+        $this->cache = new MemCache();
+    }
 
     public function index()
     {
         try {
-            $roles = Role::with(['permissions', 'widgets'])->get();
+            $roles = $this->cache->get_entities($this->cache_key, Role::class, ['permissions', 'widgets']);
             return RoleResource::collection($roles);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
@@ -27,26 +32,31 @@ class RoleController extends Controller
 
     public function store(RoleRequest $request)
     {
+        DB::beginTransaction();
         try {
             $data = $request->validated();
-            logger($data);
             $role = Role::create([
                 'name' => $data['name'],
                 'guard_name' => $data['guard_name'],
             ]);
             $role->givePermissionTo($data['permissions']);
             if (isset($data['widgets'])) {
-                $role->widgets()->attach($data['widgets'])->pluck('id');
+                $role->widgets()->attach($data['widgets']);
             }
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-            return new RoleResource($role);
+            $srole = $role->load(['permissions', 'widgets']);
+            $this->cache->save_entity($this->cache_key, $srole);
+            DB::commit();
+            return new RoleResource($srole);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => $e->getMessage()]);
         }
     }
 
     public function update(int $id, RoleRequest $request)
     {
+        DB::beginTransaction();
         try {
             $orole = Role::findOrFail($id);
             $nrole = $request->validated();
@@ -55,23 +65,30 @@ class RoleController extends Controller
             if (isset($nrole['permissions'])) {
                 $orole->syncPermissions($nrole['permissions']);
             }
-            logger($nrole['widgets']);
             if (isset($nrole['widgets'])) {
                 $orole->widgets()->sync($nrole['widgets']);
             }
-            return new RoleResource($orole->load(['permissions', 'widgets']));
+            $role = $orole->load(['permissions', 'widgets']);
+            $this->cache->update_entity($this->cache_key, $id, $role);
+            DB::commit();
+            return new RoleResource($role);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => $e->getMessage()]);
         }
     }
 
     public function destroy(int $id)
     {
+        DB::beginTransaction();
         try {
             $role = Role::findOrFail($id);
             $role->delete();
+            $this->cache->delete_entity($this->cache_key, $id);
+            DB::commit();
             return true;
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => $e->getMessage()]);
         }
     }
@@ -79,7 +96,7 @@ class RoleController extends Controller
     public function show(int $id)
     {
         try {
-            $role = Role::with(['permissions', 'widgets'])->findOrFail($id);
+            $role = $this->cache->get_entity_id($this->cache_key, $id, Role::class, ['permissions', 'widgets']);
             return new RoleResource($role);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
@@ -88,11 +105,11 @@ class RoleController extends Controller
 
     public function load_permissions()
     {
-        return PermissionResource::collection(Permission::all());
+        return $this->cache->get_entities('permissions', Permission::class);
     }
 
     public function load_widgets()
     {
-        return WidgetResource::collection(Widget::all());
+        return $this->cache->get_entities('widgets', Widget::class);
     }
 }
