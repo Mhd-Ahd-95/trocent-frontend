@@ -24,8 +24,6 @@ class UserRequest extends FormRequest
     {
         $userId = $this->route('id');
 
-        logger($userId);
-
         if ($this->isMethod('put')) {
             return [
                 'name' => ['sometimes', 'string'],
