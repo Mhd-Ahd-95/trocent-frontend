@@ -1,5 +1,6 @@
 import { ThemeContextProvider, ThemeContext } from './Theme.context'
 import { AuthContextProvider, AuthContext } from './Auth.context'
+import { VehicleTypeContext, VehicleTypeContextProvider } from './VehicleType.context'
 import { RoleContextProvider, RoleContext } from './Role.context'
 import { AlertProvider } from '../components'
 
@@ -8,7 +9,11 @@ const ContextProvider = props => {
     <ThemeContextProvider>
       <AlertProvider>
         <AuthContextProvider>
-          <RoleContextProvider>{props.children}</RoleContextProvider>
+          <RoleContextProvider>
+            <VehicleTypeContextProvider>
+              {props.children}
+            </VehicleTypeContextProvider>
+            </RoleContextProvider>
         </AuthContextProvider>
       </AlertProvider>
     </ThemeContextProvider>
@@ -22,5 +27,7 @@ export {
   AuthContextProvider,
   AuthContext,
   RoleContextProvider,
-  RoleContext
+  RoleContext,
+  VehicleTypeContextProvider,
+  VehicleTypeContext
 }

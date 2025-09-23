@@ -165,7 +165,11 @@ export default function SideMenu (props) {
       options: [
         { text: 'Accessorials', url: '/accessorials' },
         { text: 'Vehicle Types', url: '/vehicle-types' },
-        { text: 'Address Book', url: '/address-books', chip: 2 }
+        {
+          text: 'Address Book',
+          url: '/address-books',
+          chip: 2
+        }
       ]
     },
     {

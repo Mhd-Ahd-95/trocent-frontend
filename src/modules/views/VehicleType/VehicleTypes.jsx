@@ -13,28 +13,17 @@ import { DeleteForever } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
 import VehicleTypesApi from '../../apis/VehicleTypes.api'
 import VehicleTypeForm from './VehicleTypeForm'
+import { VehicleTypeContext } from '../../contexts'
 
 export default function VehicleTypes () {
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const [openModal, setOpenModal] = React.useState(false)
-  const [vehicleTypes, setVehicleTypes] = React.useState([])
-  const [loading, setLoading] = React.useState(true)
   const [selectedTypes, setSelectedTypes] = React.useState([])
   const [vehicleType, setVehicleType] = React.useState({})
   const selectedRef = React.useRef()
   const { enqueueSnackbar } = useSnackbar()
-
-  const loadVehicleTypes = React.useCallback(() => {
-    VehicleTypesApi.getVehicleTypes()
-      .then(res => {
-        const result = res.data.data
-        setVehicleTypes(result)
-      })
-      .catch(err => enqueueSnackbar(err.message, { variant: 'error' }))
-      .finally(() => setLoading(false))
-  }, [enqueueSnackbar])
-
-  React.useEffect(() => loadVehicleTypes(), [loadVehicleTypes])
+  const { vehicleTypes, setVehicleTypes, loading } =
+    React.useContext(VehicleTypeContext)
 
   const handleClear = () => {
     setSelectedTypes([])
