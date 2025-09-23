@@ -1,16 +1,60 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, CustomCell, Table } from '../../components'
+import {
+  Breadcrumbs,
+  ConfirmModal,
+  CustomCell,
+  Table,
+  Modal
+} from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
 import moment from 'moment'
 import { useNavigate } from 'react-router-dom'
 import { RoleContext } from '../../contexts'
+import RoleApi from '../../apis/Role.api'
+import { useSnackbar } from 'notistack'
 
 export default function Roles () {
   const navigate = useNavigate()
-  const { roles, loading } = React.useContext(RoleContext)
+  const { roles, loading, setRoles } = React.useContext(RoleContext)
+  const [openModal, setOpenModal] = React.useState(false)
+  const selectedRef = React.useRef({})
+  const { enqueueSnackbar } = useSnackbar()
+  const [selectedRoles, setSelectedRoles] = React.useState([])
+
+  const handleDeleteRole = rids => {
+    RoleApi.deleteRoles(rids)
+      .then(res => {
+        if (res.data) {
+          const filtered = roles.filter(role => !rids.includes(role.id))
+          setRoles([...filtered])
+          enqueueSnackbar(`Roles has been deleted successfully`, {
+            variant: 'success'
+          })
+          selectedRef.current = {}
+          setSelectedRoles([])
+        }
+      })
+      .catch(err => {
+        enqueueSnackbar(err.message, { variant: 'error' })
+      })
+  }
+
+  const [rowSelectionModel, setRowSelectionModel] = React.useState({
+    type: 'include',
+    ids: new Set()
+  })
+
+  const handleSelectionChange = newModel => {
+    setRowSelectionModel(newModel)
+    let selectedIds = Array.from(newModel.ids)
+    if (newModel.type === 'exclude' && selectedIds.length === 0) {
+      selectedIds = roles.map(row => row.id)
+    }
+    setSelectedRoles(selectedIds)
+  }
 
   return (
     <MainLayout
@@ -37,6 +81,10 @@ export default function Roles () {
               search: true,
               columns: false
             }}
+            deleteSelected={selectedRoles.length > 0}
+            handleDeleteSelected={() => setOpenModal(2)}
+            onRowSelectionModelChange={handleSelectionChange}
+            rowSelectionModel={rowSelectionModel}
             columns={[
               {
                 headerName: 'Name',
@@ -79,7 +127,10 @@ export default function Roles () {
                   >
                     <Button
                       startIcon={<EditSquareIcon />}
-                      onClick={() => navigate(`/roles/edit/${params.row.id}`)}
+                      onClick={e => {
+                        e.stopPropagation()
+                        navigate(`/roles/edit/${params.row.id}`)
+                      }}
                       variant='text'
                       size='small'
                       sx={{
@@ -94,7 +145,11 @@ export default function Roles () {
                     </Button>
                     <Button
                       startIcon={<DeleteForever />}
-                      onClick={() => console.log(params)}
+                      onClick={e => {
+                        e.stopPropagation()
+                        selectedRef.current = params.row
+                        setOpenModal(1)
+                      }}
                       variant='text'
                       size='small'
                       sx={{
@@ -119,6 +174,34 @@ export default function Roles () {
           />
         </Grid>
       </Grid>
+      <Modal open={openModal === 1} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>
+                {selectedRef.current?.name ?? 'Role'}
+              </strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteRole([selectedRef.current.id])}
+        />
+      </Modal>
+      <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>Roles</strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteRole([...selectedRoles])}
+        />
+      </Modal>
     </MainLayout>
   )
 }

@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
-import { ThemeContext } from '../../contexts'
+import { RoleContext, ThemeContext } from '../../contexts'
 
 const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
   listStyle: 'none',
@@ -136,6 +136,7 @@ export default function SideMenu (props) {
   const theme = useTheme()
 
   const { expandItem, setExpandItem } = React.useContext(ThemeContext)
+  const roleContext = React.useContext(RoleContext)
 
   const itemsLinks = [
     { text: 'Dashboard', icon: <Dashboard />, url: '/' },
@@ -171,7 +172,7 @@ export default function SideMenu (props) {
       text: 'Access Management',
       icon: <Access />,
       options: [
-        { text: 'Roles', url: '/roles', chip: props.chipRole ?? 0 },
+        { text: 'Roles', url: '/roles', chip: roleContext?.roles?.length ?? 0 },
         { text: 'Users', url: '/users' }
       ]
     }

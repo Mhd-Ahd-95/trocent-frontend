@@ -26,13 +26,7 @@ export default function EditRole () {
       <Grid container>
         <Grid size={12}>
           <RoleForm
-            initialValues={
-              role
-                ? {
-                    ...role
-                  }
-                : {}
-            }
+            initialValues={role ? { ...role } : {}}
             submit={payload => RoleApi.updateRole(rid, payload)}
             editMode
           />

@@ -1,34 +1,34 @@
-import * as React from "react";
-import { DataGrid, gridClasses } from "@mui/x-data-grid";
-import { styled } from "@mui/material/styles";
-import CustomToolbar from "./Toolbar";
-import CustomNoRows from "./NoRows";
-import CustomNoResultsOverlay from "./NoResultFound";
+import * as React from 'react'
+import { DataGrid, gridClasses } from '@mui/x-data-grid'
+import { styled } from '@mui/material/styles'
+import CustomToolbar from './Toolbar'
+import CustomNoRows from './NoRows'
+import CustomNoResultsOverlay from './NoResultFound'
 
-const TableLayout = styled("div")(({ theme }) => ({
+const TableLayout = styled('div')(({ theme }) => ({
   // overflow: "hidden",
   borderRadius: 25,
   height: 603,
-  width: "100%",
+  width: '100%'
   // boxShadow:
   //   "0px 2px 2px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)",
-}));
+}))
 
-function customCheckbox(theme) {
+function customCheckbox (theme) {
   return {
-    "& .MuiCheckbox-root svg": {
+    '& .MuiCheckbox-root svg': {
       width: 18,
       height: 18,
-      backgroundColor: "transparent",
+      backgroundColor: 'transparent',
       //   border: "1px solid #d9d9d9",
       borderRadius: 2,
-      ...theme.applyStyles("dark", {
-        borderColor: "rgb(67, 67, 67)",
-      }),
+      ...theme.applyStyles('dark', {
+        borderColor: 'rgb(67, 67, 67)'
+      })
     },
-    "& .MuiCheckbox-root svg path": {
+    '& .MuiCheckbox-root svg path': {
       //   display: "none",
-    },
+    }
     // "& .MuiCheckbox-root.Mui-checked:not(.MuiCheckbox-indeterminate) svg": {
     //   backgroundColor: "#1890ff",
     //   borderColor: "#1890ff",
@@ -57,21 +57,21 @@ function customCheckbox(theme) {
     //     top: "39%",
     //     border: 0,
     //   },
-  };
+  }
 }
 
 const DataGridTable = styled(DataGrid)(({ theme }) => ({
   [`& .${gridClasses.row}.even`]: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff'
   },
   [`& .${gridClasses.row}.odd`]: {
-    backgroundColor: theme.palette.grey[100],
+    backgroundColor: theme.palette.grey[100]
   },
-  ...customCheckbox(theme),
-}));
+  ...customCheckbox(theme)
+}))
 
-export default function Table(props) {
-  let { columns, data, options, tableType, title, actions } = props;
+export default function Table (props) {
+  let { columns, data, options, tableType, title, actions } = props
 
   return (
     <TableLayout>
@@ -81,29 +81,38 @@ export default function Table(props) {
         rowHeight={45}
         loading={props.loading}
         sx={{
-          width: "100%",
-          borderRadius: 3,
+          width: '100%',
+          borderRadius: 3
         }}
         pageSizeOptions={props.pageSizeOptions}
         columnHeaderHeight={45}
         slots={{
-          // toolbar: () => <CustomToolbar title={title} options={options} />, // pass the component, NOT a function
+          toolbar: () => (
+            <CustomToolbar
+              title={title}
+              options={options}
+              deleteSelected={props.deleteSelected}
+              handleDeleteSelected={props.handleDeleteSelected}
+            />
+          ), // pass the component, NOT a function
           noRowsOverlay: () => <CustomNoRows row={props.row} />,
-          noResultsOverlay: CustomNoResultsOverlay,
+          noResultsOverlay: CustomNoResultsOverlay
         }}
         showToolbar={!props.noToolbar}
+        onRowSelectionModelChange={props.onRowSelectionModelChange}
+        rowSelectionModel={props.rowSelectionModel}
         checkboxSelection={props.checkboxSelection}
         // isRowSelectable={(params) => params.row.quantity > 50000}
         disableRowSelectionOnClick={props.disableRowSelectionOnClick}
         // disableMultipleRowSelection
-        getRowClassName={(params) =>
-          params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
+        getRowClassName={params =>
+          params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
         }
         initialState={{
           ...data.initialState,
-          pagination: { paginationModel: { pageSize: props.pageSize } },
+          pagination: { paginationModel: { pageSize: props.pageSize } }
         }}
       />
     </TableLayout>
-  );
+  )
 }

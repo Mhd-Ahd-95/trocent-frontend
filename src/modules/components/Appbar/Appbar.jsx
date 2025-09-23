@@ -72,7 +72,8 @@ export default function Appbar (props) {
     localStorage.setItem('shrinkMenu', !open)
   }
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    e.preventDefault()
     AuthAPI.logout()
       .then(res => {
         if (res.data) authContext.handleAuth(false)
@@ -233,7 +234,7 @@ export default function Appbar (props) {
                         color: theme.palette.grey[500]
                       }
                     }}
-                    onClick={() => handleLogout()}
+                    onClick={(e) => handleLogout(e)}
                   >
                     Sign out
                   </Button>

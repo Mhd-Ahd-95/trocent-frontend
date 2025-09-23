@@ -209,20 +209,19 @@ const PermissionsForm = React.memo(props => {
 export default function RoleForm (props) {
   const { enqueueSnackbar } = useSnackbar()
   const theme = useTheme()
-  const { initialValues, submit } = props
+  const { initialValues, submit, editMode } = props
   const { permissions, resources } = global.prefix
   const { widgets, setRoles, roles, loading } = React.useContext(RoleContext)
   const [isLoading, setIsLoading] = React.useState(false)
   const navigate = useNavigate()
-  console.log(initialValues);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
     control,
-    setValue,
-    watch
+    setValue
   } = useForm({
     defaultValues: {
       name: '',
@@ -233,8 +232,6 @@ export default function RoleForm (props) {
       ...initialValues
     }
   })
-
-  console.log(watch('permissions'));
 
   const Title = props => (
     <Typography variant='body2' fontWeight={600}>
@@ -268,16 +265,32 @@ export default function RoleForm (props) {
     }
   }
 
-  const onSubmit = data => {
-    console.log(data)
+  const onSubmit = (data, e) => {
+    e.preventDefault()
     setIsLoading(true)
+    const action = e?.nativeEvent?.submitter?.id
     submit(data)
       .then(res => {
-        setRoles([res.data.data, ...roles])
-        enqueueSnackbar('New Role has been successfully created', {
-          variant: 'success'
-        })
-        navigate('/roles')
+        const result = res.data.data
+        if (editMode) {
+          const updatedData = [...roles]
+          const index = updatedData.findIndex(up => up.id === result.id)
+          updatedData[index] = result
+          setRoles([...updatedData])
+          enqueueSnackbar(
+            `Role "${result.name} has been updated successfully"`,
+            { variant: 'success' }
+          )
+        } else {
+          setRoles([res.data.data, ...roles])
+          enqueueSnackbar('New Role has been successfully created', {
+            variant: 'success'
+          })
+        }
+        reset()
+        if (action === 'apply-action') {
+          navigate('/roles')
+        }
       })
       .catch(err =>
         enqueueSnackbar('Failed to create a new role', { variant: 'error' })
@@ -400,22 +413,27 @@ export default function RoleForm (props) {
                   color='primary'
                   size='small'
                   textTransform='capitalize'
+                  id='apply-action'
                   isLoading={isLoading}
                 >
-                  Create Role
+                  {!editMode ? 'Create Role' : 'Save Changes'}
                 </SubmitButton>
               </Grid>
-              <Grid size='auto'>
-                <StyledButton
-                  variant='outlined'
-                  color='secondary'
-                  disabled={isLoading}
-                  size='small'
-                  textTransform='capitalize'
-                >
-                  Save & Create Another
-                </StyledButton>
-              </Grid>
+              {!editMode && (
+                <Grid size='auto'>
+                  <SubmitButton
+                    type='submit'
+                    variant='outlined'
+                    color='secondary'
+                    size='small'
+                    textTransform='capitalize'
+                    id='save-action'
+                    isLoading={isLoading}
+                  >
+                    Save & Create Another
+                  </SubmitButton>
+                </Grid>
+              )}
               <Grid size='auto'>
                 <StyledButton
                   variant='outlined'
@@ -423,8 +441,9 @@ export default function RoleForm (props) {
                   size='small'
                   disabled={isLoading}
                   textTransform='capitalize'
+                  onClick={() => reset()}
                 >
-                  Cancel
+                  Reset
                 </StyledButton>
               </Grid>
             </Grid>

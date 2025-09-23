@@ -25,6 +25,9 @@ import InputAdornment from '@mui/material/InputAdornment'
 import CancelIcon from '@mui/icons-material/Cancel'
 import SearchIcon from '@mui/icons-material/Search'
 import Typography from '@mui/material/Typography'
+import StyledButton from '../StyledButton/StyledButton'
+import { Button } from '@mui/material'
+import { DeleteOutline } from '@mui/icons-material'
 
 const StyledQuickFilter = styled(QuickFilter)({
   display: 'grid',
@@ -55,6 +58,18 @@ export default function CustomToolbar (props) {
 
   return (
     <Toolbar>
+      {props.deleteSelected && (
+        <Button
+          color='error'
+          sx={{ textTransform: 'capitalize', mx: 0.5 }}
+          size='small'
+          variant='contained'
+          startIcon={<DeleteOutline />}
+          onClick={() => props.handleDeleteSelected()}
+        >
+          Delete Selected
+        </Button>
+      )}
       {props.title && (
         <Typography
           fontWeight='medium'
@@ -63,6 +78,7 @@ export default function CustomToolbar (props) {
           {props.title}
         </Typography>
       )}
+      <div style={{ flexGrow: 1 }} />
       {props.options?.columns && (
         <Tooltip title='Columns'>
           <ColumnsPanelTrigger render={<ToolbarButton />}>
