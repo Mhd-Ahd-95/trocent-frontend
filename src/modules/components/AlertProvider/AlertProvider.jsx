@@ -1,13 +1,18 @@
 import React from 'react'
 import { SnackbarProvider } from 'notistack'
-import { IconButton } from '@mui/material'
+import { IconButton, Alert, Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Close as CloseIcon } from '@mui/icons-material'
 
-const CustomSnackbarProvider = styled(SnackbarProvider)(({ theme }) => ({
-  pointerEvents: 'auto',
-  marginBlock: theme.spacing(0.5),
-}))
+const SnackbarAlert = React.forwardRef(function SnackbarAlert (props, ref) {
+  const { id, message, variant, action, ...rest } = props
+
+  return (
+    <Alert ref={ref} severity={variant} action={action ? action(id) : null}>
+      <Typography variant='body2' fontWeight={'500'}>{message}</Typography>
+    </Alert>
+  )
+})
 
 const AlertProvider = props => {
   const notistackRef = React.createRef()
@@ -15,13 +20,13 @@ const AlertProvider = props => {
     notistackRef.current.closeSnackbar(key)
   }
   return (
-    <CustomSnackbarProvider
+    <SnackbarProvider
       ref={notistackRef}
-    //   variant='success'
+      //   variant='success'
       maxSnack={5}
       anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'right'
+        vertical: 'top',
+        horizontal: 'center'
       }}
       action={key => (
         <IconButton
@@ -33,9 +38,15 @@ const AlertProvider = props => {
           <CloseIcon fontSize='small' />
         </IconButton>
       )}
+      Components={{
+        success: props => <SnackbarAlert {...props} />,
+        error: props => <SnackbarAlert {...props} />,
+        warning: props => <SnackbarAlert {...props} />,
+        info: props => <SnackbarAlert {...props} />
+      }}
     >
-      {props.children}
-    </CustomSnackbarProvider>
+      <Box sx={{ pointerEvents: 'auto', mb: 1 }}>{props.children}</Box>
+    </SnackbarProvider>
   )
 }
 
