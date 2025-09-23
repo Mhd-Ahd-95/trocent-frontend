@@ -7,6 +7,7 @@ use App\Http\Resources\RoleResource;
 use App\Models\Widget;
 use App\Services\MemCache;
 use Exception;
+use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use App\Models\Role;
 use Illuminate\Support\Facades\DB;
@@ -61,6 +62,7 @@ class RoleController extends Controller
             $orole = Role::findOrFail($id);
             $nrole = $request->validated();
             $orole->fill($nrole);
+            // $orole->updated_at = new Date();
             $orole->save();
             if (isset($nrole['permissions'])) {
                 $orole->syncPermissions($nrole['permissions']);
@@ -92,6 +94,35 @@ class RoleController extends Controller
             return response()->json(['message' => $e->getMessage()]);
         }
     }
+
+    public function deleteRoles(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json(['message' => 'No role IDs provided'], 400);
+        }
+        DB::beginTransaction();
+        try {
+            $roles = Role::whereIn('id', $ids)->get();
+            if (count($roles) !== count($ids)) {
+                return response()->json([
+                    'message' => 'Some roles not found'
+                ], 404);
+            }
+            foreach ($roles as $role) {
+                $role->syncPermissions([]);
+                $role->widgets()->sync([]);
+            }
+            Role::whereIn('id', $ids)->delete();
+            $this->cache->delete_entities($this->cache_key, $ids);  
+            DB::commit();
+            return true;
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function show(int $id)
     {

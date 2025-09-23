@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/permissions', [RoleController::class, 'load_permissions']);
         Route::get('/widgets', [RoleController::class, 'load_widgets']);
         Route::post('', [RoleController::class, 'store']);
+        Route::delete('', [RoleController::class, 'deleteRoles']);
         Route::put('/{id}', [RoleController::class, 'update']);
         Route::delete('/{id}', [RoleController::class, 'destroy']);
         Route::get('/{id}', [RoleController::class, 'show']);

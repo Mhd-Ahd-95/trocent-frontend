@@ -8,6 +8,7 @@ use \Spatie\Permission\Models\Role as RoleSpatie;
 
 class Role extends RoleSpatie
 {
+    public $timestamps = true;
     public function widgets()
     {
         return $this->belongsToMany(Widget::class, 'role_widget', 'role_id', 'widget_id');
