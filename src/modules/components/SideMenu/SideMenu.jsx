@@ -146,7 +146,7 @@ export default function SideMenu (props) {
       icon: <Customer />,
       options: [
         { text: 'Customers', url: '/customers' },
-        { text: 'Fuel Surcharges', url: '/fuel-surcharge' },
+        { text: 'Fuel Surcharges', url: '/fuel-surcharges' },
         { text: 'Rate Sheets', url: '/rate-sheets' }
       ]
     },

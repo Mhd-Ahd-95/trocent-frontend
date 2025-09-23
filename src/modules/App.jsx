@@ -18,7 +18,12 @@ import {
   AddressBook,
   Accessorials,
   CreateRole,
-  EditRole
+  EditRole,
+  Companies,
+  RateSheets,
+  Drivers,
+  FuelSurcharges,
+  Interliners
 } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
@@ -47,6 +52,11 @@ function App () {
           <Route path='/vehicle-types' Component={VehicleTypes} />
           <Route path='/address-books' Component={AddressBook} />
           <Route path='/accessorials' Component={Accessorials} />
+          <Route path='/companies' Component={Companies} />
+          <Route path='/rate-sheets' Component={RateSheets} />
+          <Route path='/drivers' Component={Drivers} />
+          <Route path='/fuel-surcharges' Component={FuelSurcharges} />
+          <Route path='/interliners' Component={Interliners} />
         </Route>
       </Routes>
     </Router>
