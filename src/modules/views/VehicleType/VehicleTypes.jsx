@@ -1,13 +1,80 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, Table, StyledButton } from '../../components'
+import {
+  Breadcrumbs,
+  Table,
+  Modal,
+  ConfirmModal,
+  DrawerForm
+} from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
+import { useSnackbar } from 'notistack'
+import VehicleTypesApi from '../../apis/VehicleTypes.api'
+import VehicleTypeForm from './VehicleTypeForm'
 
 export default function VehicleTypes () {
-  const navigate = useNavigate()
+  const [openDrawer, setOpenDrawer] = React.useState(false)
+  const [openModal, setOpenModal] = React.useState(false)
+  const [vehicleTypes, setVehicleTypes] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+  const [selectedTypes, setSelectedTypes] = React.useState([])
+  const [vehicleType, setVehicleType] = React.useState({})
+  const selectedRef = React.useRef()
+  const { enqueueSnackbar } = useSnackbar()
+
+  const loadVehicleTypes = React.useCallback(() => {
+    VehicleTypesApi.getVehicleTypes()
+      .then(res => {
+        const result = res.data.data
+        setVehicleTypes(result)
+      })
+      .catch(err => enqueueSnackbar(err.message, { variant: 'error' }))
+      .finally(() => setLoading(false))
+  }, [enqueueSnackbar])
+
+  React.useEffect(() => loadVehicleTypes(), [loadVehicleTypes])
+
+  const handleClear = () => {
+    setSelectedTypes([])
+    selectedRef.current = null
+    setRowSelectionModel({ type: 'include', ids: new Set() })
+  }
+
+  const handleDeleteVehicleType = ids => {
+    VehicleTypesApi.deleteVehicleTypes(ids)
+      .then(res => {
+        if (res.data) {
+          const filtered = vehicleTypes.filter(vtype => !ids.includes(vtype.id))
+          setVehicleTypes([...filtered])
+          enqueueSnackbar('Vehicle Type has been deleted successfully', {
+            variant: 'success'
+          })
+        }
+        setOpenModal(false)
+        handleClear()
+      })
+      .catch(err => {
+        setOpenModal(false)
+        handleClear()
+        enqueueSnackbar(err.message, { variant: 'error' })
+      })
+  }
+
+  const [rowSelectionModel, setRowSelectionModel] = React.useState({
+    type: 'include',
+    ids: new Set()
+  })
+
+  const handleSelectionChange = newModel => {
+    setRowSelectionModel(newModel)
+    let selectedIds = Array.from(newModel.ids)
+    if (newModel.type === 'exclude' && selectedIds.length === 0) {
+      selectedIds = vehicleTypes.map(row => row.id)
+    }
+    setSelectedTypes(selectedIds)
+  }
 
   return (
     <MainLayout
@@ -25,7 +92,7 @@ export default function VehicleTypes () {
       button
       btnProps={{
         label: 'New Vehicle Type',
-        onClick: () => navigate('/new-vehicle-type')
+        onClick: () => setOpenDrawer(1)
       }}
     >
       <Grid container spacing={2}>
@@ -33,7 +100,12 @@ export default function VehicleTypes () {
           <Table
             pageSizeOptions={[10, 20, 30]}
             pageSize={10}
+            loading={loading}
             checkboxSelection
+            deleteSelected={selectedTypes.length > 0}
+            handleDeleteSelected={() => setOpenModal(2)}
+            onRowSelectionModelChange={handleSelectionChange}
+            rowSelectionModel={rowSelectionModel}
             options={{
               filtering: false,
               search: true
@@ -68,7 +140,11 @@ export default function VehicleTypes () {
                   >
                     <Button
                       startIcon={<DeleteForever />}
-                      onClick={() => console.log(params)}
+                      onClick={e => {
+                        e.stopPropagation()
+                        selectedRef.current = params.row
+                        setOpenModal(1)
+                      }}
                       variant='text'
                       size='small'
                       sx={{
@@ -84,7 +160,11 @@ export default function VehicleTypes () {
                     </Button>
                     <Button
                       startIcon={<EditSquareIcon />}
-                      onClick={() => console.log(params)}
+                      onClick={e => {
+                        e.stopPropagation()
+                        setVehicleType(params.row)
+                        setOpenDrawer(2)
+                      }}
                       variant='text'
                       size='small'
                       sx={{
@@ -101,10 +181,73 @@ export default function VehicleTypes () {
                 )
               }
             ]}
-            data={[{ id: 1, name: 'Mhd Ahd', rate: 2.75 }]}
+            data={[...vehicleTypes]}
           />
         </Grid>
       </Grid>
+      {openDrawer === 1 && (
+        <DrawerForm
+          title='Create Vehicle Type'
+          open={openDrawer === 1}
+          setOpen={setOpenDrawer}
+        >
+          <VehicleTypeForm
+            initialValues={{}}
+            submit={payload => VehicleTypesApi.createVehicleType(payload)}
+            setData={setVehicleTypes}
+            data={vehicleTypes}
+            setOpen={setOpenDrawer}
+          />
+        </DrawerForm>
+      )}
+      {openDrawer === 2 && (
+        <DrawerForm
+          title='Edit Vehicle Type'
+          open={openDrawer === 2}
+          setOpen={setOpenDrawer}
+        >
+          <VehicleTypeForm
+            initialValues={{ ...vehicleType }}
+            submit={payload =>
+              VehicleTypesApi.updateVehicleType(vehicleType.id, payload)
+            }
+            editMode
+            setData={setVehicleTypes}
+            data={vehicleTypes}
+            setOpen={setOpenDrawer}
+          />
+        </DrawerForm>
+      )}
+      <Modal open={openModal === 1} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>
+                {selectedRef.current?.name ?? 'Vehicle Type'}
+              </strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteVehicleType([selectedRef.current.id])}
+        />
+      </Modal>
+      <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>
+                Vehicle Types
+              </strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteVehicleType([...selectedTypes])}
+        />
+      </Modal>
     </MainLayout>
   )
 }

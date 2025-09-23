@@ -9,7 +9,7 @@ export default function ConfirmModal (props) {
     e.preventDefault()
     setIsSubmitting(true)
     props.handleSubmit()
-    props.handleClose()
+    // props.handleClose()
   }
   return (
     <Grid container spacing={2} alignItems='center' justifyContent={'center'}>

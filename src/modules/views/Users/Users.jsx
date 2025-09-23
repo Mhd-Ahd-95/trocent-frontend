@@ -5,7 +5,7 @@ import {
   Table,
   CustomCell,
   Tabs,
-  CustomDrawer,
+  DrawerForm,
   ConfirmModal,
   Modal
 } from '../../components'
@@ -220,7 +220,7 @@ export default function Users () {
         </Grid>
       </Grid>
       {openDrawer === 1 && (
-        <CustomDrawer
+        <DrawerForm
           title='Create User'
           open={openDrawer === 1}
           setOpen={setOpenDrawer}
@@ -232,10 +232,10 @@ export default function Users () {
             users={users}
             setOpen={setOpenDrawer}
           />
-        </CustomDrawer>
+        </DrawerForm>
       )}
       {openDrawer === 2 && (
-        <CustomDrawer
+        <DrawerForm
           title='Edit User'
           open={openDrawer === 2}
           setOpen={setOpenDrawer}
@@ -251,7 +251,7 @@ export default function Users () {
             setOpen={setOpenDrawer}
             editMode
           />
-        </CustomDrawer>
+        </DrawerForm>
       )}
       <Modal open={openModal} handleClose={() => setOpenModal(false)}>
         <ConfirmModal
