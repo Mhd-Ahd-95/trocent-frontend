@@ -1,21 +1,28 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, Table, CustomCell, Tabs } from '../../components'
+import {
+  Breadcrumbs,
+  Table,
+  CustomCell,
+  Tabs,
+  CustomDrawer,
+  ConfirmModal,
+  Modal
+} from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
 import UserAPI from '../../apis/User.api'
 import { useSnackbar } from 'notistack'
+import UserForm from './UserForm'
 
 function UsersTable (props) {
-  const { data, setData, loading } = props
+  const { data, loading } = props
 
   return (
     <Table
       pageSizeOptions={[10, 20, 30]}
       pageSize={10}
-      checkboxSelection
       loading={loading}
       options={{
         filtering: true,
@@ -65,7 +72,11 @@ function UsersTable (props) {
               >
                 <Button
                   startIcon={<EditSquareIcon />}
-                  onClick={() => console.log(params)}
+                  onClick={e => {
+                    e.stopPropagation()
+                    props.setSelected(params.row)
+                    props.setOpenDrawer(2)
+                  }}
                   variant='text'
                   size='small'
                   sx={{
@@ -83,7 +94,11 @@ function UsersTable (props) {
                 {params?.row?.type !== 'admin' && (
                   <Button
                     startIcon={<DeleteForever />}
-                    onClick={() => console.log(params)}
+                    onClick={e => {
+                      e.stopPropagation()
+                      props.setOpenModal(true)
+                      props.setSelected(params.row)
+                    }}
                     variant='text'
                     size='small'
                     sx={{
@@ -111,10 +126,12 @@ function UsersTable (props) {
 }
 
 export default function Users () {
-  const navigate = useNavigate()
   const [loading, setLoading] = React.useState(true)
   const [users, setUsers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
+  const [openDrawer, setOpenDrawer] = React.useState(false)
+  const [selectedUser, setSelectedUser] = React.useState({})
+  const [openModal, setOpenModal] = React.useState(false)
 
   const loadUsers = React.useCallback(() => {
     UserAPI.getUsers()
@@ -127,6 +144,20 @@ export default function Users () {
 
   React.useEffect(() => loadUsers(), [loadUsers])
 
+  const handleDeleteUser = uid => {
+    UserAPI.deleteUser(uid)
+      .then(res => {
+        if (res.data) {
+          const filtered = users.filter(usr => usr.id !== uid)
+          setUsers([...filtered])
+          enqueueSnackbar('User has been successfully deleted', {
+            variant: 'success'
+          })
+        }
+      })
+      .catch(err => enqueueSnackbar(err.message, { variant: 'error' }))
+  }
+
   return (
     <MainLayout
       title='Users'
@@ -138,7 +169,10 @@ export default function Users () {
       }
       grid
       button
-      btnProps={{ label: 'New User', onClick: () => navigate('/new-user') }}
+      btnProps={{
+        label: 'New User',
+        onClick: () => setOpenDrawer(1)
+      }}
     >
       <Grid container spacing={2}>
         <Grid size={12}>
@@ -148,21 +182,33 @@ export default function Users () {
                 labels={['All', 'Staff', 'Drivers', 'Customers']}
                 contents={[
                   <UsersTable
+                    setOpenModal={setOpenModal}
+                    setOpenDrawer={setOpenDrawer}
+                    setSelected={setSelectedUser}
                     data={users}
                     setData={setUsers}
                     loading={loading}
                   />,
                   <UsersTable
+                    setOpenModal={setOpenModal}
+                    setOpenDrawer={setOpenDrawer}
+                    setSelected={setSelectedUser}
                     data={users.filter(user => user.type === 'staff')}
                     setData={setUsers}
                     loading={loading}
                   />,
                   <UsersTable
+                    setOpenModal={setOpenModal}
+                    setOpenDrawer={setOpenDrawer}
+                    setSelected={setSelectedUser}
                     data={users.filter(user => user.type === 'driver')}
                     setData={setUsers}
                     loading={loading}
                   />,
                   <UsersTable
+                    setOpenModal={setOpenModal}
+                    setOpenDrawer={setOpenDrawer}
+                    setSelected={setSelectedUser}
                     data={users.filter(user => user.type === 'customer')}
                     setData={setUsers}
                     loading={loading}
@@ -173,6 +219,55 @@ export default function Users () {
           </Grid>
         </Grid>
       </Grid>
+      {openDrawer === 1 && (
+        <CustomDrawer
+          title='Create User'
+          open={openDrawer === 1}
+          setOpen={setOpenDrawer}
+        >
+          <UserForm
+            initialValues={{ password: '' }}
+            submit={payload => UserAPI.createUser(payload)}
+            setUsers={setUsers}
+            users={users}
+            setOpen={setOpenDrawer}
+          />
+        </CustomDrawer>
+      )}
+      {openDrawer === 2 && (
+        <CustomDrawer
+          title='Edit User'
+          open={openDrawer === 2}
+          setOpen={setOpenDrawer}
+        >
+          <UserForm
+            initialValues={{
+              ...selectedUser,
+              role: selectedUser?.role[0]?.name
+            }}
+            submit={payload => UserAPI.updateUser(selectedUser.id, payload)}
+            setUsers={setUsers}
+            users={users}
+            setOpen={setOpenDrawer}
+            editMode
+          />
+        </CustomDrawer>
+      )}
+      <Modal open={openModal} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>
+                {selectedUser?.name ?? 'User'}
+              </strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteUser(selectedUser.id)}
+        />
+      </Modal>
     </MainLayout>
   )
 }
