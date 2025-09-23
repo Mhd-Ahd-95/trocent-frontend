@@ -27,7 +27,7 @@ class VehicleTypeRequest extends FormRequest
         if ($this->isMethod('put')) {
             return [
                 'name' => ['sometimes', 'string', Rule::unique('vehicleTypes', 'name')->ignore($vtId)],
-                'rate' => 'sometimes|float'
+                'rate' => 'sometimes|numeric'
             ];
         }
 

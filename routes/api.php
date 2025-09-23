@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('/vehicle-types')->group(function () {
         Route::post('', [VehicleTypeController::class, 'store']);
         Route::put('/{id}', [VehicleTypeController::class, 'update']);
+        Route::delete('', [VehicleTypeController::class, 'deleteVehicleTypes']);
         Route::delete('/{id}', [VehicleTypeController::class, 'destroy']);
         Route::get('', [VehicleTypeController::class, 'index']);
         Route::get('/{id}', [VehicleTypeController::class, 'show']);
