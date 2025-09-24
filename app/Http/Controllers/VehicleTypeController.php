@@ -26,7 +26,7 @@ class VehicleTypeController extends Controller
             $vtypes = $this->cache->get_entities($this->cache_key, VehicleType::class);
             return VehicleTypeResource::collection($vtypes);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -38,7 +38,7 @@ class VehicleTypeController extends Controller
                 throw new ModelNotFoundException('Vehicle type not found');
             return new VehicleTypeResource($vtype);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -50,7 +50,7 @@ class VehicleTypeController extends Controller
             $this->cache->save_entity($this->cache_key, $vtype);
             return new VehicleTypeResource($vtype);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -66,7 +66,7 @@ class VehicleTypeController extends Controller
             $this->cache->update_entity($this->cache_key, $id, $ovt);
             return new VehicleTypeResource($ovt);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -80,7 +80,7 @@ class VehicleTypeController extends Controller
             $this->cache->delete_entity($this->cache_key, $id);
             return true;
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -102,7 +102,7 @@ class VehicleTypeController extends Controller
             return true;
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()], 500);
+            throw $e;
         }
     }
 }

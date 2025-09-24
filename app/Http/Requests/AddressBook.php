@@ -27,17 +27,17 @@ class AddressBook extends FormRequest
         if ($this->isMethod('put')) {
             return [
                 'name' => ['sometimes', 'string', Rule::unique('address_books', 'name')->ignore($abId)],
-                'contact_name' => ['sometimes', 'string'],
-                'phone_number' => ['sometimes', 'string'],
-                'email' => ['sometimes', 'email'],
+                'contact_name' => ['sometimes', 'nullable', 'string'],
+                'phone_number' => ['sometimes', 'nullable', 'string'],
+                'email' => ['sometimes', 'nullable', 'email'],
                 'address' => ['sometimes', 'string'],
-                'suite' => ['sometimes', 'string'],
+                'suite' => ['sometimes', 'nullable', 'string'],
                 'city' => ['sometimes', 'string'],
                 'province' => ['sometimes', 'string'],
                 'postal_code' => ['sometimes', 'string'],
                 'special_instructions' => ['sometimes', 'string'],
-                'op_time_from' => ['sometimes', 'date_format:h:i A'],
-                'op_time_to' => ['sometimes', 'date_format:h:i A'],
+                'op_time_from' => ['sometimes', 'nullable', 'date_format:h:i A'],
+                'op_time_to' => ['sometimes', 'nullable', 'date_format:h:i A'],
                 'requires_appointment' => ['sometimes', 'boolean'],
                 'no_waiting_time' => ['sometimes', 'boolean']
             ];
@@ -48,7 +48,7 @@ class AddressBook extends FormRequest
             'phone_number' => ['sometimes', 'nullable', 'string'],
             'email' => ['sometimes', 'nullable', 'email'],
             'address' => ['required', 'string'],
-            'suite' => ['required', 'string'],
+            'suite' => ['sometimes', 'nullable', 'string'],
             'city' => ['required', 'string'],
             'province' => ['required', 'string'],
             'postal_code' => ['required', 'string'],

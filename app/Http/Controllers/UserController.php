@@ -26,7 +26,7 @@ class UserController extends Controller
             $users = $this->cache->get_entities($this->cache_key, User::class, ['roles.permissions', 'roles.widgets']);
             return UserResource::collection($users);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -34,10 +34,11 @@ class UserController extends Controller
     {
         try {
             $user = $this->cache->get_entity_id($this->cache_key, $id, User::class, ['roles.permissions', 'roles.widgets']);
-            if (!$user) throw new ModelNotFoundException('User not found');
+            if (!$user)
+                throw new ModelNotFoundException('User not found');
             return new UserResource($user);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -59,7 +60,7 @@ class UserController extends Controller
             return new UserResource($user->load(['roles.permissions', 'roles.widgets']));
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -68,7 +69,8 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $ouser = $this->cache->get_entity_id($this->cache_key, $id, UserController::class, ['roles.permissions', 'roles.widgets']);
-            if ($ouser) throw new ModelNotFoundException('User not found');
+            if (!$ouser)
+                throw new ModelNotFoundException('User not found', 404);
             $data = $request->validated();
             if (isset($data['password'])) {
                 $data['password'] = Hash::make($data['password']);
@@ -83,7 +85,7 @@ class UserController extends Controller
             return new UserResource($ouser->load(['roles.permissions', 'roles.widgets']));
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -92,14 +94,15 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $user = $this->cache->get_entity_id($this->cache_key, $id, UserController::class, ['roles.permissions', 'roles.widgets']);
-            if ($user) throw new ModelNotFoundException('User not found');
+            if (!$user)
+                throw new ModelNotFoundException('User not found');
             $user->delete();
             $this->cache->delete_entity($this->cache_key, $id);
             DB::commit();
             return true;
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 }

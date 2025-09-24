@@ -28,7 +28,7 @@ class RoleController extends Controller
             $roles = $this->cache->get_entities($this->cache_key, Role::class, ['permissions', 'widgets']);
             return RoleResource::collection($roles);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -52,7 +52,7 @@ class RoleController extends Controller
             return new RoleResource($srole);
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -60,8 +60,8 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            $orole = Role::findOrFail($id);
-            if ($orole)
+            $orole = $this->cache->get_entity_id($this->cache_key, $id, RoleController::class, ['permissions', 'widgets']);
+            if (!$orole)
                 throw new ModelNotFoundException('Role not found');
             $nrole = $request->validated();
             $orole->fill($nrole);
@@ -78,7 +78,7 @@ class RoleController extends Controller
             return new RoleResource($role);
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -86,8 +86,8 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            $role = Role::findOrFail($id);
-            if ($role)
+            $role = $this->cache->get_entity_id($this->cache_key, $id, RoleController::class, ['permissions', 'widgets']);
+            if (!$role)
                 throw new ModelNotFoundException('Role not found');
             $role->delete();
             $this->cache->delete_entity($this->cache_key, $id);
@@ -95,7 +95,7 @@ class RoleController extends Controller
             return true;
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -134,7 +134,7 @@ class RoleController extends Controller
                 throw new ModelNotFoundException('Role not found');
             return new RoleResource($role);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 

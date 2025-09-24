@@ -27,7 +27,7 @@ class AddressBookController extends Controller
             $abooks = $this->cache->get_entities($this->cache_key, AddressBookModel::class);
             return AddressBookResource::collection($abooks);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -35,10 +35,11 @@ class AddressBookController extends Controller
     {
         try {
             $abook = $this->cache->get_entity_id($this->cache_key, $id, AddressBookModel::class);
-            if (!$abook) throw new ModelNotFoundException('Address book not found.');
+            if (!$abook)
+                throw new ModelNotFoundException('Address book not found.');
             return new AddressBookResource($abook);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -50,7 +51,7 @@ class AddressBookController extends Controller
             $this->cache->save_entity($this->cache_key, $addressBook);
             return new AddressBookResource($addressBook);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -69,7 +70,7 @@ class AddressBookController extends Controller
             return new AddressBookResource($oabook);
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -86,7 +87,7 @@ class AddressBookController extends Controller
             return true;
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
@@ -107,7 +108,7 @@ class AddressBookController extends Controller
             DB::commit();
             return true;
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
+            throw $e;
         }
     }
 }
