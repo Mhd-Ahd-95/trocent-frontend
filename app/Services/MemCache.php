@@ -44,7 +44,6 @@ class MemCache
     public function get_entity_id(string $key, int $id, string $model, array $relations = [])
     {
         $entity = $this->get_cache($key)->firstWhere('id', $id);
-
         if (!$entity) {
             $query = $model::query();
             if (!empty($relations)) {
@@ -62,7 +61,6 @@ class MemCache
     public function get_entities(string $key, string $model, array $rel = [])
     {
         $items = $this->get_cache($key);
-        
         if ($items->isEmpty()) {
             $query = $model::query();
             if (!empty($rel)) {
@@ -115,9 +113,8 @@ class MemCache
     public function delete_entity(string $key, int $id)
     {
         $items = $this->get_cache($key)
-            ->filter(fn($item) => $item->id !== $id)
+            ->filter(fn($item) => (int) $item->id !== (int) $id)
             ->values();
-
         $this->put_in_cache($key, $items);
     }
 

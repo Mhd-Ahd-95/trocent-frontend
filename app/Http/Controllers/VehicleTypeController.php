@@ -7,6 +7,7 @@ use App\Http\Resources\VehicleTypeResource;
 use App\Models\VehicleType;
 use App\Services\MemCache;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -33,6 +34,8 @@ class VehicleTypeController extends Controller
     {
         try {
             $vtype = $this->cache->get_entity_id($this->cache_key, $id, VehicleType::class);
+            if (!$vtype)
+                throw new ModelNotFoundException('Vehicle type not found');
             return new VehicleTypeResource($vtype);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
@@ -54,7 +57,9 @@ class VehicleTypeController extends Controller
     public function update(int $id, VehicleTypeRequest $request)
     {
         try {
-            $ovt = VehicleType::findOrFail($id);
+            $ovt = $this->cache->get_entity_id($this->cache_key, $id, VehicleType::class);
+            if (!$ovt)
+                throw new ModelNotFoundException('Vehicle type not found');
             $validate = $request->validated();
             $ovt->fill($validate);
             $ovt->save();
@@ -68,7 +73,9 @@ class VehicleTypeController extends Controller
     public function destroy(int $id)
     {
         try {
-            $vtype = VehicleType::findOrFail($id);
+            $vtype = $this->cache->get_entity_id($this->cache_key, $id, VehicleType::class);
+            if (!$vtype)
+                throw new ModelNotFoundException('Vehicle type not found');
             $vtype->delete();
             $this->cache->delete_entity($this->cache_key, $id);
             return true;
@@ -81,18 +88,16 @@ class VehicleTypeController extends Controller
     {
         $ids = $request->input('ids');
         if (!is_array($ids) || empty($ids)) {
-            return response()->json(['message' => 'No vehicle types IDs provided'], 400);
+            throw new ModelNotFoundException('No Vehicle type IDs provider');
         }
         DB::beginTransaction();
         try {
             $vtypes = VehicleType::whereIn('id', $ids)->get();
             if (count($vtypes) !== count($ids)) {
-                return response()->json([
-                    'message' => 'Some vehicle types not found'
-                ], 404);
+                throw new ModelNotFoundException('Some Vehicle type ids not found');
             }
             VehicleType::whereIn('id', $ids)->delete();
-            $this->cache->delete_entities($this->cache_key, $ids);  
+            $this->cache->delete_entities($this->cache_key, $ids);
             DB::commit();
             return true;
         } catch (Exception $e) {

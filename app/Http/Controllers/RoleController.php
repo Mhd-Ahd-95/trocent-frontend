@@ -7,6 +7,7 @@ use App\Http\Resources\RoleResource;
 use App\Models\Widget;
 use App\Services\MemCache;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use App\Models\Role;
@@ -60,9 +61,10 @@ class RoleController extends Controller
         DB::beginTransaction();
         try {
             $orole = Role::findOrFail($id);
+            if ($orole)
+                throw new ModelNotFoundException('Role not found');
             $nrole = $request->validated();
             $orole->fill($nrole);
-            // $orole->updated_at = new Date();
             $orole->save();
             if (isset($nrole['permissions'])) {
                 $orole->syncPermissions($nrole['permissions']);
@@ -85,6 +87,8 @@ class RoleController extends Controller
         DB::beginTransaction();
         try {
             $role = Role::findOrFail($id);
+            if ($role)
+                throw new ModelNotFoundException('Role not found');
             $role->delete();
             $this->cache->delete_entity($this->cache_key, $id);
             DB::commit();
@@ -99,22 +103,20 @@ class RoleController extends Controller
     {
         $ids = $request->input('ids');
         if (!is_array($ids) || empty($ids)) {
-            return response()->json(['message' => 'No role IDs provided'], 400);
+            throw new ModelNotFoundException('No role IDs provided.');
         }
         DB::beginTransaction();
         try {
             $roles = Role::whereIn('id', $ids)->get();
             if (count($roles) !== count($ids)) {
-                return response()->json([
-                    'message' => 'Some roles not found'
-                ], 404);
+                throw new ModelNotFoundException('Some Roles not found.');
             }
             foreach ($roles as $role) {
                 $role->syncPermissions([]);
                 $role->widgets()->sync([]);
             }
             Role::whereIn('id', $ids)->delete();
-            $this->cache->delete_entities($this->cache_key, $ids);  
+            $this->cache->delete_entities($this->cache_key, $ids);
             DB::commit();
             return true;
         } catch (Exception $e) {
@@ -128,6 +130,8 @@ class RoleController extends Controller
     {
         try {
             $role = $this->cache->get_entity_id($this->cache_key, $id, Role::class, ['permissions', 'widgets']);
+            if ($role)
+                throw new ModelNotFoundException('Role not found');
             return new RoleResource($role);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);

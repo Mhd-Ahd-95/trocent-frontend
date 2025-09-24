@@ -6,6 +6,7 @@ use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\MemCache;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,7 @@ class UserController extends Controller
     {
         try {
             $user = $this->cache->get_entity_id($this->cache_key, $id, User::class, ['roles.permissions', 'roles.widgets']);
+            if (!$user) throw new ModelNotFoundException('User not found');
             return new UserResource($user);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
@@ -65,7 +67,8 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
-            $ouser = User::findOrFail($id);
+            $ouser = $this->cache->get_entity_id($this->cache_key, $id, UserController::class, ['roles.permissions', 'roles.widgets']);
+            if ($ouser) throw new ModelNotFoundException('User not found');
             $data = $request->validated();
             if (isset($data['password'])) {
                 $data['password'] = Hash::make($data['password']);
@@ -88,7 +91,8 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::findOrFail($id);
+            $user = $this->cache->get_entity_id($this->cache_key, $id, UserController::class, ['roles.permissions', 'roles.widgets']);
+            if ($user) throw new ModelNotFoundException('User not found');
             $user->delete();
             $this->cache->delete_entity($this->cache_key, $id);
             DB::commit();

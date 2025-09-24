@@ -11,7 +11,6 @@ class AuthController extends Controller
 {
     function login(LoginRequest $credentials)
     {
-        logger($credentials);
         $data = $credentials->validated();
         $remember = (bool) ($data['remember'] ?? false);
         if (

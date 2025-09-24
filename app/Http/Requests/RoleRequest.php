@@ -25,8 +25,6 @@ class RoleRequest extends FormRequest
     {
         $roleId = $this->route('id');
 
-        logger($roleId);
-
         if ($this->isMethod('put')) {
             return [
                 'name' => ['sometimes', 'string', Rule::unique('roles', 'name')->ignore($roleId)],

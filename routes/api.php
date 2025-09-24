@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AddressBookController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -51,6 +52,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [VehicleTypeController::class, 'show']);
     });
 
+    Route::prefix('/address-books')->group(function () {
+        Route::post('', [AddressBookController::class, 'store']);
+        Route::put('/{id}', [AddressBookController::class, 'update']);
+        Route::delete('', [AddressBookController::class, 'delete_address_books']);
+        Route::delete('/{id}', [AddressBookController::class, 'destroy']);
+        Route::get('', [AddressBookController::class, 'index']);
+        Route::get('/{id}', [AddressBookController::class, 'show']);
+    });
 
 });
 
