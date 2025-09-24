@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
-import { RoleContext, ThemeContext } from '../../contexts'
+import { RoleContext, ThemeContext, AddressBookContext } from '../../contexts'
 
 const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
   listStyle: 'none',
@@ -137,6 +137,7 @@ export default function SideMenu (props) {
 
   const { expandItem, setExpandItem } = React.useContext(ThemeContext)
   const roleContext = React.useContext(RoleContext)
+  const addressContext = React.useContext(AddressBookContext)
 
   const itemsLinks = [
     { text: 'Dashboard', icon: <Dashboard />, url: '/' },
@@ -168,7 +169,7 @@ export default function SideMenu (props) {
         {
           text: 'Address Book',
           url: '/address-books',
-          chip: 2
+          chip: addressContext?.addressBooks?.length ?? 0
         }
       ]
     },

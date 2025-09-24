@@ -45,13 +45,13 @@ export default function Login () {
       })
       .catch(err => {
         console.log(err.response)
-        err.response.status === 401
+        err.response?.status === 401
           ? enqueueSnackbar('Invalid email or password', { variant: 'warning' })
           : enqueueSnackbar(
               'Error while processing your request, please try again',
               { variant: 'error' }
             )
-        emailRef.current.value = ''
+        usernameRef.current.value = ''
         passwordRef.current.value = ''
       })
 

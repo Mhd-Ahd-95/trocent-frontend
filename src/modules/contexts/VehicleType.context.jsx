@@ -16,9 +16,12 @@ const VehicleTypeContextProvider = props => {
       .then((res) => {
         setVehicleTypes(res.data.data)
       })
-      .catch(() =>
-        enqueueSnackbar('Failed to load vehicle Types', { variant: 'error' })
-      )
+      .catch((error) => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
+      })
       .finally(() => setLoading(false))
   }, [enqueueSnackbar])
 

@@ -15,7 +15,7 @@ import VehicleTypesApi from '../../apis/VehicleTypes.api'
 import VehicleTypeForm from './VehicleTypeForm'
 import { VehicleTypeContext } from '../../contexts'
 
-export default function VehicleTypes () {
+export default function VehicleTypes() {
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const [openModal, setOpenModal] = React.useState(false)
   const [selectedTypes, setSelectedTypes] = React.useState([])
@@ -44,10 +44,13 @@ export default function VehicleTypes () {
         setOpenModal(false)
         handleClear()
       })
-      .catch(err => {
+      .catch(error => {
         setOpenModal(false)
         handleClear()
-        enqueueSnackbar(err.message, { variant: 'error' })
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
       })
   }
 

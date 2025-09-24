@@ -4,7 +4,7 @@ import { StyledButton, SubmitButton, TextInput } from '../../components'
 import { useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 
-export default function VehicleTypeForm (props) {
+export default function VehicleTypeForm(props) {
   const { initialValues, submit, editMode, setOpen, setData, data } = props
   const [loading, setLoading] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
@@ -46,7 +46,12 @@ export default function VehicleTypeForm (props) {
           setOpen(false)
         }
       })
-      .catch(err => console.log(err))
+      .catch(error => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
+      })
       .finally(() => setLoading(false))
   }
 
@@ -75,7 +80,7 @@ export default function VehicleTypeForm (props) {
               fullWidth
               type='number'
               variant='outlined'
-              inputProps={{ step: "any" }}      
+              inputProps={{ step: "any" }}
               {...register('rate', {
                 required: 'Rate is a required field'
               })}

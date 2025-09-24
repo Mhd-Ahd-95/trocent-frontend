@@ -28,7 +28,7 @@ import {
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
 
-function App () {
+function App() {
   const authContext = React.useContext(AuthContext)
 
   const ProtectRoute = props => {

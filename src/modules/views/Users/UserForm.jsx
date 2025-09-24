@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 import { RoleContext } from '../../contexts'
 
-export default function UserForm (props) {
+export default function UserForm(props) {
   const { initialValues, submit, editMode, setOpen, setUsers, users } = props
   const { roles } = React.useContext(RoleContext)
   const [loading, setLoading] = React.useState(false)
@@ -55,7 +55,12 @@ export default function UserForm (props) {
           setOpen(false)
         }
       })
-      .catch(err => enqueueSnackbar(err.message, { variant: 'error' }))
+      .catch(error => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
+      })
       .finally(() => setLoading(false))
   }
 

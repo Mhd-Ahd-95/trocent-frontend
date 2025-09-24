@@ -16,7 +16,7 @@ import { RoleContext } from '../../contexts'
 import RoleApi from '../../apis/Role.api'
 import { useSnackbar } from 'notistack'
 
-export default function Roles () {
+export default function Roles() {
   const navigate = useNavigate()
   const { roles, loading, setRoles } = React.useContext(RoleContext)
   const [openModal, setOpenModal] = React.useState(false)
@@ -37,8 +37,11 @@ export default function Roles () {
           setSelectedRoles([])
         }
       })
-      .catch(err => {
-        enqueueSnackbar(err.message, { variant: 'error' })
+      .catch(error => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
       })
   }
 

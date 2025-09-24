@@ -16,7 +16,7 @@ import UserAPI from '../../apis/User.api'
 import { useSnackbar } from 'notistack'
 import UserForm from './UserForm'
 
-function UsersTable (props) {
+function UsersTable(props) {
   const { data, loading } = props
 
   return (
@@ -125,7 +125,7 @@ function UsersTable (props) {
   )
 }
 
-export default function Users () {
+export default function Users() {
   const [loading, setLoading] = React.useState(true)
   const [users, setUsers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
@@ -136,9 +136,12 @@ export default function Users () {
   const loadUsers = React.useCallback(() => {
     UserAPI.getUsers()
       .then(res => setUsers(res.data.data))
-      .catch(err =>
-        enqueueSnackbar('Failed to load users', { variant: 'error' })
-      )
+      .catch(error => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
+      })
       .finally(() => setLoading(false))
   }, [enqueueSnackbar])
 
@@ -155,7 +158,12 @@ export default function Users () {
           })
         }
       })
-      .catch(err => enqueueSnackbar(err.message, { variant: 'error' }))
+      .catch(error => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
+      })
   }
 
   return (

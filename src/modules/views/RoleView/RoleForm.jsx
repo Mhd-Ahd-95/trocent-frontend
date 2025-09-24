@@ -206,7 +206,7 @@ const PermissionsForm = React.memo(props => {
   )
 })
 
-export default function RoleForm (props) {
+export default function RoleForm(props) {
   const { enqueueSnackbar } = useSnackbar()
   const theme = useTheme()
   const { initialValues, submit, editMode } = props
@@ -292,9 +292,12 @@ export default function RoleForm (props) {
           navigate('/roles')
         }
       })
-      .catch(err =>
-        enqueueSnackbar('Failed to create a new role', { variant: 'error' })
-      )
+      .catch(error => {
+        const message = error.response?.data.message
+        const status = error.response?.status
+        const errorMessage = message ? message + ' - ' + status : error.message
+        enqueueSnackbar(errorMessage, { variant: 'error' })
+      })
       .finally(() => setIsLoading(false))
   }
 

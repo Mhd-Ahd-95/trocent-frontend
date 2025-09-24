@@ -15,17 +15,17 @@ const globalVariables = {
     capitalizeMany: s =>
       s && s.split(' ').length > 1
         ? s
-            .split(' ')
-            .map(ss => globalVariables.methods.capitalize(ss))
-            .join(' ')
+          .split(' ')
+          .map(ss => globalVariables.methods.capitalize(ss))
+          .join(' ')
         : globalVariables.methods.capitalize(s),
     capSpacing: s => s.replace(/([A-Z])/g, ' $1').trim(),
     _spacing: s =>
       s
         ? s
-            .split('_')
-            .map(ss => ss[0].toUpperCase() + ss.slice(1).toLowerCase())
-            .join(' ')
+          .split('_')
+          .map(ss => ss[0].toUpperCase() + ss.slice(1).toLowerCase())
+          .join(' ')
         : '',
     formatDate: d => (d && d.toISOString ? d.toISOString().split('T')[0] : ''),
     avatar: org => {

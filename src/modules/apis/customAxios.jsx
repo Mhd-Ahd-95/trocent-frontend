@@ -18,7 +18,7 @@ const responseHandler = response => {
 };
 
 const errorHandler = error => {
-    if (error.response.status === 401) {
+    if (error.response?.status === 401) {
         localStorage.clear()
         sessionStorage.clear()
         window.location = '/login'
