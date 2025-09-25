@@ -35,7 +35,7 @@ class AddressBook extends FormRequest
                 'city' => ['sometimes', 'string'],
                 'province' => ['sometimes', 'string'],
                 'postal_code' => ['sometimes', 'string'],
-                'special_instructions' => ['sometimes', 'string'],
+                'special_instructions' => ['sometimes', 'nullable', 'string'],
                 'op_time_from' => ['sometimes', 'nullable', 'date_format:h:i A'],
                 'op_time_to' => ['sometimes', 'nullable', 'date_format:h:i A'],
                 'requires_appointment' => ['sometimes', 'boolean'],

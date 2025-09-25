@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccessorialController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -59,6 +60,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [AddressBookController::class, 'destroy']);
         Route::get('', [AddressBookController::class, 'index']);
         Route::get('/{id}', [AddressBookController::class, 'show']);
+    });
+
+    Route::prefix('/accessorials')->group(function () {
+        Route::post('', [AccessorialController::class, 'store']);
+        Route::put('/{id}', [AccessorialController::class, 'update']);
+        Route::delete('', [AccessorialController::class, 'delete_accessorials']);
+        Route::delete('/{id}', [AccessorialController::class, 'destroy']);
+        Route::get('', [AccessorialController::class, 'index']);
+        Route::get('/{id}', [AccessorialController::class, 'show']);
     });
 
 });
