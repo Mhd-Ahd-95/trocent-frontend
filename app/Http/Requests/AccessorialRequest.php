@@ -12,7 +12,7 @@ class AccessorialRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -32,11 +32,12 @@ class AccessorialRequest extends FormRequest
                 'is_driver' => ['sometimes', 'boolean'],
                 'min' => ['sometimes', 'nullable', 'numeric'],
                 'max' => ['sometimes', 'nullable', 'numeric'],
-                'package_type' => ['sometimes', 'nullable', 'string'],
-                'product_type' => ['sometimes', 'nullable', 'string'],
+                'package_type' => ['sometimes', 'nullable', 'in:envelope,box,tube,crate,carton,skid,pallet', 'string'],
+                'product_type' => ['sometimes', 'nullable', 'string', 'in:carton,skid,box,pallet'],
                 'free_time' => ['sometimes', 'nullable', 'numeric'],
                 'time_unit' => ['sometimes', 'nullable', 'string', 'in:minute,hour'],
-                'base_amount' => ['sometimes', 'nullable', 'numeric']
+                'base_amount' => ['sometimes', 'nullable', 'numeric'],
+                'amount_type' => ['sometimes', 'nullable', 'string', 'in:fixed,percentage']
             ];
         }
         return [
@@ -46,11 +47,12 @@ class AccessorialRequest extends FormRequest
             'is_driver' => ['sometimes', 'boolean'],
             'min' => ['sometimes', 'nullable', 'numeric'],
             'max' => ['sometimes', 'nullable', 'numeric'],
-            'package_type' => ['sometimes', 'nullable', 'string'],
-            'product_type' => ['sometimes', 'nullable', 'string'],
+            'package_type' => ['sometimes', 'nullable', 'in:envelope,box,tube,crate,carton,skid,pallet', 'string'],
+            'product_type' => ['sometimes', 'nullable', 'string', 'in:carton,skid,box,pallet'],
             'free_time' => ['sometimes', 'nullable', 'numeric'],
             'time_unit' => ['sometimes', 'nullable', 'string', 'in:minute,hour'],
-            'base_amount' => ['sometimes', 'nullable', 'numeric']
+            'base_amount' => ['sometimes', 'nullable', 'numeric'],
+            'amount_type' => ['sometimes', 'nullable', 'string', 'in:fixed,percentage']
         ];
     }
 }

@@ -18,11 +18,12 @@ return new class extends Migration {
             $table->boolean('is_driver')->default(false);
             $table->float('min')->nullable();
             $table->float('max')->nullable();
-            $table->string('package_type')->nullable();
-            $table->string('product_type')->nullable();
+            $table->enum('package_type', ['envelope', 'box', 'tube', 'crate', 'carton', 'skid', 'pallet'])->nullable();
+            $table->enum('product_type', ['carton', 'box', 'skid', 'pallet'])->nullable();
             $table->float('free_time')->nullable();
             $table->enum('time_unit', ['minute', 'hour'])->nullable();
             $table->float('base_amount')->nullable();
+            $table->enum('amount_type', ['fixed', 'percentage'])->nullable();
         });
     }
 

@@ -22,11 +22,12 @@ class AccessorialResource extends JsonResource
             'min' => $this->min,
             'max' => $this->max,
             'free_time' => $this->free_time,
-            'unit_time' => $this->unit_time,
+            'time_unit' => $this->time_unit,
             'package_type' => $this->package_type,
             'product_type' => $this->product_type,
             'base_amount' => $this->base_amount,
-            'is_driver' => $this->is_driver
+            'is_driver' => $this->is_driver,
+            'amount_type' => $this->amount_type
         ];
     }
 }

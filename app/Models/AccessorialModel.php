@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class AccessorialModel extends Model
 {
-    protected $timestamps = false;
+    public $timestamps = false;
+
+    protected $table = 'accessorials';
 
     protected $fillable = [
         'name',
@@ -19,7 +21,7 @@ class AccessorialModel extends Model
         'package_type',
         'product_type',
         'free_time',
-        'unit_time',
+        'time_unit',
         'base_amount'
     ];
 }
