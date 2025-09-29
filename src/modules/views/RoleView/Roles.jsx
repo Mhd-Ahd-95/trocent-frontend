@@ -35,6 +35,7 @@ export default function Roles() {
           })
           selectedRef.current = {}
           setSelectedRoles([])
+          setOpenModal(false)
         }
       })
       .catch(error => {

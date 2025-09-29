@@ -157,6 +157,7 @@ export default function Users() {
             variant: 'success'
           })
         }
+        setOpenModal(false)
       })
       .catch(error => {
         const message = error.response?.data.message

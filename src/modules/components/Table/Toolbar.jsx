@@ -61,7 +61,7 @@ export default function CustomToolbar (props) {
       {props.deleteSelected && (
         <Button
           color='error'
-          sx={{ textTransform: 'capitalize', mx: 0.5 }}
+          sx={{ textTransform: 'capitalize', mx: 0.5, py: 0.8 }}
           size='small'
           variant='contained'
           startIcon={<DeleteOutline />}

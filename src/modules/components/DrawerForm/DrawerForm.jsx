@@ -59,7 +59,7 @@ export default function DrawerComponent (props) {
         myProp: isMdDown ? 'true' : 'false'
       }}
       anchor='right'
-      aria-hidden={!open}
+      // aria-hidden={!open}
     >
       <DrawerHeader>
         <Grid

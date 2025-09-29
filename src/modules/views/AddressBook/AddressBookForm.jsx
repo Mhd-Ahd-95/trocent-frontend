@@ -58,6 +58,7 @@ export default function AddressBookForm(props) {
         e.preventDefault()
         setIsLoading(true)
         const action = e?.nativeEvent?.submitter?.id
+        console.log(data);
         submit(data)
             .then(res => {
                 const result = res.data.data
@@ -221,7 +222,7 @@ export default function AddressBookForm(props) {
                                                 label='Operating Hours From'
                                                 value={field.value ? moment(field.value, 'hh:mm A') : null}
                                                 onChange={(date) => {
-                                                    const formattedTime = date.format('hh:mm A');
+                                                    const formattedTime = date?.format('hh:mm A') || null;
                                                     field.onChange(formattedTime);
                                                 }}
                                                 slotProps={{
@@ -251,7 +252,7 @@ export default function AddressBookForm(props) {
                                                 label='Operating Hours To'
                                                 value={field.value ? moment(field.value, 'hh:mm A') : null}
                                                 onChange={(date) => {
-                                                    const formattedTime = date.format('hh:mm A');
+                                                    const formattedTime = date?.format('hh:mm A') || null;
                                                     field.onChange(formattedTime);
                                                 }}
                                                 slotProps={{
