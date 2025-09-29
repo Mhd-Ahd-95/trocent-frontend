@@ -77,6 +77,54 @@ const globalVariables = {
       'update',
       'delete',
       'delete_any'
+    ],
+    provinces: [
+      { 'AB': 'Alberta' },
+      { 'BC': 'British Columbia' },
+      { 'MB': 'Manitoba' },
+      { 'NB': 'New Brunswick' },
+      { 'NL': 'Newfoundland and Labrador' },
+      { 'NS': 'Nova Scotia' },
+      { 'NT': 'Northwest Territories' },
+      { 'NU': 'Nunavut' },
+      { 'ON': 'Ontario' },
+      { 'PE': 'Prince Edward Island' },
+      { 'QC': 'Quebec' },
+      { 'SK': 'Saskatchewan' },
+      { 'YT': 'Yukon' }
+    ]
+  },
+  accessorial_types: {
+    fixed_price: [
+      { field: 'amount', label: 'Charge Amount' },
+    ],
+    fuel_based: [
+      { field: 'amount', label: 'Amount', type: 'number' },
+      { field: 'amount_type', label: 'Amount Type', selected: true, options: ['fixed', 'percentage'] },
+      { field: 'min', label: 'Min', type: 'number' },
+      { field: 'max', label: 'Max', type: 'number' }
+    ],
+    package_based: [
+      { field: 'amount', label: 'Amount', type: 'number' },
+      { field: 'package_type', label: 'Package Type', selected: true, options: ['envelope', 'box', 'tube', 'crate', 'carton', 'skid', 'pallet'] }
+    ],
+    product_base: [
+      { field: 'amount', label: 'Amount', type: 'number' },
+      { field: 'product_type', label: 'Product Type', selected: true, options: ['carton', 'box', 'skid', 'pallet'] }
+    ],
+    time_based: [
+      { field: 'amount', label: 'Amount', type: 'number' },
+      { field: 'free_time', label: 'Free Time', type: 'number' },
+      { field: 'time_unit', label: 'Time Unit', selected: true, options: ['minute', 'hour'] },
+      { field: 'base_amount', label: 'Base Amount', type: 'number' }
+    ],
+    transport_based: [
+      { field: 'amount', label: 'Amount', type: 'number' },
+      { field: 'free_time', label: 'Free Time', type: 'number' },
+      { field: 'time_unit', label: 'Time Unit', selected: true, options: ['minute', 'hour'] },
+      { field: 'amount_type', label: 'Amount Type', selected: true, options: ['fixed', 'percentage'] },
+      { field: 'min', label: 'Min', type: 'number' },
+      { field: 'max', label: 'Max', type: 'number' }
     ]
   },
   static: {

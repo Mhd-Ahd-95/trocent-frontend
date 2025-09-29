@@ -3,7 +3,7 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs, ConfirmModal, DrawerForm, Modal, Table } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
-import { DeleteForever } from '@mui/icons-material'
+import { AccessTime, CheckCircleOutline, Close, DeleteForever } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { AddressBookContext } from '../../contexts'
@@ -91,7 +91,8 @@ export default function AddressBook() {
                 headerName: 'Company/Location',
                 field: 'name',
                 minWidth: 150,
-                flex: 1
+                flex: 1,
+                renderCell: rowData => <strong style={{ fontWeight: 600 }}>{rowData.value}</strong>
               },
               {
                 headerName: 'Contact',
@@ -127,13 +128,15 @@ export default function AddressBook() {
                 headerName: 'Appt',
                 field: 'requires_appointment',
                 minWidth: 100,
-                flex: 1
+                flex: 1,
+                renderCell: rowData => rowData.value ? <AccessTime sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='primary' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action'/>
               },
               {
                 headerName: 'No Wait',
                 field: 'no_waiting_time',
                 minWidth: 100,
-                flex: 1
+                flex: 1,
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action'/>
               },
               {
                 field: 'actions',

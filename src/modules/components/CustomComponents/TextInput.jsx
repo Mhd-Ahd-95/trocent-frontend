@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles'
 import { TextField } from '@mui/material'
 
-export default styled(TextField)(({ theme, size }) => ({
+const TextInput = styled(TextField)(({ theme, size }) => ({
   '& .MuiInputBase-root': {
     height: size === 'small' ? 40 : 45
   },
@@ -17,3 +17,5 @@ export default styled(TextField)(({ theme, size }) => ({
     marginTop: size === 'small' ? 2 : 0
   }
 }))
+
+export default TextInput

@@ -30,11 +30,6 @@ const defaultTheme = {
   },
   palette: {
     DataGrid: {
-      // Container background
-      // bg: '#f8fafc',
-      // Pinned rows and columns background
-      // pinnedBg: '#f1f5f9',
-      // Column header background
       headerBg: colors.grey[200],
     },
     mode: "light",
@@ -85,7 +80,7 @@ const defaultTheme = {
         },
         columnHeader: {
           // backgroundColor: colors.grey[200],
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 700,
         },
         row: {
@@ -103,9 +98,9 @@ const defaultTheme = {
 
 const isLightTheme = (theme) => theme.palette.type === "light";
 const initialTheme = () => defaultTheme;
-export const ThemeContext = createContext();
+const ThemeContext = createContext();
 
-export function ThemeContextProvider(props) {
+function ThemeContextProvider(props) {
   const [themeState, setThemeState] = useState(() => initialTheme());
 
   const [expandItem, setExpandItem] = React.useState({
@@ -160,4 +155,10 @@ export function ThemeContextProvider(props) {
       </StyledEngineProvider>
     </ThemeContext.Provider>
   );
+}
+
+
+export {
+  ThemeContext,
+  ThemeContextProvider
 }
