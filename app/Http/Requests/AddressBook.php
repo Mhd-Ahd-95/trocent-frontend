@@ -53,8 +53,8 @@ class AddressBook extends FormRequest
             'province' => ['required', 'string'],
             'postal_code' => ['required', 'string'],
             'special_instructions' => ['sometimes', 'nullable', 'string'],
-            'op_time_from' => ['sometimes', 'date_format:h:i A'],
-            'op_time_to' => ['sometimes', 'date_format:h:i A'],
+            'op_time_from' => ['sometimes', 'nullable', 'date_format:h:i A'],
+            'op_time_to' => ['sometimes', 'nullable', 'date_format:h:i A'],
             'requires_appointment' => ['sometimes', 'boolean'],
             'no_waiting_time' => ['sometimes', 'boolean']
         ];
