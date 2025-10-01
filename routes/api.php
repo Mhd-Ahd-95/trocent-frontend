@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccessorialController;
 use App\Http\Controllers\auth\AuthController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InterlinerController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -79,6 +80,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [InterlinerController::class, 'destroy']);
         Route::get('', [InterlinerController::class, 'index']);
         Route::get('/{id}', [InterlinerController::class, 'show']);
+    });
+
+    Route::prefix('/companies')->group(function () {
+        Route::post('', [CompanyController::class, 'store']);
+        Route::put('/{id}', [CompanyController::class, 'update']);
+        Route::delete('', [CompanyController::class, 'delete_companies']);
+        Route::delete('/{id}', [CompanyController::class, 'destroy']);
+        Route::get('', [CompanyController::class, 'index']);
+        Route::get('/{id}', [CompanyController::class, 'show']);
     });
 
 });
