@@ -229,7 +229,7 @@ export default function AddressBook() {
         />
       </Modal>
       {openDrawer === 1 &&
-        <DrawerForm title='Create Address Book' setOpen={setOpenDrawer} open={openDrawer === 1}>
+        <DrawerForm title='Create Address' setOpen={setOpenDrawer} open={openDrawer === 1}>
           <AddressBookForm
             initialValues={{}}
             submit={(payload) => AddressBooksApi.createAddressBook(payload)}
@@ -240,7 +240,7 @@ export default function AddressBook() {
         </DrawerForm>
       }
       {openDrawer === 2 &&
-        <DrawerForm title='Edit Address Book' setOpen={setOpenDrawer} open={openDrawer === 2}>
+        <DrawerForm title='Edit Address' setOpen={setOpenDrawer} open={openDrawer === 2}>
           <AddressBookForm
             initialValues={{ ...addressBook }}
             submit={(payload) => AddressBooksApi.updateAddressBook(addressBook.id, payload)}

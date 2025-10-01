@@ -7,11 +7,11 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 createRoot(document.getElementById("trocent-id")).render(
-  <StrictMode>
+  // <StrictMode>
     <ContextProvider>
       <LocalizationProvider dateAdapter={AdapterMoment}>
         <App />
       </LocalizationProvider>
     </ContextProvider>
-  </StrictMode>
+  // </StrictMode>
 );

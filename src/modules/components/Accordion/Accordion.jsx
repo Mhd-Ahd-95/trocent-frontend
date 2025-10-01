@@ -3,19 +3,21 @@ import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { Box, colors, IconButton, Tooltip } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
+import { useTheme } from '@mui/material/styles'
 
-export default function AccordionComponent (props) {
+export default function AccordionComponent(props) {
+  const theme = useTheme()
   return (
     <Accordion
       defaultExpanded={!props.defaultExpanded}
       sx={{
         boxShadow:
-          'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;'
+          'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;',
+        borderTop: props.bordered === 'true' ? `2px solid ${theme.palette.primary.main}` : '',
       }}
     >
       <AccordionSummary

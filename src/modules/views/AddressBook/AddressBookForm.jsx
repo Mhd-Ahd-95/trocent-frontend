@@ -346,7 +346,7 @@ export default function AddressBookForm(props) {
                             id='apply-address-action'
                             isLoading={isLoading}
                         >
-                            {!editMode ? 'Create Address Book' : 'Save Changes'}
+                            {!editMode ? 'Create' : 'Save Changes'}
                         </SubmitButton>
                     </Grid>
                     {!editMode && (
