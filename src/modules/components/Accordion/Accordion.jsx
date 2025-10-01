@@ -15,9 +15,9 @@ export default function AccordionComponent(props) {
     <Accordion
       defaultExpanded={!props.defaultExpanded}
       sx={{
-        boxShadow:
-          'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;',
-        borderTop: props.bordered === 'true' ? `2px solid ${theme.palette.primary.main}` : '',
+        boxShadow: ' rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+        // border: '1px solid ' + theme.palette.grey[300],
+        borderTop: props.bordered === 'true' ? `2px solid ${theme.palette.primary.main}` : ``,
       }}
     >
       <AccordionSummary

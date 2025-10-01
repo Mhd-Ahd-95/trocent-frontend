@@ -2,19 +2,18 @@ import React from 'react'
 import { CircularProgress, Grid, Box } from '@mui/material'
 import { MainLayout } from '../../layouts'
 import { Breadcrumbs } from '../../components'
-import InterlinerForm from './InterlinerForm'
-import InterlinersApi from '../../apis/Interliners.api'
 import { useParams } from 'react-router-dom'
-import { useInterliner, useInterlinerMutations } from '../../hooks/useInterliners'
 import { useSnackbar } from 'notistack'
+import { useCompany, useCompanyMutation } from '../../hooks/useComapnies'
+import CompanyForm from './CompanyForm'
 
-export default function EditInterliner() {
+export default function EditCompany() {
 
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error } = useInterliner(id)
-    const { update } = useInterlinerMutations()
+    const { data, isLoading, isError, error, isRefetching } = useCompany(id)
+    const { update } = useCompanyMutation()
 
     React.useEffect(() => {
         if (isError && error) {
@@ -27,24 +26,25 @@ export default function EditInterliner() {
 
     return (
         <MainLayout
-            title='Edit Interliner'
-            activeDrawer={{ active: 'Interliners' }}
+            title='Edit Company'
+            activeDrawer={{ active: 'Companies' }}
             breadcrumbs={
                 <Breadcrumbs
-                    items={[{ text: 'Interliners', url: '/interliners' }, { text: 'Create' }]}
+                    items={[{ text: 'Companies', url: '/companies' }, { text: 'Create' }]}
                 />
             }
         >
             <Grid container>
-                {isLoading ? <Grid size={12} container component={Box} py={15} justifyContent='center' alignItems='center'>
-                    <CircularProgress />
-                </Grid>
-                    :
+                {!isLoading && !isRefetching ?
                     <Grid size={12}>
-                        <InterlinerForm
+                        <CompanyForm
                             initialValues={{ ...data }}
                             editMode
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
+                    </Grid>
+                    :
+                    <Grid size={12} container component={Box} py={15} justifyContent='center' alignItems='center'>
+                        <CircularProgress />
                     </Grid>
                 }
             </Grid>

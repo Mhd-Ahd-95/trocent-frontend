@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import InterlinersApi from "../apis/Interliners.api";
+import CompaniesApi from "../apis/Companies.api";
 import { useSnackbar } from "notistack";
 
 
-export function useInterliners() {
+export function useCompanies() {
     return useQuery({
-        queryKey: ['interliners'],
+        queryKey: ['companies'],
         queryFn: async () => {
-            const response = await InterlinersApi.getInterliners();
+            const response = await CompaniesApi.getCompanies();
             return response.data.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -20,25 +20,33 @@ export function useInterliners() {
 }
 
 
-export function useInterliner(iid) {
+export function useCompany(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['interliner', iid],
+        queryKey: ['company', cid],
         queryFn: async () => {
-            const cachedInterliners = queryClient.getQueryData(['interliners']) || [];
-            const cached = cachedInterliners.find(item => item.id === iid);
+
+            const cachedCompanies = queryClient.getQueryData(['companies']) || [];
+            const cached = cachedCompanies.find(item => item.id === Number(cid));
             if (cached) return cached;
-            const res = await InterlinersApi.getInterliner(iid);
+
+            const res = await CompaniesApi.getCompany(cid);
             return res.data.data;
         },
-        enabled: !!iid,
-        staleTime: 5 * 60 * 1000,
+        enabled: !!cid,
+        staleTime: 0,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,
+        // initialData: () => {
+        //     const companies = queryClient.getQueryData(['companies']) || [];
+        //     return companies.find(item => item.id === Number(cid));
+        // }
     });
 }
-export function useInterlinerMutations() {
+
+
+export function useCompanyMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -51,14 +59,14 @@ export function useInterlinerMutations() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
-            const res = await InterlinersApi.createInterliner(payload);
+            const res = await CompaniesApi.createCompany(payload);
             return res.data.data;
         },
-        onSuccess: (newInterliner) => {
-            queryClient.setQueryData(['interliners'], (old = []) => {
-                return [newInterliner, ...old]
+        onSuccess: (newCompany) => {
+            queryClient.setQueryData(['companies'], (old = []) => {
+                return [newCompany, ...old]
             });
-            enqueueSnackbar('Interliner has been created successfully', { variant: 'success' });
+            enqueueSnackbar('Company has been created successfully', { variant: 'success' });
         },
         onError: handleError,
     });
@@ -66,15 +74,15 @@ export function useInterlinerMutations() {
     const update = useMutation(
         {
             mutationFn: async ({ id, payload }) => {
-                const res = await InterlinersApi.updateInterliner(id, payload);
+                const res = await CompaniesApi.updateCompany(Number(id), payload);
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['interliners'], (old = []) =>
-                    old.map((item) => (item.id === updated.id ? updated : item))
+                queryClient.setQueryData(['companies'], (old = []) =>
+                    old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
-                queryClient.setQueryData(['interliner', updated.id], updated);
-                enqueueSnackbar('Interliner has been updated successfully', { variant: 'success' });
+
+                enqueueSnackbar('Company has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
         }
@@ -82,15 +90,15 @@ export function useInterlinerMutations() {
 
     const remove = useMutation({
         mutationFn: async (iid) => {
-            const res = await InterlinersApi.deleteInterliner(iid);
+            const res = await CompaniesApi.deleteCompany(iid);
             return res.data
         },
         onSuccess: (res, iid) => {
             if (res) {
-                queryClient.setQueryData(['interliners'], (old = []) =>
+                queryClient.setQueryData(['companies'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
-                enqueueSnackbar('Interliner has been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Company has been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,
@@ -98,15 +106,15 @@ export function useInterlinerMutations() {
 
     const removeMany = useMutation({
         mutationFn: async (iids) => {
-            const res = await InterlinersApi.deleteInterliners(iids);
+            const res = await CompaniesApi.deleteCompanies(iids);
             return res.data;
         },
         onSuccess: (res, iids) => {
             if (res) {
-                queryClient.setQueryData(['interliners'], (old = []) =>
+                queryClient.setQueryData(['companies'], (old = []) =>
                     old.filter((item) => !iids.includes(item.id))
                 );
-                enqueueSnackbar('Selected interliners have been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Selected Companies have been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,

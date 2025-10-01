@@ -6,14 +6,15 @@ import { styled } from "@mui/material/styles";
 
 const CustomBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
   //   margin: theme.spacing(1),
-  fontSize: 18,
+  fontSize: 14,
+  fontWeight: 500,
   "& p": {
-    fontSize: 15,
+    fontSize: 14,
   },
   "& a": {
     color: theme.palette.grey[ 700 ],
     textDecoration: "none",
-    fontSize: 15,
+    fontSize: 14,
     "&:hover": {
       color: theme.palette.primary.main,
     },

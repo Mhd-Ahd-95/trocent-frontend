@@ -1,12 +1,50 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, Table } from '../../components'
-import { Grid, Button } from '@mui/material'
-import EditSquareIcon from '@mui/icons-material/EditSquare'
+import { Breadcrumbs, Table, Modal, ConfirmModal } from '../../components'
+import { Grid, Button, Box } from '@mui/material'
+import { DeleteForever, EditSquare } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { useCompanies, useCompanyMutation } from '../../hooks/useComapnies'
+import { useSnackbar } from 'notistack'
 
-export default function Companies () {
+export default function Companies() {
   const navigate = useNavigate()
+  const { data, isLoading, error, isError } = useCompanies()
+  const { removeMany } = useCompanyMutation()
+  const { enqueueSnackbar } = useSnackbar()
+  const [openModal, setOpenModal] = React.useState(false)
+  const [selectedCompanies, setSelectedCompanies] = React.useState([])
+  const selectedRef = React.useRef()
+
+  const [rowSelectionModel, setRowSelectionModel] = React.useState({
+    type: 'include',
+    ids: new Set()
+  })
+
+  const handleSelectionChange = newModel => {
+    setRowSelectionModel(newModel)
+    let selectedIds = Array.from(newModel.ids)
+    if (newModel.type === 'exclude' && selectedIds.length === 0) {
+      selectedIds = data.map(row => row.id)
+    }
+    setSelectedCompanies(selectedIds)
+  }
+
+  const handleDeleteCompanies = (iids) => {
+    removeMany.mutate(iids)
+    setSelectedCompanies([])
+    selectedRef.current = {}
+    setOpenModal(false)
+  }
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
 
   return (
     <MainLayout
@@ -21,7 +59,7 @@ export default function Companies () {
       button
       btnProps={{
         label: 'New Company',
-        onClick: () => navigate('/new-company')
+        onClick: () => navigate('/company/create')
       }}
     >
       <Grid container spacing={2}>
@@ -30,6 +68,11 @@ export default function Companies () {
             pageSizeOptions={[10, 20, 30]}
             pageSize={10}
             checkboxSelection
+            deleteSelected={selectedCompanies.length > 0}
+            handleDeleteSelected={() => setOpenModal(2)}
+            onRowSelectionModelChange={handleSelectionChange}
+            rowSelectionModel={rowSelectionModel}
+            loading={isLoading}
             options={{
               filtering: false,
               search: true
@@ -37,7 +80,7 @@ export default function Companies () {
             columns={[
               {
                 headerName: 'Operating Name',
-                field: 'name',
+                field: 'operating_name',
                 flex: 1,
                 minWidth: 150
               },
@@ -66,22 +109,88 @@ export default function Companies () {
                 flex: 1,
                 minWidth: 150,
                 renderCell: params => (
-                  <Button
-                    startIcon={<EditSquareIcon />}
-                    onClick={() => console.log(params)}
-                    variant='text'
-                    size='small'
-                    sx={{ textTransform: 'capitalize' }}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      marginTop: 1
+                    }}
                   >
-                    Edit
-                  </Button>
+                    <Button
+                      startIcon={<EditSquare />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/company/edit/${params.row.id}`)
+                      }}
+                      variant='text'
+                      size='small'
+                      sx={{
+                        textTransform: 'capitalize',
+                        '& .MuiButton-startIcon': { marginRight: 0.5 },
+                        fontSize: '0.8rem',
+                        minWidth: 'unset',
+                        p: 0.5
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      startIcon={<DeleteForever />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        selectedRef.current = params.row
+                        setOpenModal(1)
+                      }}
+                      variant='text'
+                      size='small'
+                      sx={{
+                        textTransform: 'capitalize',
+                        '& .MuiButton-startIcon': { marginRight: 0.5 },
+                        fontSize: '0.8rem',
+                        minWidth: 'unset',
+                        p: 0.5
+                      }}
+                      color='error'
+                    >
+                      Delete
+                    </Button>
+                  </Box>
                 )
               }
             ]}
-            data={[]}
+            data={data || []}
           />
         </Grid>
       </Grid>
+      <Modal open={openModal === 1} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>
+                {selectedRef.current?.legal_name ?? 'Company'}
+              </strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteCompanies([selectedRef.current.id])}
+        />
+      </Modal>
+      <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>Companies</strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteCompanies([...selectedCompanies])}
+        />
+      </Modal>
     </MainLayout>
   )
 }

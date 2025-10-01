@@ -36,12 +36,14 @@ export default function InterlinerForm(props) {
         const action = e?.nativeEvent?.submitter?.id;
         try {
             await submit(data);
-            reset();
             if (action === 'apply-interliner-action') {
                 navigate('/interliners');
             }
+            else{
+                reset()
+            }
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             //
         } finally {
             setLoading(false);

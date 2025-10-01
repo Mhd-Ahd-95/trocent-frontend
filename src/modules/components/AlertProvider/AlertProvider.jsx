@@ -25,7 +25,7 @@ const AlertProvider = (props) => {
       maxSnack={5}
       anchorOrigin={{
         vertical: "top",
-        horizontal: "center",
+        horizontal: "right",
       }}
       action={(key) => (
         <IconButton size="small" aria-label="close" color="inherit" onClick={onClickDismiss(key)}>
