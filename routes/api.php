@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccessorialController;
 use App\Http\Controllers\auth\AuthController;
+use App\Http\Controllers\InterlinerController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleTypeController;
@@ -69,6 +70,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [AccessorialController::class, 'destroy']);
         Route::get('', [AccessorialController::class, 'index']);
         Route::get('/{id}', [AccessorialController::class, 'show']);
+    });
+
+    Route::prefix('/interliners')->group(function () {
+        Route::post('', [InterlinerController::class, 'store']);
+        Route::put('/{id}', [InterlinerController::class, 'update']);
+        Route::delete('', [InterlinerController::class, 'delete_interliners']);
+        Route::delete('/{id}', [InterlinerController::class, 'destroy']);
+        Route::get('', [InterlinerController::class, 'index']);
+        Route::get('/{id}', [InterlinerController::class, 'show']);
     });
 
 });
