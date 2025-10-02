@@ -39,9 +39,10 @@ export default function InterlinerForm(props) {
             if (action === 'apply-interliner-action') {
                 navigate('/interliners');
             }
-            else{
+            else {
                 reset()
             }
+            props.refetch()
         } catch (error) {
             // console.log(error);
             //

@@ -66,6 +66,7 @@ export default function CompanyForm(props) {
             else {
                 reset();    
             }
+            props.refetch()
         } catch (error) {
             // console.log(error);
             //

@@ -34,7 +34,7 @@ export function useCompany(cid) {
             return res.data.data;
         },
         enabled: !!cid,
-        staleTime: 0,
+        staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,

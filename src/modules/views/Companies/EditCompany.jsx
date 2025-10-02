@@ -12,7 +12,7 @@ export default function EditCompany() {
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error, isRefetching } = useCompany(id)
+    const { data, isLoading, isError, error, isRefetching, refetch } = useCompany(id)
     const { update } = useCompanyMutation()
 
     React.useEffect(() => {
@@ -40,6 +40,7 @@ export default function EditCompany() {
                         <CompanyForm
                             initialValues={{ ...data }}
                             editMode
+                            refetch={refetch}
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
                     </Grid>
                     :

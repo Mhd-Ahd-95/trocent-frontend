@@ -13,7 +13,7 @@ export default function EditInterliner() {
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error } = useInterliner(id)
+    const { data, isLoading, isError, error, refetch } = useInterliner(id)
     const { update } = useInterlinerMutations()
 
     React.useEffect(() => {
@@ -44,6 +44,7 @@ export default function EditInterliner() {
                         <InterlinerForm
                             initialValues={{ ...data }}
                             editMode
+                            refetch={refetch}
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
                     </Grid>
                 }
