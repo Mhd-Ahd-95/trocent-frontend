@@ -27,7 +27,8 @@ import {
   CreateInterliner,
   EditInterliner,
   CreateCompany,
-  EditCompany
+  EditCompany,
+  CreateDriver
 } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
@@ -61,6 +62,7 @@ function App() {
           <Route path='/company/edit/:id' Component={EditCompany} />
           <Route path='/rate-sheets' Component={RateSheets} />
           <Route path='/drivers' Component={Drivers} />
+          <Route path='/driver/create' Component={CreateDriver} />
           <Route path='/fuel-surcharges' Component={FuelSurcharges} />
           <Route path='/interliners' Component={Interliners} />
           <Route path='/interliner/create' Component={CreateInterliner} />

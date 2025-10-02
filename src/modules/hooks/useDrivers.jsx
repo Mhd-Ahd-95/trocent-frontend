@@ -1,16 +1,15 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import CompaniesApi from "../apis/Companies.api";
+import DriversApi from "../apis/Drivers.api";
 import { useSnackbar } from "notistack";
 
 
-export function useCompanies(enabled = true) {
+export function useDrivers() {
     return useQuery({
-        queryKey: ['companies'],
+        queryKey: ['drivers'],
         queryFn: async () => {
-            const response = await CompaniesApi.getCompanies();
+            const response = await DriversApi.getDrivers();
             return response.data.data;
         },
-        enabled: false,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -21,17 +20,17 @@ export function useCompanies(enabled = true) {
 }
 
 
-export function useCompany(cid) {
+export function useDriver(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['company', cid],
+        queryKey: ['driver', cid],
         queryFn: async () => {
 
-            const cachedCompanies = queryClient.getQueryData(['companies']) || [];
-            const cached = cachedCompanies.find(item => item.id === Number(cid));
+            const cachedDrivers = queryClient.getQueryData(['driver']) || [];
+            const cached = cachedDrivers.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await CompaniesApi.getCompany(cid);
+            const res = await DriversApi.getDriver(cid);
             return res.data.data;
         },
         enabled: !!cid,
@@ -39,15 +38,11 @@ export function useCompany(cid) {
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,
-        // initialData: () => {
-        //     const companies = queryClient.getQueryData(['companies']) || [];
-        //     return companies.find(item => item.id === Number(cid));
-        // }
     });
 }
 
 
-export function useCompanyMutation() {
+export function useDriverMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -60,14 +55,14 @@ export function useCompanyMutation() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
-            const res = await CompaniesApi.createCompany(payload);
+            const res = await DriversApi.createDriver(payload);
             return res.data.data;
         },
-        onSuccess: (newCompany) => {
-            queryClient.setQueryData(['companies'], (old = []) => {
-                return [newCompany, ...old]
+        onSuccess: (newDriver) => {
+            queryClient.setQueryData(['drivers'], (old = []) => {
+                return [newDriver, ...old]
             });
-            enqueueSnackbar('Company has been created successfully', { variant: 'success' });
+            enqueueSnackbar('Driver has been created successfully', { variant: 'success' });
         },
         onError: handleError,
     });
@@ -75,15 +70,15 @@ export function useCompanyMutation() {
     const update = useMutation(
         {
             mutationFn: async ({ id, payload }) => {
-                const res = await CompaniesApi.updateCompany(Number(id), payload);
+                const res = await DriversApi.updateDriver(Number(id), payload);
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['companies'], (old = []) =>
+                queryClient.setQueryData(['drivers'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
 
-                enqueueSnackbar('Company has been updated successfully', { variant: 'success' });
+                enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
         }
@@ -91,15 +86,15 @@ export function useCompanyMutation() {
 
     const remove = useMutation({
         mutationFn: async (iid) => {
-            const res = await CompaniesApi.deleteCompany(iid);
+            const res = await DriversApi.deletDriver(iid);
             return res.data
         },
         onSuccess: (res, iid) => {
             if (res) {
-                queryClient.setQueryData(['companies'], (old = []) =>
+                queryClient.setQueryData(['drivers'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
-                enqueueSnackbar('Company has been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Driver has been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,
@@ -107,15 +102,15 @@ export function useCompanyMutation() {
 
     const removeMany = useMutation({
         mutationFn: async (iids) => {
-            const res = await CompaniesApi.deleteCompanies(iids);
+            const res = await DriversApi.deletDrivers(iids);
             return res.data;
         },
         onSuccess: (res, iids) => {
             if (res) {
-                queryClient.setQueryData(['companies'], (old = []) =>
+                queryClient.setQueryData(['drivers'], (old = []) =>
                     old.filter((item) => !iids.includes(item.id))
                 );
-                enqueueSnackbar('Selected Companies have been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Selected Drivers have been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,

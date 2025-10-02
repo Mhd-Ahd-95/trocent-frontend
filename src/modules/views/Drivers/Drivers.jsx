@@ -1,13 +1,54 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, Table } from '../../components'
+import { Breadcrumbs, Table, Modal, ConfirmModal } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined'
 import { useNavigate } from 'react-router-dom'
+import { useSnackbar } from 'notistack'
+import { useDriverMutation, useDrivers } from '../../hooks/useDrivers'
+import { CheckCircleOutline, Close } from '@mui/icons-material'
 
-export default function Drivers () {
+export default function Drivers() {
   const navigate = useNavigate()
+  const [selectedDrivers, setSelectedDrivers] = React.useState([])
+  const { enqueueSnackbar } = useSnackbar()
+  const { data, isLoading, isError, error } = useDrivers()
+  const [openModal, setOpenModal] = React.useState(false)
+  const [openDrawer, setOpenDrawer] = React.useState(false)
+  const { removeMany } = useDriverMutation()
+
+  console.log(data);
+
+  const [rowSelectionModel, setRowSelectionModel] = React.useState({
+    type: 'include',
+    ids: new Set()
+  })
+
+  const handleSelectionChange = newModel => {
+    setRowSelectionModel(newModel)
+    let selectedIds = Array.from(newModel.ids)
+    if (newModel.type === 'exclude' && selectedIds.length === 0) {
+      selectedIds = data.map(row => row.id)
+    }
+    setSelectedDrivers(selectedIds)
+  }
+
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
+
+  const handleDeleteDrivers = (dids) => {
+    removeMany.mutate(dids)
+    setSelectedDrivers([])
+    setOpenModal(false)
+  }
 
   return (
     <MainLayout
@@ -20,7 +61,7 @@ export default function Drivers () {
       }
       grid
       button
-      btnProps={{ label: 'New Driver', onClick: () => navigate('/new-driver') }}
+      btnProps={{ label: 'New Driver', onClick: () => navigate('/driver/create') }}
     >
       <Grid container spacing={2}>
         <Grid size={12} width={'100%'}>
@@ -28,6 +69,11 @@ export default function Drivers () {
             pageSizeOptions={[10, 20, 30]}
             pageSize={10}
             checkboxSelection
+            deleteSelected={selectedDrivers.length > 0}
+            handleDeleteSelected={() => setOpenModal(true)}
+            onRowSelectionModelChange={handleSelectionChange}
+            rowSelectionModel={rowSelectionModel}
+            loading={isLoading}
             options={{
               filtering: true,
               search: true
@@ -53,7 +99,7 @@ export default function Drivers () {
               },
               {
                 headerName: 'Company',
-                field: 'company',
+                field: 'company_name',
                 flex: 1,
                 minWidth: 150
               },
@@ -67,7 +113,8 @@ export default function Drivers () {
                 headerName: 'TDG',
                 field: 'tdg',
                 flex: 1,
-                minWidth: 80
+                minWidth: 80,
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action'/>
               },
               {
                 field: 'actions',
@@ -125,21 +172,23 @@ export default function Drivers () {
                 )
               }
             ]}
-            data={[
-              {
-                id: 1,
-                driver_number: 'D123',
-                fname: 'Mhd',
-                lname: 'Ahd',
-                company: 'XYZ',
-                Phone: '009613136125',
-                email: 'ahdmhd@gmail.com',
-                tdg: 'No'
-              }
-            ]}
+            data={data || []}
           />
         </Grid>
       </Grid>
+      <Modal open={openModal} handleClose={() => setOpenModal(false)}>
+        <ConfirmModal
+          title={
+            <>
+              Delete{' '}
+              <strong style={{ fontSize: 15, paddingInline: 5 }}>Drivers</strong>
+            </>
+          }
+          subtitle='Are you sure you want to continue?'
+          handleClose={() => setOpenModal(false)}
+          handleSubmit={() => handleDeleteDrivers([...selectedDrivers])}
+        />
+      </Modal>
     </MainLayout>
   )
 }

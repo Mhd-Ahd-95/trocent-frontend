@@ -60,17 +60,19 @@ export default function AccordionComponent(props) {
                 alignItems: 'center'
               }}
             >
-              <Tooltip title='Clone'>
-                <IconButton
-                  size='small'
-                  sx={{ color: colors.grey[500] }}
-                  onClick={e => {
-                    e.stopPropagation()
-                  }}
-                >
-                  <FileCopyIcon />
-                </IconButton>
-              </Tooltip>
+              {!props.noClone &&
+                <Tooltip title='Clone'>
+                  <IconButton
+                    size='small'
+                    sx={{ color: colors.grey[500] }}
+                    onClick={e => {
+                      e.stopPropagation()
+                    }}
+                  >
+                    <FileCopyIcon />
+                  </IconButton>
+                </Tooltip>
+              }
               <Tooltip title='Delete'>
                 <span>
                   <IconButton
