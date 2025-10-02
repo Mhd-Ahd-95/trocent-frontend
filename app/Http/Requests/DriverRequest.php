@@ -24,40 +24,8 @@ class DriverRequest extends FormRequest
     {
         $driverId = $this->route('id');
 
-        if ($this->isMethod('put')) {
-            return [
-                'driver_number' => ['sometimes', 'string', Rule::unique('drivers', 'driver_number')->ignore($driverId)],
-                'fname' => ['sometimes', 'string'],
-                'mname' => ['sometimes', 'nullable', 'string'],
-                'lname' => ['sometimes', 'string'],
-                'dob' => ['sometimes', 'date', 'nullable'],
-                'gender' => ['sometimes', 'string', 'nullable'],
-                'sin' => ['sometimes', 'string', 'nullable'],
-                'phone' => ['sometimes', 'string', 'nullable'],
-                'email' => ['sometimes', 'string', 'nullable'],
-                'address' => ['sometimes', 'string', 'nullable'],
-                'city' => ['sometimes', 'string', 'nullable'],
-                'province' => ['sometimes', 'string', 'nullable'],
-                'suite' => ['sometimes', 'string', 'nullable'],
-                'postal_code' => ['sometimes', 'string', 'nullable'],
-                'license_number' => ['sometimes', 'string', 'nullable'],
-                'license_classes' => ['sometimes', 'string', 'nullable'],
-                'license_expiry' => ['sometimes', 'date', 'nullable'],
-                'tdg' => ['sometimes', 'boolean', 'nullable'],
-                'tdg_expiry' => ['sometimes', 'date', 'nullable'],
-                'criminal_expiry' => ['sometimes', 'date', 'nullable'],
-                'criminal_note' => ['sometimes', 'string', 'nullable'],
-                'contract_type' => ['sometimes', 'string', 'nullable'],
-                'driver_description' => ['sometimes', 'string', 'nullable'],
-                'company_id' => ['sometimes', 'numeric'],
-                'driver_documents' => ['sometimes', 'array', 'nullable'],
-                'driver_documents.*.type' => ['required_with:driver_documents', 'string'],
-                'driver_documents.*.file_path' => ['required_with:driver_documents', 'string'],
-                'driver_documents.*.expiry' => ['required_with:driver_documents', 'date'],
-            ];
-        }
-        return [
-            'driver_number' => ['required', 'string', 'unique:drivers,driver_number'],
+        $rules = [
+            'driver_number' => ['required', 'string', Rule::unique('drivers', 'driver_number')],
             'fname' => ['required', 'string'],
             'mname' => ['sometimes', 'nullable', 'string'],
             'lname' => ['required', 'string'],
@@ -83,8 +51,26 @@ class DriverRequest extends FormRequest
             'company_id' => ['required', 'numeric'],
             'driver_documents' => ['sometimes', 'array', 'nullable'],
             'driver_documents.*.type' => ['required_with:driver_documents', 'string'],
-            'driver_documents.*.file_path' => ['required_with:driver_documents', 'string'],
+            'driver_documents.*.file' => ['required_with:driver_documents', 'file', 'max:5120'],
             'driver_documents.*.expiry' => ['required_with:driver_documents', 'date'],
         ];
+
+        if ($this->isMethod('put')) {
+            $optionalFields = [
+                'driver_number',
+                'fname',
+                'lname',
+                'company_id'
+            ];
+
+            foreach ($optionalFields as $field) {
+                if (isset($rules[$field])) {
+                    $rules[$field][0] = 'sometimes';
+                }
+            }
+            $rules['driver_number'][] = Rule::unique('drivers', 'driver_number')->ignore($driverId);
+        }
+
+        return $rules;
     }
 }

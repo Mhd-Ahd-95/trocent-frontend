@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Driver extends Model
 {
+    public $timestamps = false;
     protected $fillable = [
         'driver_number',
         'fname',
@@ -39,6 +40,6 @@ class Driver extends Model
     }
 
     public function company(){
-       return $this->belongsTo(Company::class, 'comapny_id');
+       return $this->belongsTo(Company::class);
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccessorialController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DriverController;
 use App\Http\Controllers\InterlinerController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -89,6 +90,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [CompanyController::class, 'destroy']);
         Route::get('', [CompanyController::class, 'index']);
         Route::get('/{id}', [CompanyController::class, 'show']);
+    });
+
+    Route::prefix('/drivers')->group(function () {
+        Route::post('', [DriverController::class, 'store']);
+        Route::put('/{id}', [DriverController::class, 'update']);
+        Route::delete('', [DriverController::class, 'delete_drivers']);
+        Route::delete('/{id}', [DriverController::class, 'destroy']);
+        Route::get('', [DriverController::class, 'index']);
+        Route::get('/{id}', [DriverController::class, 'show']);
     });
 
 });
