@@ -50,7 +50,9 @@ class DriverResource extends JsonResource
                     return [
                         'type' => $doc->type,
                         'file_path' => $doc->file_path,
-                        'expiry_date' => $doc->expiry_date
+                        'expiry_date' => $doc->expiry_date,
+                        'fname' => $doc->fname,
+                        'fsize' => $doc->fsize
                     ];
                 });
             }),

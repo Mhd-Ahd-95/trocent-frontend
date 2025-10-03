@@ -14,8 +14,11 @@ return new class extends Migration {
             $table->id();
             $table->enum('type', ['license', 'tdg', 'record', 'background', 'residence_history']);
             $table->string('file_path');
+            $table->string('fname');
+            $table->float('fsize');
             $table->date('expiry_date');
             $table->foreignId('driver_id')->constrained('drivers', 'id')->onDelete('cascade');
+            $table->unique(['driver_id', 'fname']);
         });
     }
 

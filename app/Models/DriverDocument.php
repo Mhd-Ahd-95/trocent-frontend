@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class DriverDocument extends Model
 {
+    public $timestamps = false;
+    
     protected $fillable = [
         'type',
         'file_path',
         'expiry_date',
+        'fname',
+        'fsize',
         'driver_id'
     ];
 

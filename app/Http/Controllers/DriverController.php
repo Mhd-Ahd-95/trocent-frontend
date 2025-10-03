@@ -49,6 +49,7 @@ class DriverController extends Controller
     {
         DB::beginTransaction();
         try {
+            logger($request);
             $data = $request->validated();
             $documents = $data['driver_documents'] ?? [];
             unset($data['driver_documents']);
@@ -60,12 +61,14 @@ class DriverController extends Controller
                 $docs_insert = [];
                 foreach ($documents as $doc) {
                     $folder = 'driver_documents/' . $driver->driver_number;
-                    if (isset($doc['file'])) {
-                        $path = $doc->file('file')->store($folder, 'public');
+                    if (isset($doc['file']) && $doc['file'] instanceof \Illuminate\Http\UploadedFile) {
+                        $path = $doc['file']->store($folder, 'public');
                         $docs_insert[] = [
                             'type' => $doc['type'],
                             'file_path' => $path,
                             'expiry_date' => $doc['expiry_date'],
+                            'fname' => $doc['fname'],
+                            'fsize' => $doc['fsize'],
                             'driver_id' => $driver->id
                         ];
                     }
