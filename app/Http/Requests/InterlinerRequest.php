@@ -30,11 +30,11 @@ class InterlinerRequest extends FormRequest
                 'contact_name' => ['sometimes', 'nullable', 'string'],
                 'phone' => ['sometimes', 'nullable', 'string'],
                 'email' => ['sometimes', 'nullable', 'email'],
-                'address' => ['sometimes', 'string'],
+                'address' => ['sometimes', 'string', 'nullable'],
                 'suite' => ['sometimes', 'nullable', 'string'],
-                'city' => ['sometimes', 'string'],
-                'province' => ['sometimes', 'string'],
-                'postal_code' => ['sometimes', 'string']
+                'city' => ['sometimes', 'string', 'nullable'],
+                'province' => ['sometimes', 'string', 'nullable'],
+                'postal_code' => ['sometimes', 'string', 'nullable']
             ];
         }
         return [
