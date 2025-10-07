@@ -94,11 +94,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('/drivers')->group(function () {
         Route::post('', [DriverController::class, 'store']);
+        // Route::post('/{id}', [DriverController::class, 'update']);
         Route::put('/{id}', [DriverController::class, 'update']);
         Route::delete('', [DriverController::class, 'delete_drivers']);
         Route::delete('/{id}', [DriverController::class, 'destroy']);
         Route::get('', [DriverController::class, 'index']);
         Route::get('/{id}', [DriverController::class, 'show']);
+        Route::get('/download-file/{id}', [DriverController::class, 'download_file']);
     });
 
 });

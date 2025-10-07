@@ -22,10 +22,9 @@ class DriverRequest extends FormRequest
      */
     public function rules(): array
     {
-        $driverId = $this->route('id');
-        logger($this);
+        $driverId = $this->route(param: 'id');
         $rules = [
-            'driver_number' => ['required', 'string', Rule::unique('drivers', 'driver_number')],
+            'driver_number' => ['required', 'string'],
             'fname' => ['required', 'string'],
             'mname' => ['sometimes', 'nullable', 'string'],
             'lname' => ['required', 'string'],
@@ -51,10 +50,31 @@ class DriverRequest extends FormRequest
             'company_id' => ['required', 'numeric'],
             'driver_documents' => ['sometimes', 'array', 'nullable'],
             'driver_documents.*.type' => ['required_with:driver_documents', 'string'],
-            'driver_documents.*.file' => ['required_with:driver_documents', 'file', 'max:5120'],
             'driver_documents.*.expiry_date' => ['required_with:driver_documents', 'date'],
             'driver_documents.*.fname' => ['required_with:driver_documents', 'string'],
             'driver_documents.*.fsize' => ['required_with:driver_documents', 'numeric'],
+            'driver_documents.*.id' => ['sometimes:driver_documents', 'numeric', 'nullable'],
+            'driver_documents.*.file_path' => ['sometimes:driver_documents', 'string', 'nullable'],
+            'driver_documents.*.file' => [
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1];
+                    $documents = $this->input('driver_documents') ?? [];
+                    $document = $documents[$index] ?? null;
+
+                    if (!$document)
+                        return;
+
+                    // If file_path exists, it's an old file, skip
+                    if (!empty($document['file_path']))
+                        return;
+
+                    // New file must exist
+                    if (empty($document['file']) || !($document['file'] instanceof \Illuminate\Http\UploadedFile)) {
+                        $fail('The file field is required for new documents.');
+                    }
+                },
+                'file'
+            ]
         ];
 
         if ($this->isMethod('put')) {
@@ -71,23 +91,55 @@ class DriverRequest extends FormRequest
                 }
             }
             $rules['driver_number'][] = Rule::unique('drivers', 'driver_number')->ignore($driverId);
+        } else {
+            $rules['driver_number'][] = Rule::unique('drivers', 'driver_number');
         }
+
 
         return $rules;
     }
 
     protected function prepareForValidation()
     {
-        $this->merge(array_map(function ($value) {
-            if ($value === 'null')
+        $data = $this->all();
+
+        $clean = null; 
+
+        $clean = function ($value, $key = null) use (&$clean) {
+            
+            if ($value === 'null') {
                 return null;
+            }
+
+            if ($key === 'phone' || $key === 'driver_number') {
+                return $value;
+            }
+
+            if (is_string($value) && is_numeric($value)) {
+                return (int) $value;
+            }
+
+            if (is_array($value)) {
+                $newArray = [];
+                foreach ($value as $k => $v) {
+                    $newArray[$k] = $clean($v, $k); 
+                }
+                return $newArray;
+            }
+
             return $value;
-        }, $this->all()));
+        };
+
+        $cleaned = [];
+        foreach ($data as $k => $v) {
+            $cleaned[$k] = $clean($v, $k);
+        }
 
         if ($this->has('tdg')) {
-            $this->merge([
-                'tdg' => filter_var($this->tdg, FILTER_VALIDATE_BOOLEAN)
-            ]);
+            $cleaned['tdg'] = filter_var($this->tdg, FILTER_VALIDATE_BOOLEAN);
         }
+
+        $this->replace($cleaned);
     }
+
 }

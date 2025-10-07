@@ -14,7 +14,6 @@ class DriverResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        logger($this->company);
         return [
             'id' => $this->id,
             'driver_number' => $this->driver_number,
@@ -42,12 +41,12 @@ class DriverResource extends JsonResource
             'driver_description' => $this->driver_description,
             'company_id' => $this->company_id,
             'company_name' => $this->whenLoaded('company', function(){
-                logger($this->company);
                 return $this->company->operating_name;
             }),
             'driver_documents' => $this->whenLoaded('driver_documents', function () {
                 return $this->driver_documents->map(function($doc){
                     return [
+                        'id' => $doc->id,
                         'type' => $doc->type,
                         'file_path' => $doc->file_path,
                         'expiry_date' => $doc->expiry_date,
