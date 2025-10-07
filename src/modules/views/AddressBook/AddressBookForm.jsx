@@ -177,8 +177,16 @@ export default function AddressBookForm(props) {
                                         label='Province*'
                                         fullWidth
                                         {...register('province', {
-                                            required: 'Province is a required field'
+                                            required: 'Province is a required field',
+                                            maxLength: {
+                                                value: 2,
+                                                message: 'Province must be 2 Character'
+                                            },
+                                            validate: value => {
+                                                value > 2 ? 'Province must be 2 Character' : true
+                                            }
                                         })}
+                                        inputProps={{ maxLength: 2 }}
                                         error={!!errors?.province}
                                         variant='outlined'
                                         helperText={errors?.province?.message}

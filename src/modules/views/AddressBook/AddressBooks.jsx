@@ -4,7 +4,6 @@ import { Breadcrumbs, ConfirmModal, DrawerForm, Modal, Table } from '../../compo
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { AccessTime, CheckCircleOutline, Close, DeleteForever } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { AddressBookContext } from '../../contexts'
 import AddressBooksApi from '../../apis/AddressBooks.api'
@@ -66,7 +65,7 @@ export default function AddressBook() {
       grid
       button
       btnProps={{
-        label: 'New Address Book',
+        label: 'New Address',
         onClick: () => setOpenDrawer(1)
       }}
     >
@@ -129,14 +128,14 @@ export default function AddressBook() {
                 field: 'requires_appointment',
                 minWidth: 100,
                 flex: 1,
-                renderCell: rowData => rowData.value ? <AccessTime sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='primary' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action'/>
+                renderCell: rowData => rowData.value ? <AccessTime sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='primary' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 headerName: 'No Wait',
                 field: 'no_waiting_time',
                 minWidth: 100,
                 flex: 1,
-                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action'/>
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',

@@ -2,14 +2,12 @@ import React from 'react'
 import { Grid, MenuItem } from '@mui/material'
 import { StyledButton, SubmitButton, TextInput } from '../../components'
 import { useForm, Controller } from 'react-hook-form'
-import { useSnackbar } from 'notistack'
 import { RoleContext } from '../../contexts'
 
 export default function UserForm(props) {
-  const { initialValues, submit, editMode, setOpen, setUsers, users } = props
+  const { initialValues, submit, editMode, setOpen } = props
   const { roles } = React.useContext(RoleContext)
   const [loading, setLoading] = React.useState(false)
-  const { enqueueSnackbar } = useSnackbar()
 
   const {
     register,
@@ -29,39 +27,26 @@ export default function UserForm(props) {
     }
   })
 
-  const onSubmit = (data, e) => {
+  const onSubmit = async (data, e) => {
     setLoading(true)
     const action = e?.nativeEvent?.submitter?.id
     if (editMode && data['password'].length === 0) {
       delete data['password']
     }
-    submit(data)
-      .then(res => {
-        const result = res.data.data
-        if (!editMode) {
-          setUsers([result, ...users])
-          enqueueSnackbar('New user has been created successfully', {
-            variant: 'success'
-          })
-          action === 'save-user-action' ? reset() : setOpen(false)
-        } else {
-          const updateData = [...users]
-          const index = updateData.findIndex(user => user.id === result.id)
-          updateData[index] = result
-          setUsers([...updateData])
-          enqueueSnackbar('User has been updated successfully', {
-            variant: 'success'
-          })
-          setOpen(false)
-        }
-      })
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
-      .finally(() => setLoading(false))
+    try {
+      await submit(data);
+      if (action === 'apply-user-action') {
+        setOpen(false)
+      }
+      else {
+        reset()
+      }
+    } catch (error) {
+      // console.log(error);
+      //
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

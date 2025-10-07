@@ -6,9 +6,8 @@ import { useSnackbar } from 'notistack'
 import global from '../../global'
 
 export default function AccessorialForm(props) {
-    const { initialValues, submit, editMode, setOpen, setData, data } = props
+    const { initialValues, submit, editMode, setOpen } = props
     const [loading, setLoading] = React.useState(false)
-    const { enqueueSnackbar } = useSnackbar()
     const { accessorial_types } = global
     const { _spacing } = global.methods
 
@@ -38,36 +37,23 @@ export default function AccessorialForm(props) {
         }
     })
 
-    const onSubmit = (accessorial, e) => {
+    const onSubmit = async (data, e) => {
         setLoading(true)
         const action = e?.nativeEvent?.submitter?.id
-        submit(accessorial)
-            .then(res => {
-                const result = res.data.data
-                if (!editMode) {
-                    setData([result, ...data])
-                    enqueueSnackbar('New Accessorial has been created successfully', {
-                        variant: 'success'
-                    })
-                    action === 'save-type-action' ? reset() : setOpen(false)
-                } else {
-                    const updateData = [...data]
-                    const index = updateData.findIndex(vt => vt.id === result.id)
-                    updateData[index] = result
-                    setData([...updateData])
-                    enqueueSnackbar('Accessorial has been updated successfully', {
-                        variant: 'success'
-                    })
-                    setOpen(false)
-                }
-            })
-            .catch(error => {
-                const message = error.response?.data.message
-                const status = error.response?.status
-                const errorMessage = message ? message + ' - ' + status : error.message
-                enqueueSnackbar(errorMessage, { variant: 'error' })
-            })
-            .finally(() => setLoading(false))
+        try {
+            await submit(data);
+            if (action === 'apply-type-action') {
+                setOpen(false)
+            }
+            else {
+                reset()
+            }
+        } catch (error) {
+            // console.log(error);
+            //
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (

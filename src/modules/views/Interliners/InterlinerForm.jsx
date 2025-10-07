@@ -37,7 +37,7 @@ export default function InterlinerForm(props) {
         try {
             await submit(data);
             if (action === 'apply-interliner-action') {
-                navigate('/interliners');
+                navigate('/interliners', { state: { fromEditOrCreate: true } });
             }
             else {
                 reset()

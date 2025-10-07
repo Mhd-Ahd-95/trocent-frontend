@@ -1,6 +1,6 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, Table, Modal, ConfirmModal } from '../../components'
+import { Breadcrumbs, Table, Modal, ConfirmModal, DrawerForm } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined'
@@ -8,9 +8,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useDriverMutation, useDrivers } from '../../hooks/useDrivers'
 import { CheckCircleOutline, Close } from '@mui/icons-material'
-import { saveAs } from 'file-saver'
-import DriversApi from '../../apis/Drivers.api'
 import { useQueryClient } from "@tanstack/react-query";
+import DriverLogin from './CreateDriverLogin'
+import { useUserMutations } from '../../hooks/useUsers'
 
 
 export default function Drivers() {
@@ -21,10 +21,12 @@ export default function Drivers() {
   const queryClient = useQueryClient();
   const [selectedDrivers, setSelectedDrivers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
-  const { data, isLoading, isError, error, refetch, isFetching, isRefetching } = useDrivers()
+  const { data, isLoading, isError, error, refetch, isFetching } = useDrivers()
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { removeMany } = useDriverMutation()
+  const [driver, setDriver] = React.useState({})
+  const { create } = useUserMutations()
 
   const state = queryClient.getQueryState(['drivers']);
 
@@ -170,7 +172,11 @@ export default function Drivers() {
                     </Button>
                     <Button
                       startIcon={<LockPersonOutlinedIcon />}
-                      onClick={() => setOpenModal(true)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDriver(params.row)
+                        setOpenDrawer(true)
+                      }}
                       variant='text'
                       size='small'
                       sx={{
@@ -205,6 +211,27 @@ export default function Drivers() {
           handleSubmit={() => handleDeleteDrivers([...selectedDrivers])}
         />
       </Modal>
+      {openDrawer && (
+        <DrawerForm
+          title='Create Login'
+          open={openDrawer}
+          setOpen={setOpenDrawer}
+        >
+          <DriverLogin
+            initialValues={{ type: 'driver', email: driver?.email || '', name: driver.fname }}
+            submit={async (payload) => {
+              try {
+                await create.mutateAsync({ id: selectedUser.id, payload })
+              }
+              catch {
+                //
+              }
+            }}
+            setOpen={setOpenDrawer}
+            editMode
+          />
+        </DrawerForm>
+      )}
     </MainLayout>
   )
 }

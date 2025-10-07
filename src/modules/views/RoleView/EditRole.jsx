@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom'
 import { RoleContext } from '../../contexts'
 import RoleApi from '../../apis/Role.api'
 
-export default function EditRole () {
+export default function EditRole() {
   const { rid } = useParams()
   const { roles } = React.useContext(RoleContext)
 

@@ -8,34 +8,20 @@ import AccessorialsApi from '../../apis/Accessorials.api'
 import { useSnackbar } from 'notistack'
 import AccessorialForm from './AccessorialForm'
 import global from '../../global'
+import { useAccessorialMutations, useAccessorials } from '../../hooks/useAccessorials'
 
 export default function Accessorials() {
 
   const { _spacing } = global.methods
-  const [accessorials, setAccessorials] = React.useState([])
   const [accessorial, setAccessorial] = React.useState({})
   const [selectedAccessorials, setSelectedAccessorials] = React.useState([])
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
-  const [loading, setLoading] = React.useState(true)
   const { enqueueSnackbar } = useSnackbar()
+  const { data, isLoading, isError, error } = useAccessorials()
 
-  const loadAccessorials = React.useCallback(() => {
-    AccessorialsApi.getAccessorials()
-      .then(res => {
-        const result = res.data.data
-        setAccessorials(result)
-      })
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
-      .finally(() => setLoading(false))
-  }, [enqueueSnackbar])
+  const { create, update, removeMany } = useAccessorialMutations()
 
-  React.useEffect(() => loadAccessorials(), [loadAccessorials])
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
@@ -46,29 +32,24 @@ export default function Accessorials() {
     setRowSelectionModel(newModel)
     let selectedIds = Array.from(newModel.ids)
     if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = accessorials.map(row => row.id)
+      selectedIds = data.map(row => row.id)
     }
     setSelectedAccessorials(selectedIds)
   }
 
   const handleDeleteAccessorials = (ids) => {
-    AccessorialsApi.deleteAccessorials(ids)
-      .then(res => {
-        if (res.data) {
-          const filtered = accessorials.filter((ab) => !ids.includes(ab.id))
-          setAccessorials([...filtered])
-          enqueueSnackbar('Accessorials has been successfully deleted', { variant: 'success' })
-        }
-      })
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
-      .finally(() => setOpenModal(false))
+    removeMany.mutate(ids)
+    setOpenModal(false)
   }
 
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
 
   return (
     <MainLayout
@@ -99,7 +80,7 @@ export default function Accessorials() {
             handleDeleteSelected={() => setOpenModal(2)}
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
-            loading={loading}
+            loading={isLoading}
             options={{
               filtering: false,
               search: true
@@ -191,7 +172,7 @@ export default function Accessorials() {
                 )
               }
             ]}
-            data={[...accessorials]}
+            data={data || []}
           />
         </Grid>
       </Grid>
@@ -227,9 +208,7 @@ export default function Accessorials() {
         <DrawerForm title='Create Accessorial' setOpen={setOpenDrawer} open={openDrawer === 1}>
           <AccessorialForm
             initialValues={{}}
-            submit={(payload) => AccessorialsApi.createAccessorial(payload)}
-            data={accessorials}
-            setData={setAccessorials}
+            submit={async (payload) => create.mutateAsync(payload)}
             setOpen={setOpenDrawer}
           />
         </DrawerForm>
@@ -238,9 +217,7 @@ export default function Accessorials() {
         <DrawerForm title='Edit Accessorial' setOpen={setOpenDrawer} open={openDrawer === 2}>
           <AccessorialForm
             initialValues={{ ...accessorial }}
-            submit={(payload) => AccessorialsApi.updateAccessorial(accessorial.id, payload)}
-            data={accessorials}
-            setData={setAccessorials}
+            submit={async (payload) => await update.mutateAsync({ id: accessorial.id, payload })}
             setOpen={setOpenDrawer}
             editMode
           />

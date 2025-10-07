@@ -15,6 +15,7 @@ import { DeleteForever } from '@mui/icons-material'
 import UserAPI from '../../apis/User.api'
 import { useSnackbar } from 'notistack'
 import UserForm from './UserForm'
+import { useUserMutations, useUsers } from '../../hooks/useUsers'
 
 function UsersTable(props) {
   const { data, loading } = props
@@ -126,46 +127,29 @@ function UsersTable(props) {
 }
 
 export default function Users() {
-  const [loading, setLoading] = React.useState(true)
-  const [users, setUsers] = React.useState([])
-  const { enqueueSnackbar } = useSnackbar()
+
+  const { data, isLoading, error, isError } = useUsers()
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const [selectedUser, setSelectedUser] = React.useState({})
   const [openModal, setOpenModal] = React.useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
-  const loadUsers = React.useCallback(() => {
-    UserAPI.getUsers()
-      .then(res => setUsers(res.data.data))
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
-      .finally(() => setLoading(false))
-  }, [enqueueSnackbar])
-
-  React.useEffect(() => loadUsers(), [loadUsers])
+  const { create, update, remove } = useUserMutations()
 
   const handleDeleteUser = uid => {
-    UserAPI.deleteUser(uid)
-      .then(res => {
-        if (res.data) {
-          const filtered = users.filter(usr => usr.id !== uid)
-          setUsers([...filtered])
-          enqueueSnackbar('User has been successfully deleted', {
-            variant: 'success'
-          })
-        }
-        setOpenModal(false)
-      })
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
+    remove.mutate(uid)
+    setSelectedUser({})
+    setOpenModal(false)
   }
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
 
   return (
     <MainLayout
@@ -194,33 +178,29 @@ export default function Users() {
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
-                    data={users}
-                    setData={setUsers}
-                    loading={loading}
+                    data={data || []}
+                    loading={isLoading}
                   />,
                   <UsersTable
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
-                    data={users.filter(user => user.type === 'staff')}
-                    setData={setUsers}
-                    loading={loading}
+                    data={data?.filter(user => user.type === 'staff') || []}
+                    loading={isLoading}
                   />,
                   <UsersTable
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
-                    data={users.filter(user => user.type === 'driver')}
-                    setData={setUsers}
-                    loading={loading}
+                    data={data?.filter(user => user.type === 'driver') || []}
+                    loading={isLoading}
                   />,
                   <UsersTable
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
-                    data={users.filter(user => user.type === 'customer')}
-                    setData={setUsers}
-                    loading={loading}
+                    data={data?.filter(user => user.type === 'customer') || []}
+                    loading={isLoading}
                   />
                 ]}
               />
@@ -236,9 +216,7 @@ export default function Users() {
         >
           <UserForm
             initialValues={{ password: '' }}
-            submit={payload => UserAPI.createUser(payload)}
-            setUsers={setUsers}
-            users={users}
+            submit={async (payload) => await create.mutateAsync(payload)}
             setOpen={setOpenDrawer}
           />
         </DrawerForm>
@@ -254,9 +232,7 @@ export default function Users() {
               ...selectedUser,
               role: selectedUser?.role[0]?.name
             }}
-            submit={payload => UserAPI.updateUser(selectedUser.id, payload)}
-            setUsers={setUsers}
-            users={users}
+            submit={async (payload) => await update.mutateAsync({ id: selectedUser.id, payload })}
             setOpen={setOpenDrawer}
             editMode
           />

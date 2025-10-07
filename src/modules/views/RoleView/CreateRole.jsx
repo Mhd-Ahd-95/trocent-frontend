@@ -5,7 +5,7 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs } from '../../components'
 import RoleApi from '../../apis/Role.api'
 
-export default function CreateRole () {
+export default function CreateRole() {
   return (
     <MainLayout
       title='Create Role'
