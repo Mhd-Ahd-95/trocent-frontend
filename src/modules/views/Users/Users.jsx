@@ -128,7 +128,7 @@ function UsersTable(props) {
 
 export default function Users() {
 
-  const { data, isLoading, error, isError } = useUsers()
+  const { data, isLoading, error, isError, isFetching } = useUsers()
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const [selectedUser, setSelectedUser] = React.useState({})
   const [openModal, setOpenModal] = React.useState(false)
@@ -179,28 +179,28 @@ export default function Users() {
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
                     data={data || []}
-                    loading={isLoading}
+                    loading={isLoading || isFetching}
                   />,
                   <UsersTable
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
                     data={data?.filter(user => user.type === 'staff') || []}
-                    loading={isLoading}
+                    loading={isLoading || isFetching}
                   />,
                   <UsersTable
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
                     data={data?.filter(user => user.type === 'driver') || []}
-                    loading={isLoading}
+                    loading={isLoading || isFetching}
                   />,
                   <UsersTable
                     setOpenModal={setOpenModal}
                     setOpenDrawer={setOpenDrawer}
                     setSelected={setSelectedUser}
                     data={data?.filter(user => user.type === 'customer') || []}
-                    loading={isLoading}
+                    loading={isLoading || isFetching}
                   />
                 ]}
               />

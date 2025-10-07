@@ -53,6 +53,21 @@ export function useUserMutations() {
         enqueueSnackbar(errorMessage, { variant: 'error' });
     };
 
+    const createDriverLogin = useMutation({
+        mutationFn: async (payload) => {
+            const res = await UserAPI.createUser(payload);
+            return res.data.data;
+        },
+        onSuccess: (newDriver) => {
+            queryClient.setQueryData(['users'], (old = []) => {
+                return [newDriver, ...old]
+            });
+            queryClient.invalidateQueries(['users'])
+            enqueueSnackbar('User has been created successfully', { variant: 'success' });
+        },
+        onError: handleError,
+    });
+
     const create = useMutation({
         mutationFn: async (payload) => {
             const res = await UserAPI.createUser(payload);
@@ -99,6 +114,6 @@ export function useUserMutations() {
         onError: handleError,
     });
 
-    return { create, update, remove };
+    return { create, update, remove, createDriverLogin };
 
 }

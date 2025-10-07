@@ -26,7 +26,7 @@ export default function Drivers() {
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { removeMany } = useDriverMutation()
   const [driver, setDriver] = React.useState({})
-  const { create } = useUserMutations()
+  const { createDriverLogin } = useUserMutations()
 
   const state = queryClient.getQueryState(['drivers']);
 
@@ -221,7 +221,7 @@ export default function Drivers() {
             initialValues={{ type: 'driver', email: driver?.email || '', name: driver.fname }}
             submit={async (payload) => {
               try {
-                await create.mutateAsync({ id: selectedUser.id, payload })
+                await createDriverLogin.mutateAsync(payload)
               }
               catch {
                 //

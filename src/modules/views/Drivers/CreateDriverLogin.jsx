@@ -30,15 +30,15 @@ export default function DriverLogin(props) {
     const onSubmit = async (data, e) => {
         setLoading(true)
         console.log(data);
-        // try {
-        //     await submit(data);
-        //     setOpen(false)
-        // } catch (error) {
-        //     // console.log(error);
-        //     //
-        // } finally {
-        //     setLoading(false);
-        // }
+        try {
+            await submit(data);
+            setOpen(false)
+        } catch (error) {
+            // console.log(error);
+            //
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
