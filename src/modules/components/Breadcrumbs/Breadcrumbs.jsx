@@ -12,7 +12,7 @@ const CustomBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
     fontSize: 14,
   },
   "& a": {
-    color: theme.palette.grey[ 700 ],
+    color: theme.palette.grey[700],
     textDecoration: "none",
     fontSize: 14,
     "&:hover": {
@@ -21,25 +21,26 @@ const CustomBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
   },
 }));
 
+
 export default function ItemTrace(props) {
   const icon = props.icon || <NavigateNext fontSize="small" />;
   return (
-    <CustomBreadcrumbs separator={ icon } aria-label="breadcrumb">
-      { props.items.map(({ text, url }) =>
+    <CustomBreadcrumbs separator={icon} aria-label="breadcrumb">
+      {props.items.map(({ text, url, state }) =>
         url && !text.length ? (
-          <Skeleton key={ uuidv4() } variant="text" width="100px" />
+          <Skeleton key={uuidv4()} variant="text" width="100px" />
         ) : url ? (
-          <Link key={ uuidv4() } color="inherit" to={ url }>
-            { text }
+          <Link key={uuidv4()} color="inherit" to={url} state={state ? { ...state } : {}}>
+            {text}
           </Link>
         ) : !text.length || text === " " ? (
-          <Skeleton key={ uuidv4() } variant="text" width="100px" />
+          <Skeleton key={uuidv4()} variant="text" width="100px" />
         ) : (
-          <Typography key={ uuidv4() } color="inherit">
-            { text }
+          <Typography key={uuidv4()} color="inherit">
+            {text}
           </Typography>
         )
-      ) }
+      )}
     </CustomBreadcrumbs>
   );
 }

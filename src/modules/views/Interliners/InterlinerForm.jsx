@@ -42,7 +42,7 @@ export default function InterlinerForm(props) {
             else {
                 reset()
             }
-            props.refetch()
+            editMode && props.refetch()
         } catch (error) {
             // console.log(error);
             //

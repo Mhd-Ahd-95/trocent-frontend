@@ -58,7 +58,6 @@ export default function AddressBookForm(props) {
         e.preventDefault()
         setIsLoading(true)
         const action = e?.nativeEvent?.submitter?.id
-        console.log(data);
         submit(data)
             .then(res => {
                 const result = res.data.data

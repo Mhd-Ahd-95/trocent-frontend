@@ -4,21 +4,29 @@ import { Breadcrumbs, Table, Modal, ConfirmModal } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useDriverMutation, useDrivers } from '../../hooks/useDrivers'
 import { CheckCircleOutline, Close } from '@mui/icons-material'
+import { saveAs } from 'file-saver'
+import DriversApi from '../../apis/Drivers.api'
+import { useQueryClient } from "@tanstack/react-query";
+
 
 export default function Drivers() {
+
+  const location = useLocation()
+  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
   const navigate = useNavigate()
+  const queryClient = useQueryClient();
   const [selectedDrivers, setSelectedDrivers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
-  const { data, isLoading, isError, error } = useDrivers()
+  const { data, isLoading, isError, error, refetch, isFetching, isRefetching } = useDrivers()
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { removeMany } = useDriverMutation()
 
-  console.log(data);
+  const state = queryClient.getQueryState(['drivers']);
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
@@ -34,6 +42,8 @@ export default function Drivers() {
     setSelectedDrivers(selectedIds)
   }
 
+  const refetchDrivers = React.useCallback(() => refetch(), [state])
+
 
   React.useEffect(() => {
     if (isError && error) {
@@ -42,7 +52,10 @@ export default function Drivers() {
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
-  }, [isError, error])
+    if (state.dataUpdateCount === 1 && fromEditOrCreate) {
+      refetchDrivers()
+    }
+  }, [isError, error, state?.dataUpdateCount])
 
   const handleDeleteDrivers = (dids) => {
     removeMany.mutate(dids)
@@ -73,7 +86,7 @@ export default function Drivers() {
             handleDeleteSelected={() => setOpenModal(true)}
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
-            loading={isLoading}
+            loading={isLoading || isFetching}
             options={{
               filtering: true,
               search: true
@@ -114,7 +127,7 @@ export default function Drivers() {
                 field: 'tdg',
                 flex: 1,
                 minWidth: 80,
-                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action'/>
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',
@@ -139,7 +152,10 @@ export default function Drivers() {
                       startIcon={
                         <EditSquareIcon sx={{ fontSize: '10px', padding: 0 }} />
                       }
-                      onClick={() => console.log(params)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/driver/edit/${params.row.id}`)
+                      }}
                       variant='text'
                       size='small'
                       sx={{
@@ -154,7 +170,7 @@ export default function Drivers() {
                     </Button>
                     <Button
                       startIcon={<LockPersonOutlinedIcon />}
-                      onClick={() => console.log(params)}
+                      onClick={() => setOpenModal(true)}
                       variant='text'
                       size='small'
                       sx={{

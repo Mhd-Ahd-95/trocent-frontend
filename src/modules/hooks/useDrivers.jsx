@@ -77,7 +77,6 @@ export function useDriverMutation() {
                 queryClient.setQueryData(['drivers'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
-
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

@@ -1,12 +1,13 @@
 import React from "react";
-import { AccordionComponent, TextInput } from "../../components";
+import { AccordionComponent, TextInput, UploadFile } from "../../components";
 import { Controller, useWatch } from "react-hook-form";
 import { Grid, MenuItem } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
+import moment from "moment";
 
-export default function DriverDocument(props) {
+function DriverDocument(props) {
 
-    const { setValue, remove, control, index, item } = props
+    const { setValue, remove, control, index } = props
 
     const driverDocument = useWatch({
         control,
@@ -27,7 +28,7 @@ export default function DriverDocument(props) {
                         <Controller
                             name={`driver_documents.${index}.type`}
                             control={control}
-                            rules={{ required: 'Type is required' }}
+                            rules={{ required: 'Type is a required field' }}
                             render={({ field, fieldState }) => (
                                 <TextInput
                                     {...field}
@@ -49,21 +50,18 @@ export default function DriverDocument(props) {
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Controller
-                            name={`driver_documents.${index}.type`}
+                            name={`driver_documents.${index}.file`}
                             control={control}
-                            rules={{ required: 'Type is required' }}
+                            rules={!driverDocument?.fname && !driverDocument?.fsize ? { required: 'File is required' } : {}}
                             render={({ field, fieldState }) => (
-                                <TextInput
-                                    {...field}
-                                    label='Upload File*'
-                                    variant='outlined'
-                                    select
-                                    fullWidth
-                                    error={!!fieldState?.error}
-                                    helperText={fieldState?.error?.message}
-                                >
-                                    <MenuItem value='license'>License</MenuItem>
-                                </TextInput>
+                                <UploadFile
+                                    editMode={props.editMode}
+                                    field={field}
+                                    driverDocument={driverDocument}
+                                    fieldState={fieldState}
+                                    index={index}
+                                    setValue={setValue}
+                                />
                             )}
                         />
                     </Grid>
@@ -76,12 +74,12 @@ export default function DriverDocument(props) {
                                 <DatePicker
                                     label={'Expiry Date*'}
                                     views={['year', 'month', 'day']}
-                                    value={field.value}
-                                    onChange={date => field.onChange(date)}
-                                    error={!!fieldState?.error}
-                                    helperText={fieldState?.error?.message}
+                                    value={field.value ? moment(field.value) : null}
+                                    onChange={date => field.onChange(date ? date.toISOString() : null)}
                                     slotProps={{
                                         textField: {
+                                            error: !!fieldState?.error,
+                                            helperText: fieldState?.error?.message,
                                             fullWidth: true,
                                             sx: {
                                                 '& .MuiPickersOutlinedInput-root': { height: 45 },
@@ -106,3 +104,5 @@ export default function DriverDocument(props) {
     )
 
 }
+
+export default React.memo(DriverDocument)

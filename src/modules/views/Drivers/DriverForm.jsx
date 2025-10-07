@@ -2,28 +2,22 @@ import React from 'react'
 import { Grid, CircularProgress, Switch, FormControl, Autocomplete, MenuItem, TextField, Typography, Button } from '@mui/material'
 import { TextInput, StyledButton, SubmitButton, AccordionComponent, CustomFormControlLabel } from '../../components'
 import initialInputs from './initialInputs'
-import { useForm, Controller, useWatch, useFieldArray } from 'react-hook-form'
+import { useForm, Controller, useFieldArray } from 'react-hook-form'
 import global from '../../global'
 import { useCompanies } from '../../hooks/useComapnies'
 import { DatePicker } from '@mui/x-date-pickers'
 import { v4 as uuidv4 } from "uuid";
 import { Add } from '@mui/icons-material'
 import DriverDocument from './DriverDocument'
+import { useNavigate } from 'react-router-dom'
 
 export default function DriverForm(props) {
 
+    const navigate = useNavigate()
     const { initialValues, submit, editMode } = props
     const { _spacing } = global.methods
-    const [openAutoComplete, setOpenAutoComplete] = React.useState(false)
     const [loading, setLoading] = React.useState(false)
-    const { isLoading, refetch } = useCompanies(false)
-    const [companies, setCompanies] = React.useState([])
-
-    const handleAutoCompleteOepn = async () => {
-        setOpenAutoComplete(true)
-        const res = await refetch()
-        setCompanies(res.data || [])
-    }
+    const { isLoading, data } = useCompanies()
 
     const { register,
         control,
@@ -64,24 +58,40 @@ export default function DriverForm(props) {
 
     const onSubmit = async (data, e) => {
         e.preventDefault();
-        // setLoading(true);
-        console.log(data);
+        setLoading(true);
+        const formData = new FormData()
+        data.driver_documents.forEach((doc, index) => {
+            if (doc.file_path && !doc.file) {
+                const { file, ...rest } = doc;
+                Object.entries(rest).forEach(([k, v]) => {
+                    formData.append(`driver_documents[${index}][${k}]`, v);
+                });
+            } else if (doc.file instanceof File) {
+                Object.entries(doc).forEach(([k, v]) => {
+                    formData.append(`driver_documents[${index}][${k}]`, v);
+                });
+            }
+        });
+        for (let [key, value] of Object.entries(data)) {
+            if (key === 'driver_documents') continue;
+            formData.append(key, value);
+        }
         const action = e?.nativeEvent?.submitter?.id;
-        // try {
-        //     await submit(data);
-        //     if (action === 'apply-interliner-action') {
-        //         navigate('/interliners');
-        //     }
-        //     else {
-        //         reset()
-        //     }
-        //     props.refetch()
-        // } catch (error) {
-        //     // console.log(error);
-        //     //
-        // } finally {
-        //     setLoading(false);
-        // }
+        try {
+            await submit(formData);
+            if (action === 'apply-driver-action') {
+                navigate('/drivers', { state: { fromEditOrCreate: true } });
+            }
+            else {
+                reset()
+            }
+            editMode && props.refetch()
+        } catch (error) {
+            // console.log(error);
+            //
+        } finally {
+            setLoading(false);
+        }
     };
 
     const { fields, append, remove } = useFieldArray({
@@ -114,18 +124,28 @@ export default function DriverForm(props) {
                                             <React.Fragment key={uuidv4()}>
                                                 {selected && options?.length > 0 ?
                                                     <Grid size={{ xs: 12, sm: 6, md: md }} key={uuidv4()}>
-                                                        <TextInput
-                                                            label={label}
-                                                            variant='outlined'
-                                                            fullWidth
-                                                            {...register(field, required ? { required: `${_spacing(field)} is a required field` } : {})}
-                                                            error={!!errors[field]}
-                                                            helperText={errors[field]?.message}
-                                                        >
-                                                            {options.map((option) => (
-                                                                <MenuItem value={option} key={uuidv4()}>{_spacing(option)}</MenuItem>
-                                                            ))}
-                                                        </TextInput>
+                                                        <Controller
+                                                            name={field}
+                                                            control={control}
+                                                            rules={required ? { required: `${_spacing(field)} is a required field` } : {}}
+                                                            render={({ field: controllerField }) => (
+                                                                <TextInput
+                                                                    {...controllerField}
+                                                                    label={label}
+                                                                    variant='outlined'
+                                                                    fullWidth
+                                                                    error={!!errors[field]}
+                                                                    value={controllerField.value ?? ""}
+                                                                    helperText={errors[field]?.message}
+                                                                    select
+                                                                >
+                                                                    <MenuItem value={''}><em>Select an option</em></MenuItem>
+                                                                    {options.map((option) => (
+                                                                        <MenuItem value={option} key={uuidv4()}>{_spacing(option)}</MenuItem>
+                                                                    ))}
+                                                                </TextInput>
+                                                            )}
+                                                        />
                                                     </Grid>
                                                     : type === 'switch' ?
                                                         <Grid size={{ xs: 12, sm: 6, md: md }} key={uuidv4()}>
@@ -135,13 +155,13 @@ export default function DriverForm(props) {
                                                                         <Controller
                                                                             name={field}
                                                                             control={control}
-                                                                            render={({ field }) => (
+                                                                            render={({ field: controllerField }) => (
                                                                                 <Switch
-                                                                                    {...field}
-                                                                                    checked={field.value || false}
+                                                                                    {...controllerField}
+                                                                                    checked={controllerField.value || false}
                                                                                     onChange={e => {
                                                                                         const checked = e.target.checked
-                                                                                        field.onChange(checked)
+                                                                                        controllerField.onChange(checked)
                                                                                     }}
                                                                                 />
                                                                             )}
@@ -153,34 +173,51 @@ export default function DriverForm(props) {
                                                         </Grid>
                                                         : autoComplete ?
                                                             <Grid size={{ xs: 12, sm: 6, md: md }} key={uuidv4()}>
-                                                                <Autocomplete
-                                                                    open={openAutoComplete}
-                                                                    onOpen={handleAutoCompleteOepn}
-                                                                    onClose={() => setOpenAutoComplete(false)}
-                                                                    isOptionEqualToValue={(option, value) => option.legal_name === value.legal_name}
-                                                                    getOptionLabel={(option) => option.legal_name}
-                                                                    options={companies}
-                                                                    loading={isLoading}
-                                                                    renderInput={(params) => (
-                                                                        <TextInput
-                                                                            {...params}
-                                                                            label={label}
-                                                                            fullWidth
-                                                                            variant='outlined'
-                                                                            {...register(field, required ? { required: `${_spacing(field)} is a required field` } : {})}
-                                                                            slotProps={{
-                                                                                input: {
-                                                                                    ...params.InputProps,
-                                                                                    endAdornment: (
-                                                                                        <React.Fragment>
-                                                                                            {isLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                                                                            {params.InputProps.endAdornment}
-                                                                                        </React.Fragment>
-                                                                                    ),
-                                                                                },
-                                                                            }}
-                                                                        />
-                                                                    )}
+                                                                <Controller
+                                                                    name={field}
+                                                                    control={control}
+                                                                    rules={required ? { required: `${_spacing(field)} is a required field` } : {}}
+                                                                    render={({ field: controllerField }) => {
+                                                                        return (
+                                                                            <Autocomplete
+                                                                                // open={openAutoComplete}
+                                                                                // onOpen={handleAutoCompleteOepn}
+                                                                                // onClose={() => setOpenAutoComplete(false)}
+                                                                                options={data || []}
+                                                                                loading={isLoading}
+                                                                                getOptionLabel={(option) => option.legal_name || ""}
+                                                                                isOptionEqualToValue={(option, value) => option.id === value}
+                                                                                value={data?.find((c) => c.id === Number(controllerField.value)) || ''}
+                                                                                onChange={(e, newValue) => {
+                                                                                    const value = newValue?.id ?? ''
+                                                                                    controllerField.onChange(value);
+                                                                                }}
+                                                                                renderInput={(params) => (
+                                                                                    <TextInput
+                                                                                        {...params}
+                                                                                        label={label}
+                                                                                        fullWidth
+                                                                                        variant="outlined"
+                                                                                        error={!!errors[field]}
+                                                                                        helperText={errors[field]?.message}
+                                                                                        slotProps={{
+                                                                                            input: {
+                                                                                                ...params.InputProps,
+                                                                                                endAdornment: (
+                                                                                                    <>
+                                                                                                        {isLoading ? (
+                                                                                                            <CircularProgress color="inherit" size={20} />
+                                                                                                        ) : null}
+                                                                                                        {params.InputProps.endAdornment}
+                                                                                                    </>
+                                                                                                ),
+                                                                                            },
+                                                                                        }}
+                                                                                    />
+                                                                                )}
+                                                                            />
+                                                                        )
+                                                                    }}
                                                                 />
                                                             </Grid>
                                                             : type === 'date' ?
@@ -188,14 +225,17 @@ export default function DriverForm(props) {
                                                                     <Controller
                                                                         name={field}
                                                                         control={control}
-                                                                        render={({ field }) => (
+                                                                        rules={required ? { required: `${_spacing(field)} is a required field` } : {}}
+                                                                        render={({ field: controllerField }) => (
                                                                             <DatePicker
                                                                                 label={label}
                                                                                 views={['year', 'month', 'day']}
-                                                                                value={field.value}
+                                                                                value={controllerField.value ?? null}
                                                                                 onChange={date => field.onChange(date)}
                                                                                 slotProps={{
                                                                                     textField: {
+                                                                                        error: !!errors[field],
+                                                                                        helperText: errors[field]?.message,
                                                                                         fullWidth: true,
                                                                                         sx: {
                                                                                             '& .MuiPickersOutlinedInput-root': { height: 45 },
@@ -214,28 +254,44 @@ export default function DriverForm(props) {
                                                                 </Grid>
                                                                 : multiline ?
                                                                     <Grid size={{ xs: 12, sm: 6, md: md }}>
-                                                                        <TextField
-                                                                            label={label}
-                                                                            variant='outlined'
-                                                                            fullWidth
-                                                                            {...register(field, required ? { required: `${_spacing(field)} is a required field` } : {})}
-                                                                            inputProps={{ ...inputProps }}
-                                                                            error={!!errors[field]}
-                                                                            multiline
-                                                                            minRows={3}
-                                                                            maxRows={3}
+                                                                        <Controller
+                                                                            name={field}
+                                                                            control={control}
+                                                                            rules={required ? { required: `${_spacing(field)} is a required field` } : {}}
+                                                                            render={({ field: controllerField }) => (
+                                                                                <TextField
+                                                                                    {...controllerField}
+                                                                                    label={label}
+                                                                                    variant='outlined'
+                                                                                    fullWidth
+                                                                                    value={controllerField.value ?? ''}
+                                                                                    inputProps={{ ...inputProps }}
+                                                                                    error={!!errors[field]}
+                                                                                    multiline
+                                                                                    minRows={3}
+                                                                                    maxRows={3}
+                                                                                />
+                                                                            )}
                                                                         />
                                                                     </Grid>
                                                                     :
                                                                     <Grid size={{ xs: 12, sm: 6, md: md }} key={uuidv4()}>
-                                                                        <TextInput
-                                                                            label={label}
-                                                                            variant='outlined'
-                                                                            fullWidth
-                                                                            {...register(field, required ? { required: `${_spacing(field)} is a required field` } : {})}
-                                                                            inputProps={{ ...inputProps }}
-                                                                            error={!!errors[field]}
-                                                                            helperText={helperText ? helperText : errors[field]?.message}
+                                                                        <Controller
+                                                                            name={field}
+                                                                            control={control}
+                                                                            rules={required ? { required: `${_spacing(field)} is a required field` } : {}}
+                                                                            render={({ field: controllerField }) => (
+                                                                                <TextInput
+                                                                                    {...controllerField}
+                                                                                    label={label}
+                                                                                    variant='outlined'
+                                                                                    fullWidth
+                                                                                    value={controllerField.value ?? ''}
+                                                                                    inputProps={{ ...inputProps }}
+                                                                                    error={!!errors[field]}
+                                                                                    helperText={helperText ? helperText : errors[field]?.message}
+                                                                                />
+                                                                            )}
                                                                         />
                                                                     </Grid>
                                                 }
@@ -263,6 +319,8 @@ export default function DriverForm(props) {
                             {fields.length > 0 && fields.map((item, index) => (
                                 <Grid size={12} key={index}>
                                     <DriverDocument
+                                        errors={errors}
+                                        editMode={editMode}
                                         key={item.id}
                                         remove={remove}
                                         control={control}

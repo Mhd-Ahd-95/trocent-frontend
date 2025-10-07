@@ -3,14 +3,13 @@ import CompaniesApi from "../apis/Companies.api";
 import { useSnackbar } from "notistack";
 
 
-export function useCompanies(enabled = true) {
+export function useCompanies() {
     return useQuery({
         queryKey: ['companies'],
         queryFn: async () => {
             const response = await CompaniesApi.getCompanies();
             return response.data.data;
         },
-        enabled: false,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
