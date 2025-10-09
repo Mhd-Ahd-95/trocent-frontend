@@ -1,7 +1,7 @@
 const globalVariables = {
   auth: {},
   apis: {
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://63.177.197.79',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
