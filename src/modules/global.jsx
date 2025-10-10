@@ -1,7 +1,7 @@
 const globalVariables = {
   auth: {},
   apis: {
-    baseURL: 'http://63.177.197.79',
+    baseURL: 'https://mhdahd.duckdns.org',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
