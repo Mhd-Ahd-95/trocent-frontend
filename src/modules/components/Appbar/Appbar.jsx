@@ -61,7 +61,7 @@ export default function Appbar(props) {
 
   const handleOpenSide = () => {
     setOpen(!open);
-    localStorage.setItem("shrinkMenu", !open);
+    sessionStorage.setItem("shrinkMenu", !open);
   };
 
   const handleLogout = (e) => {

@@ -30,8 +30,8 @@ export default function MainLayout(props) {
   const Breadcrumbs = props.breadcrumbs;
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [openSide, setOpenSide] = React.useState(
-    localStorage.getItem("shrinkMenu")
-      ? localStorage.getItem("shrinkMenu") === "false"
+    sessionStorage.getItem("shrinkMenu")
+      ? sessionStorage.getItem("shrinkMenu") === "false"
         ? false
         : true
       : false

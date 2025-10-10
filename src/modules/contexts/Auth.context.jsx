@@ -17,7 +17,7 @@ const AuthContextProvider = props => {
     } else {
       loggedOut = true
       localStorage.clear()
-      sessionStorage.clear()
+      // sessionStorage.clear()
     }
     setAuthState({
       ...authState,
