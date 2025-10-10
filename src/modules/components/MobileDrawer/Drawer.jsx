@@ -10,6 +10,7 @@ import {
   ExpandMore
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
+import { RoleContext, ThemeContext, AddressBookContext } from '../../contexts'
 
 const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
   listStyle: "none",
@@ -23,7 +24,7 @@ const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
         color: colors.grey[400],
         fontSize: 22,
         marginBottom: -7,
-        transform: expanded ? "rotate(180deg)" : "",
+        transform: expanded === 'true' ? "rotate(180deg)" : "",
         transition: theme.transitions.create("transform", {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,
@@ -131,14 +132,12 @@ const ListItem = styled("ul")(({ theme, active }) => ({
 }));
 
 export default function MobileDrawer(props) {
-  const { open, handleClose } = props;
 
-  const [expandItem, setExpandItem] = React.useState({
-    Customers: false,
-    "Fleet Management": false,
-    Settings: false,
-    "Access Management": false,
-  });
+  const { open, handleClose } = props;
+  const roleContext = React.useContext(RoleContext)
+  const addressContext = React.useContext(AddressBookContext)
+
+  const { expandItem, setExpandItem } = React.useContext(ThemeContext)
 
   const itemsLinks = [
     { text: "Dashboard", icon: <Dashboard />, url: "/" },
@@ -148,34 +147,34 @@ export default function MobileDrawer(props) {
       icon: <Customer />,
       options: [
         { text: "Customers", url: "/customers" },
-        { text: "Fuel Surcharges", url: "/" },
-        { text: "Rate Sheets", url: "/" },
+        { text: "Fuel Surcharges", url: "/fuel-surcharges" },
+        { text: "Rate Sheets", url: "/rate-sheets" },
       ],
     },
     {
       text: "Fleet Management",
       icon: <Order />,
       options: [
-        { text: "Companies", url: "/" },
-        { text: "Drivers", url: "/" },
-        { text: "Interliners", url: "/" },
+        { text: "Companies", url: "/companies" },
+        { text: "Drivers", url: "/drivers" },
+        { text: "Interliners", url: "/interliners" },
       ],
     },
     {
       text: "Settings",
       icon: <Setting />,
       options: [
-        { text: "Accessorials", url: "/" },
-        { text: "Vehicle Types", url: "/" },
-        { text: "Address Book", url: "/", chip: 2 },
+        { text: "Accessorials", url: "/accessorials" },
+        { text: "Vehicle Types", url: "/vehicle-types" },
+        { text: "Address Book", url: "/address-books", chip: addressContext?.addressBooks?.length ?? 0 },
       ],
     },
     {
       text: "Access Management",
       icon: <Access />,
       options: [
-        { text: "Roles", url: "/", chip: 4 },
-        { text: "Users", url: "/" },
+        { text: "Roles", url: "/roles", chip: roleContext?.roles?.length ?? 0 },
+        { text: "Users", url: "/users" },
       ],
     },
   ];
@@ -220,6 +219,7 @@ export default function MobileDrawer(props) {
               <RouterLink
                 active={text === props.active ? "true" : "false"}
                 key={index}
+                to={url}
               >
                 <Typography component={"li"}>
                   {icon} {text}
@@ -230,7 +230,7 @@ export default function MobileDrawer(props) {
                 <RouterLink
                   active={
                     !props.open &&
-                    options.map((op) => op.text).includes(props.active)
+                      options.map((op) => op.text).includes(props.active)
                       ? "true"
                       : "false"
                   }
@@ -239,7 +239,7 @@ export default function MobileDrawer(props) {
                     setExpandItem({ ...expandItem, [text]: !expandItem[text] })
                   }
                   className="item-opt"
-                  expanded={expandItem[text]}
+                  expanded={expandItem[text] ? 'true' : 'false'}
                 >
                   <Typography component={"li"} className="item-opt">
                     <span
@@ -261,11 +261,12 @@ export default function MobileDrawer(props) {
                     {options.map((option, index) => (
                       <SubRouterLink
                         key={index}
+                        to={option.url}
                         active={props.active === option.text ? "true" : "false"}
                       >
                         <Typography component={"li"}>
                           {option.text}
-                          {option.chip && (
+                          {option.chip > 0 && (
                             <Chip
                               className="chip"
                               label={option.chip}

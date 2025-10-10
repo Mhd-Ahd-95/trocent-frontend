@@ -88,7 +88,7 @@ export default function Appbar(props) {
       <Toolbar style={ { minHeight: 65, width: "100%" } }>
         <Grid container width={ "100%" }>
           <Grid size={ 2 }>
-            <Grid container spacing={ 2 } sx={ { justifyContent: "space-between", alignItems: "center" } }>
+            <Grid container spacing={ 2 } sx={ { justifyContent: "space-between", alignItems: "center", width: isMdDown ? '100%' : 270 } }>
               { isMdDown ? (
                 <Grid size={ 12 }>{ props.drawer }</Grid>
               ) : (
@@ -155,7 +155,7 @@ export default function Appbar(props) {
                   transformOrigin={ { vertical: "top", horizontal: "right" } }
                   PaperProps={ {
                     sx: {
-                      width: 200,
+                      // width: 200,
                       // paddingY: 1,
                     },
                   } }
@@ -179,7 +179,7 @@ export default function Appbar(props) {
 
                   <Divider sx={ { my: 0.5 } } />
 
-                  <Box display="flex" justifyContent="space-between" px={ 2 } gap={ 1 } py={ 0.5 }>
+                  {/* <Box display="flex" justifyContent="space-between" px={ 2 } gap={ 1 } py={ 0.5 }>
                     <Tooltip title="Enable Light Theme">
                       <IconButton size="small" color="primary">
                         <LightMode fontSize="small" />
@@ -192,7 +192,7 @@ export default function Appbar(props) {
                     </Tooltip>
                   </Box>
 
-                  <Divider sx={ { my: 0.5 } } />
+                  <Divider sx={ { my: 0.5 } } /> */}
 
                   <Button
                     fullWidth

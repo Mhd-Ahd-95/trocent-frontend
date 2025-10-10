@@ -1,8 +1,9 @@
-import { Box, colors, Paper, Typography, Link } from "@mui/material";
+import { Box, colors, Paper, Typography, Link, useMediaQuery } from "@mui/material";
 import { useTheme } from "@emotion/react";
 
 export default function AuthLayout(props) {
   const theme = useTheme();
+  const isSmDown = useMediaQuery(theme.breakpoints.down('sm'))
   return (
     <Box
       display={"flex"}
@@ -20,7 +21,7 @@ export default function AuthLayout(props) {
           justifyContent: "center",
         }}
       >
-        <Paper elevation={2} sx={{ p: 7, borderRadius: 5, width: 400 }}>
+        <Paper elevation={2} sx={{ p: 7, borderRadius: 5, width: isSmDown ? '100%' : 400 }}>
           <Typography
             variant="h6"
             align="center"
