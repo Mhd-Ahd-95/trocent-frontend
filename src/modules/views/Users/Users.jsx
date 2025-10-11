@@ -71,6 +71,30 @@ function UsersTable(props) {
                   marginTop: 1
                 }}
               >
+                {/* {params?.row?.type !== 'admin' && params?.row?.type !== 'driver' ? */}
+                <Button
+                  startIcon={<DeleteForever />}
+                  onClick={e => {
+                    e.stopPropagation()
+                    props.setOpenModal(true)
+                    props.setSelected(params.row)
+                  }}
+                  variant='text'
+                  size='small'
+                  sx={{
+                    visibility: params?.row?.type !== 'admin' && params?.row?.type !== 'driver' ? 'visible' : 'hidden',
+                    textTransform: 'capitalize',
+                    '& .MuiButton-startIcon': {
+                      marginRight: 0.5
+                    },
+                    fontSize: '0.8rem',
+                    minWidth: 'unset',
+                    p: 0.5
+                  }}
+                  color='error'
+                >
+                  Delete
+                </Button>
                 <Button
                   startIcon={<EditSquareIcon />}
                   onClick={e => {
@@ -92,30 +116,6 @@ function UsersTable(props) {
                 >
                   Edit
                 </Button>
-                {params?.row?.type !== 'admin' && (
-                  <Button
-                    startIcon={<DeleteForever />}
-                    onClick={e => {
-                      e.stopPropagation()
-                      props.setOpenModal(true)
-                      props.setSelected(params.row)
-                    }}
-                    variant='text'
-                    size='small'
-                    sx={{
-                      textTransform: 'capitalize',
-                      '& .MuiButton-startIcon': {
-                        marginRight: 0.5
-                      },
-                      fontSize: '0.8rem',
-                      minWidth: 'unset',
-                      p: 0.5
-                    }}
-                    color='error'
-                  >
-                    Delete
-                  </Button>
-                )}
               </Box>
             )
           }

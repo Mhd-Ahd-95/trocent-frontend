@@ -20,7 +20,7 @@ import LoginAPI from '../../apis/login.api'
 import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router-dom'
 
-export default function Login () {
+export default function Login() {
   const [showPassword, setShowPassword] = React.useState(false)
   const handleClickShowPassword = () => setShowPassword(show => !show)
   const usernameRef = React.useRef()
@@ -43,14 +43,11 @@ export default function Login () {
         authContext.handleAuth(true, JSON.stringify(res.data))
         navigate('/')
       })
-      .catch(err => {
-        console.log(err.response)
-        err.response?.status === 401
-          ? enqueueSnackbar('Invalid email or password', { variant: 'warning' })
-          : enqueueSnackbar(
-              'Error while processing your request, please try again',
-              { variant: 'error' }
-            )
+      .catch(error => {
+        const message = error.response?.data?.message;
+        const status = error.response?.status;
+        const errorMessage = message ? `${message} - ${status}` : error.message;
+        enqueueSnackbar(errorMessage, { variant: 'error' });
         usernameRef.current.value = ''
         passwordRef.current.value = ''
       })

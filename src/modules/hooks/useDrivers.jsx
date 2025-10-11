@@ -53,6 +53,21 @@ export function useDriverMutation() {
         enqueueSnackbar(errorMessage, { variant: 'error' });
     };
 
+    const createDriverLogin = useMutation({
+        mutationFn: async ({ id, payload }) => {
+            const res = await DriversApi.create_driver_login(id, payload);
+            return res.data.data;
+        },
+        onSuccess: (updated) => {
+            queryClient.setQueryData(['drivers'], (old = []) =>
+                old.map((item) => item.id === Number(updated.id) ? updated : item)
+            );
+            queryClient.invalidateQueries(['users'])
+            enqueueSnackbar('Driver has been successfully create a login', { variant: 'success' });
+        },
+        onError: handleError,
+    });
+
     const create = useMutation({
         mutationFn: async (payload) => {
             const res = await DriversApi.createDriver(payload);
@@ -115,6 +130,6 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove };
+    return { create, update, removeMany, remove, createDriverLogin };
 
 }

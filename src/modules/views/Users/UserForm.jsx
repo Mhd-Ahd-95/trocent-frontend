@@ -14,7 +14,8 @@ export default function UserForm(props) {
     handleSubmit,
     reset,
     control,
-    formState: { errors }
+    formState: { errors },
+    watch
   } = useForm({
     defaultValues: {
       name: '',
@@ -99,61 +100,62 @@ export default function UserForm(props) {
               helperText={errors?.email?.message}
             />
           </Grid>
-
-          <Grid size={12}>
-            <Controller
-              name='type'
-              control={control}
-              rules={{ required: 'Type is a required field' }}
-              render={({ field }) => (
-                <TextInput
-                  {...field}
-                  label='Type*'
-                  select
-                  fullWidth
-                  variant='outlined'
-                  error={!!errors.type}
-                  helperText={errors.type?.message}
-                >
-                  <MenuItem value=''>
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value='admin'>Admin</MenuItem>
-                  <MenuItem value='customer'>Customer</MenuItem>
-                  <MenuItem value='driver'>Driver</MenuItem>
-                  <MenuItem value='staff'>Staff</MenuItem>
-                </TextInput>
-              )}
-            />
-          </Grid>
-
-          <Grid size={12}>
-            <Controller
-              name='role'
-              control={control}
-              rules={{ required: 'Role is a required field' }}
-              render={({ field }) => (
-                <TextInput
-                  {...field}
-                  label='Role*'
-                  select
-                  fullWidth
-                  variant='outlined'
-                  error={!!errors.role}
-                  helperText={errors.role?.message}
-                >
-                  <MenuItem value=''>
-                    <em>None</em>
-                  </MenuItem>
-                  {roles?.map((role, index) => (
-                    <MenuItem key={index} value={role.name}>
-                      {role.name}
+          {watch('type') !== 'driver' &&
+            <Grid size={12}>
+              <Controller
+                name='type'
+                control={control}
+                rules={{ required: 'Type is a required field' }}
+                render={({ field }) => (
+                  <TextInput
+                    {...field}
+                    label='Type*'
+                    select
+                    fullWidth
+                    variant='outlined'
+                    error={!!errors.type}
+                    helperText={errors.type?.message}
+                  >
+                    <MenuItem value=''>
+                      <em>None</em>
                     </MenuItem>
-                  ))}
-                </TextInput>
-              )}
-            />
-          </Grid>
+                    <MenuItem value='admin'>Admin</MenuItem>
+                    <MenuItem value='customer'>Customer</MenuItem>
+                    <MenuItem value='staff'>Staff</MenuItem>
+                  </TextInput>
+                )}
+              />
+            </Grid>
+          }
+          {watch('type') !== 'driver' &&
+            <Grid size={12}>
+              <Controller
+                name='role'
+                control={control}
+                rules={{ required: 'Role is a required field' }}
+                render={({ field }) => (
+                  <TextInput
+                    {...field}
+                    label='Role*'
+                    select
+                    fullWidth
+                    variant='outlined'
+                    error={!!errors.role}
+                    helperText={errors.role?.message}
+                  >
+                    <MenuItem value=''>
+                      <em>None</em>
+                    </MenuItem>
+                    {roles?.map((role, index) => (
+                      <MenuItem key={index} value={role.name}>
+                        {role.name}
+                      </MenuItem>
+                    ))}
+                  </TextInput>
+                )}
+              />
+            </Grid>
+          }
 
           <Grid size={12}>
             <TextInput

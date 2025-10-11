@@ -1,20 +1,20 @@
 import React from 'react'
-import { Grid, MenuItem } from '@mui/material'
+import { Grid } from '@mui/material'
 import { StyledButton, SubmitButton, TextInput } from '../../components'
-import { useForm, Controller } from 'react-hook-form'
-import { RoleContext } from '../../contexts'
+import { useForm } from 'react-hook-form'
+import { useUsers } from '../../hooks/useUsers'
 
 export default function DriverLogin(props) {
 
-    const { initialValues, submit, setOpen } = props
-    const { roles } = React.useContext(RoleContext)
+    const { initialValues, submit, setOpen, editMode } = props
     const [loading, setLoading] = React.useState(false)
+
+    const { refetch } = useUsers()
 
     const {
         register,
         handleSubmit,
         reset,
-        control,
         formState: { errors }
     } = useForm({
         defaultValues: {
@@ -30,9 +30,14 @@ export default function DriverLogin(props) {
     const onSubmit = async (data, e) => {
         setLoading(true)
         console.log(data);
+        if (editMode && data['password'].length === 0) {
+            delete data['password']
+        }
         try {
             await submit(data);
             setOpen(false)
+            refetch()
+            editMode && props.refetchUser()
         } catch (error) {
             // console.log(error);
             //
@@ -81,47 +86,19 @@ export default function DriverLogin(props) {
                     </Grid>
 
                     <Grid size={12}>
-                        <Controller
-                            name='role'
-                            control={control}
-                            rules={{ required: 'Role is a required field' }}
-                            render={({ field }) => (
-                                <TextInput
-                                    {...field}
-                                    label='Role*'
-                                    select
-                                    fullWidth
-                                    variant='outlined'
-                                    error={!!errors.role}
-                                    helperText={errors.role?.message}
-                                >
-                                    <MenuItem value=''>
-                                        <em>None</em>
-                                    </MenuItem>
-                                    {roles?.map((role, index) => (
-                                        <MenuItem key={index} value={role.name}>
-                                            {role.name}
-                                        </MenuItem>
-                                    ))}
-                                </TextInput>
-                            )}
-                        />
-                    </Grid>
-
-                    <Grid size={12}>
                         <TextInput
                             label='Password*'
                             fullWidth
                             variant='outlined'
                             type='password'
                             {...register('password', {
-                                required: 'Password is a required field',
+                                required: !editMode ? 'Password is required' : false,
                                 minLength: {
                                     value: 6,
                                     message: 'Password must be at least 6 characters'
                                 },
                                 validate: value =>
-                                     value.length < 6
+                                    editMode && value !== '' && value.length < 6
                                         ? 'Password must be at least 6 characters'
                                         : true
                             })}
@@ -144,7 +121,6 @@ export default function DriverLogin(props) {
                 <Grid container spacing={2} justifyContent={'flex-start'}>
                     <Grid size='auto'>
                         <SubmitButton
-                            id='apply-user-action'
                             type='submit'
                             variant='contained'
                             color='primary'

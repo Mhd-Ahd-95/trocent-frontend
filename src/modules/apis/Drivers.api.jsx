@@ -7,10 +7,10 @@ const getDriver = rid => CustomAxios.get(`/api/drivers/${rid}`)
 const updateDriver = (rid, ab) => {
     ab.append('_method', 'PUT');
     return CustomAxios.post(`/api/drivers/${rid}`, ab, {
-    headers: {
-        "Content-Type": "multipart/form-data",
-    }
-})
+        headers: {
+            "Content-Type": "multipart/form-data",
+        }
+    })
 }
 
 const createDriver = ab => CustomAxios.post('/api/drivers', ab, {
@@ -26,6 +26,8 @@ const deletDrivers = ids => CustomAxios.delete('/api/drivers', { data: { ids } }
 
 const downloadFile = id => CustomAxios.get(`/api/drivers/download-file/${id}`, { responseType: 'blob' })
 
+const create_driver_login = (did, user) => CustomAxios.post(`/api/drivers/create-login/${did}`, user)
+
 export default {
     getDriver,
     getDrivers,
@@ -33,5 +35,6 @@ export default {
     updateDriver,
     deletDriver,
     deletDrivers,
-    downloadFile
+    downloadFile,
+    create_driver_login
 }
