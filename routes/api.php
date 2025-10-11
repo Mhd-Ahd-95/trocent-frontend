@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', [DriverController::class, 'index']);
         Route::get('/{id}', [DriverController::class, 'show']);
         Route::get('/download-file/{id}', [DriverController::class, 'download_file']);
+        Route::post('/create-login/{id}', [DriverController::class, 'create_login']);
     });
 
 });

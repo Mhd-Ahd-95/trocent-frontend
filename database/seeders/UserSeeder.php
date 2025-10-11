@@ -38,13 +38,5 @@ class UserSeeder extends Seeder
             'email' => 'customer@trocent.com',
             'password' => Hash::make('12345678')
         ])->assignRole('Rating');
-
-         User::create([
-            'name' => 'IAM Driver',
-            'username' => 'driver',
-            'type' => 'driver',
-            'email' => 'driver@trocent.com',
-            'password' => Hash::make('12345678')
-        ])->assignRole('Power User');
     }
 }

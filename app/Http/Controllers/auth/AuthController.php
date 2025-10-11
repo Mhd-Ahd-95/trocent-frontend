@@ -5,6 +5,8 @@ namespace App\Http\Controllers\auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\auth\LoginRequest;
 use Auth;
+use ErrorException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -19,9 +21,17 @@ class AuthController extends Controller
                 'password' => $data['password']
             ])
         ) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json([
+                'message' => 'Invalid username or password.'
+            ], 401);
         }
         $user = Auth::user();
+
+        if ($user->type === 'driver') {
+            return response()->json([
+                'message' => 'Driver accounts cannot log in to this app.'
+            ], 403);
+        }
 
         $token = $user->createToken(
             'auth_token',

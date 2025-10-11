@@ -40,6 +40,7 @@ class DriverResource extends JsonResource
             'contract_type' => $this->contract_type,
             'driver_description' => $this->driver_description,
             'company_id' => $this->company_id,
+            'user_id' => $this->user_id,
             'company_name' => $this->whenLoaded('company', function(){
                 return $this->company->operating_name;
             }),

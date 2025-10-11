@@ -39,7 +39,7 @@ class UserRequest extends FormRequest
                 ],
                 'type' => ['sometimes', 'string', 'in:customer,staff,admin,driver'],
                 'password' => ['sometimes', 'string', 'min:6'],
-                'role' => ['sometimes', 'exists:roles,name'],
+                'role' => ['sometimes', 'exists:roles,name', 'nullable'],
             ];
         }
         return [
@@ -48,7 +48,7 @@ class UserRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'type' => 'required|string|in:admin,staff,customer,driver',
             'password' => 'required|string|min:6',
-            'role' => 'required|exists:roles,name'
+            'role' => 'sometimes|exists:roles,name|nullable'
         ];
     }
 }

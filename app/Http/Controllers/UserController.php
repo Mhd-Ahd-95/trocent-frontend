@@ -54,7 +54,9 @@ class UserController extends Controller
                 'password' => Hash::make($data['password']),
                 'type' => $data['type'],
             ]);
-            $user->assignRole($data['role']);
+            if (isset($data['role'])) {
+                $user->assignRole($data['role']);
+            }
             $this->cache->save_entity($this->cache_key, $user->load(['roles.permissions', 'roles.widgets']));
             DB::commit();
             return new UserResource($user->load(['roles.permissions', 'roles.widgets']));

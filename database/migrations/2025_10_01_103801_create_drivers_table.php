@@ -37,6 +37,7 @@ return new class extends Migration
             $table->string('criminal_note')->nullable();
             $table->enum('contract_type', ['full_time', 'part_time', 'contractor'])->nullable();
             $table->string('driver_description')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained('users', 'id')->onDelete('set null');
         });
     }
 

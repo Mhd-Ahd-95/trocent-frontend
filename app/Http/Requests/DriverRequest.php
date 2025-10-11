@@ -48,6 +48,7 @@ class DriverRequest extends FormRequest
             'contract_type' => ['sometimes', 'string', 'nullable'],
             'driver_description' => ['sometimes', 'string', 'nullable'],
             'company_id' => ['required', 'numeric'],
+            'user_id' => ['sometimes', 'numeric', 'nullable'],
             'driver_documents' => ['sometimes', 'array', 'nullable'],
             'driver_documents.*.type' => ['required_with:driver_documents', 'string'],
             'driver_documents.*.expiry_date' => ['required_with:driver_documents', 'date'],

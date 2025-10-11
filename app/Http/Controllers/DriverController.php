@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\DriverRequest;
+use App\Http\Requests\UserRequest;
 use App\Http\Resources\DriverResource;
 use App\Models\Company;
 use App\Models\Driver;
+use App\Models\User;
 use App\Models\DriverDocument;
 use App\Services\MemCache;
 use DB;
@@ -13,6 +15,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -274,6 +277,34 @@ class DriverController extends Controller
 
         if (!empty($existing)) {
             Storage::disk('public')->delete($existing);
+        }
+    }
+
+    public function create_login(int $did, UserRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            $driver = $this->cache->get_entity_id($this->cache_key, $did, Driver::class, ['driver_documents', 'company']);
+            if (!$driver) {
+                throw new ModelNotFoundException('Driver not found', 404);
+            }
+            $data = $request->validated();
+            $user = User::create([
+                'name' => $data['name'],
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'type' => $data['type'],
+            ]);
+            $driver->user_id = $user->id;
+            $driver->save();
+            DB::commit();
+            $this->cache->update_entity($this->cache_key, $did, $driver);
+            $this->cache->save_entity('users', $user->load(['roles.permissions', 'roles.widgets']));
+            return new DriverResource($driver);
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }
