@@ -48,7 +48,7 @@ export default function Dashboard() {
           <Table 
             title='Latest Fuel Surcharge'
             checkBoxSelection={false}
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
             options={{
               search: false,

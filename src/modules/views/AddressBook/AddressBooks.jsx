@@ -72,7 +72,7 @@ export default function AddressBook() {
       <Grid container spacing={2}>
         <Grid size={12}>
           <Table
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
             checkboxSelection
             deleteSelected={selectedBooks.length > 0}

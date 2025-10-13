@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import AccessorialAPI from '../apis/Accessorials.api'
+import FuelSurchargesApi from "../apis/FuelSurcharges.api";
 import { useSnackbar } from "notistack";
 
 
-export function useAccessorials() {
+export function useFuelSurcharges() {
     return useQuery({
-        queryKey: ['accessorials'],
+        queryKey: ['fuelSurcharges'],
         queryFn: async () => {
-            const response = await AccessorialAPI.getAccessorials();
+            const response = await FuelSurchargesApi.getFuelSurcharges();
             return response.data.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -20,17 +20,17 @@ export function useAccessorials() {
 }
 
 
-export function useAccessorial(cid) {
+export function useFuelSurcharge(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['accessorial', cid],
+        queryKey: ['fuelSurcharge', cid],
         queryFn: async () => {
 
-            const cachedAcess = queryClient.getQueryData(['accessorials']) || [];
-            const cached = cachedAcess.find(item => item.id === Number(cid));
+            const cachedSurcharges = queryClient.getQueryData(['fuelSurcharges']) || [];
+            const cached = cachedSurcharges.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await AccessorialAPI.getAccessorial(cid);
+            const res = await FuelSurchargesApi.getFuelSurcharge(cid);
             return res.data.data;
         },
         enabled: !!cid,
@@ -42,7 +42,7 @@ export function useAccessorial(cid) {
 }
 
 
-export function useAccessorialMutations() {
+export function useFuelSurchargeMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -55,14 +55,14 @@ export function useAccessorialMutations() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
-            const res = await AccessorialAPI.createAccessorial(payload);
+            const res = await FuelSurchargesApi.createFuelSurcharge(payload);
             return res.data.data;
         },
         onSuccess: (newDriver) => {
-            queryClient.setQueryData(['accessorials'], (old = []) => {
+            queryClient.setQueryData(['fuelSurcharges'], (old = []) => {
                 return [newDriver, ...old]
             });
-            enqueueSnackbar('Accessorial has been created successfully', { variant: 'success' });
+            enqueueSnackbar('Fuel Surcharge has been created successfully', { variant: 'success' });
         },
         onError: handleError,
     });
@@ -70,14 +70,14 @@ export function useAccessorialMutations() {
     const update = useMutation(
         {
             mutationFn: async ({ id, payload }) => {
-                const res = await AccessorialAPI.updateAccessorial(Number(id), payload);
+                const res = await FuelSurchargesApi.updateFuelSurcharge(Number(id), payload);
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['accessorials'], (old = []) =>
+                queryClient.setQueryData(['fuelSurcharges'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
-                enqueueSnackbar('Accessorial has been updated successfully', { variant: 'success' });
+                enqueueSnackbar('Fuel Surcharge has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
         }
@@ -85,15 +85,15 @@ export function useAccessorialMutations() {
 
     const remove = useMutation({
         mutationFn: async (iid) => {
-            const res = await AccessorialAPI.deleteAccessorial(iid);
+            const res = await FuelSurchargesApi.deleteFuelSurcharge(iid);
             return res.data
         },
         onSuccess: (res, iid) => {
             if (res) {
-                queryClient.setQueryData(['accessorials'], (old = []) =>
+                queryClient.setQueryData(['fuelSurcharges'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
-                enqueueSnackbar('Accessorial has been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Fuel Surcharge has been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,
@@ -101,15 +101,15 @@ export function useAccessorialMutations() {
 
     const removeMany = useMutation({
         mutationFn: async (iids) => {
-            const res = await AccessorialAPI.deleteAccessorials(iids);
+            const res = await FuelSurchargesApi.deleteFuelSurcharges(iids);
             return res.data;
         },
         onSuccess: (res, iids) => {
             if (res) {
-                queryClient.setQueryData(['accessorials'], (old = []) =>
+                queryClient.setQueryData(['fuelSurcharges'], (old = []) =>
                     old.filter((item) => !iids.includes(item.id))
                 );
-                enqueueSnackbar('Selected accessorials been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Selected fuel surcharges been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,

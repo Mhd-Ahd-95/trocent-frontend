@@ -12,7 +12,6 @@ import {
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
-import UserAPI from '../../apis/User.api'
 import { useSnackbar } from 'notistack'
 import UserForm from './UserForm'
 import { useUserMutations, useUsers } from '../../hooks/useUsers'
@@ -22,7 +21,7 @@ function UsersTable(props) {
 
   return (
     <Table
-      pageSizeOptions={[10, 20, 30]}
+      pageSizeOptions={[10, 25, 50]}
       pageSize={10}
       loading={loading}
       options={{

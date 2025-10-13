@@ -80,9 +80,10 @@ export default function Drivers() {
       <Grid container spacing={2}>
         <Grid size={12} width={'100%'}>
           <Table
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
             checkboxSelection
+            disableRowSelectionOnClick
             deleteSelected={selectedDrivers.length > 0}
             handleDeleteSelected={() => setOpenModal(true)}
             onRowSelectionModelChange={handleSelectionChange}

@@ -29,7 +29,6 @@ export default function DriverLogin(props) {
 
     const onSubmit = async (data, e) => {
         setLoading(true)
-        console.log(data);
         if (editMode && data['password'].length === 0) {
             delete data['password']
         }

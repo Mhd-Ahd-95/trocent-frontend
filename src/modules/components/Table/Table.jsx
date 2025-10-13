@@ -8,7 +8,7 @@ import CustomNoResultsOverlay from './NoResultFound'
 const TableLayout = styled('div')(({ theme }) => ({
   // overflow: "hidden",
   borderRadius: 25,
-  height: 603,
+  maxHeight: 603,
   width: '100%'
   // boxShadow:
   //   "0px 2px 2px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)",
@@ -59,7 +59,7 @@ export default function Table(props) {
           width: '100%',
           borderRadius: 3
         }}
-        pageSizeOptions={props.pageSizeOptions}
+        pageSizeOptions={props.pageSizeOptions || []}
         columnHeaderHeight={45}
         slots={{
           toolbar: () => (
@@ -78,14 +78,14 @@ export default function Table(props) {
         rowSelectionModel={props.rowSelectionModel}
         checkboxSelection={props.checkboxSelection}
         // isRowSelectable={(params) => params.row.quantity > 50000}
-        disableRowSelectionOnClick={props.disableRowSelectionOnClick}
+        disableRowSelectionOnClick={props.disableRowSelectionOnClick || true}
         // disableMultipleRowSelection
         getRowClassName={params =>
           params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
         }
         initialState={{
           ...data.initialState,
-          pagination: { paginationModel: { pageSize: props.pageSize } }
+          pagination: { paginationModel: { pageSize: props.pageSize } } 
         }}
       />
     </TableLayout>
