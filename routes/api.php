@@ -4,6 +4,7 @@ use App\Http\Controllers\AccessorialController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\FuelSurchargeController;
 use App\Http\Controllers\InterlinerController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -102,6 +103,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [DriverController::class, 'show']);
         Route::get('/download-file/{id}', [DriverController::class, 'download_file']);
         Route::post('/create-login/{id}', [DriverController::class, 'create_login']);
+    });
+
+    Route::prefix('/fuel-surcharges')->group(function () {
+        Route::post('', [FuelSurchargeController::class, 'store']);
+        Route::put('/{id}', [FuelSurchargeController::class, 'update']);
+        Route::delete('', [FuelSurchargeController::class, 'deleteFuelSurcharges']);
+        Route::delete('/{id}', [FuelSurchargeController::class, 'destroy']);
+        Route::get('', [FuelSurchargeController::class, 'index']);
+        Route::get('/{id}', [FuelSurchargeController::class, 'show']);
     });
 
 });
