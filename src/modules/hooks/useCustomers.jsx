@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import VehicleTypeAPI from '../apis/VehicleTypes.api'
+import CustomersApi from "../apis/Customers.api";
 import { useSnackbar } from "notistack";
 
 
-export function useVehicleTypes() {
+export function useCustomers() {
     return useQuery({
-        queryKey: ['vehicleTypes'],
+        queryKey: ['customers'],
         queryFn: async () => {
-            const response = await VehicleTypeAPI.getVehicleTypes();
+            const response = await CustomersApi.getCustomers();
             return response.data.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -20,17 +20,17 @@ export function useVehicleTypes() {
 }
 
 
-export function useVehicleType(cid) {
+export function useCustomer(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['vehicleType', cid],
+        queryKey: ['customer', cid],
         queryFn: async () => {
 
-            const cachedVehicleTypes = queryClient.getQueryData(['vehicleType']) || [];
-            const cached = cachedVehicleTypes.find(item => item.id === Number(cid));
+            const cachedCust = queryClient.getQueryData(['customers']) || [];
+            const cached = cachedCust.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await VehicleTypeAPI.getVehicleType(cid);
+            const res = await CustomersApi.getCustomer(cid);
             return res.data.data;
         },
         enabled: !!cid,
@@ -42,7 +42,7 @@ export function useVehicleType(cid) {
 }
 
 
-export function useVehicleTypeMutations() {
+export function useCustomerMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -55,15 +55,15 @@ export function useVehicleTypeMutations() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
-            console.log(payload);
-            const res = await VehicleTypeAPI.createVehicleType(payload);
+            const res = await CustomersApi.createCustomer(payload);
             return res.data.data;
         },
         onSuccess: (newDriver) => {
-            queryClient.setQueryData(['vehicleTypes'], (old = []) => {
+            console.log(newDriver);
+            queryClient.setQueryData(['customers'], (old = []) => {
                 return [newDriver, ...old]
             });
-            enqueueSnackbar('Vehicle Type has been created successfully', { variant: 'success' });
+            enqueueSnackbar('Customer has been created successfully', { variant: 'success' });
         },
         onError: handleError,
     });
@@ -71,14 +71,14 @@ export function useVehicleTypeMutations() {
     const update = useMutation(
         {
             mutationFn: async ({ id, payload }) => {
-                const res = await VehicleTypeAPI.updateVehicleType(Number(id), payload);
+                const res = await CustomersApi.updateCustomer(Number(id), payload);
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['vehicleTypes'], (old = []) =>
+                queryClient.setQueryData(['customers'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
-                enqueueSnackbar('Vehicle Type has been updated successfully', { variant: 'success' });
+                enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
         }
@@ -86,15 +86,15 @@ export function useVehicleTypeMutations() {
 
     const remove = useMutation({
         mutationFn: async (iid) => {
-            const res = await VehicleTypeAPI.deleteVehicleType(iid);
+            const res = await CustomersApi.deleteCustomer(iid);
             return res.data
         },
         onSuccess: (res, iid) => {
             if (res) {
-                queryClient.setQueryData(['vehicleTypes'], (old = []) =>
+                queryClient.setQueryData(['customers'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
-                enqueueSnackbar('Vehicle Type has been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Customer has been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,
@@ -102,20 +102,20 @@ export function useVehicleTypeMutations() {
 
     const removeMany = useMutation({
         mutationFn: async (iids) => {
-            const res = await VehicleTypeAPI.deleteVehicleTypes(iids);
+            const res = await CustomersApi.deleteCustomers(iids);
             return res.data;
         },
         onSuccess: (res, iids) => {
             if (res) {
-                queryClient.setQueryData(['vehicleTypes'], (old = []) =>
+                queryClient.setQueryData(['customers'], (old = []) =>
                     old.filter((item) => !iids.includes(item.id))
                 );
-                enqueueSnackbar('Selected Vehicle Types have been deleted successfully', { variant: 'success' });
+                enqueueSnackbar('Selected Customers been deleted successfully', { variant: 'success' });
             }
         },
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove };
+    return { create, update, remove, removeMany };
 
 }

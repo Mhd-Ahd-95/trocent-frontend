@@ -2,13 +2,16 @@ import React from 'react'
 import TextInput from './TextInput'
 import { colors, FormHelperText, Grid, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import global from '../../global'
 
-export default function InputWrapper (props) {
+function InputWrapper(props) {
+
   const theme = useTheme()
   const { setValue, data, field, placeholder, textHelper, noSpace } = props
   const [inputValue, setInputValue] = React.useState('')
   const [focus, setFocus] = React.useState(false)
-
+  const [error, setError] = React.useState('')
+  const { isEmail } = global.methods
   const handleRemove = index => {
     const refs = [...data]
     refs.splice(index, 1)
@@ -17,17 +20,37 @@ export default function InputWrapper (props) {
   }
 
   const handleChange = e => {
+
     const value = e.target.value
     setInputValue(value)
+
+    if (props.validatedEmail) setError('');
     const splitComma = value.includes(',')
     const splitSpace = value.includes(' ')
+    const trimValue = value.split(',')[0].trim()
+
+    if (props.validatedEmail && !isEmail(trimValue) && splitComma) {
+      setError(`${trimValue} must be email.`)
+      setInputValue(trimValue)
+      return
+    }
+
     if (splitComma) {
-      setValue(field, [...data, value])
+      if (data.includes(trimValue)) {
+        setInputValue('')
+        return
+      }
+      setValue(field, [...data, trimValue])
       setInputValue('')
     }
+
     if (!noSpace) {
       if (splitSpace) {
-        setValue(field, [...data, value])
+        if (data.includes(trimValue)) {
+          setInputValue('')
+          return
+        }
+        setValue(field, [...data, trimValue])
         setInputValue('')
       }
     }
@@ -42,8 +65,8 @@ export default function InputWrapper (props) {
             data?.length > 0 && !focus
               ? `1px solid ${theme.palette.grey[400]}`
               : data?.length > 0 && focus
-              ? `2px solid ${theme.palette.primary.main}`
-              : 'none',
+                ? `2px solid ${theme.palette.primary.main}`
+                : 'none',
           borderRadius: 1,
           width: '100%'
         }}
@@ -53,18 +76,20 @@ export default function InputWrapper (props) {
             placeholder={placeholder}
             variant='outlined'
             fullWidth
+            label={props.label || ''}
             value={inputValue}
             onChange={handleChange}
             onFocus={() => setFocus(true)}
             onBlur={() => setFocus(false)}
             sx={{
               '& .MuiOutlinedInput-root': {
+                zIndex: 1,
                 border:
                   data?.length > 0
                     ? 'none'
                     : data?.length === 0 && focus
-                    ? `2px solid ${theme.palette.primary.main}`
-                    : `1px solid ${theme.palette.grey[400]}`,
+                      ? `2px solid ${theme.palette.primary.main}`
+                      : `1px solid ${theme.palette.grey[400]}`,
                 borderBottom:
                   data?.length === 0 && focus
                     ? `2px solid ${theme.palette.primary.main}`
@@ -78,9 +103,13 @@ export default function InputWrapper (props) {
               '& .MuiOutlinedInput-input': {
                 outline: 'none',
                 boxShadow: 'none'
-              }
+              },
+              '& .MuiInputLabel-shrink': props.shrinkOut === 'true' ? {
+                zIndex: 100,
+                paddingInline: 1,
+                backgroundColor: '#fff'
+              } : {}
             }}
-            // helperText={'Add multiple reference numbers (use comma or space)'}
           />
         </Grid>
         <Grid size={12} px={1} py={0.5}>
@@ -108,7 +137,7 @@ export default function InputWrapper (props) {
               >
                 {trimRef}{' '}
                 <span
-                  style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
+                  style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14, marginTop: -2 }}
                   onClick={() => handleRemove(index)}
                 >
                   x
@@ -119,6 +148,10 @@ export default function InputWrapper (props) {
         </Grid>
       </Grid>
       {textHelper && <FormHelperText>{textHelper}</FormHelperText>}
+      {error && props.validatedEmail && <FormHelperText sx={{ color: props.validatedEmail ? '#e74c3c' : '' }}>{error}</FormHelperText>}
     </Grid>
   )
 }
+
+
+export default React.memo(InputWrapper)

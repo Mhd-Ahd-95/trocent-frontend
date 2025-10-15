@@ -60,10 +60,10 @@ const HelperText = styled(FormHelperText)(({ theme }) => ({
     color: theme.palette.error.main
 }))
 
-export default function UploadFile(props) {
+export default function UploadLogo(props) {
 
     const { enqueueSnackbar } = useSnackbar()
-    const { field, fieldState, index, driverDocument, setValue } = props
+    const { field, fieldState, index, logoFile, setValue } = props
     const [loading, setLoading] = React.useState(false)
     const [downloading, setDownloading] = React.useState(false)
 
@@ -92,14 +92,14 @@ export default function UploadFile(props) {
             setLoading(true)
             const file = e.target.files[0]
             e.target.value = "";
-            setValue(`driver_documents.${index}.fname`, file.name)
+            setValue(`filename`, file.name)
             // if (!isValidFile(file)) {
             //     enqueueSnackbar(`File ${file.name} cannot be more than 5 MB.`, { variant: 'warning' })
             //     await sleep(300)
             //     setLoading(false)
             //     return
             // }
-            setValue(`driver_documents.${index}.fsize`, file.size)
+            setValue(`filesize`, file.size)
             await sleep(300)
             field.onChange(file)
             setLoading(false)
@@ -109,21 +109,20 @@ export default function UploadFile(props) {
     const handleClose = (e) => {
         e.stopPropagation()
         field.onChange(null)
-        setValue(`driver_documents.${index}.fname`, null)
-        setValue(`driver_documents.${index}.fsize`, null)
-        if (driverDocument?.id || driverDocument?.file_path) {
-            setValue(`driver_documents.${index}.file_path`, null)
-            setValue(`driver_documents.${index}.id`, null)
+        setValue(`filename`, null)
+        setValue(`filesize`, null)
+        if (logoFile?.logo_path) {
+            setValue(`logo_path`, null)
         }
     }
 
     const handleDownload = (e) => {
         e.preventDefault()
         setDownloading(true)
-        const ddid = driverDocument?.id
+        const ddid = logoFile?.id
         DriversApi.downloadFile(ddid)
             .then(res => {
-                saveAs(res.data, driverDocument?.fname || 'driver-doc')
+                saveAs(res.data, logoFile?.filename || 'driver-doc')
             })
             .catch(error => {
                 const message = error.response?.data?.message;
@@ -144,23 +143,22 @@ export default function UploadFile(props) {
             />
             <label htmlFor={`contained-button-file-${index}`}>
                 <UploadButton
-                    iserror={fieldState.error ? 'true' : 'false'}
                     focusRipple
                     component="span"
                 >
-                    Drag & Drop file or {' '} <span> Browser</span>
+                    Drag & Drop Logo or {' '} <span> Browser</span>
                 </UploadButton>
             </label>
-            {driverDocument?.fname &&
-                <CustomFileDetails loading={loading ? 'true' : 'false'} fsize={driverDocument.fsize}>
+            {logoFile?.filename &&
+                <CustomFileDetails loading={loading ? 'true' : 'false'} fsize={logoFile.filesize}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', paddingLeft: 5 }}>
-                        {props.editMode && driverDocument?.file_path && !downloading ?
+                        {props.editMode && logoFile?.logo_path && !downloading ?
                             <Tooltip title='Download'>
                                 <IconButton
                                     onClick={handleDownload}
                                     onMouseDown={(e) => e.preventDefault()}
                                     style={{
-                                        backgroundColor: !driverDocument.fsize ? colors.red[900] : colors.green[900],
+                                        backgroundColor: !logoFile.filesize ? colors.red[900] : colors.green[900],
                                         color: '#fff',
                                     }}
                                     size='small'
@@ -168,19 +166,19 @@ export default function UploadFile(props) {
                                     <Download />
                                 </IconButton>
                             </Tooltip>
-                            : downloading ? 
-                            <CircularProgress size={'20px'} style={{ color: '#fff' }} /> : null
+                            : downloading ?
+                                <CircularProgress size={'20px'} style={{ color: '#fff' }} /> : null
                         }
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Tooltip title={driverDocument.fname}>
-                                <Typography component='p' className='fname' noWrap style={{maxWidth: 180}}>{driverDocument.fname}</Typography>
+                            <Tooltip title={logoFile.filename}>
+                                <Typography component='p' className='fname' noWrap style={{ maxWidth: 180 }}>{logoFile.filename}</Typography>
                             </Tooltip>
-                            <Typography component='p' className='fsize'>{driverDocument.fsize ? formatFileSize(driverDocument.fsize) : 'File more than 5 MB.'}</Typography>
+                            <Typography component='p' className='fsize'>{logoFile.filesize ? formatFileSize(logoFile.filesize) : 'File more than 5 MB.'}</Typography>
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', paddingRight: 5, }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <Typography component='p' className='fname' align='end'>{loading ? 'Uploading' : !driverDocument.fsize ? 'Failed upload' : 'Upload Complete'}</Typography>
+                            <Typography component='p' className='fname' align='end'>{loading ? 'Uploading' : !logoFile.filesize ? 'Failed upload' : 'Upload Complete'}</Typography>
                             <Typography component='p' className='fsize' align='end'>Tap to {loading ? 'cancel' : 'undo'}</Typography>
                         </div>
                         {loading ?
@@ -191,7 +189,7 @@ export default function UploadFile(props) {
                                     onClick={handleClose}
                                     onMouseDown={(e) => e.preventDefault()}
                                     style={{
-                                        backgroundColor: !driverDocument.fsize ? colors.red[900] : colors.green[900],
+                                        backgroundColor: !logoFile.filesize ? colors.red[900] : colors.green[900],
                                         color: '#fff',
                                     }}
                                     size='small'
@@ -203,7 +201,6 @@ export default function UploadFile(props) {
                     </div>
                 </CustomFileDetails>
             }
-            {!!fieldState.error && <HelperText>{fieldState.error?.message}</HelperText>}
         </Box>
     )
 

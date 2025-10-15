@@ -92,7 +92,7 @@ export default function AccordionComponent(props) {
           )}
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ paddingBlock: props.paddingBlock ?? 5 }}>
+      <AccordionDetails sx={{ paddingBlock: props.paddingBlock ?? 5, minHeight: props.minHeight ? props.minHeight : 'auto' }}>
         {props.content}
       </AccordionDetails>
     </Accordion>

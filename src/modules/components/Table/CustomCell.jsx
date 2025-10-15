@@ -11,6 +11,7 @@ const CustomCell = styled(Box)(({ theme, color }) => ({
   borderRadius: '5px',
   fontWeight: 600,
   lineHeight: 1.2,
+  textTransform: 'capitalize',
   boxShadow: color
     ? colors[color][300] + ' 0px 0px 0px 1px;'
     : colors.yellow[300] + ' 0px 0px 0px 1px;',

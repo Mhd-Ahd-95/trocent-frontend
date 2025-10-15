@@ -57,6 +57,7 @@ export default function FuelSurchargeForm(props) {
                             label='LTL Surcharge %*'
                             fullWidth
                             type='number'
+                            inputProps={{ step: "any" }}
                             variant='outlined'
                             {...register('ltl_surcharge', { required: 'LTL is a required field' })}
                             error={!!errors?.ltl}
@@ -69,6 +70,7 @@ export default function FuelSurchargeForm(props) {
                             label='FTL Surcharge%*'
                             fullWidth
                             type='number'
+                            inputProps={{ step: "any" }}
                             variant='outlined'
                             {...register('ftl_surcharge', {
                                 required: 'FTL is a required field'

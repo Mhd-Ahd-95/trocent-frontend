@@ -11,7 +11,7 @@ import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 
-function BasicInfo (props) {
+function BasicInfo(props) {
   const { register, errors, control, setValue } = props
 
   return (
