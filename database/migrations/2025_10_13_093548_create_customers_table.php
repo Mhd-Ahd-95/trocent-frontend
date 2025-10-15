@@ -33,6 +33,8 @@ return new class extends Migration {
             $table->enum('language', ['en', 'fr'])->nullable();
             $table->enum('invoicing', ['daily', 'weekly', 'monthly'])->nullable();
             $table->string('logo_path')->nullable();
+            $table->string('filename')->nullable();
+            $table->string('filesize')->nullable();
             $table->boolean('account_active')->default(false);
             $table->boolean('mandatory_reference_number')->default(false);
             $table->boolean('summary_invoice')->default(false);
@@ -48,7 +50,7 @@ return new class extends Migration {
             $table->json('billing_emails')->nullable();
             $table->json('pod_emails')->nullable();
             $table->json('status_update_emails')->nullable();
-            $table->json('notifcation_preferences')->nullable();
+            $table->json('notification_preferences')->nullable();
             $table->enum('tax_options', ['no_tax', 'pst', 'gst', 'both_pst_gst'])->nullable();
             $table->timestamps();
         });

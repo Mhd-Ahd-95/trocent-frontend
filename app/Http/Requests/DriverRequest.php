@@ -104,12 +104,18 @@ class DriverRequest extends FormRequest
     {
         $data = $this->all();
 
-        $clean = null; 
-
         $clean = function ($value, $key = null) use (&$clean) {
-            
+
             if ($value === 'null') {
                 return null;
+            }
+
+            if ($value === 'true') {
+                return true;
+            }
+
+            if ($value === 'false') {
+                return false;
             }
 
             if ($key === 'phone' || $key === 'driver_number') {
@@ -123,7 +129,7 @@ class DriverRequest extends FormRequest
             if (is_array($value)) {
                 $newArray = [];
                 foreach ($value as $k => $v) {
-                    $newArray[$k] = $clean($v, $k); 
+                    $newArray[$k] = $clean($v, $k);
                 }
                 return $newArray;
             }

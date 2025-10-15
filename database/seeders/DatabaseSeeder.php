@@ -24,7 +24,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             WidgetSeeder::class,
             RoleSeeder::class,
-            UserSeeder::class
+            UserSeeder::class,
+            VTypeSeeder::class,
+            AccessorialSeeder::class
         ]);
     }
 }

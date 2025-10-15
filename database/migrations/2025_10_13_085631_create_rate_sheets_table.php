@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->boolean('skid_by_weight')->default(false);
             $table->float('ltl_rate')->nullable();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
+            $table->string('batch_id')->nullable()->index();
             $table->index(
                 ['customer_id', 'destination', 'rate_code', 'type'],
                 'rate_sheets_multi_index'

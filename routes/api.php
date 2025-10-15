@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccessorialController;
 use App\Http\Controllers\auth\AuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FuelSurchargeController;
 use App\Http\Controllers\InterlinerController;
@@ -112,6 +113,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [FuelSurchargeController::class, 'destroy']);
         Route::get('', [FuelSurchargeController::class, 'index']);
         Route::get('/{id}', [FuelSurchargeController::class, 'show']);
+    });
+
+    Route::prefix('/customers')->group(function () {
+        Route::post('', [CustomerController::class, 'store']);
+        // Route::put('/{id}', [CustomerController::class, 'update']);
+        // Route::delete('', [CustomerController::class, 'deleteFuelSurcharges']);
+        // Route::delete('/{id}', [CustomerController::class, 'destroy']);
+        Route::get('', [CustomerController::class, 'index']);
+        // Route::get('/{id}', [CustomerController::class, 'show']);
     });
 
 });

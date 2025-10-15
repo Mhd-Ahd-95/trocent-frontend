@@ -11,7 +11,7 @@ class RateSheetRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,29 @@ class RateSheetRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
+        $rules = [
+            'destination' => ['required', 'string'],
+            'type' => ['required', 'string', 'in:skid,weight'],
+            'province' => ['sometimes', 'string', 'nullable'],
+            'postal_code' => ['sometimes', 'string', 'nullable'],
+            'rate_code' => ['sometimes', 'string', 'nullable'],
+            'priority_sequence' => ['sometimes', 'string', 'nullable'],
+            'external' => ['sometimes', 'string', 'in:internal,external', 'nullable'],
+            'min_rate' => ['sometimes', 'numeric', 'nullable'],
+            'skid_by_weight' => ['sometimes', 'boolean', 'nullable'],
+            'ltl_rate' => ['sometimes', 'numeric', 'nullable'],
+            'customer_id' => ['required', 'numeric'],
+            'brackets' => ['sometimes', 'array', 'nullable'],
+            'brackets.*.rate_bracket' => ['required_with:brackets', 'numeric'],
+            'brackets.*.rate' => ['sometimes:brackets', 'numeric', 'nullable']
         ];
+
+        if ($this->isMethod('put')){
+            $ofs = ['destination', 'type'];
+            foreach($ofs as $of){
+                $rules[$of][0] = 'sometimes';
+            }
+        }
+        return $rules;
     }
 }

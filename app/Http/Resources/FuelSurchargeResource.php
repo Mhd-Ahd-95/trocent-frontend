@@ -19,7 +19,8 @@ class FuelSurchargeResource extends JsonResource
             'ltl_surcharge' => $this->ltl_surcharge,
             'ftl_surcharge' => $this->ftl_surcharge,
             'from_date' => $this->from_date,
-            'to_date' => $this->to_date
+            'to_date' => $this->to_date,
+            'created_at' => $this->created_at
         ];
     }
 }

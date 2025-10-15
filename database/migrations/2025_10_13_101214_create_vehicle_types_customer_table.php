@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->foreignId('vehicle_id')->constrained('vehicleTypes')->cascadeOnDelete();
-            $table->float('custom_rate')->nullable();
+            $table->float('rate')->nullable();
         });
     }
 

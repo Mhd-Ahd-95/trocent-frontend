@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,12 +16,9 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->decimal('amount', 8, 2)->nullable();
             $table->integer('free_time')->nullable();
-            $table->string('time_unit')->nullable();
             $table->decimal('base_amount', 8, 2)->nullable();
             $table->decimal('min', 8, 2)->nullable();
             $table->decimal('max', 8, 2)->nullable();
-            $table->string('product_type')->nullable();
-            $table->string('amount_type')->nullable();
         });
     }
 
