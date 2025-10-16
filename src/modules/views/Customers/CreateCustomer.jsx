@@ -4,7 +4,7 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs, CustomerForm } from '../../components'
 import { useCustomerMutation } from '../../hooks/useCustomers'
 
-export default function CreateInterliner() {
+export default function createCustomer() {
 
     const { create } = useCustomerMutation()
 

@@ -16,6 +16,7 @@ export default function CustomerForm(props) {
 
     const { initialValues, submit, editMode } = props
     const [loading, setLoading] = React.useState(false)
+    const navigate = useNavigate()
 
     const {
         register,
@@ -73,7 +74,7 @@ export default function CustomerForm(props) {
 
     const onSubmit = async (data, e) => {
         e.preventDefault()
-        console.log(data);
+        setLoading(true)
         const action = e?.nativeEvent?.submitter?.id;
         const formData = new FormData()
 
@@ -108,14 +109,10 @@ export default function CustomerForm(props) {
             }
         }
 
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
-
         try {
             await submit(formData);
             if (action === 'apply-customer-action') {
-                // navigate('/drivers', { state: { fromEditOrCreate: true } });
+                navigate('/customers', { state: { fromEditOrCreate: true } });
             }
             else {
                 reset()
@@ -194,6 +191,7 @@ export default function CustomerForm(props) {
                     setValue={setValue}
                     watch={watch}
                     control={control}
+                    editMode={editMode}
                 />
             </Grid>
             <Grid size={{ xs: 12, sm: 12, md: 4 }}>

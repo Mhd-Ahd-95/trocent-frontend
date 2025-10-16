@@ -3,7 +3,7 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs, Table, CustomCell } from '../../components'
 import { Grid, Button } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useCustomers } from '../../hooks/useCustomers'
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircleOutline, Close } from '@mui/icons-material'
@@ -11,26 +11,12 @@ import { CheckCircleOutline, Close } from '@mui/icons-material'
 export default function CustomerView() {
 
   const navigate = useNavigate()
+  const location = useLocation()
   const fromEditOrCreate = location.state?.fromEditOrCreate || false;
-  const [selectedCustomers, setSelectedCustomers] = React.useState([])
-  const { data, isLoading, isFetching, isError, error } = useCustomers()
+  const { data, isLoading, isFetching, isError, error, refetch } = useCustomers()
   const queryClient = useQueryClient();
   const state = queryClient.getQueryState(['customers']);
-  const [openModal, setOpenModal] = React.useState(false)
-  console.log(data);
-  const [rowSelectionModel, setRowSelectionModel] = React.useState({
-    type: 'include',
-    ids: new Set(),
-  })
 
-  const handleSelectionChange = newModel => {
-    setRowSelectionModel(newModel)
-    let selectedIds = Array.from(newModel.ids)
-    if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = data.map(row => row.id)
-    }
-    setSelectedCustomers(selectedIds)
-  }
 
   const refetchCustomers = React.useCallback(() => refetch(), [state])
 
@@ -72,10 +58,6 @@ export default function CustomerView() {
               search: true
             }}
             disableRowSelectionOnClick
-            deleteSelected={selectedCustomers.length > 0}
-            handleDeleteSelected={() => setOpenModal(true)}
-            onRowSelectionModelChange={handleSelectionChange}
-            rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
             columns={[
               {
@@ -101,14 +83,14 @@ export default function CustomerView() {
                 field: 'invoicing',
                 flex: 1,
                 minWidth: 80,
-                renderCell: params => <CustomCell>{params.value}</CustomCell>
+                renderCell: params => params.value ? <CustomCell>{params.value}</CustomCell> : ''
               },
               {
                 headerName: 'Language',
                 field: 'language',
                 flex: 1,
                 minWidth: 90,
-                renderCell: params => <CustomCell>{params.value === 'en' ? 'English' : params.value === 'fr' ? 'French' : ''}</CustomCell>
+                renderCell: params => params.value ? <CustomCell>{params.value === 'en' ? 'English' : params.value === 'fr' ? 'French' : ''}</CustomCell> : ''
               },
               {
                 headerName: 'Status',
@@ -126,7 +108,10 @@ export default function CustomerView() {
                 renderCell: params => (
                   <Button
                     startIcon={<EditSquareIcon />}
-                    onClick={() => console.log(params)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/customer/edit/${params.row.id}`)
+                    }}
                     variant='text'
                     size='small'
                     sx={{

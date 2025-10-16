@@ -19,11 +19,14 @@ const deleteCustomer = rid => CustomAxios.delete(`/api/customers/${rid}`)
 
 const deleteCustomers = ids => CustomAxios.delete('/api/customers', { data: { ids } })
 
+const downloadFile = id => CustomAxios.get(`/api/customers/download-file/${id}`, { responseType: 'blob' })
+
 export default {
     getCustomer,
     getCustomers,
     createCustomer,
     updateCustomer,
     deleteCustomer,
-    deleteCustomers
+    deleteCustomers,
+    downloadFile
 }

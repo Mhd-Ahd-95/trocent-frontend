@@ -58,10 +58,9 @@ export function useCustomerMutation() {
             const res = await CustomersApi.createCustomer(payload);
             return res.data.data;
         },
-        onSuccess: (newDriver) => {
-            console.log(newDriver);
+        onSuccess: (newCust) => {
             queryClient.setQueryData(['customers'], (old = []) => {
-                return [newDriver, ...old]
+                return [newCust, ...old]
             });
             enqueueSnackbar('Customer has been created successfully', { variant: 'success' });
         },

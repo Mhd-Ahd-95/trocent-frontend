@@ -3,8 +3,8 @@ import { Box, Button, CircularProgress, colors, FormHelperText, IconButton, Typo
 import { styled } from '@mui/material/styles'
 import { Close, Download } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
-import DriversApi from '../../apis/Drivers.api'
 import { saveAs } from 'file-saver'
+import CustomersApi from '../../apis/Customers.api'
 
 const UploadButton = styled(Button)(({ theme, iserror }) => ({
     width: '100%',
@@ -120,9 +120,9 @@ export default function UploadLogo(props) {
         e.preventDefault()
         setDownloading(true)
         const ddid = logoFile?.id
-        DriversApi.downloadFile(ddid)
+        CustomersApi.downloadFile(ddid)
             .then(res => {
-                saveAs(res.data, logoFile?.filename || 'driver-doc')
+                saveAs(res.data, logoFile?.filename || 'customer-logo')
             })
             .catch(error => {
                 const message = error.response?.data?.message;
