@@ -65,9 +65,11 @@ export default function Table(props) {
           toolbar: () => (
             <CustomToolbar
               title={title}
+              importedButton={props.importedButton}
               options={options}
               deleteSelected={props.deleteSelected}
               handleDeleteSelected={props.handleDeleteSelected}
+              handleImportedButton={props.handleImportedButton}
             />
           ), // pass the component, NOT a function
           noRowsOverlay: () => <CustomNoRows row={props.row} />,

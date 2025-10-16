@@ -8,14 +8,14 @@ const CustomModal = styled(Modal)(({ theme }) => ({
   justifyContent: 'center'
 }))
 
-const CustomPaper = styled('div')(({ theme }) => ({
+const CustomPaper = styled('div')(({ theme, size }) => ({
   display: 'flex',
   backgroundColor: theme.palette.background.paper,
   boxShadow: theme.shadows[5],
   paddingBlock: theme.spacing(2),
   paddingInline: theme.spacing(2),
-  maxWidth: '40%',
-  minWidth: '20%',
+  maxWidth: size === 'large' ? '50%' : '40%',
+  minWidth: size=== 'large' ? '40%' : '20%',
   minHeight: '15%',
   maxHeight: '85%',
   overflowY: 'auto',
@@ -27,6 +27,7 @@ const CustomPaper = styled('div')(({ theme }) => ({
 }))
 
 export default function TransitionsModal (props) {
+
   return (
     <div onClick={e => e.stopPropagation()}>
       <CustomModal
@@ -37,7 +38,7 @@ export default function TransitionsModal (props) {
         closeAfterTransition
       >
         <Fade in={props.open}>
-          <CustomPaper>{props.children}</CustomPaper>
+          <CustomPaper size={props.size || 'small'}>{props.children}</CustomPaper>
         </Fade>
       </CustomModal>
     </div>
