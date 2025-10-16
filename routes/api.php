@@ -117,12 +117,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('/customers')->group(function () {
         Route::post('', [CustomerController::class, 'store']);
-        // Route::put('/{id}', [CustomerController::class, 'update']);
-        // Route::delete('', [CustomerController::class, 'deleteFuelSurcharges']);
-        // Route::delete('/{id}', [CustomerController::class, 'destroy']);
+        Route::put('/{id}', [CustomerController::class, 'update']);
+        Route::delete('', [CustomerController::class, 'deleteCustomers']);
+        Route::delete('/{id}', [CustomerController::class, 'destroy']);
         Route::get('', [CustomerController::class, 'index']);
-        // Route::get('/{id}', [CustomerController::class, 'show']);
-    });
+        Route::get('/{id}', [CustomerController::class, 'show']);
+        Route::get('/download-file/{id}', [CustomerController::class, 'download_file']);
+    }); 
 
 });
 
