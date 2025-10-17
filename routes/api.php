@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FuelSurchargeController;
 use App\Http\Controllers\InterlinerController;
+use App\Http\Controllers\RateSheetController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleTypeController;
@@ -123,7 +124,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', [CustomerController::class, 'index']);
         Route::get('/{id}', [CustomerController::class, 'show']);
         Route::get('/download-file/{id}', [CustomerController::class, 'download_file']);
-    }); 
+    });
+
+    Route::prefix('/rate-sheets')->group(function () {
+        Route::post('', [RateSheetController::class, 'store']);
+        Route::put('/{id}', [RateSheetController::class, 'update']);
+        Route::delete('/{id}', [RateSheetController::class, 'delete_sheets_by_customer_id']);
+        Route::get('', [RateSheetController::class, 'index']);
+        Route::get('/{id}', [RateSheetController::class, 'show']);
+        Route::post('/batch', [RateSheetController::class, 'batchStore']);
+    });
 
 });
 

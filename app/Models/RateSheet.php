@@ -32,4 +32,11 @@ class RateSheet extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($rateSheet) {
+            $rateSheet->brackets()->delete();
+        });
+    }
 }
