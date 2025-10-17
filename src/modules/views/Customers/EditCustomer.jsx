@@ -38,6 +38,7 @@ export default function EditCustomer() {
                         <CustomerForm
                             initialValues={{ ...data }}
                             editMode
+                            customer_id={id}
                             refetch={refetch}
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
                     </Grid>

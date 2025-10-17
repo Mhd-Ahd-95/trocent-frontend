@@ -3,6 +3,8 @@ import { useSnackbar } from 'notistack'
 import { Box, colors, Button, Tooltip, IconButton, Typography, CircularProgress, FormHelperText } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Close } from '@mui/icons-material'
+import dataProcessing from '../CustomerFormSections/dataProcessing'
+import staticProperties from '../CustomerFormSections/StaticProperties'
 
 const UploadButton = styled(Button)(({ theme, iserror }) => ({
     width: '100%',
@@ -24,14 +26,24 @@ const UploadButton = styled(Button)(({ theme, iserror }) => ({
     }
 }))
 
-const CustomFileDetails = styled('div')(({ theme, loading, fsize }) => ({
+const CustomError = styled('p')(({ theme }) => (
+    {
+        color:
+            theme.palette.error.main,
+        whiteSpace: 'pre-wrap',
+        marginTop: '6px',
+        fontSize: 12,
+    }
+))
+
+const CustomFileDetails = styled('div')(({ theme, loading, fsize, error }) => ({
     position: 'absolute',
     height: '40px',
     width: '100%',
     top: 0,
     left: 0,
     borderRadius: 3,
-    backgroundColor: loading === 'true' ? colors.grey[800] : !fsize ? theme.palette.error.main : colors.green['700'],
+    backgroundColor: loading === 'true' ? colors.grey[800] : !fsize ? theme.palette.error.main : error === 'true' ? theme.palette.error.main : colors.green['700'],
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -56,9 +68,7 @@ const CustomFileDetails = styled('div')(({ theme, loading, fsize }) => ({
 
 function trimObjectKeys(row) {
     return Object.keys(row).reduce((obj, key) => {
-        if (row[key] !== null) {
-            obj[key.trim()] = row[key];
-        }
+        obj[key.trim()] = row[key];
         return obj;
     }, {})
 }
@@ -76,12 +86,11 @@ const HelperText = styled(FormHelperText)(({ theme }) => ({
 export default function UploadXlsx(props) {
 
     const { field, fieldState } = props
-    console.log(fieldState);
     const [fileName, setFileName] = React.useState('');
     const { enqueueSnackbar } = useSnackbar()
-    const [items, setItems] = React.useState([])
     const [fileSize, setFileSize] = React.useState('')
     const [loading, setLoading] = React.useState(false)
+    const [error, setError] = React.useState(false)
 
     function customSleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -100,7 +109,6 @@ export default function UploadXlsx(props) {
 
     const onFileChange = (event) => {
         setLoading(true)
-        setItems([])
         if (event.target.files.length) {
             ``
             const f = event.target.files[0]
@@ -117,8 +125,30 @@ export default function UploadXlsx(props) {
                         const sheet = excelData.Sheets[sheetname]
                         if (!sheet) enqueueSnackbar(`"Rates" sheet not found`, { variant: 'warning' })
                         else {
-                            setItems([...loadSheetData(sheet, XLSX)])
-                            field.onChange([...loadSheetData(sheet, XLSX)])
+                            const dataProcessed = dataProcessing(staticProperties, [...loadSheetData(sheet, XLSX)])
+                            const dataSuccessed = dataProcessed[0]
+                            const dataErrored = dataProcessed[1]
+                            console.log(dataProcessed);
+                            if (Object.keys(dataErrored).length === 0) {
+                                field.onChange(dataSuccessed)
+                            }
+                            else {
+                                let message = ''
+                                if (Object.entries(dataErrored).length > 0) {
+                                    setError(true)
+                                    Object.entries(dataErrored).forEach(([key, value]) => {
+                                        message += `<strong>${key}:</strong><br />`
+                                        Object.entries(value).forEach(([k, v]) => {
+                                            message += `&nbsp;&nbsp;- ${v}<br />`
+                                        })
+                                        message += `<br />`
+                                    })
+                                    props.setError('items', {
+                                        type: 'manual',
+                                        message: message
+                                    })
+                                }
+                            }
                         }
                     })
                     .catch(err => enqueueSnackbar(`Failed to load excel file`, { variant: 'error', }))
@@ -133,11 +163,11 @@ export default function UploadXlsx(props) {
 
     const handleClose = (e) => {
         e.stopPropagation()
-        setRateSheet({ ...rateSheet, data: [] })
         setFileName('')
         setFileSize('')
-        setItems([])
         field.onChange([])
+        props.setError('items', { type: 'manual', message: '' })
+        setError(false)
     }
 
     return (
@@ -156,12 +186,15 @@ export default function UploadXlsx(props) {
                 <UploadButton
                     focusRipple
                     component="span"
+                    disabled={fileName.length > 0}
                 >
-                    Drag & Drop Logo or {' '} <span> Browser</span>
+                    {fileName.length === 0 && <>
+                        Drag & Drop Logo or {' '} <span> Browser</span>
+                    </>}
                 </UploadButton>
             </label>
             {fileName &&
-                <CustomFileDetails loading={loading ? 'true' : 'false'} fsize={fileSize}>
+                <CustomFileDetails loading={loading ? 'true' : 'false'} fsize={fileSize} error={error ? 'true' : 'false'}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', paddingLeft: 5 }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Tooltip title={fileName}>
@@ -183,7 +216,7 @@ export default function UploadXlsx(props) {
                                     onClick={handleClose}
                                     onMouseDown={(e) => e.preventDefault()}
                                     style={{
-                                        backgroundColor: !fileSize ? colors.red[900] : colors.green[900],
+                                        backgroundColor: !fileSize || error ? colors.red[900] : colors.green[900],
                                         color: '#fff',
                                     }}
                                     size='small'
@@ -195,7 +228,7 @@ export default function UploadXlsx(props) {
                     </div>
                 </CustomFileDetails>
             }
-            {!!fieldState.error && <HelperText>{fieldState.error?.message}</HelperText>}
+            {!!fieldState.error && <CustomError dangerouslySetInnerHTML={{ __html: fieldState.error.message }} />}
         </Box>
     )
 }

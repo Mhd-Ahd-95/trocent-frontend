@@ -9,9 +9,10 @@ import { Controller, useForm } from 'react-hook-form'
 
 export default function RateSheetModal(props) {
 
+    const {customer_id} = props
     const [loading, setLoading] = React.useState(false)
 
-    const { control, setValue, handleSubmit } = useForm({
+    const { control, setError, handleSubmit } = useForm({
         defaultValues: {
             type: '',
             skid_by_weight: false,
@@ -21,7 +22,8 @@ export default function RateSheetModal(props) {
 
     const onSubmit = (data, e) => {
         e.preventDefault()
-        console.log(data);
+        const payload = data?.items.map((item) => ({type: data.type, skid_by_weight: data.skid_by_weight, customer_id: customer_id, ...item}))
+        console.log(payload);
         console.log('submitted');
     }
 
@@ -95,12 +97,15 @@ export default function RateSheetModal(props) {
                     name='items'
                     rules={{ required: 'Rate Sheet XLSX is a required field' }}
                     control={control}
-                    render={(({ field, fieldState }) => (
-                        <UploadXlsx
-                            field={field}
-                            fieldState={fieldState}
-                        />
-                    ))}
+                    render={(({ field, fieldState }) => {
+                        return (
+                            <UploadXlsx
+                                setError={setError}
+                                field={field}
+                                fieldState={fieldState}
+                            />
+                        )
+                    })}
                 />
 
             </Grid>
