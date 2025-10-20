@@ -21,6 +21,8 @@ export default function RateSheets() {
   const { removeMany } = useRateSheetMutations()
   const [openModal, setOpenModal] = React.useState(false)
 
+  console.log(data);
+
   React.useEffect(() => {
     if (isError && error) {
       const message = error.response?.data?.message;
@@ -53,15 +55,15 @@ export default function RateSheets() {
     setOpenModal(false)
   }
 
-  const calculateBracketColumnWidth = (data) => {
-    if (!data || data.length === 0) return 150;
+  const calculateBracketColumnWidth = (rateSheets) => {
+    if (!rateSheets || rateSheets.length === 0) return 150;
 
     const maxBrackets = Math.max(
-      ...data.map(row => row.brackets?.length || 0)
+      ...rateSheets.map(row => row.brackets?.length || 0)
     );
 
     const rateBrackets = []
-    data.forEach(dt => {
+    rateSheets.forEach(dt => {
       dt?.brackets.forEach((br) => {
         rateBrackets.push(String(br.rate_bracket)?.length || 0)
         rateBrackets.push(String(br.rate)?.length || 0)
@@ -123,14 +125,14 @@ export default function RateSheets() {
                 headerName: "Type",
                 field: "type",
                 flex: 1,
-                minWidth: 120,
+                minWidth: 80,
                 renderCell: params => params.value ? <CustomCell>{params.value}</CustomCell> : ''
               },
               {
                 headerName: "Skip By Weight",
                 field: "skip_by_weight",
                 flex: 1,
-                minWidth: 120,
+                minWidth: 70,
                 renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='error' />
               },
               {
@@ -160,8 +162,8 @@ export default function RateSheets() {
               {
                 headerName: "Rate Brackets",
                 field: "brackets",
-                // flex: 1,
-                minWidth: isLoading || isFetching ? 120 : calculateBracketColumnWidth(data || []),
+                flex: 1,
+                minWidth: isLoading || isFetching ? 120 : calculateBracketColumnWidth(data),
                 renderCell: params => {
                   return (
                     <Box
