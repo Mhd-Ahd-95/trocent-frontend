@@ -25,6 +25,7 @@ class BatchRateSheetRequest extends FormRequest
             '*.destination' => ['required', 'string'],
             '*.type' => ['required', 'string', 'in:skid,weight'],
             '*.province' => ['sometimes', 'string', 'nullable'],
+            '*.skid_by_weight' => ['sometimes', 'boolean', 'nullable'],
             '*.postal_code' => ['sometimes', 'string', 'nullable'],
             '*.rate_code' => ['sometimes', 'string', 'nullable'],
             '*.priority_sequence' => ['sometimes', 'numeric', 'nullable'],

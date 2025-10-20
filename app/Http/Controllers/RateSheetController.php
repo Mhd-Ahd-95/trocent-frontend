@@ -117,12 +117,9 @@ class RateSheetController extends Controller
         }
     }
 
-    public function delete_sheets_by_customer_id(int $cid)
+    public function delete_sheets_by_batch_id(string $bid)
     {
-        $customer = $this->cache->get_entity_id('customers', $cid, Customer::class);
-        if (!$customer)
-            throw new ModelNotFoundException('Customer not found');
-        $rsheets = RateSheet::where('customer_id', $cid);
+        $rsheets = RateSheet::where('batch_id', $bid);
         $rids = $rsheets->pluck('id')->toArray();
         $rsheets->delete();
         $this->cache->delete_entities($this->cache_key, $rids);
