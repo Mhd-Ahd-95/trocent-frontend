@@ -11,12 +11,7 @@ const check_keys = (stprop, item, error) => {
     const brackets = rateSheet.filter(rs => !staticProps.includes(rs))
     const bracketsProps = []
     brackets.forEach(bk => {
-        if (isNaN(bk)) {
-            error[bk] = {
-                'Prop': `Bracket Rate (${bk}) must be a number`
-            }
-        }
-        bracketsProps.push({ name: bk, field: 'bracket_rate', type: 'int', required: true })
+        bracketsProps.push({ name: bk, field: 'rate_bracket', type: 'string', required: true })
     })
     return [updatedProps, bracketsProps]
 }
@@ -39,9 +34,8 @@ export default function dataProcessing(stprop, items) {
             })
             processedItem['brackets'] = []
             brackets.forEach((bracket) => {
-                const value = item[bracket.name]
-                if (isNaN(value)) processedItemsError[bracket.name] = { ...processedItemsError[bracket.name], 'Type': `Type of (${bracket.name}) (${index}) must be a number` }
-                processedItem['brackets'].push({ [bracket.field]: Number(bracket.name), 'rate': value })
+                const value = item[bracket.name] || ''
+                processedItem['brackets'].push({ [bracket.field]: bracket.name, 'rate': String(value) })
             })
             processedItems.push(processedItem)
         })

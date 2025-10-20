@@ -5,12 +5,14 @@ import TextInput from '../CustomComponents/TextInput'
 import { CustomFormControlLabel, StyledButton, SubmitButton } from '..'
 import UploadXlsx from '../UploadFile/UploadXL'
 import { Controller, useForm } from 'react-hook-form'
+import { useRateSheetMutations } from '../../hooks/useRateSheets'
 
 
 export default function RateSheetModal(props) {
 
-    const {customer_id} = props
+    const { customer_id } = props
     const [loading, setLoading] = React.useState(false)
+    const { create } = useRateSheetMutations()
 
     const { control, setError, handleSubmit } = useForm({
         defaultValues: {
@@ -20,11 +22,20 @@ export default function RateSheetModal(props) {
         }
     })
 
-    const onSubmit = (data, e) => {
+    const onSubmit = async (data, e) => {
+        setLoading(true)
         e.preventDefault()
-        const payload = data?.items.map((item) => ({type: data.type, skid_by_weight: data.skid_by_weight, customer_id: customer_id, ...item}))
+        const payload = data?.items.map((item) => ({ type: data.type, skid_by_weight: data.skid_by_weight, customer_id: customer_id, ...item }))
         console.log(payload);
-        console.log('submitted');
+        try {
+            await create.mutateAsync(payload)
+        }
+        catch (err) {
+            //
+        }
+        finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -61,8 +72,8 @@ export default function RateSheetModal(props) {
                             onChange={(e) => field.onChange(e.target.value)}
                         >
                             <MenuItem value=''><em>Select an Option</em></MenuItem>
-                            <MenuItem value='skid_base'>Skid Base</MenuItem>
-                            <MenuItem value='weight_base'>Weight Base</MenuItem>
+                            <MenuItem value='skid'>Skid Base</MenuItem>
+                            <MenuItem value='weight'>Weight Base</MenuItem>
                         </TextInput>
                     ))}
                 />

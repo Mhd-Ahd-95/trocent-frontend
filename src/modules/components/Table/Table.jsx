@@ -9,7 +9,9 @@ const TableLayout = styled('div')(({ theme }) => ({
   // overflow: "hidden",
   borderRadius: 25,
   maxHeight: 603,
-  width: '100%'
+  // width: '100%',
+  // overflowX: 'auto',
+  // overflowY: 'auto',
   // boxShadow:
   //   "0px 2px 2px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)",
 }))
@@ -53,10 +55,11 @@ export default function Table(props) {
       <DataGridTable
         columns={columns}
         rows={data || []}
-        rowHeight={45}
+        rowHeight={props.height || 45}
         loading={props.loading}
         sx={{
           width: '100%',
+          overflowX: 'auto',
           borderRadius: 3
         }}
         pageSizeOptions={props.pageSizeOptions || []}

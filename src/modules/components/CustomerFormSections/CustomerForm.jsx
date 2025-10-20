@@ -281,6 +281,7 @@ export default function CustomerForm(props) {
                         <Grid container>
                             <Grid size={12}>
                                 <RateSheetCustomerTable
+                                    customer_id={props.customer_id}
                                     setOpenModal={setOpenModal}
                                     openModal={openModal}
                                 />

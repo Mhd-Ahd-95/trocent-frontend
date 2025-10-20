@@ -1,18 +1,32 @@
 import React from "react";
-import { Table } from '../'
-import { CheckCircleOutline, Close } from "@mui/icons-material";
+import { CustomCell, Table } from '../'
+import { CheckCircleOutline, Close, HighlightOffOutlined } from "@mui/icons-material";
 import moment from "moment";
-
+import { useRateSheetsCustomer } from "../../hooks/useRateSheets";
+import { Box, Button } from "@mui/material";
+import { useSnackbar } from "notistack";
 
 export default function RateSheetCustomerTable(props) {
 
-    const { setOpenModal } = props
+    const { setOpenModal, customer_id } = props
+    const { data, isLoading, isFetching, isError, error } = useRateSheetsCustomer(customer_id)
+    console.log(data);
+    const {enqueueSnackbar} = useSnackbar()
+
+    React.useEffect(() => {
+        if (isError && error) {
+            const message = error.response?.data?.message;
+            const status = error.response?.status;
+            const errorMessage = message ? `${message} - ${status}` : error.message;
+            enqueueSnackbar(errorMessage, { variant: 'error' });
+        }
+    }, [isError, error])
 
     return (
         <Table
             pageSizeOptions={[10, 25, 50]}
             pageSize={10}
-            // loading={isLoading}
+            loading={isLoading || isFetching}
             title='Rate Sheets'
             options={{
                 filtering: false,
@@ -25,31 +39,29 @@ export default function RateSheetCustomerTable(props) {
                     headerName: 'Type',
                     field: 'type',
                     minWidth: 250,
-                    flex: 1
+                    flex: 1,
+                    renderCell: params => <CustomCell>{params.value}</CustomCell>
                 },
                 {
                     headerName: 'Skid → Weight',
                     field: 'skid_by_weight',
                     minWidth: 110,
                     flex: 1,
-                    renderCell: params => params.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='error' />
+                    renderCell: params => params.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='error' />
                 },
                 {
                     headerName: 'Imported On',
-                    field: 'batch_id',
+                    field: 'imported_on',
                     minWidth: 150,
                     flex: 1,
-                    renderCell: params => {
-                        const imported_date = params.value?.split('_')[0]
-                        return moment(imported_date).format('MMM DD, YYYY hh:mm:ss')
-                    }
+                    renderCell: params => moment(params.value).format('MMM DD, YYYY hh:mm:ss')
                 },
                 {
                     field: 'actions',
                     headerName: 'Actions',
                     sortable: false,
-                    flex: 1,
-                    minWidth: 100,
+                    // flex: 1,
+                    width: '100%',
                     renderCell: params => (
                         <Box
                             sx={{
@@ -62,6 +74,7 @@ export default function RateSheetCustomerTable(props) {
                             <Button
                                 onClick={(e) => {
                                     e.stopPropagation()
+                                    console.log(params.row);
                                 }}
                                 variant='text'
                                 size='small'
@@ -79,6 +92,7 @@ export default function RateSheetCustomerTable(props) {
                             <Button
                                 onClick={(e) => {
                                     e.stopPropagation()
+                                    console.log(params.row);
                                 }}
                                 variant='text'
                                 size='small'
@@ -96,7 +110,7 @@ export default function RateSheetCustomerTable(props) {
                     )
                 }
             ]}
-            data={[]}
+            data={data || []}
         />
     )
 

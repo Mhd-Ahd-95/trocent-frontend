@@ -7,7 +7,7 @@ import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useDriverMutation, useDrivers } from '../../hooks/useDrivers'
-import { CheckCircleOutline, Close } from '@mui/icons-material'
+import { CheckCircleOutline, HighlightOffOutlined } from '@mui/icons-material'
 import { useQueryClient } from "@tanstack/react-query";
 import DriverLogin from './CreateDriverLogin'
 import EditLogin from './EditDriverLogin'
@@ -129,7 +129,7 @@ export default function Drivers() {
                 field: 'tdg',
                 flex: 1,
                 minWidth: 80,
-                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',

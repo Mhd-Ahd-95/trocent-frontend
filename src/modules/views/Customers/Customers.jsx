@@ -6,7 +6,7 @@ import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useCustomers } from '../../hooks/useCustomers'
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircleOutline, Close } from '@mui/icons-material'
+import { CheckCircleOutline, HighlightOffOutlined } from '@mui/icons-material'
 
 export default function CustomerView() {
 
@@ -97,7 +97,7 @@ export default function CustomerView() {
                 field: 'account_active',
                 flex: 1,
                 minWidth: 80,
-                renderCell: params => params.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
+                renderCell: params => params.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',
