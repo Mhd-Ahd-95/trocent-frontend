@@ -20,7 +20,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
 
-export default function OrderForm (props) {
+export default function OrderForm(props) {
   const { initialValues } = props
 
   const {

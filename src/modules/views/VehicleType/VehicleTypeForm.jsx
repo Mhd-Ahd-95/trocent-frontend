@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
 
 export default function VehicleTypeForm(props) {
-  const { initialValues, submit, editMode, setOpen, setData, data } = props
+  const { initialValues, submit, editMode, setOpen, } = props
   const [loading, setLoading] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
 
@@ -22,37 +22,24 @@ export default function VehicleTypeForm(props) {
     }
   })
 
-  const onSubmit = (vtype, e) => {
+  const onSubmit = async (vtype, e) => {
     setLoading(true)
     const action = e?.nativeEvent?.submitter?.id
     vtype['rate'] = Number(vtype['rate'])
-    submit(vtype)
-      .then(res => {
-        const result = res.data.data
-        if (!editMode) {
-          setData([result, ...data])
-          enqueueSnackbar('New vehicle type has been created successfully', {
-            variant: 'success'
-          })
-          action === 'save-type-action' ? reset() : setOpen(false)
-        } else {
-          const updateData = [...data]
-          const index = updateData.findIndex(vt => vt.id === result.id)
-          updateData[index] = result
-          setData([...updateData])
-          enqueueSnackbar('Vehicle Type has been updated successfully', {
-            variant: 'success'
-          })
-          setOpen(false)
-        }
-      })
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
-      .finally(() => setLoading(false))
+    try {
+      await submit(vtype);
+      if (action === 'apply-type-action') {
+        setOpen(false)
+      }
+      else {
+        reset()
+      }
+    } catch (error) {
+      // console.log(error);
+      //
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

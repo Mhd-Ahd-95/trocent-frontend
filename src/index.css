@@ -12,8 +12,10 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px white inset !important; /* set your bg color */
-  box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px #fff inset !important;
   -webkit-text-fill-color: black !important; /* keep text color normal */
+  height: 5px !important;
+  /* line-height: 30px !important; */
 }
 
 input[type=number]::-webkit-inner-spin-button, 

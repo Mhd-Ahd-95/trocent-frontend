@@ -11,9 +11,8 @@ import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
-import VehicleTypesApi from '../../apis/VehicleTypes.api'
 import VehicleTypeForm from './VehicleTypeForm'
-import { VehicleTypeContext } from '../../contexts'
+import { useVehicleTypeMutations, useVehicleTypes } from '../../hooks/useVehicleType'
 
 export default function VehicleTypes() {
   const [openDrawer, setOpenDrawer] = React.useState(false)
@@ -22,36 +21,19 @@ export default function VehicleTypes() {
   const [vehicleType, setVehicleType] = React.useState({})
   const selectedRef = React.useRef()
   const { enqueueSnackbar } = useSnackbar()
-  const { vehicleTypes, setVehicleTypes, loading } =
-    React.useContext(VehicleTypeContext)
+  const { data, isLoading, isFetching, isError, error } = useVehicleTypes()
+  const { create, update, removeMany } = useVehicleTypeMutations()
 
   const handleClear = () => {
     setSelectedTypes([])
     selectedRef.current = null
     setRowSelectionModel({ type: 'include', ids: new Set() })
+    setOpenModal(false)
   }
 
   const handleDeleteVehicleType = ids => {
-    VehicleTypesApi.deleteVehicleTypes(ids)
-      .then(res => {
-        if (res.data) {
-          const filtered = vehicleTypes.filter(vtype => !ids.includes(vtype.id))
-          setVehicleTypes([...filtered])
-          enqueueSnackbar('Vehicle Type has been deleted successfully', {
-            variant: 'success'
-          })
-        }
-        setOpenModal(false)
-        handleClear()
-      })
-      .catch(error => {
-        setOpenModal(false)
-        handleClear()
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
+    removeMany.mutate(ids)
+    handleClear()
   }
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
@@ -63,10 +45,19 @@ export default function VehicleTypes() {
     setRowSelectionModel(newModel)
     let selectedIds = Array.from(newModel.ids)
     if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = vehicleTypes.map(row => row.id)
+      selectedIds = data.map(row => row.id)
     }
     setSelectedTypes(selectedIds)
   }
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
 
   return (
     <MainLayout
@@ -90,9 +81,9 @@ export default function VehicleTypes() {
       <Grid container spacing={2}>
         <Grid size={12}>
           <Table
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
-            loading={loading}
+            loading={isLoading || isFetching}
             checkboxSelection
             deleteSelected={selectedTypes.length > 0}
             handleDeleteSelected={() => setOpenModal(2)}
@@ -173,7 +164,7 @@ export default function VehicleTypes() {
                 )
               }
             ]}
-            data={[...vehicleTypes]}
+            data={data || []}
           />
         </Grid>
       </Grid>
@@ -185,9 +176,7 @@ export default function VehicleTypes() {
         >
           <VehicleTypeForm
             initialValues={{}}
-            submit={payload => VehicleTypesApi.createVehicleType(payload)}
-            setData={setVehicleTypes}
-            data={vehicleTypes}
+            submit={async (payload) => create.mutateAsync(payload)}
             setOpen={setOpenDrawer}
           />
         </DrawerForm>
@@ -200,12 +189,8 @@ export default function VehicleTypes() {
         >
           <VehicleTypeForm
             initialValues={{ ...vehicleType }}
-            submit={payload =>
-              VehicleTypesApi.updateVehicleType(vehicleType.id, payload)
-            }
+            submit={async (payload) => await update.mutateAsync({ id: vehicleType.id, payload })}
             editMode
-            setData={setVehicleTypes}
-            data={vehicleTypes}
             setOpen={setOpenDrawer}
           />
         </DrawerForm>

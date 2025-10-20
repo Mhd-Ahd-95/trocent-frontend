@@ -1,6 +1,6 @@
 import React from "react";
 import { MainLayout } from "../../layouts";
-import { Breadcrumbs, Table } from "../../components";
+import { Table } from "../../components";
 import { Grid, colors } from "@mui/material";
 import CardDashoard from "./Card";
 import {
@@ -8,8 +8,12 @@ import {
   TrendingDown as TrendDown,
 } from "@mui/icons-material";
 import moment from "moment";
+import { useFuelSurcharges } from '../../hooks/useFuelSurcharges'
 
 export default function Dashboard() {
+
+  const { data, isLoading, isFetching } = useFuelSurcharges()
+
   return (
     <MainLayout title="Dashboard" activeDrawer={{ active: "Dashboard" }} grid>
       <Grid container spacing={2}>
@@ -20,7 +24,7 @@ export default function Dashboard() {
                 title="Total Customer"
                 number={1}
                 statistic="↑ 0 new (100.0% vs last week)"
-                icon={<TrendUp sx={{mb: -0.8}}/>}
+                icon={<TrendUp sx={{ mb: -0.8 }} />}
                 color={colors.green[400]}
               />
             </Grid>
@@ -29,7 +33,7 @@ export default function Dashboard() {
                 title="Total Orders"
                 number={200}
                 statistic="↑ 5 new this week"
-                icon={<TrendUp sx={{mb: -0.8}}/>}
+                icon={<TrendUp sx={{ mb: -0.8 }} />}
                 color={colors.green[400]}
               />
             </Grid>
@@ -38,48 +42,36 @@ export default function Dashboard() {
                 title="Revenue"
                 number="21%"
                 statistic="7% decrease"
-                icon={<TrendDown sx={{mb: -0.8}}/>}
+                icon={<TrendDown sx={{ mb: -0.8 }} />}
                 color={colors.red[400]}
               />
             </Grid>
           </Grid>
         </Grid>
         <Grid size={12}>
-          <Table 
+          <Table
             title='Latest Fuel Surcharge'
             checkBoxSelection={false}
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
+            loading={isLoading || isFetching}
             options={{
               search: false,
               filtering: false,
               columns: false,
               export: false
             }}
-            data={
-              [
-                {id: 1, ltl: 20.9, ftl: 49.10, created_at: new Date()},
-                {id: 2, ltl: 21.9, ftl: 50.10, created_at: new Date()},
-                {id: 3, ltl: 22.9, ftl: 60.10, created_at: new Date()},
-                {id: 4, ltl: 23.9, ftl: 30.10, created_at: new Date()},
-                {id: 5, ltl: 23.9, ftl: 30.10, created_at: new Date()},
-                {id: 6, ltl: 23.9, ftl: 30.10, created_at: new Date()},
-                {id: 7, ltl: 23.9, ftl: 30.10, created_at: new Date()},
-                {id: 8, ltl: 93.9, ftl: 30.10, created_at: new Date()},
-                {id: 9, ltl: 93.9, ftl: 30.10, created_at: new Date()},
-                {id: 10, ltl: 93.9, ftl: 30.10, created_at: new Date()},
-              ]
-            }
+            data={data || []}
             columns={
               [
                 {
-                  field: 'ltl',
+                  field: 'ltl_surcharge',
                   headerName: 'LTL Surcharge %',
                   flex: 1,
                   minWidth: 150
                 },
                 {
-                  field: 'ftl',
+                  field: 'ftl_surcharge',
                   flex: 1,
                   headerName: 'FTL Surcharge %',
                   minWidth: 150

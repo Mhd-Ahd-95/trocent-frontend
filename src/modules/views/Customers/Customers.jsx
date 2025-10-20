@@ -3,10 +3,34 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs, Table, CustomCell } from '../../components'
 import { Grid, Button } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useCustomers } from '../../hooks/useCustomers'
+import { useQueryClient } from "@tanstack/react-query";
+import { CheckCircleOutline, HighlightOffOutlined } from '@mui/icons-material'
 
-export default function CustomerView () {
+export default function CustomerView() {
+
   const navigate = useNavigate()
+  const location = useLocation()
+  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
+  const { data, isLoading, isFetching, isError, error, refetch } = useCustomers()
+  const queryClient = useQueryClient();
+  const state = queryClient.getQueryState(['customers']);
+
+
+  const refetchCustomers = React.useCallback(() => refetch(), [state])
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+    if (state.dataUpdateCount === 1 && fromEditOrCreate) {
+      refetchCustomers()
+    }
+  }, [isError, error, state?.dataUpdateCount])
 
   return (
     <MainLayout
@@ -21,18 +45,20 @@ export default function CustomerView () {
       button
       btnProps={{
         label: 'New Customer',
-        onClick: () => navigate('/new-customer')
+        onClick: () => navigate('/customer/create')
       }}
     >
       <Grid container spacing={2}>
         <Grid size={12}>
           <Table
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
             options={{
               filtering: true,
               search: true
             }}
+            disableRowSelectionOnClick
+            loading={isLoading || isFetching}
             columns={[
               {
                 headerName: 'Name',
@@ -42,13 +68,13 @@ export default function CustomerView () {
               },
               {
                 headerName: 'Account#',
-                field: 'account',
+                field: 'account_number',
                 flex: 1,
                 minWidth: 150
               },
               {
                 headerName: 'Phone',
-                field: 'phone',
+                field: 'phone_number',
                 flex: 1,
                 minWidth: 120
               },
@@ -57,21 +83,21 @@ export default function CustomerView () {
                 field: 'invoicing',
                 flex: 1,
                 minWidth: 80,
-                renderCell: params => <CustomCell>{params.value}</CustomCell>
+                renderCell: params => params.value ? <CustomCell>{params.value}</CustomCell> : ''
               },
               {
                 headerName: 'Language',
                 field: 'language',
                 flex: 1,
                 minWidth: 90,
-                renderCell: params => <CustomCell>{params.value}</CustomCell>
+                renderCell: params => params.value ? <CustomCell>{params.value === 'en' ? 'English' : params.value === 'fr' ? 'French' : ''}</CustomCell> : ''
               },
               {
                 headerName: 'Status',
-                field: 'status',
+                field: 'account_active',
                 flex: 1,
                 minWidth: 80,
-                renderCell: params => <CustomCell>{params.value}</CustomCell>
+                renderCell: params => params.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',
@@ -82,7 +108,10 @@ export default function CustomerView () {
                 renderCell: params => (
                   <Button
                     startIcon={<EditSquareIcon />}
-                    onClick={() => console.log(params)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/customer/edit/${params.row.id}`)
+                    }}
                     variant='text'
                     size='small'
                     sx={{
@@ -98,17 +127,7 @@ export default function CustomerView () {
                 )
               }
             ]}
-            data={[
-              {
-                id: 1,
-                name: 'Mhd Ahd',
-                account: 'mhd@gmail.com',
-                phone: '03136125',
-                invoicing: '#IN001',
-                language: 'English',
-                status: 'Pending'
-              }
-            ]}
+            data={data || []}
           />
         </Grid>
       </Grid>

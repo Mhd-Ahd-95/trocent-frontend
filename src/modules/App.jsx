@@ -29,7 +29,9 @@ import {
   CreateCompany,
   EditCompany,
   CreateDriver,
-  EditDriver
+  EditDriver,
+  CreateCustomer,
+  EditCustomer
 } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
@@ -51,6 +53,8 @@ function App() {
           <Route path='/orders' Component={Orders} />
           <Route path='/new-order' Component={NewOrder} />
           <Route path='/customers' Component={Customers} />
+          <Route path='/customer/create' Component={CreateCustomer} />
+          <Route path='/customer/edit/:id' Component={EditCustomer} />
           <Route path='/roles' Component={RoleView} />
           <Route path='/roles/create' Component={CreateRole} />
           <Route path='/roles/edit/:rid' Component={EditRole} />

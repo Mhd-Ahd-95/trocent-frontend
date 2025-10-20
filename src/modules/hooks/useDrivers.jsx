@@ -23,14 +23,14 @@ export function useDrivers() {
 export function useDriver(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['driver', cid],
+        queryKey: ['driver', Number(cid)],
         queryFn: async () => {
 
             const cachedDrivers = queryClient.getQueryData(['driver']) || [];
-            const cached = cachedDrivers.find(item => item.id === Number(cid));
+            const cached = cachedDrivers.find(item => Number(item.id) === Number(cid));
             if (cached) return cached;
 
-            const res = await DriversApi.getDriver(cid);
+            const res = await DriversApi.getDriver(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -52,6 +52,24 @@ export function useDriverMutation() {
         const errorMessage = message ? `${message} - ${status}` : error.message;
         enqueueSnackbar(errorMessage, { variant: 'error' });
     };
+
+    const createDriverLogin = useMutation({
+        mutationFn: async ({ id, payload }) => {
+            const res = await DriversApi.create_driver_login(id, payload);
+            return res.data.data;
+        },
+        onSuccess: (updated) => {
+            queryClient.setQueryData(['drivers'], (old = []) =>
+                old.map((item) => item.id === Number(updated.id) ? updated : item)
+            );
+            queryClient.invalidateQueries({
+                queryKey: ['users'],
+                exact: true
+            })
+            enqueueSnackbar('Driver has been successfully create a login', { variant: 'success' });
+        },
+        onError: handleError,
+    });
 
     const create = useMutation({
         mutationFn: async (payload) => {
@@ -77,6 +95,7 @@ export function useDriverMutation() {
                 queryClient.setQueryData(['drivers'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
+                queryClient.setQueryData(['driver', Number(updated.id)], updated)
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -115,6 +134,6 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove };
+    return { create, update, removeMany, remove, createDriverLogin };
 
 }

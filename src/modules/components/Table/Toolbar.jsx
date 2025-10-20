@@ -57,7 +57,7 @@ export default function CustomToolbar (props) {
   const exportMenuTriggerRef = React.useRef(null)
 
   return (
-    <Toolbar>
+    <Toolbar sx={{padding: 1.5}}>
       {props.deleteSelected && (
         <Button
           color='error'
@@ -85,6 +85,18 @@ export default function CustomToolbar (props) {
             <ViewColumnIcon fontSize='small' />
           </ColumnsPanelTrigger>
         </Tooltip>
+      )}
+      {props.importedButton === 'true' && (
+        <Button
+          color='primary'
+          sx={{ textTransform: 'capitalize', mx: 0.5, py: 0.8 }}
+          size='small'
+          variant='contained'
+          startIcon={<FileDownloadIcon />}
+          onClick={() => props.handleImportedButton()}
+        >
+          Import Rate Sheet
+        </Button>
       )}
       {props.options.filtering && (
         <Tooltip title='Filters'>

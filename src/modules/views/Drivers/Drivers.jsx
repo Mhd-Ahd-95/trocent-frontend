@@ -7,10 +7,10 @@ import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useDriverMutation, useDrivers } from '../../hooks/useDrivers'
-import { CheckCircleOutline, Close } from '@mui/icons-material'
+import { CheckCircleOutline, HighlightOffOutlined } from '@mui/icons-material'
 import { useQueryClient } from "@tanstack/react-query";
 import DriverLogin from './CreateDriverLogin'
-import { useUserMutations } from '../../hooks/useUsers'
+import EditLogin from './EditDriverLogin'
 
 
 export default function Drivers() {
@@ -24,15 +24,14 @@ export default function Drivers() {
   const { data, isLoading, isError, error, refetch, isFetching } = useDrivers()
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
-  const { removeMany } = useDriverMutation()
+  const { removeMany, createDriverLogin } = useDriverMutation()
   const [driver, setDriver] = React.useState({})
-  const { createDriverLogin } = useUserMutations()
 
   const state = queryClient.getQueryState(['drivers']);
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
-    ids: new Set()
+    ids: new Set(),
   })
 
   const handleSelectionChange = newModel => {
@@ -81,9 +80,10 @@ export default function Drivers() {
       <Grid container spacing={2}>
         <Grid size={12} width={'100%'}>
           <Table
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
             checkboxSelection
+            disableRowSelectionOnClick
             deleteSelected={selectedDrivers.length > 0}
             handleDeleteSelected={() => setOpenModal(true)}
             onRowSelectionModelChange={handleSelectionChange}
@@ -129,7 +129,7 @@ export default function Drivers() {
                 field: 'tdg',
                 flex: 1,
                 minWidth: 80,
-                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',
@@ -175,7 +175,7 @@ export default function Drivers() {
                       onClick={(e) => {
                         e.stopPropagation()
                         setDriver(params.row)
-                        setOpenDrawer(true)
+                        params.row?.user_id ? setOpenDrawer(2) : setOpenDrawer(1)
                       }}
                       variant='text'
                       size='small'
@@ -188,7 +188,7 @@ export default function Drivers() {
                       }}
                       color='primary'
                     >
-                      Create Login
+                      {params.row?.user_id ? 'Edit Login' : 'Create Login'}
                     </Button>
                   </Box>
                 )
@@ -214,21 +214,26 @@ export default function Drivers() {
       {openDrawer && (
         <DrawerForm
           title='Create Login'
-          open={openDrawer}
+          open={openDrawer === 1}
           setOpen={setOpenDrawer}
         >
           <DriverLogin
             initialValues={{ type: 'driver', email: driver?.email || '', name: driver.fname }}
-            submit={async (payload) => {
-              try {
-                await createDriverLogin.mutateAsync(payload)
-              }
-              catch {
-                //
-              }
-            }}
+            submit={async (payload) => await createDriverLogin.mutateAsync({ id: driver.id, payload })}
             setOpen={setOpenDrawer}
-            editMode
+          />
+        </DrawerForm>
+      )}
+
+      {openDrawer && (
+        <DrawerForm
+          title='Create Login'
+          open={openDrawer === 2}
+          setOpen={setOpenDrawer}
+        >
+          <EditLogin
+            user_id={driver.user_id}
+            setOpenDrawer={setOpenDrawer}
           />
         </DrawerForm>
       )}

@@ -23,14 +23,14 @@ export function useCompanies() {
 export function useCompany(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['company', cid],
+        queryKey: ['company', Number(cid)],
         queryFn: async () => {
 
             const cachedCompanies = queryClient.getQueryData(['companies']) || [];
             const cached = cachedCompanies.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await CompaniesApi.getCompany(cid);
+            const res = await CompaniesApi.getCompany(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -81,7 +81,7 @@ export function useCompanyMutation() {
                 queryClient.setQueryData(['companies'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
-
+                queryClient.setQueryData(['company', Number(updated.id)], updated)
                 enqueueSnackbar('Company has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

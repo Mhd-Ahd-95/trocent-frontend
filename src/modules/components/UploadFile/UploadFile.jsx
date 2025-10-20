@@ -148,7 +148,7 @@ export default function UploadFile(props) {
                     focusRipple
                     component="span"
                 >
-                    Grag & Drop file or {' '} <span> Browser</span>
+                    Drag & Drop file or {' '} <span> Browser</span>
                 </UploadButton>
             </label>
             {driverDocument?.fname &&

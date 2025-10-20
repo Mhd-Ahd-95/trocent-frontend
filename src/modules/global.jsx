@@ -1,7 +1,7 @@
 const globalVariables = {
   auth: {},
   apis: {
-    baseURL: 'https://mhdahd.duckdns.org',
+    baseURL: 'http://localhost:8000',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
@@ -28,6 +28,10 @@ const globalVariables = {
           .join(' ')
         : '',
     formatDate: d => (d && d.toISOString ? d.toISOString().split('T')[0] : ''),
+    isEmail: (email) => {
+      const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return pattern.test(email);
+    },
     avatar: org => {
       const lst = org.split(' ')
       if (lst.length === 1) {

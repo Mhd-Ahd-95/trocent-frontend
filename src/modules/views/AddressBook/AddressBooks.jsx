@@ -3,7 +3,7 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs, ConfirmModal, DrawerForm, Modal, Table } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
-import { AccessTime, CheckCircleOutline, Close, DeleteForever } from '@mui/icons-material'
+import { AccessTime, CheckCircleOutline, DeleteForever, HighlightOffOutlined } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
 import { AddressBookContext } from '../../contexts'
 import AddressBooksApi from '../../apis/AddressBooks.api'
@@ -72,7 +72,7 @@ export default function AddressBook() {
       <Grid container spacing={2}>
         <Grid size={12}>
           <Table
-            pageSizeOptions={[10, 20, 30]}
+            pageSizeOptions={[10, 25, 50]}
             pageSize={10}
             checkboxSelection
             deleteSelected={selectedBooks.length > 0}
@@ -128,14 +128,14 @@ export default function AddressBook() {
                 field: 'requires_appointment',
                 minWidth: 100,
                 flex: 1,
-                renderCell: rowData => rowData.value ? <AccessTime sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='primary' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
+                renderCell: rowData => rowData.value ? <AccessTime sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='primary' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 headerName: 'No Wait',
                 field: 'no_waiting_time',
                 minWidth: 100,
                 flex: 1,
-                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <Close sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
+                renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='action' />
               },
               {
                 field: 'actions',
