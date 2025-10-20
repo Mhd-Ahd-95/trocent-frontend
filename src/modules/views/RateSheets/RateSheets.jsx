@@ -2,9 +2,8 @@ import React from "react";
 import { MainLayout } from "../../layouts";
 import { Breadcrumbs, Table, CustomCell, Modal, ConfirmModal } from "../../components";
 import { Box, Grid, Typography } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useRateSheetMutations, useRateSheets } from "../../hooks/useRateSheets";
-import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircleOutline, HighlightOffOutlined } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 
@@ -12,10 +11,6 @@ export default function RateSheets() {
 
   const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar()
-  const location = useLocation()
-  const queryClient = useQueryClient()
-  const state = queryClient.getQueryState(['rateSheets'])
-  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
   const { data, isLoading, isFetching, isError, error } = useRateSheets()
   const [selectedRateSheets, setSelectedRateSheets] = React.useState([])
   const { removeMany } = useRateSheetMutations()
@@ -27,9 +22,6 @@ export default function RateSheets() {
       const status = error.response?.status;
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-    if (state?.dataUpdateCount === 1 && fromEditOrCreate) {
-      refetchInterliners()
     }
   }, [isError, error])
 
