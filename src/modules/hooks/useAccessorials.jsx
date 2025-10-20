@@ -23,14 +23,14 @@ export function useAccessorials() {
 export function useAccessorial(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['accessorial', cid],
+        queryKey: ['accessorial', Number(cid)],
         queryFn: async () => {
 
             const cachedAcess = queryClient.getQueryData(['accessorials']) || [];
             const cached = cachedAcess.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await AccessorialAPI.getAccessorial(cid);
+            const res = await AccessorialAPI.getAccessorial(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -77,6 +77,7 @@ export function useAccessorialMutations() {
                 queryClient.setQueryData(['accessorials'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
+                queryClient.setQueryData(['accessorial', Number(updated.id)], updated)
                 enqueueSnackbar('Accessorial has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

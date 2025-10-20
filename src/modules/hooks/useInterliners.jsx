@@ -23,12 +23,12 @@ export function useInterliners() {
 export function useInterliner(iid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['interliner', iid],
+        queryKey: ['interliner', Number(iid)],
         queryFn: async () => {
             const cachedInterliners = queryClient.getQueryData(['interliners']) || [];
             const cached = cachedInterliners.find(item => item.id === iid);
             if (cached) return cached;
-            const res = await InterlinersApi.getInterliner(iid);
+            const res = await InterlinersApi.getInterliner(Number(iid));
             return res.data.data;
         },
         enabled: !!iid,
@@ -73,7 +73,7 @@ export function useInterlinerMutations() {
                 queryClient.setQueryData(['interliners'], (old = []) =>
                     old.map((item) => (item.id === updated.id ? updated : item))
                 );
-                queryClient.setQueryData(['interliner', updated.id], updated);
+                queryClient.setQueryData(['interliner', Number(updated.id)], updated);
                 enqueueSnackbar('Interliner has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

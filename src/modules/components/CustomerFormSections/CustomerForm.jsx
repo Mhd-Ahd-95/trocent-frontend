@@ -80,7 +80,6 @@ export default function CustomerForm(props) {
         setLoading(true)
         const action = e?.nativeEvent?.submitter?.id;
         const formData = new FormData()
-        console.log(data);
         const accessorials = data['accessorials']
         const vehicleTypes = data['vehicle_types']
 

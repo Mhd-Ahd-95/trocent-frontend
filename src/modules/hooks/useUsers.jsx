@@ -23,14 +23,14 @@ export function useUsers() {
 export function useUser(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['user', cid],
+        queryKey: ['user', Number(cid)],
         queryFn: async () => {
 
             const cachedUsers = queryClient.getQueryData(['user']) || [];
             const cached = cachedUsers.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await UserAPI.getUser(cid);
+            const res = await UserAPI.getUser(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -77,6 +77,11 @@ export function useUserMutations() {
                 queryClient.setQueryData(['users'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
+                queryClient.setQueryData(['user', Number(updated.id)], updated)
+                queryClient.invalidateQueries({
+                    queryKey: ['users'],
+                    exact: true
+                })
                 enqueueSnackbar('User has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

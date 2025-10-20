@@ -23,14 +23,14 @@ export function useDrivers() {
 export function useDriver(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['driver', cid],
+        queryKey: ['driver', Number(cid)],
         queryFn: async () => {
 
             const cachedDrivers = queryClient.getQueryData(['driver']) || [];
-            const cached = cachedDrivers.find(item => item.id === Number(cid));
+            const cached = cachedDrivers.find(item => Number(item.id) === Number(cid));
             if (cached) return cached;
 
-            const res = await DriversApi.getDriver(cid);
+            const res = await DriversApi.getDriver(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -62,7 +62,10 @@ export function useDriverMutation() {
             queryClient.setQueryData(['drivers'], (old = []) =>
                 old.map((item) => item.id === Number(updated.id) ? updated : item)
             );
-            queryClient.invalidateQueries(['users'])
+            queryClient.invalidateQueries({
+                queryKey: ['users'],
+                exact: true
+            })
             enqueueSnackbar('Driver has been successfully create a login', { variant: 'success' });
         },
         onError: handleError,
@@ -92,6 +95,7 @@ export function useDriverMutation() {
                 queryClient.setQueryData(['drivers'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
+                queryClient.setQueryData(['driver', Number(updated.id)], updated)
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

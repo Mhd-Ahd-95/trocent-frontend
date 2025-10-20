@@ -85,7 +85,6 @@ export default function DriverForm(props) {
             else {
                 reset()
             }
-            editMode && props.refetch()
         } catch (error) {
             // console.log(error);
             //

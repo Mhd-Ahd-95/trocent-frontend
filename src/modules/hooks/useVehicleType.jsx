@@ -23,14 +23,14 @@ export function useVehicleTypes() {
 export function useVehicleType(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['vehicleType', cid],
+        queryKey: ['vehicleType', Number(cid)],
         queryFn: async () => {
 
             const cachedVehicleTypes = queryClient.getQueryData(['vehicleType']) || [];
             const cached = cachedVehicleTypes.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await VehicleTypeAPI.getVehicleType(cid);
+            const res = await VehicleTypeAPI.getVehicleType(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -55,7 +55,6 @@ export function useVehicleTypeMutations() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
-            console.log(payload);
             const res = await VehicleTypeAPI.createVehicleType(payload);
             return res.data.data;
         },

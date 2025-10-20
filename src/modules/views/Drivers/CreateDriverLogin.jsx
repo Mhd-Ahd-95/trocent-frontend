@@ -2,14 +2,11 @@ import React from 'react'
 import { Grid } from '@mui/material'
 import { StyledButton, SubmitButton, TextInput } from '../../components'
 import { useForm } from 'react-hook-form'
-import { useUsers } from '../../hooks/useUsers'
 
 export default function DriverLogin(props) {
 
     const { initialValues, submit, setOpen, editMode } = props
     const [loading, setLoading] = React.useState(false)
-
-    const { refetch } = useUsers()
 
     const {
         register,
@@ -35,8 +32,6 @@ export default function DriverLogin(props) {
         try {
             await submit(data);
             setOpen(false)
-            refetch()
-            editMode && props.refetchUser()
         } catch (error) {
             // console.log(error);
             //

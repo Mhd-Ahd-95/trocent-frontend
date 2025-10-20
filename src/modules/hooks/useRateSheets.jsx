@@ -7,7 +7,6 @@ export function useRateSheets() {
     return useQuery({
         queryKey: ['rateSheets'],
         queryFn: async () => {
-            console.log('recalled');
             const response = await RateSheetsApi.getRateSheets();
             return response.data.data;
         },
@@ -33,7 +32,6 @@ export function useRateSheetsCustomer(cid) {
         queryFn: async () => {
             const cachedSheets = queryClient.getQueryData(['rateSheets']) || []
             const sheetsCustomer = cachedSheets.filter((rsc) => Number(rsc.customer_id) === Number(cid))
-            console.log('sheetsCustomer: ', sheetsCustomer);
             if (sheetsCustomer.length > 0) return format_rate_sheets_customer(sheetsCustomer)
             const res = await RateSheetsApi.getRateSheetsByCustomer(cid)
             return format_rate_sheets_customer(res.data.data)

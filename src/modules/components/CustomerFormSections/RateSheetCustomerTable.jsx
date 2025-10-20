@@ -102,7 +102,6 @@ function RateSheetCustomerTable(props) {
                                 <Button
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        console.log(params.row);
                                     }}
                                     variant='text'
                                     size='small'

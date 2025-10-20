@@ -45,7 +45,7 @@ export default function VehicleTypes() {
     setRowSelectionModel(newModel)
     let selectedIds = Array.from(newModel.ids)
     if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = vehicleTypes.map(row => row.id)
+      selectedIds = data.map(row => row.id)
     }
     setSelectedTypes(selectedIds)
   }

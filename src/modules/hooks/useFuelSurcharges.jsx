@@ -23,14 +23,14 @@ export function useFuelSurcharges() {
 export function useFuelSurcharge(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['fuelSurcharge', cid],
+        queryKey: ['fuelSurcharge', Number(cid)],
         queryFn: async () => {
 
             const cachedSurcharges = queryClient.getQueryData(['fuelSurcharges']) || [];
             const cached = cachedSurcharges.find(item => item.id === Number(cid));
             if (cached) return cached;
 
-            const res = await FuelSurchargesApi.getFuelSurcharge(cid);
+            const res = await FuelSurchargesApi.getFuelSurcharge(Number(cid));
             return res.data.data;
         },
         enabled: !!cid,
@@ -75,7 +75,7 @@ export function useFuelSurchargeMutations() {
             },
             onSuccess: (updated) => {
                 queryClient.setQueryData(['fuelSurcharges'], (old = []) =>
-                    old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    old.map((item) => Number(item.id) === Number(updated.id) ? updated : item)
                 );
                 enqueueSnackbar('Fuel Surcharge has been updated successfully', { variant: 'success' });
             },

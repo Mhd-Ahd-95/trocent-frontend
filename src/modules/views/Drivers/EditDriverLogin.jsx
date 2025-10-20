@@ -7,7 +7,7 @@ export default function EditLogin(props) {
 
     const { user_id, setOpenDrawer } = props
 
-    const { data, isLoading, isError, error, refetch } = useUser(user_id)
+    const { data, isLoading, isError, error, isRefetching } = useUser(user_id)
 
     const { update } = useUserMutations()
 
@@ -22,7 +22,7 @@ export default function EditLogin(props) {
 
     return (
         <Grid container sx={{ height: '100%' }}>
-            {isLoading ?
+            {isLoading || isRefetching?
                 <Grid container component={Box} justifyContent='center' alignItems='center' py={15} size={12}>
                     <CircularProgress />
                 </Grid>
@@ -32,7 +32,6 @@ export default function EditLogin(props) {
                         initialValues={{ ...data }}
                         submit={async (payload) => await update.mutateAsync({ id: user_id, payload })}
                         setOpen={setOpenDrawer}
-                        refetchUser={refetch}
                         editMode
                     />
                 </Grid>

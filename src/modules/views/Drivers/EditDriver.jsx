@@ -12,7 +12,7 @@ export default function EditDriver() {
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error, refetch, isRefetching } = useDriver(id)
+    const { data, isLoading, isError, error, isRefetching } = useDriver(id)
     const { update } = useDriverMutation()
 
     React.useEffect(() => {
@@ -40,7 +40,6 @@ export default function EditDriver() {
                         <DriverForm
                             initialValues={{ ...data }}
                             editMode
-                            refetch={refetch}
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
                     </Grid>
                     :
