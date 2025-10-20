@@ -41,6 +41,22 @@ class MemCache
         $this->put_in_cache($key, $items);
     }
 
+    public function get_entities_by_pte(string $key, int $pte_id, string $model, string $pte_name, array $relations = [])
+    {
+        $entities = $this->get_cache($key)->where($pte_name, $pte_id);
+        if ($entities->isEmpty()) {
+            $query = $model::query();
+            if (!empty($relations)) {
+                $query->with($relations);
+            }
+            $entities = $query->where($pte_name, $pte_id)->get();
+            if ($entities) {
+                $this->save_entities($key, $entities);
+            }
+        }
+        return $entities;
+    }
+
     public function get_entity_id(string $key, int $id, string $model, array $relations = [])
     {
         $entity = $this->get_cache($key)->firstWhere('id', $id);

@@ -16,6 +16,7 @@ class RateSheetResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'type' => $this->type,
             'destination' => $this->destination,
             'province' => $this->province,
             'postal_code' => $this->postal_code,
@@ -26,11 +27,15 @@ class RateSheetResource extends JsonResource
             'min_rate' => $this->min_rate,
             'ltl_rate' => $this->ltl_rate,
             'customer_id' => $this->customer_id,
+            'customer_name' => $this->whenLoaded('customer', function(){
+                return $this->customer->name;
+            }),
+            'batch_id' => $this->batch_id,
             'brackets' => $this->whenLoaded('brackets', function () {
-                return $this->brackets()->map(function ($bracket) {
+                return $this->brackets->map(function ($bracket) {
                     return [
                         'id' => $bracket->id,
-                        'bracket_rate' => $bracket->bracket_rate,
+                        'rate_bracket' => $bracket->rate_bracket,
                         'rate' => $bracket->rate,
                         'rate_sheet_id' => $bracket->rate_sheet_id
                     ];

@@ -34,8 +34,8 @@ class RateSheetRequest extends FormRequest
             'ltl_rate' => ['sometimes', 'numeric', 'nullable'],
             'customer_id' => ['required', 'numeric'],
             'brackets' => ['sometimes', 'array', 'nullable'],
-            'brackets.*.rate_bracket' => ['required_with:brackets', 'numeric'],
-            'brackets.*.rate' => ['sometimes:brackets', 'numeric', 'nullable']
+            'brackets.*.rate_bracket' => ['required_with:brackets', 'string'],
+            'brackets.*.rate' => ['sometimes:brackets', 'string', 'nullable']
         ];
 
         if ($this->isMethod('put')){

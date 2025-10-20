@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('rate_sheet_brackets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('rate_sheet_id')->constrained('rate_sheets')->cascadeOnDelete();
-            $table->float('rate_bracket');
-            $table->float('rate')->nullable();
+            $table->string('rate_bracket');
+            $table->string('rate')->nullable();
         });
     }
 

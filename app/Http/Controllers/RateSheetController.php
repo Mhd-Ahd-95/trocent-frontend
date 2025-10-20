@@ -8,6 +8,7 @@ use App\Http\Resources\RateSheetResource;
 use App\Models\Customer;
 use App\Models\RateSheet;
 use App\Services\MemCache;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -36,6 +37,11 @@ class RateSheetController extends Controller
         if (!$rateSheet)
             throw new ModelNotFoundException('Rate Sheet not found');
         return new RateSheetResource($rateSheet);
+    }
+
+    public function load_customer_rate_sheets(int $cid){
+        $rateSheets = $this->cache->get_entities_by_pte($this->cache_key, $cid, RateSheet::class, 'customer_id', ['brackets', 'customer']);
+        return RateSheetResource::collection($rateSheets);
     }
 
     public function store(RateSheetRequest $request)
@@ -68,9 +74,11 @@ class RateSheetController extends Controller
             $customer = $this->cache->get_entity_id('customers', $data[0]['customer_id'], Customer::class);
             if (!$customer)
                 throw new ModelNotFoundException('Customer not found');
+            $batch_id = Carbon::now()->format('Y-m-d H:i:s') . '_' . $data[0]['customer_id'];
             foreach ($data as $rate_sheet) {
                 $brackets = $rate_sheet['brackets'] ?? [];
                 unset($rate_sheet['brackets']);
+                $rate_sheet['batch_id'] = $batch_id;
                 $rsheet = RateSheet::create($rate_sheet);
                 if (!empty($brackets)) {
                     $rsheet->brackets()->createMany($brackets);
@@ -109,11 +117,36 @@ class RateSheetController extends Controller
         }
     }
 
-    public function delete_sheets_by_customer_id(int $cid){
+    public function delete_sheets_by_customer_id(int $cid)
+    {
         $customer = $this->cache->get_entity_id('customers', $cid, Customer::class);
-        if (!$customer) throw new ModelNotFoundException('Customer not found');
+        if (!$customer)
+            throw new ModelNotFoundException('Customer not found');
         $rsheets = RateSheet::where('customer_id', $cid);
+        $rids = $rsheets->pluck('id')->toArray();
         $rsheets->delete();
+        $this->cache->delete_entities($this->cache_key, $rids);
         return true;
+    }
+
+    public function delete_rate_sheets(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $ids = $request->input('rids');
+            if (!is_array($ids) || empty($ids)) {
+                throw new ModelNotFoundException("No rate sheets IDs provided.");
+            }
+            $rateSheets = RateSheet::whereIn('id', $ids)->get();
+            if (count($rateSheets) !== count($ids)) {
+                throw new ModelNotFoundException("Some rate sheets not found.");
+            }
+            RateSheet::whereIn('id', $ids)->delete();
+            $this->cache->delete_entities($this->cache_key, $ids);
+            DB::commit();
+            return true;
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 }

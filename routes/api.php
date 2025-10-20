@@ -130,6 +130,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [RateSheetController::class, 'store']);
         Route::put('/{id}', [RateSheetController::class, 'update']);
         Route::delete('/{id}', [RateSheetController::class, 'delete_sheets_by_customer_id']);
+        Route::get('/customer/{id}', [RateSheetController::class, 'load_customer_rate_sheets']);
+        Route::delete('', [RateSheetController::class, 'delete_rate_sheets']);
         Route::get('', [RateSheetController::class, 'index']);
         Route::get('/{id}', [RateSheetController::class, 'show']);
         Route::post('/batch', [RateSheetController::class, 'batchStore']);

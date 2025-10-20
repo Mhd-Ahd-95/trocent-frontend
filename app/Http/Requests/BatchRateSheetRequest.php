@@ -33,8 +33,8 @@ class BatchRateSheetRequest extends FormRequest
             '*.ltl_rate' => ['sometimes', 'numeric', 'nullable'],
             '*.customer_id' => ['required', 'numeric'],
             '*.brackets' => ['sometimes', 'array', 'nullable'],
-            '*.brackets.*.rate_bracket' => ['required_with:*.brackets', 'numeric'],
-            '*.brackets.*.rate' => ['sometimes', 'numeric', 'nullable'],
+            '*.brackets.*.rate_bracket' => ['required_with:*.brackets', 'string'],
+            '*.brackets.*.rate' => ['sometimes', 'string', 'nullable'],
         ];
     }
 }
