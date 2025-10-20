@@ -21,8 +21,6 @@ export default function RateSheets() {
   const { removeMany } = useRateSheetMutations()
   const [openModal, setOpenModal] = React.useState(false)
 
-  console.log(data);
-
   React.useEffect(() => {
     if (isError && error) {
       const message = error.response?.data?.message;
