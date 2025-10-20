@@ -16,7 +16,7 @@ const CustomGrid = styled(Grid)(({ theme }) => ({
 function CustomAccessorials(props) {
 
     const { control, watch } = props
-    const { data, isLoading, isFetching } = useAccessorials()
+    const { data, isLoading, } = useAccessorials()
 
     const { fields, append, remove } = useFieldArray({
         name: 'accessorials',
@@ -53,7 +53,7 @@ function CustomAccessorials(props) {
             title='Accessorial Charges'
             subtitle='Enable and customize accessorial charges per customer'
             content={
-                !isLoading && !isFetching ?
+                !isLoading?
                     <Grid container spacing={3}>
                         {data && data.map((access, index) => {
 

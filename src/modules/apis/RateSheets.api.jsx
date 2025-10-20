@@ -8,7 +8,7 @@ const updateRateSheet = (rid, ab) => CustomAxios.put(`/api/rate-sheets/${rid}`, 
 
 const createRateSheets = ab => CustomAxios.post('/api/rate-sheets/batch', ab)
 
-const deleteRateSheetByCustomer = rid => CustomAxios.delete(`/api/rate-sheets/${rid}`)
+const deleteRateSheetByBatchId = rid => CustomAxios.delete(`/api/rate-sheets/batch/${rid}`)
 
 const deleteRateSheets = rids => CustomAxios.delete('/api/rate-sheets', { data: { rids } })
 
@@ -19,7 +19,7 @@ export default {
     getRateSheets,
     createRateSheets,
     updateRateSheet,
-    deleteRateSheetByCustomer,
+    deleteRateSheetByBatchId,
     deleteRateSheets,
     getRateSheetsByCustomer
 }

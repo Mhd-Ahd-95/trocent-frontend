@@ -11,7 +11,8 @@ export default function EditCustomer() {
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
     const { update } = useCustomerMutation()
-    const { data, isLoading, isRefetching, refetch, error, isError } = useCustomer(id)
+    const { data, isLoading, isRefetching, error, isError } = useCustomer(id)
+
 
     React.useEffect(() => {
         if (isError && error) {
@@ -39,7 +40,6 @@ export default function EditCustomer() {
                             initialValues={{ ...data }}
                             editMode
                             customer_id={id}
-                            refetch={refetch}
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
                     </Grid>
                     :

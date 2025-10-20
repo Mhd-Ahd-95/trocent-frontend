@@ -15,7 +15,7 @@ const CustomGrid = styled(Grid)(({ theme }) => ({
 function CustomVehicleTypes(props) {
 
     const { control, watch } = props
-    const { data, isLoading, isFetching } = useVehicleTypes()
+    const { data, isLoading } = useVehicleTypes()
 
     const vTypesSelected = watch('vehicle_types')
 
@@ -48,7 +48,7 @@ function CustomVehicleTypes(props) {
             title='Vehicle Type Rates'
             subtitle='Enable and override vehicle type base rates per customer'
             content={
-                !isLoading && !isFetching ?
+                !isLoading ?
                     <Grid container spacing={3}>
                         {data && data.map((vtype, index) => {
                             const checked = isChecked(vtype.id)

@@ -128,7 +128,6 @@ export default function UploadXlsx(props) {
                             const dataProcessed = dataProcessing(staticProperties, [...loadSheetData(sheet, XLSX)])
                             const dataSuccessed = dataProcessed[0]
                             const dataErrored = dataProcessed[1]
-                            console.log(dataProcessed);
                             if (Object.keys(dataErrored).length === 0) {
                                 field.onChange(dataSuccessed)
                             }

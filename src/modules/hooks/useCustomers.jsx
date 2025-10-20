@@ -23,7 +23,7 @@ export function useCustomers() {
 export function useCustomer(cid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['customer', cid],
+        queryKey: ['customer', Number(cid)],
         queryFn: async () => {
 
             const cachedCust = queryClient.getQueryData(['customers']) || [];
@@ -75,8 +75,9 @@ export function useCustomerMutation() {
             },
             onSuccess: (updated) => {
                 queryClient.setQueryData(['customers'], (old = []) =>
-                    old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    old.map((item) => Number(item.id) === Number(updated.id) ? updated : item)
                 );
+                queryClient.setQueryData(['customer', Number(updated.id)], updated)
                 enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

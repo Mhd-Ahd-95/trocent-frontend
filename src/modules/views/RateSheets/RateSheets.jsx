@@ -161,7 +161,7 @@ export default function RateSheets() {
                 headerName: "Rate Brackets",
                 field: "brackets",
                 // flex: 1,
-                minWidth: calculateBracketColumnWidth(data || []),
+                minWidth: isLoading || isFetching ? 120 : calculateBracketColumnWidth(data || []),
                 renderCell: params => {
                   return (
                     <Box

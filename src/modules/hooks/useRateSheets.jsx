@@ -7,6 +7,7 @@ export function useRateSheets() {
     return useQuery({
         queryKey: ['rateSheets'],
         queryFn: async () => {
+            console.log('recalled');
             const response = await RateSheetsApi.getRateSheets();
             return response.data.data;
         },
@@ -31,11 +32,10 @@ export function useRateSheetsCustomer(cid) {
         queryKey: ['rateSheetsCustomer', cid],
         queryFn: async () => {
             const cachedSheets = queryClient.getQueryData(['rateSheets']) || []
-            console.log(cachedSheets);
             const sheetsCustomer = cachedSheets.filter((rsc) => Number(rsc.customer_id) === Number(cid))
+            console.log('sheetsCustomer: ', sheetsCustomer);
             if (sheetsCustomer.length > 0) return format_rate_sheets_customer(sheetsCustomer)
             const res = await RateSheetsApi.getRateSheetsByCustomer(cid)
-            console.log(res.data);
             return format_rate_sheets_customer(res.data.data)
         },
         enabled: !!cid,
@@ -82,8 +82,14 @@ export function useRateSheetMutations() {
             return res.data.data;
         },
         onSuccess: (newRateSheets) => {
-            queryClient.setQueryData(['rateSheets'], (old = []) => {
-                return [...newRateSheets, ...old]
+            const customerId = newRateSheets[0]['customer_id']
+            queryClient.invalidateQueries({
+                queryKey: ['rateSheets'],
+                exact: true,
+            });
+            const formatNewRateSheets = format_rate_sheets_customer(newRateSheets)
+            queryClient.setQueryData(['rateSheetsCustomer', customerId], (old = []) => {
+                return [...formatNewRateSheets, ...old];
             });
             enqueueSnackbar('Rate Sheets has been created successfully', { variant: 'success' });
         },
@@ -100,7 +106,6 @@ export function useRateSheetMutations() {
                 queryClient.setQueryData(['rateSheets'], (old = []) =>
                     old.map((item) => (Number(item.id) === Number(updated.id) ? updated : item))
                 );
-                queryClient.setQueryData(['rateSheet', updated.id], updated);
                 enqueueSnackbar('Rate Sheet has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -108,15 +113,24 @@ export function useRateSheetMutations() {
     );
 
     const remove = useMutation({
-        mutationFn: async (cid) => {
-            const res = await RateSheetsApi.deleteRateSheetByCustomer(cid);
+        mutationFn: async ({ bid, customer_id }) => {
+            const res = await RateSheetsApi.deleteRateSheetByBatchId(bid);
             return res.data
         },
-        onSuccess: (res, cid) => {
+        onSuccess: (res, params) => {
+            const { bid, customer_id } = params
             if (res) {
                 queryClient.setQueryData(['rateSheets'], (old = []) =>
-                    old.filter((item) => Number(item.customer_id) !== Number(cid))
+                    old.filter((item) => item.batch_id !== bid)
                 );
+                queryClient.invalidateQueries({
+                    queryKey: ['rateSheets'],
+                    exact: true,
+                });
+                queryClient.setQueryData(['rateSheetsCustomer', customer_id], (old = []) => {
+                    const filtered = old.filter(rsc => rsc.id !== bid)
+                    return [...filtered]
+                })
                 enqueueSnackbar('Rate Sheets has been deleted successfully', { variant: 'success' });
             }
         },

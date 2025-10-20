@@ -26,9 +26,9 @@ export default function RateSheetModal(props) {
         setLoading(true)
         e.preventDefault()
         const payload = data?.items.map((item) => ({ type: data.type, skid_by_weight: data.skid_by_weight, customer_id: customer_id, ...item }))
-        console.log(payload);
         try {
             await create.mutateAsync(payload)
+            props.handleClose()
         }
         catch (err) {
             //

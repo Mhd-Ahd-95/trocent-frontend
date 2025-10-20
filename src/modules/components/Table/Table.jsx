@@ -8,7 +8,7 @@ import CustomNoResultsOverlay from './NoResultFound'
 const TableLayout = styled('div')(({ theme }) => ({
   // overflow: "hidden",
   borderRadius: 25,
-  maxHeight: 603,
+  // maxHeight: 603,
   // width: '100%',
   // overflowX: 'auto',
   // overflowY: 'auto',

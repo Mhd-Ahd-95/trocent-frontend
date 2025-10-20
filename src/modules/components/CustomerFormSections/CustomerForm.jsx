@@ -80,7 +80,7 @@ export default function CustomerForm(props) {
         setLoading(true)
         const action = e?.nativeEvent?.submitter?.id;
         const formData = new FormData()
-
+        console.log(data);
         const accessorials = data['accessorials']
         const vehicleTypes = data['vehicle_types']
 
@@ -103,7 +103,7 @@ export default function CustomerForm(props) {
         for (let [key, value] of Object.entries(data)) {
             if (['accessorials', 'vehicle_types'].includes(key)) continue
             if (key === 'billing_emails' || key === 'pod_emails' || key === 'status_update_emails' || key === 'notification_preferences') {
-                value.forEach((vl, idx) => {
+                value?.forEach((vl, idx) => {
                     formData.append(`${key}[${idx}]`, vl)
                 })
             }
@@ -120,7 +120,7 @@ export default function CustomerForm(props) {
             else {
                 reset()
             }
-            editMode && props.refetch()
+            // editMode && props.refetch()
         } catch (error) {
             // console.log(error);
             //
