@@ -22,10 +22,10 @@ const MainContent = styled("main")(({ theme, noPadding }) => ({
   backgroundColor: theme.palette.mode === "light" ? "#f9f9f9" : "#494949",
 }));
 
-export default function MainLayout(props) {
+function MainLayout(props) {
+
   const theme = useTheme();
   const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
-
   const { title } = props;
   const Breadcrumbs = props.breadcrumbs;
   const [openDrawer, setOpenDrawer] = React.useState(false);
@@ -70,7 +70,10 @@ export default function MainLayout(props) {
           />
         )}
         {!isMdDown && (
-          <SideMenu open={openSide} active={props.activeDrawer.active} chipRole={props.chip} />
+          <SideMenu
+            open={openSide}
+            active={props?.activeDrawer?.active || ''}
+          />
         )}
         <Grid container sx={{ width: "100%" }}>
           <Grid size={12}>
@@ -133,3 +136,5 @@ export default function MainLayout(props) {
     </React.Fragment>
   );
 }
+
+export default React.memo(MainLayout)

@@ -28,12 +28,12 @@ const format_rate_sheets_customer = (rsheets) => {
 export function useRateSheetsCustomer(cid) {
     const queryClient = useQueryClient()
     return useQuery({
-        queryKey: ['rateSheetsCustomer', cid],
+        queryKey: ['rateSheetsCustomer', Number(cid)],
         queryFn: async () => {
             const cachedSheets = queryClient.getQueryData(['rateSheets']) || []
             const sheetsCustomer = cachedSheets.filter((rsc) => Number(rsc.customer_id) === Number(cid))
             if (sheetsCustomer.length > 0) return format_rate_sheets_customer(sheetsCustomer)
-            const res = await RateSheetsApi.getRateSheetsByCustomer(cid)
+            const res = await RateSheetsApi.getRateSheetsByCustomer(Number(cid))
             return format_rate_sheets_customer(res.data.data)
         },
         enabled: !!cid,
@@ -48,12 +48,12 @@ export function useRateSheetsCustomer(cid) {
 export function useRateSheet(iid) {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: ['rateSheet', iid],
+        queryKey: ['rateSheet', Number(iid)],
         queryFn: async () => {
             const cachedRSheets = queryClient.getQueryData(['rateSheets']) || [];
             const cached = cachedRSheets.find(item => Number(item.id) === Number(iid));
             if (cached) return cached;
-            const res = await RateSheetsApi.getRateSheet(iid);
+            const res = await RateSheetsApi.getRateSheet(Number(iid));
             return res.data.data;
         },
         enabled: !!iid,
@@ -66,6 +66,7 @@ export function useRateSheet(iid) {
 export function useRateSheetMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
+    const hasCachedList = queryClient.getQueryData(['rateSheets'])
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -81,12 +82,19 @@ export function useRateSheetMutations() {
         },
         onSuccess: (newRateSheets) => {
             const customerId = newRateSheets[0]['customer_id']
-            queryClient.invalidateQueries({
-                queryKey: ['rateSheets'],
-                exact: true,
-            });
+            if (hasCachedList) {
+                queryClient.setQueryData(['rateSheets'], (old = []) => {
+                    return [...newRateSheets, ...old]
+                });
+            }
+            else {
+                queryClient.invalidateQueries({
+                    queryKey: ['rateSheets'],
+                    exact: true,
+                });
+            }
             const formatNewRateSheets = format_rate_sheets_customer(newRateSheets)
-            queryClient.setQueryData(['rateSheetsCustomer', customerId], (old = []) => {
+            queryClient.setQueryData(['rateSheetsCustomer', Number(customerId)], (old = []) => {
                 return [...formatNewRateSheets, ...old];
             });
             enqueueSnackbar('Rate Sheets has been created successfully', { variant: 'success' });
@@ -101,9 +109,15 @@ export function useRateSheetMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['rateSheets'], (old = []) =>
-                    old.map((item) => (Number(item.id) === Number(updated.id) ? updated : item))
-                );
+                if (hasCachedList) {
+                    queryClient.setQueryData(['rateSheets'], (old = []) =>
+                        old.map((item) => (Number(item.id) === Number(updated.id) ? updated : item))
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['rateSheets'], exact: true })
+                }
+                queryClient.setQueryData(['rateSheet', Number(updated.id)], updated)
                 enqueueSnackbar('Rate Sheet has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -118,15 +132,19 @@ export function useRateSheetMutations() {
         onSuccess: (res, params) => {
             const { bid, customer_id } = params
             if (res) {
-                queryClient.setQueryData(['rateSheets'], (old = []) =>
-                    old.filter((item) => item.batch_id !== bid)
-                );
-                queryClient.invalidateQueries({
-                    queryKey: ['rateSheets'],
-                    exact: true,
-                });
-                queryClient.setQueryData(['rateSheetsCustomer', customer_id], (old = []) => {
-                    const filtered = old.filter(rsc => rsc.id !== bid)
+                if (hasCachedList) {
+                    queryClient.setQueryData(['rateSheets'], (old = []) =>
+                        old.filter((item) => item.batch_id !== bid)
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({
+                        queryKey: ['rateSheets'],
+                        exact: true,
+                    });
+                }
+                queryClient.setQueryData(['rateSheetsCustomer', Number(customer_id)], (old = []) => {
+                    const filtered = old.filter(rsc => Number(rsc.id) !== Number(bid))
                     return [...filtered]
                 })
                 enqueueSnackbar('Rate Sheets has been deleted successfully', { variant: 'success' });

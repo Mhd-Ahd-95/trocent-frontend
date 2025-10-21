@@ -2,9 +2,8 @@ import React from "react";
 import { MainLayout } from "../../layouts";
 import { Breadcrumbs, Table, CustomCell, Modal, ConfirmModal } from "../../components";
 import { Box, Grid, Typography } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useRateSheetMutations, useRateSheets } from "../../hooks/useRateSheets";
-import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircleOutline, HighlightOffOutlined } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 
@@ -12,10 +11,6 @@ export default function RateSheets() {
 
   const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar()
-  const location = useLocation()
-  const queryClient = useQueryClient()
-  const state = queryClient.getQueryState(['rateSheets'])
-  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
   const { data, isLoading, isFetching, isError, error } = useRateSheets()
   const [selectedRateSheets, setSelectedRateSheets] = React.useState([])
   const { removeMany } = useRateSheetMutations()
@@ -27,9 +22,6 @@ export default function RateSheets() {
       const status = error.response?.status;
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-    if (state?.dataUpdateCount === 1 && fromEditOrCreate) {
-      refetchInterliners()
     }
   }, [isError, error])
 
@@ -74,7 +66,6 @@ export default function RateSheets() {
     return Math.max(150, calculatedWidth);
   };
 
-
   return (
     <MainLayout
       title="Rate Sheets"
@@ -101,6 +92,7 @@ export default function RateSheets() {
             rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
             height={60}
+            onRowClick={(rowData) => navigate(`/rate-sheet/edit/${rowData.id}`)}
             data={data || []}
             options={{
               filtering: true,
@@ -130,7 +122,7 @@ export default function RateSheets() {
                 headerName: "Skip By Weight",
                 field: "skip_by_weight",
                 flex: 1,
-                minWidth: 70,
+                minWidth: 90,
                 renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='error' />
               },
               {

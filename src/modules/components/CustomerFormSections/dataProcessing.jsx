@@ -26,11 +26,21 @@ export default function dataProcessing(stprop, items) {
         items.forEach((item, index) => {
             const processedItem = {}
             updatedProps.forEach(prop => {
-                const value = item[prop.name]
+                let value = item[prop.name]
                 if (!value && prop.required) {
                     processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Required': `${prop.name} (${index + 2}) is a required field` }
                 }
-                processedItem[prop.field] = item[prop.name]
+                if (prop.constrained && prop.constrained.length > 0 && value) {
+                    console.log('constrained', prop);
+                    console.log(value.toLowerCase());
+                    if (!prop.constrained.includes(value.toLowerCase())) {
+                        processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Constrained': `${prop.name} must be ${prop.constrained.join(', ')}` }
+                    }
+                    else {
+                        value = value.toLowerCase()
+                    }
+                }
+                processedItem[prop.field] = value
             })
             processedItem['brackets'] = []
             brackets.forEach((bracket) => {

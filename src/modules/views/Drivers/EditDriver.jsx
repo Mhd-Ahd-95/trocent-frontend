@@ -30,7 +30,7 @@ export default function EditDriver() {
             activeDrawer={{ active: 'Drivers' }}
             breadcrumbs={
                 <Breadcrumbs
-                    items={[{ text: 'Drivers', url: '/drivers' }, { text: 'Create' }]}
+                    items={[{ text: 'Drivers', url: '/drivers' }, { text: 'Edit' }]}
                 />
             }
         >

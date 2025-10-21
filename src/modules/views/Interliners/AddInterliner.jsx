@@ -15,7 +15,7 @@ export default function CreateInterliner() {
             activeDrawer={{ active: 'Interliners' }}
             breadcrumbs={
                 <Breadcrumbs
-                    items={[{ text: 'Interliners', url: '/interliners' }, { text: 'Create' }]}
+                    items={[{ text: 'Interliners', url: '/interliners', state: { fromEditOrCreate: true } }, { text: 'Create' }]}
                 />
             }
         >

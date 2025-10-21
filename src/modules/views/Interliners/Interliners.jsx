@@ -4,14 +4,12 @@ import { Breadcrumbs, Table, Modal, ConfirmModal } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useInterlinerMutations, useInterliners } from '../../hooks/useInterliners'
 import { useSnackbar } from 'notistack'
-import { useQueryClient } from "@tanstack/react-query";
 
 export default function Interliners() {
 
-  const location = useLocation()
   const navigate = useNavigate()
   const { data, isLoading, error, isError, refetch, isFetching } = useInterliners()
   const { removeMany } = useInterlinerMutations()
@@ -19,11 +17,6 @@ export default function Interliners() {
   const [openModal, setOpenModal] = React.useState(false)
   const [selectedInterliners, setSelectedInterliners] = React.useState([])
   const selectedRef = React.useRef()
-  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
-  const queryClient = useQueryClient();
-  const state = queryClient.getQueryState(['interliners']);
-
-  const refetchInterliners = React.useCallback(() => refetch(), [state])
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
@@ -52,9 +45,6 @@ export default function Interliners() {
       const status = error.response?.status;
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-    if (state.dataUpdateCount === 1 && fromEditOrCreate) {
-      refetchInterliners()
     }
   }, [isError, error])
 

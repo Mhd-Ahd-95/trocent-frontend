@@ -41,6 +41,7 @@ export function useInterliner(iid) {
 export function useInterlinerMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
+    const hasCachedList = queryClient.getQueryData(['interliners']);
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -55,9 +56,14 @@ export function useInterlinerMutations() {
             return res.data.data;
         },
         onSuccess: (newInterliner) => {
-            queryClient.setQueryData(['interliners'], (old = []) => {
-                return [newInterliner, ...old]
-            });
+            if (hasCachedList) {
+                queryClient.setQueryData(['interliners'], (old = []) => {
+                    return [newInterliner, ...old]
+                });
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: 'interliners', exact: true })
+            }
             enqueueSnackbar('Interliner has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -70,9 +76,14 @@ export function useInterlinerMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['interliners'], (old = []) =>
-                    old.map((item) => (item.id === updated.id ? updated : item))
-                );
+                if (hasCachedList) {
+                    queryClient.setQueryData(['interliners'], (old = []) =>
+                        old.map((item) => (item.id === updated.id ? updated : item))
+                    )
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: 'interliners', exact: true })
+                }
                 queryClient.setQueryData(['interliner', Number(updated.id)], updated);
                 enqueueSnackbar('Interliner has been updated successfully', { variant: 'success' });
             },

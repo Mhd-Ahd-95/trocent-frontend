@@ -8,6 +8,7 @@ import { useCompanies, useCompanyMutation } from '../../hooks/useComapnies'
 import { useSnackbar } from 'notistack'
 
 export default function Companies() {
+  
   const navigate = useNavigate()
   const { data, isLoading, error, isError } = useCompanies()
   const { removeMany } = useCompanyMutation()
