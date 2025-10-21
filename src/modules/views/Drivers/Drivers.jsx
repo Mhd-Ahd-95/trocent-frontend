@@ -4,30 +4,24 @@ import { Breadcrumbs, Table, Modal, ConfirmModal, DrawerForm } from '../../compo
 import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useDriverMutation, useDrivers } from '../../hooks/useDrivers'
 import { CheckCircleOutline, HighlightOffOutlined } from '@mui/icons-material'
-import { useQueryClient } from "@tanstack/react-query";
 import DriverLogin from './CreateDriverLogin'
 import EditLogin from './EditDriverLogin'
 
 
 export default function Drivers() {
 
-  const location = useLocation()
-  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
   const navigate = useNavigate()
-  const queryClient = useQueryClient();
   const [selectedDrivers, setSelectedDrivers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
-  const { data, isLoading, isError, error, refetch, isFetching } = useDrivers()
+  const { data, isLoading, isError, error, isFetching } = useDrivers()
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { removeMany, createDriverLogin } = useDriverMutation()
   const [driver, setDriver] = React.useState({})
-
-  const state = queryClient.getQueryState(['drivers']);
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
@@ -43,9 +37,6 @@ export default function Drivers() {
     setSelectedDrivers(selectedIds)
   }
 
-  const refetchDrivers = React.useCallback(() => refetch(), [state])
-
-
   React.useEffect(() => {
     if (isError && error) {
       const message = error.response?.data?.message;
@@ -53,10 +44,7 @@ export default function Drivers() {
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
-    if (state.dataUpdateCount === 1 && fromEditOrCreate) {
-      refetchDrivers()
-    }
-  }, [isError, error, state?.dataUpdateCount])
+  }, [isError, error])
 
   const handleDeleteDrivers = (dids) => {
     removeMany.mutate(dids)

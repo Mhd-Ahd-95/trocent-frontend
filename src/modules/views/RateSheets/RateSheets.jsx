@@ -93,6 +93,7 @@ export default function RateSheets() {
             rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
             height={60}
+            onRowClick={(rowData) => navigate(`/rate-sheet/edit/${rowData.id}`)}
             data={data || []}
             options={{
               filtering: true,

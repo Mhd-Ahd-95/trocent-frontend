@@ -82,6 +82,7 @@ export default function Table(props) {
         onRowSelectionModelChange={props.onRowSelectionModelChange}
         rowSelectionModel={props.rowSelectionModel}
         checkboxSelection={props.checkboxSelection}
+        onRowClick={props.onRowClick}
         // isRowSelectable={(params) => params.row.quantity > 50000}
         disableRowSelectionOnClick={props.disableRowSelectionOnClick || true}
         // disableMultipleRowSelection

@@ -2,19 +2,18 @@ import React from 'react'
 import { CircularProgress, Grid, Box } from '@mui/material'
 import { MainLayout } from '../../layouts'
 import { Breadcrumbs } from '../../components'
-import InterlinerForm from './InterlinerForm'
-import InterlinersApi from '../../apis/Interliners.api'
 import { useParams } from 'react-router-dom'
-import { useInterliner, useInterlinerMutations } from '../../hooks/useInterliners'
 import { useSnackbar } from 'notistack'
+import { useRateSheet, useRateSheetMutations } from '../../hooks/useRateSheets'
+import RateSheetForm from './RateSheetForm'
 
-export default function EditInterliner() {
+export default function EditRateSheet() {
 
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error } = useInterliner(id)
-    const { update } = useInterlinerMutations()
+    const { data, isLoading, isError, error, isRefetching } = useRateSheet(id)
+    const { update } = useRateSheetMutations()
 
     React.useEffect(() => {
         if (isError && error) {
@@ -27,24 +26,25 @@ export default function EditInterliner() {
 
     return (
         <MainLayout
-            title='Edit Interliner'
-            activeDrawer={{ active: 'Interliners' }}
+            title='Edit Rate Sheet'
+            activeDrawer={{ active: 'Rate Sheets' }}
             breadcrumbs={
                 <Breadcrumbs
-                    items={[{ text: 'Interliners', url: '/interliners', state: { fromEditOrCreate: true } }, { text: 'Create' }]}
+                    items={[{ text: 'Rate Sheets', url: '/rate-sheets' }, { text: 'Edit' }]}
                 />
             }
         >
             <Grid container>
-                {isLoading ? <Grid size={12} container component={Box} py={15} justifyContent='center' alignItems='center'>
-                    <CircularProgress />
-                </Grid>
-                    :
+                {!isLoading && !isRefetching ?
                     <Grid size={12}>
-                        <InterlinerForm
+                        <RateSheetForm
                             initialValues={{ ...data }}
                             editMode
                             submit={async (payload) => await update.mutateAsync({ id, payload })} />
+                    </Grid>
+                    :
+                    <Grid size={12} container component={Box} py={15} justifyContent='center' alignItems='center'>
+                        <CircularProgress />
                     </Grid>
                 }
             </Grid>

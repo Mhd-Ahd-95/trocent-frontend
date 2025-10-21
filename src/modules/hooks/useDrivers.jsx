@@ -45,6 +45,7 @@ export function useDriver(cid) {
 export function useDriverMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
+    const hasCachedList = queryClient.getQueryData(['drivers'])
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -77,9 +78,14 @@ export function useDriverMutation() {
             return res.data.data;
         },
         onSuccess: (newDriver) => {
-            queryClient.setQueryData(['drivers'], (old = []) => {
-                return [newDriver, ...old]
-            });
+            if (hasCachedList) {
+                queryClient.setQueryData(['drivers'], (old = []) => {
+                    return [newDriver, ...old]
+                });
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
+            }
             enqueueSnackbar('Driver has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -92,9 +98,14 @@ export function useDriverMutation() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['drivers'], (old = []) =>
-                    old.map((item) => item.id === Number(updated.id) ? updated : item)
-                );
+                if (hasCachedList) {
+                    queryClient.setQueryData(['drivers'], (old = []) =>
+                        old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
+                }
                 queryClient.setQueryData(['driver', Number(updated.id)], updated)
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },

@@ -50,6 +50,8 @@ export function useCompanyMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
 
+    const hasCachedList = queryClient.getQueryData(['companies'])
+
     const handleError = (error) => {
         const message = error.response?.data?.message;
         const status = error.response?.status;
@@ -63,9 +65,14 @@ export function useCompanyMutation() {
             return res.data.data;
         },
         onSuccess: (newCompany) => {
-            queryClient.setQueryData(['companies'], (old = []) => {
-                return [newCompany, ...old]
-            });
+            if (hasCachedList) {
+                queryClient.setQueryData(['companies'], (old = []) => {
+                    return [newCompany, ...old]
+                });
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['companies'], exact: true })
+            }
             enqueueSnackbar('Company has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -78,9 +85,14 @@ export function useCompanyMutation() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['companies'], (old = []) =>
-                    old.map((item) => item.id === Number(updated.id) ? updated : item)
-                );
+                if (hasCachedList) {
+                    queryClient.setQueryData(['companies'], (old = []) =>
+                        old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['companies'], exact: true })
+                }
                 queryClient.setQueryData(['company', Number(updated.id)], updated)
                 enqueueSnackbar('Company has been updated successfully', { variant: 'success' });
             },
