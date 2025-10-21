@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
-import { RoleContext, ThemeContext, AddressBookContext } from '../../contexts'
+import { RoleContext, AddressBookContext } from '../../contexts'
 
 const RouterLink = styled(Link)(({ theme, active, expanded }) => ({
   listStyle: 'none',
@@ -132,12 +132,18 @@ const ListItem = styled('ul')(({ theme, active }) => ({
   }
 }))
 
-export default function SideMenu (props) {
+function SideMenu(props) {
   const theme = useTheme()
 
-  const { expandItem, setExpandItem } = React.useContext(ThemeContext)
   const roleContext = React.useContext(RoleContext)
   const addressContext = React.useContext(AddressBookContext)
+
+  const [expandItem, setExpandItem] = React.useState({
+    Customers: true,
+    "Fleet Management": true,
+    Settings: true,
+    "Access Management": true,
+  });
 
   const itemsLinks = [
     { text: 'Dashboard', icon: <Dashboard />, url: '/' },
@@ -200,7 +206,7 @@ export default function SideMenu (props) {
         transition: theme.transitions.create(['width'], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen
-        })
+        }),
       }}
     >
       <Box>
@@ -221,14 +227,16 @@ export default function SideMenu (props) {
                 <RouterLink
                   active={
                     !props.open &&
-                    options.map(op => op.text).includes(props.active)
+                      options.map(op => op.text).includes(props.active)
                       ? 'true'
                       : 'false'
                   }
+                  to='#'
                   key={index}
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.preventDefault();
                     setExpandItem({ ...expandItem, [text]: !expandItem[text] })
-                  }
+                  }}
                   className='item-opt'
                   expanded={expandItem[text] ? 'true' : 'false'}
                 >
@@ -280,3 +288,5 @@ export default function SideMenu (props) {
     </Paper>
   )
 }
+
+export default React.memo(SideMenu)

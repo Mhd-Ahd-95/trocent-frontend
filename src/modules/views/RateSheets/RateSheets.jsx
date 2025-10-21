@@ -66,7 +66,6 @@ export default function RateSheets() {
     return Math.max(150, calculatedWidth);
   };
 
-
   return (
     <MainLayout
       title="Rate Sheets"
@@ -123,7 +122,7 @@ export default function RateSheets() {
                 headerName: "Skip By Weight",
                 field: "skip_by_weight",
                 flex: 1,
-                minWidth: 70,
+                minWidth: 90,
                 renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='error' />
               },
               {

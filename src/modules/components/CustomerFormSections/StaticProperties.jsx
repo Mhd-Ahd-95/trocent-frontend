@@ -35,7 +35,8 @@ const staticProperties = [
         name: 'External',
         field: 'external',
         required: false,
-        type: 'str'
+        type: 'str',
+        constrained: ['internal', 'external']
     },
     {
         name: 'Min',

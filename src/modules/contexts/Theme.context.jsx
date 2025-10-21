@@ -103,13 +103,6 @@ const ThemeContext = createContext();
 function ThemeContextProvider(props) {
   const [themeState, setThemeState] = useState(() => initialTheme());
 
-  const [expandItem, setExpandItem] = React.useState({
-    Customers: true,
-    "Fleet Management": true,
-    Settings: true,
-    "Access Management": true,
-  });
-
   const handleToggleType = () => {
     if (isLightTheme(themeState)) {
       setThemeState({
@@ -143,9 +136,7 @@ function ThemeContextProvider(props) {
       value={{
         handleToggleType,
         themeState,
-        setThemeState,
-        expandItem,
-        setExpandItem,
+        setThemeState
       }}
     >
       <StyledEngineProvider injectFirst>

@@ -60,7 +60,7 @@ export default function Table(props) {
         sx={{
           width: '100%',
           overflowX: 'auto',
-          borderRadius: 3
+          borderRadius: 3,
         }}
         pageSizeOptions={props.pageSizeOptions || []}
         columnHeaderHeight={45}

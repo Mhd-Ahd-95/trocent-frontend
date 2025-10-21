@@ -94,7 +94,7 @@ export function useRateSheetMutations() {
                 });
             }
             const formatNewRateSheets = format_rate_sheets_customer(newRateSheets)
-            queryClient.setQueryData(['rateSheetsCustomer', customerId], (old = []) => {
+            queryClient.setQueryData(['rateSheetsCustomer', Number(customerId)], (old = []) => {
                 return [...formatNewRateSheets, ...old];
             });
             enqueueSnackbar('Rate Sheets has been created successfully', { variant: 'success' });
@@ -143,8 +143,8 @@ export function useRateSheetMutations() {
                         exact: true,
                     });
                 }
-                queryClient.setQueryData(['rateSheetsCustomer', customer_id], (old = []) => {
-                    const filtered = old.filter(rsc => rsc.id !== bid)
+                queryClient.setQueryData(['rateSheetsCustomer', Number(customer_id)], (old = []) => {
+                    const filtered = old.filter(rsc => Number(rsc.id) !== Number(bid))
                     return [...filtered]
                 })
                 enqueueSnackbar('Rate Sheets has been deleted successfully', { variant: 'success' });
