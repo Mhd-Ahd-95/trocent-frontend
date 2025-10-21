@@ -142,4 +142,34 @@ class MemCache
 
         $this->put_in_cache($key, $items);
     }
+
+    public function put_large_in_cache(string $key, $items, int $chunkSize = 1000)
+    {
+        if (is_array($items)) {
+            $items = collect($items);
+        }
+
+        $chunks = $items->chunk($chunkSize);
+
+        foreach ($chunks as $index => $chunk) {
+            $this->put_in_cache("{$key}:chunk_{$index}", $chunk);
+        }
+        $this->put_in_cache("{$key}:chunk_count", $chunks->count());
+    }
+
+    public function get_large_cache(string $key): Collection
+    {
+        $chunkCount = $this->get_cache("{$key}:chunk_count");
+        if (!$chunkCount) {
+            return collect();
+        }
+        $all = collect();
+        for ($i = 0; $i < $chunkCount; $i++) {
+            $chunk = $this->get_cache("{$key}:chunk_{$i}");
+            if ($chunk) {
+                $all = $all->concat($chunk);
+            }
+        }
+        return $all;
+    }
 }

@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class RateSheetController extends Controller
 {
@@ -27,20 +28,24 @@ class RateSheetController extends Controller
 
     public function index()
     {
-        $rateSheets = $this->cache->get_entities($this->cache_key, RateSheet::class, ['brackets', 'customer']);
-        return RateSheetResource::collection($rateSheets);
+        // $rateSheets = $this->cache->get_entities($this->cache_key, RateSheet::class, ['brackets', 'customer']);
+        $rsheets = RateSheet::query()->with(['brackets', 'customer'])->get();
+        return RateSheetResource::collection($rsheets);
     }
 
     public function show(int $rid)
     {
-        $rateSheet = $this->cache->get_entity_id($this->cache_key, $rid, RateSheet::class, ['brackets', 'customer']);
+        // $rateSheet = $this->cache->get_entity_id($this->cache_key, $rid, RateSheet::class, ['brackets', 'customer']);
+        $rateSheet = RateSheet::find($rid)->with(['brackets', 'customers']);
         if (!$rateSheet)
             throw new ModelNotFoundException('Rate Sheet not found');
         return new RateSheetResource($rateSheet);
     }
 
-    public function load_customer_rate_sheets(int $cid){
-        $rateSheets = $this->cache->get_entities_by_pte($this->cache_key, $cid, RateSheet::class, 'customer_id', ['brackets', 'customer']);
+    public function load_customer_rate_sheets(int $cid)
+    {
+        // $rateSheets = $this->cache->get_entities_by_pte($this->cache_key, $cid, RateSheet::class, 'customer_id', ['brackets', 'customer']);
+        $rateSheets = RateSheet::query()->where('customer_id', $cid)->with(['brackets', 'customer'])->get();
         return RateSheetResource::collection($rateSheets);
     }
 
@@ -56,7 +61,7 @@ class RateSheetController extends Controller
             if (!empty($data['brackets'])) {
                 $rateSheet->brackets()->createMany($data['brackets']);
             }
-            $this->cache->save_entity($this->cache_key, $rateSheet->load(['brackets', 'customer']));
+            // $this->cache->save_entity($this->cache_key, $rateSheet->load(['brackets', 'customer']));
             DB::commit();
             return new RateSheetResource($rateSheet);
         } catch (Exception $e) {
@@ -65,29 +70,53 @@ class RateSheetController extends Controller
         }
     }
 
-    public function batchStore(BatchRateSheetRequest $request)
+    public function batchStore(Request $request)
     {
         DB::beginTransaction();
         try {
-            $data = $request->validated();
-            $createdSheets = [];
-            $customer = $this->cache->get_entity_id('customers', $data[0]['customer_id'], Customer::class);
-            if (!$customer)
-                throw new ModelNotFoundException('Customer not found');
-            $batch_id = Carbon::now()->format('Y-m-d H:i:s') . '_' . $data[0]['customer_id'];
-            foreach ($data as $rate_sheet) {
-                $brackets = $rate_sheet['brackets'] ?? [];
-                unset($rate_sheet['brackets']);
-                $rate_sheet['batch_id'] = $batch_id;
-                $rsheet = RateSheet::create($rate_sheet);
-                if (!empty($brackets)) {
-                    $rsheet->brackets()->createMany($brackets);
-                }
-                $createdSheets[] = $rsheet->load('brackets', 'customer');
+            $data = $request->all();
+
+            $validator = Validator::make(['data' => $data], [
+                'data' => 'required|array|min:1',
+                'data.*.destination' => 'required|string',
+                'data.*.type' => 'required|string|in:skid,weight',
+                'data.*.customer_id' => 'required|numeric',
+            ]);
+            if ($validator->fails()) {
+                throw new ModelNotFoundException($validator->errors(), 422);
             }
-            $this->cache->save_entities($this->cache_key, $createdSheets);
+            $customerId = $data[0]['customer_id'];
+            $customer = Customer::find($customerId);
+            if (!$customer) {
+                throw new ModelNotFoundException('Customer not found', 404);
+            }
+
+            $batch_id = now()->format('Y-m-d H:i:s') . "_{$customerId}";
+            $rateSheetsData = [];
+
+            foreach ($data as $item) {
+                $brackets = $item['brackets'] ?? [];
+                unset($item['brackets']);
+                $item['batch_id'] = $batch_id;
+                $rateSheetsData[] = $item;
+            }
+
+            RateSheet::insert($rateSheetsData);
+
+            $insertedSheets = RateSheet::where('batch_id', $batch_id)->get();
+
+            foreach ($insertedSheets as $index => $sheet) {
+                $brackets = $data[$index]['brackets'] ?? [];
+                $sheet->brackets()->createMany($brackets);
+            }
+
+            // $this->cache->save_entities($this->cache_key, $insertedSheets->load(['brackets', 'customer']));
+
             DB::commit();
-            return RateSheetResource::collection($createdSheets);
+
+            $res = RateSheetResource::collection($insertedSheets);
+            return $res;
+
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
@@ -98,7 +127,8 @@ class RateSheetController extends Controller
     {
         DB::beginTransaction();
         try {
-            $orate_sheet = $this->cache->get_entity_id($this->cache_key, $rid, RateSheet::class, ['brackets', 'customer']);
+            // $orate_sheet = $this->cache->get_entity_id($this->cache_key, $rid, RateSheet::class, ['brackets', 'customer']);
+            $orate_sheet = RateSheet::find($rid)->with(['brackets', 'customer']);
             if (!$orate_sheet)
                 throw new ModelNotFoundException('Rate Sheet not found');
             $data = $request->validated();
@@ -108,7 +138,7 @@ class RateSheetController extends Controller
             if (!empty($data['brackets']) && is_array($data['brackets'])) {
                 $orate_sheet->brackets()->createMany($data['brackets']);
             }
-            $this->cache->update_entity($this->cache_key, $rid, $orate_sheet->load(['brackets', 'customer']));
+            // $this->cache->update_entity($this->cache_key, $rid, $orate_sheet->load(['brackets', 'customer']));
             DB::commit();
             return new RateSheetResource($orate_sheet);
         } catch (Exception $e) {
@@ -120,9 +150,9 @@ class RateSheetController extends Controller
     public function delete_sheets_by_batch_id(string $bid)
     {
         $rsheets = RateSheet::where('batch_id', $bid);
-        $rids = $rsheets->pluck('id')->toArray();
+        $rsheets->pluck('id')->toArray();
         $rsheets->delete();
-        $this->cache->delete_entities($this->cache_key, $rids);
+        // $this->cache->delete_entities($this->cache_key, $rids);
         return true;
     }
 
@@ -139,7 +169,7 @@ class RateSheetController extends Controller
                 throw new ModelNotFoundException("Some rate sheets not found.");
             }
             RateSheet::whereIn('id', $ids)->delete();
-            $this->cache->delete_entities($this->cache_key, $ids);
+            // $this->cache->delete_entities($this->cache_key, $ids);
             DB::commit();
             return true;
         } catch (Exception $e) {
