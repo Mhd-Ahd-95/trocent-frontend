@@ -3,23 +3,15 @@ import { MainLayout } from '../../layouts'
 import { Breadcrumbs, Table, CustomCell } from '../../components'
 import { Grid, Button } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useCustomers } from '../../hooks/useCustomers'
-import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircleOutline, HighlightOffOutlined } from '@mui/icons-material'
 
 export default function CustomerView() {
 
   const navigate = useNavigate()
-  const location = useLocation()
-  const fromEditOrCreate = location.state?.fromEditOrCreate || false;
-  const { data, isLoading, isFetching, isError, error, refetch } = useCustomers()
-  const queryClient = useQueryClient();
-  const state = queryClient.getQueryState(['customers']);
-
-
-  const refetchCustomers = React.useCallback(() => refetch(), [state])
-
+  const { data, isLoading, isFetching, isError, error } = useCustomers()
+  
   React.useEffect(() => {
     if (isError && error) {
       const message = error.response?.data?.message;
@@ -27,10 +19,7 @@ export default function CustomerView() {
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
-    if (state.dataUpdateCount === 1 && fromEditOrCreate) {
-      refetchCustomers()
-    }
-  }, [isError, error, state?.dataUpdateCount])
+  }, [isError, error])
 
   return (
     <MainLayout

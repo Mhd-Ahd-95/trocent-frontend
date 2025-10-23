@@ -41,7 +41,7 @@ export default function RateSheetForm(props) {
         try {
             await submit(data);
             if (action === 'apply-sheet-action') {
-                navigate('/rate-sheets', { state: { fromEditOrCreate: true } });
+                navigate('/rate-sheets', { state: { customer_id: props.customerID } });
             }
             else {
                 reset()

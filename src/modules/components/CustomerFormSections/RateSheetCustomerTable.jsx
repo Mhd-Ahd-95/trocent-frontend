@@ -5,9 +5,11 @@ import moment from "moment";
 import { useRateSheetMutations, useRateSheetsCustomer } from "../../hooks/useRateSheets";
 import { Box, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 
 function RateSheetCustomerTable(props) {
 
+    const navigate = useNavigate()
     const { setOpenModal, customer_id } = props
     const { data, isLoading, isError, error, isRefetching } = useRateSheetsCustomer(customer_id)
     const { enqueueSnackbar } = useSnackbar()
@@ -111,6 +113,7 @@ function RateSheetCustomerTable(props) {
                                 <Button
                                     onClick={(e) => {
                                         e.stopPropagation()
+                                        navigate('/rate-sheets', { state: { customer_id } })
                                     }}
                                     variant='text'
                                     size='small'

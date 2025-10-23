@@ -113,7 +113,7 @@ function InputWrapper(props) {
           />
         </Grid>
         <Grid size={12} px={1} py={0.5}>
-          {data.map((ref, index) => {
+          {data?.map((ref, index) => {
             const trimRef = ref.split(',')[0].trim()
             return (
               <Typography

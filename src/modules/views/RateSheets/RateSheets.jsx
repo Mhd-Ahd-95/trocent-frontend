@@ -2,7 +2,7 @@ import React from "react";
 import { MainLayout } from "../../layouts";
 import { Breadcrumbs, Table, CustomCell, Modal, ConfirmModal, NoRows } from "../../components";
 import { Autocomplete, Box, CircularProgress, Grid, TextField, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useRateSheetMutations, useCustomersRateSheets } from "../../hooks/useRateSheets";
 import { CheckCircleOutline, HighlightOffOutlined } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
@@ -11,11 +11,12 @@ import { useCustomersNames } from "../../hooks/useCustomers";
 export default function RateSheets() {
 
   const navigate = useNavigate()
+  const location = useLocation()
   const { enqueueSnackbar } = useSnackbar()
   const [selectedRateSheets, setSelectedRateSheets] = React.useState([])
   const { removeMany } = useRateSheetMutations()
   const [openModal, setOpenModal] = React.useState(false)
-  const [customer, setCustomer] = React.useState('')
+  const [customer, setCustomer] = React.useState(location.state?.customer_id || '')
   // const [paginationModel, setPaginationModel] = React.useState({
   //   page: 0,
   //   pageSize: 10,
@@ -42,7 +43,7 @@ export default function RateSheets() {
     setRowSelectionModel(newModel)
     let selectedIds = Array.from(newModel.ids)
     if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = data?.data.map(row => row.id)
+      selectedIds = rateSheetsData?.map(row => row.id)
     }
     setSelectedRateSheets(selectedIds)
   }
@@ -97,6 +98,9 @@ export default function RateSheets() {
             onChange={(e, newValue) => {
               const value = newValue?.id ?? ''
               setCustomer(value)
+              if (!value) {
+                navigate(location.pathname, { replace: true, state: {} });
+              }
             }}
             renderInput={(params) => (
               <TextField
@@ -137,7 +141,7 @@ export default function RateSheets() {
               rowSelectionModel={rowSelectionModel}
               loading={isLoadingSheet || isFetchingSheet}
               height={60}
-              onRowClick={(rowData) => navigate(`/rate-sheet/edit/${rowData.id}`)}
+              onRowClick={(rowData) => navigate(`/rate-sheet/edit/${rowData.id}/${customer}`)}
               data={rateSheetsData || []}
               options={{
                 filtering: true,
@@ -165,8 +169,8 @@ export default function RateSheets() {
                   renderCell: params => params.value ? <CustomCell>{params.value}</CustomCell> : ''
                 },
                 {
-                  headerName: "Skip By Weight",
-                  field: "skip_by_weight",
+                  headerName: "Skid By Weight",
+                  field: "skid_by_weight",
                   flex: 1,
                   minWidth: 120,
                   renderCell: rowData => rowData.value ? <CheckCircleOutline sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='success' /> : <HighlightOffOutlined sx={{ mt: 1.5, ml: 1 }} fontSize='small' color='error' />

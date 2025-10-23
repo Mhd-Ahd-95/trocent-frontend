@@ -27,7 +27,8 @@ export default function CustomerForm(props) {
         formState: { errors },
         control,
         setValue,
-        watch
+        watch,
+        reset
     } = useForm({
         defaultValues: {
             account_number: '',

@@ -67,7 +67,7 @@ function App() {
           <Route path='/company/create' Component={CreateCompany} />
           <Route path='/company/edit/:id' Component={EditCompany} />
           <Route path='/rate-sheets' Component={RateSheets} />
-          <Route path='/rate-sheet/edit/:id' Component={EditRateSheet} />
+          <Route path='/rate-sheet/edit/:id/:cid' Component={EditRateSheet} />
           <Route path='/drivers' Component={Drivers} />
           <Route path='/driver/create' Component={CreateDriver} />
           <Route path='/driver/edit/:id' Component={EditDriver} />
