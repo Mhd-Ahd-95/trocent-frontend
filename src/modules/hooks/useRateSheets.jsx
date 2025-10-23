@@ -161,7 +161,6 @@ export function useRateSheetMutations() {
 
     const removeMany = useMutation({
         mutationFn: async ({ cid, iids }) => {
-            console.log(iids);
             const res = await RateSheetsApi.deleteRateSheets(iids);
             return res.data;
         },

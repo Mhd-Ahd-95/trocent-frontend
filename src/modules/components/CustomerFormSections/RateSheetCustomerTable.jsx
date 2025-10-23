@@ -27,7 +27,6 @@ function RateSheetCustomerTable(props) {
     }, [isError, error])
 
     const handleDeleteRateSheets = async (bid) => {
-        console.log(bid);
         try {
             await remove.mutateAsync({ bid, customer_id })
             selectedRef.current = null
@@ -75,6 +74,13 @@ function RateSheetCustomerTable(props) {
                             const imported = params.value.split('_')
                             return moment(imported).format('MMM DD, YYYY hh:mm:ss')
                         }
+                    },
+                    {
+                        headerName: 'Count',
+                        field: 'count_sheets',
+                        minWidth: 100,
+                        flex: 1,
+                        renderCell: params => <CustomCell color='blue'>{params.value}</CustomCell>
                     },
                     {
                         field: 'actions',
