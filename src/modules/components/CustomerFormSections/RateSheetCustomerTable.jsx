@@ -24,10 +24,16 @@ function RateSheetCustomerTable(props) {
         }
     }, [isError, error])
 
-    const handleDeleteRateSheets = (bid) => {
-        remove.mutate({bid, customer_id})
-        selectedRef.current = null
-        setOpen(false)
+    const handleDeleteRateSheets = async (bid) => {
+        console.log(bid);
+        try {
+            await remove.mutateAsync({ bid, customer_id })
+            selectedRef.current = null
+            setOpen(false)
+        }
+        catch (err) {
+            //
+        }
     }
 
     return (
@@ -60,10 +66,13 @@ function RateSheetCustomerTable(props) {
                     },
                     {
                         headerName: 'Imported On',
-                        field: 'imported_on',
+                        field: 'batch_id',
                         minWidth: 150,
                         flex: 1,
-                        renderCell: params => moment(params.value).format('MMM DD, YYYY hh:mm:ss')
+                        renderCell: params => {
+                            const imported = params.value.split('_')
+                            return moment(imported).format('MMM DD, YYYY hh:mm:ss')
+                        }
                     },
                     {
                         field: 'actions',
@@ -131,7 +140,7 @@ function RateSheetCustomerTable(props) {
                     }
                     subtitle='Are you sure you want to continue?'
                     handleClose={() => setOpen(false)}
-                    handleSubmit={() => handleDeleteRateSheets(selectedRef.current)}
+                    handleSubmit={async () => handleDeleteRateSheets(selectedRef.current)}
                 />
             </Modal>
         </>

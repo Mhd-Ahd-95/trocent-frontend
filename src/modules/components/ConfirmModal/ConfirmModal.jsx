@@ -5,10 +5,11 @@ import { DeleteForeverOutlined } from '@mui/icons-material'
 
 export default function ConfirmModal (props) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const handleSubmitStatus = e => {
+
+  const handleSubmitStatus = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    props.handleSubmit()
+    await props.handleSubmit()
     // props.handleClose()
   }
   return (

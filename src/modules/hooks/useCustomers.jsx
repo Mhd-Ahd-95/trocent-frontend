@@ -41,6 +41,22 @@ export function useCustomer(cid) {
     });
 }
 
+export const useCustomersNames = () => {
+    return useQuery({
+        queryKey: ['customersNames'],
+        queryFn: async () => {
+            const response = await CustomersApi.getCustomersNames();
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+        // refetchOnReconnect: false,
+        // refetchOnMount: false,
+    });
+}
+
 
 export function useCustomerMutation() {
     const queryClient = useQueryClient()

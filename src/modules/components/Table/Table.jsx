@@ -1,14 +1,32 @@
 import * as React from 'react'
-import { DataGrid, gridClasses } from '@mui/x-data-grid'
+import { DataGrid, gridClasses, useGridApiContext, useGridSelector, gridPageCountSelector } from '@mui/x-data-grid'
 import { styled } from '@mui/material/styles'
 import CustomToolbar from './Toolbar'
 import CustomNoRows from './NoRows'
 import CustomNoResultsOverlay from './NoResultFound'
+import MuiPagination from '@mui/material/Pagination';
 
-const TableLayout = styled('div')(({ theme }) => ({
+function Pagination({ page, onPageChange, className }) {
+  const apiRef = useGridApiContext();
+  const pageCount = useGridSelector(apiRef, gridPageCountSelector);
+
+  return (
+    <MuiPagination
+      color="primary"
+      className={className}
+      count={pageCount}
+      page={page + 1}
+      onChange={(event, newPage) => {
+        onPageChange(event, newPage - 1);
+      }}
+    />
+  );
+}
+
+const TableLayout = styled('div')(({ theme, data, tableType }) => ({
   // overflow: "hidden",
   borderRadius: 25,
-  // maxHeight: 603,
+  // height: 768,
   // width: '100%',
   // overflowX: 'auto',
   // overflowY: 'auto',
@@ -57,6 +75,10 @@ export default function Table(props) {
         rows={data || []}
         rowHeight={props.height || 45}
         loading={props.loading}
+        paginationMode={props.paginationMode || 'client'}
+        rowCount={props.rowCount}
+        paginationModel={props.paginationModel}
+        onPaginationModelChange={props.onPaginationModelChange}
         sx={{
           width: '100%',
           overflowX: 'auto',
@@ -64,6 +86,13 @@ export default function Table(props) {
         }}
         pageSizeOptions={props.pageSizeOptions || []}
         columnHeaderHeight={45}
+        slotProps={{
+          basePagination: {
+            material: {
+              ActionsComponent: Pagination,
+            },
+          },
+        }}
         slots={{
           toolbar: () => (
             <CustomToolbar
@@ -91,7 +120,7 @@ export default function Table(props) {
         }
         initialState={{
           ...data.initialState,
-          pagination: { paginationModel: { pageSize: props.pageSize } } 
+          pagination: { paginationModel: { pageSize: props.pageSize } }
         }}
       />
     </TableLayout>
