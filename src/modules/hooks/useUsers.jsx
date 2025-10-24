@@ -78,10 +78,7 @@ export function useUserMutations() {
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
                 queryClient.setQueryData(['user', Number(updated.id)], updated)
-                queryClient.invalidateQueries({
-                    queryKey: ['users'],
-                    exact: true
-                })
+                queryClient.invalidateQueries({ queryKey: ['users'], exact: true })
                 enqueueSnackbar('User has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

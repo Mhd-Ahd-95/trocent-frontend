@@ -110,6 +110,7 @@ export function useCustomerMutation() {
                 queryClient.setQueryData(['customers'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
+                queryClient.invalidateQueries({ queryKey: ['customersRateSheets', Number(iid)] })
                 enqueueSnackbar('Customer has been deleted successfully', { variant: 'success' });
             }
         },
@@ -126,6 +127,14 @@ export function useCustomerMutation() {
                 queryClient.setQueryData(['customers'], (old = []) =>
                     old.filter((item) => !iids.includes(item.id))
                 );
+                // customersNames
+                queryClient.setQueryData(['customersNames'], (old = []) =>
+                    old.filter((item) => !iids.includes(item.id))
+                );
+                for (let cid of iids) {
+                    queryClient.removeQueries({ queryKey: ['customersRateSheets', Number(cid)] });
+                    queryClient.removeQueries({ queryKey: ['rateSheetsCustomer', Number(cid)] });
+                }
                 enqueueSnackbar('Selected Customers been deleted successfully', { variant: 'success' });
             }
         },

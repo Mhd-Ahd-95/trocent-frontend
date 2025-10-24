@@ -12,7 +12,7 @@ export default function EditRateSheet() {
     const { id, cid } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error, isRefetching } = useRateSheet(id)
+    const { data, isLoading, isError, error, isRefetching } = useRateSheet(id, cid)
     const { update } = useRateSheetMutations()
 
     React.useEffect(() => {
