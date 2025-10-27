@@ -5,50 +5,52 @@ import { Grid, Button, Box } from '@mui/material'
 import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { AccessTime, CheckCircleOutline, DeleteForever, HighlightOffOutlined } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
-import { AddressBookContext } from '../../contexts'
-import AddressBooksApi from '../../apis/AddressBooks.api'
+import { useAddressBookMutations, useAddressBooks } from '../../hooks/useAddressBooks'
 import AddressBookForm from './AddressBookForm'
 
 export default function AddressBook() {
   const { enqueueSnackbar } = useSnackbar()
-  const { addressBooks, loading, setAddressBooks } = React.useContext(AddressBookContext)
   const [addressBook, setAddressBook] = React.useState({})
   const selectedRef = React.useRef()
   const [selectedBooks, setSelectedBooks] = React.useState([])
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const [openModal, setOpenModal] = React.useState(false)
-
-  const handleDeleteAddressBook = (ids) => {
-    AddressBooksApi.deleteAddressBooks(ids)
-      .then(res => {
-        if (res.data) {
-          const filtered = addressBooks.filter((ab) => !ids.includes(ab.id))
-          setAddressBooks([...filtered])
-          enqueueSnackbar('Address book has been successfully deleted', { variant: 'success' })
-        }
-      })
-      .catch(error => {
-        const message = error.response?.data.message
-        const status = error.response?.status
-        const errorMessage = message ? message + ' - ' + status : error.message
-        enqueueSnackbar(errorMessage, { variant: 'error' })
-      })
-      .finally(() => setOpenModal(false))
-  }
-
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
     ids: new Set()
   })
 
+  const { data, isLoading, isError, error } = useAddressBooks()
+  const { removeMany, create, update } = useAddressBookMutations()
+
+  const handleDeleteAddressBook = (ids) => {
+    removeMany.mutate(ids)
+    selectedRef.current = null
+    setSelectedBooks([])
+    setRowSelectionModel({
+      type: 'include',
+      ids: new Set()
+    })
+    setOpenModal(false)
+  }
+
   const handleSelectionChange = newModel => {
     setRowSelectionModel(newModel)
     let selectedIds = Array.from(newModel.ids)
     if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = addressBooks.map(row => row.id)
+      selectedIds = data?.map(row => row.id)
     }
     setSelectedBooks(selectedIds)
   }
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
 
   return (
     <MainLayout
@@ -79,7 +81,7 @@ export default function AddressBook() {
             handleDeleteSelected={() => setOpenModal(2)}
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
-            loading={loading}
+            loading={isLoading}
             options={{
               filtering: true,
               search: true,
@@ -195,7 +197,7 @@ export default function AddressBook() {
                 )
               }
             ]}
-            data={addressBooks}
+            data={data || []}
           />
         </Grid>
       </Grid>
@@ -231,9 +233,7 @@ export default function AddressBook() {
         <DrawerForm title='Create Address' setOpen={setOpenDrawer} open={openDrawer === 1}>
           <AddressBookForm
             initialValues={{}}
-            submit={(payload) => AddressBooksApi.createAddressBook(payload)}
-            addressBooks={addressBooks}
-            setAddressBooks={setAddressBooks}
+            submit={async (payload) => await create.mutateAsync(payload)}
             setOpen={setOpenDrawer}
           />
         </DrawerForm>
@@ -242,9 +242,7 @@ export default function AddressBook() {
         <DrawerForm title='Edit Address' setOpen={setOpenDrawer} open={openDrawer === 2}>
           <AddressBookForm
             initialValues={{ ...addressBook }}
-            submit={(payload) => AddressBooksApi.updateAddressBook(addressBook.id, payload)}
-            addressBooks={addressBooks}
-            setAddressBooks={setAddressBooks}
+            submit={async (payload) => update.mutateAsync({ id: addressBook.id, payload })}
             editMode
             setOpen={setOpenDrawer}
           />

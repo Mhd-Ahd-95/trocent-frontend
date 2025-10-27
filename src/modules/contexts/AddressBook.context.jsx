@@ -8,14 +8,15 @@ const AddressBookContext = React.createContext()
 const AddressBookContextProvider = props => {
     const [loading, setLoading] = React.useState(true)
     const { enqueueSnackbar } = useSnackbar()
-    const [addressBooks, setAddressBooks] = React.useState([])
+    const [countAddress, setCountAddress] = React.useState(0)
     const { isAuthenticated } = React.useContext(AuthContext)
 
-    const loadAddressBooks = React.useCallback(() => {
-        AddressBooksApi.getAddressBooks()
+    const loadCountAddress = React.useCallback(() => {
+        AddressBooksApi.countAddressBooks()
             .then((res) => {
-                const result = res.data.data
-                setAddressBooks(result)
+                const result = res.data
+                console.log(result);
+                setCountAddress(result)
             })
             .catch((error) => {
                 const message = error.response?.data.message
@@ -28,13 +29,13 @@ const AddressBookContextProvider = props => {
 
     React.useEffect(() => {
         if (isAuthenticated) {
-            loadAddressBooks()
+            loadCountAddress()
         }
-    }, [loadAddressBooks, isAuthenticated])
+    }, [loadCountAddress, isAuthenticated])
 
     return (
         <AddressBookContext.Provider
-            value={{ loading, setLoading, addressBooks, setAddressBooks }}
+            value={{ loading, setLoading, countAddress, setCountAddress }}
         >
             {props.children}
         </AddressBookContext.Provider>

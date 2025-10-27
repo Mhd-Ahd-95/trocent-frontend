@@ -38,20 +38,10 @@ function ClientInfo(props) {
                 onChange={(_, value) => {
                   field.onChange(value)
                   setValue('customer_id', value?.id || '')
-                  // setValue('name', value?.name || '')
-                  // setValue('email', value?.email || '')
-                  // setValue('address', value?.address || '')
-                  // setValue('suite', value?.suite || '')
-                  // setValue('city', value?.city || '')
-                  // setValue('province', value?.province || '')
-                  // setValue('postal_code', value?.postal_code || '')
                 }}
                 getOptionLabel={option =>
                   option ? `${option.account_number} - ${option.name}` : ''
                 }
-                // isOptionEqualToValue={(option, value) =>
-                //   option.id === value?.id
-                // }
                 renderInput={params => (
                   <TextInput
                     {...params}

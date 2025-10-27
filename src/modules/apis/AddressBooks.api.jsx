@@ -10,8 +10,11 @@ const createAddressBook = ab => CustomAxios.post('/api/address-books', ab)
 
 const deleteAddressBook = rid => CustomAxios.delete(`/api/address-books/${rid}`)
 
-
 const deleteAddressBooks = ids => CustomAxios.delete('/api/address-books', { data: { ids } })
+
+const countAddressBooks = () => CustomAxios.get('/api/address-books/count')
+
+const patchABook = (id, obj) => CustomAxios.patch(`/api/address-books/${id}`, obj)
 
 export default {
     getAddressBook,
@@ -19,5 +22,7 @@ export default {
     createAddressBook,
     updateAddressBook,
     deleteAddressBook,
-    deleteAddressBooks
+    deleteAddressBooks,
+    countAddressBooks,
+    patchABook
 }

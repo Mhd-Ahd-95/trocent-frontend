@@ -8,7 +8,7 @@ import {
   References,
   ShipperDetails,
   WizardCard,
-  ExtraShop,
+  ExtraStop,
   ReceiverDetails,
   PickupDetails,
   InterlineCarrier,
@@ -101,8 +101,8 @@ export default function OrderForm(props) {
         </WizardCard>
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Extra Shop' minHeight={500}>
-          <ExtraShop
+        <WizardCard title='Extra Stop' minHeight={500}>
+          <ExtraStop
             watch={watch}
             register={register}
             errors={errors}
