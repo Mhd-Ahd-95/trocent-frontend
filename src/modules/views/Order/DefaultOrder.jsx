@@ -3,7 +3,7 @@ import moment from "moment";
 export const defaultOrderValue = {
   username: '',
   order_number: '',
-  create_date: moment(new Date()),
+  create_date: new Date(),
   terminal: '',
   quote: false,
   is_crossdock: false,
@@ -44,14 +44,13 @@ export const defaultOrderValue = {
   receiver_province: '',
   receiver_postal_code: '',
   receiver_special_instructions: '',
-  pickup_details: {
-    pickup_date: null,
-    time_from: null,
-    time_to: null,
-    driver_assigned: '',
-    pickup_terminal: '',
-    appointment: false
-  },
+  pickup_date: new Date(),
+  pickup_time_from: '07:00 PM',
+  pickup_time_to: '07:00 PM',
+  pickup_driver_assigned: '',
+  pickup_terminal: '',
+  pickup_appointment: false,
+  pickup_appointment_numbers: [],
   interline_carrier: {
     isPickup: false,
     isDelivery: false,
@@ -99,14 +98,13 @@ export const defaultOrderValue = {
       invoice: ''
     }
   },
-  delivery_details: {
-    delivery_date: null,
-    time_from: null,
-    time_to: null,
-    driver_assigned: '',
-    delivery_terminal: '',
-    appointment: false
-  },
+  delivery_date: new Date(),
+  delivery_time_from: '12:00 PM',
+  delivery_time_to: '12:00 PM',
+  delivery_driver_assigned: '',
+  delivery_terminal: '',
+  delivery_appointment: false,
+  delivery_appointment_numbers: [],
   freight_details: {
     service_type: 'Regular',
     freights: [

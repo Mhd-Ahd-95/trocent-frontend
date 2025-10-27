@@ -175,7 +175,7 @@ function SideMenu(props) {
         {
           text: 'Address Book',
           url: '/address-books',
-          chip: addressContext?.countAddress ?? 0
+          chip: addressContext?.countAddress?.count ?? 0
         }
       ]
     },

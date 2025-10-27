@@ -33,6 +33,7 @@ function ShipperDetails(props) {
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <SearchableInput
           name='shipper_id'
+          above
           loading={isLoading}
           control={control}
           options={data || []}
@@ -48,6 +49,9 @@ function ShipperDetails(props) {
             setValue('shipper_province', value?.province || '')
             setValue('shipper_postal_code', value?.postal_code || '')
             setValue('shipper_special_instructions', value?.special_instructions || '')
+            setValue('pickup_time_from', value?.op_time_from || null)
+            setValue('pickup_time_to', value?.op_time_to || null)
+            setValue('pickup_appointment', value?.requires_appointment || false)
           }}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Shipper is a required field' }}

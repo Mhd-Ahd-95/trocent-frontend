@@ -36,6 +36,7 @@ function ReceiverDetails(props) {
           name='receiver_id'
           loading={isLoading}
           control={control}
+          above
           options={data || []}
           fieldProp='name'
           onSelect={value => {
@@ -49,6 +50,9 @@ function ReceiverDetails(props) {
             setValue('receiver_province', value?.province || '')
             setValue('receiver_postal_code', value?.postal_code || '')
             setValue('receiver_special_instructions', value?.special_instructions || '')
+            setValue('delivery_time_from', value?.op_time_from || null)
+            setValue('delivery_time_to', value?.op_time_to || null)
+            setValue('delivery_appointment', value?.requires_appointment || false)
           }}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Receiver is a required field' }}

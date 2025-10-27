@@ -3,7 +3,7 @@ import { Autocomplete, CircularProgress } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import TextInput from './TextInput'
 
-export default function   SearchableInput(props) {
+export default function SearchableInput(props) {
   const { label, onSelect, name, control, fieldProp, options: propsOptions, onBlur: propsOnBlur, } = props
   const [options, setOptions] = useState([])
   const [inputValue, setInputValue] = useState('')
@@ -56,15 +56,28 @@ export default function   SearchableInput(props) {
             onBlur={async () => {
               if (inputValue && !selectedValue) {
                 if (propsOnBlur) {
-                  const newRecord = await propsOnBlur(inputValue)
-                  field.onChange(newRecord.id)
-                  setSelectedValue(newRecord)
+                  const check_value = propsOptions.find(po => po[fieldProp]?.trim()?.toLowerCase() === inputValue?.trim()?.toLowerCase())
+                  if (!check_value) {
+                    const newRecord = await propsOnBlur(inputValue)
+                    field.onChange(newRecord.id)
+                    setSelectedValue(newRecord)
+                  }
+                  else {
+                    field.onChange(check_value.id)
+                    setSelectedValue(check_value)
+                    onSelect && onSelect(check_value)
+                  }
                 }
               }
             }}
             getOptionLabel={option =>
               option ? `${option[fieldProp]}` : ''
             }
+            slotProps={{
+              popper: {
+                placement: props.above ? 'top-start' : 'bottom',
+              },
+            }}
             renderInput={params => (
               <TextInput
                 {...params}

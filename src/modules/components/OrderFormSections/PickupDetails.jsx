@@ -6,35 +6,37 @@ import { Controller, useWatch } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import InputWrapper from '../CustomComponents/InputWrapper'
+import moment from 'moment'
+import { useTerminals } from '../../hooks/useTerminals'
 
-function PickupDetails (props) {
-  const { register, errors, control, setValue } = props
+function PickupDetails(props) {
+  const { register, control, setValue } = props
+
+  const { data } = useTerminals()
 
   const isAppointment = useWatch({
     control: control,
-    name: 'pickup_details.appointment',
-    defaultValue: false
+    name: 'pickup_appointment',
   })
 
   const appointment_numbers = useWatch({
     control: control,
-    name: 'pickup_details.appointment_numbers',
-    defaultValue: []
+    name: 'pickup_appointment_numbers',
   })
 
   return (
     <Grid container spacing={4}>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <Controller
-          name='pickup_details.pickup_date'
+          name='pickup_date'
           control={control}
           rules={{ required: 'Pickup Date is required' }}
           render={({ field, fieldState }) => (
             <DatePicker
               label='Pickup Date*'
               views={['year', 'month', 'day']}
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value) : null}
+              onChange={date => field.onChange(date ? date.toISOString() : null)}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -57,13 +59,16 @@ function PickupDetails (props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
-          name='pickup_details.time_from'
+          name='pickup_time_from'
           control={control}
           render={({ field, fieldState }) => (
             <TimePicker
               label='Time From'
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value, 'hh:mm A') : null}
+              onChange={(date) => {
+                const formattedTime = date?.format('hh:mm A') || null;
+                field.onChange(formattedTime);
+              }}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -86,13 +91,16 @@ function PickupDetails (props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
-          name='pickup_details.time_to'
+          name='pickup_time_to'
           control={control}
           render={({ field, fieldState }) => (
             <TimePicker
               label='Time To'
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value, 'hh:mm A') : null}
+              onChange={(date) => {
+                const formattedTime = date?.format('hh:mm A') || null;
+                field.onChange(formattedTime);
+              }}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -118,17 +126,17 @@ function PickupDetails (props) {
           label='Driver Assigned'
           variant='outlined'
           fullWidth
-          {...register('pickup_details.driver_assigned')}
+          {...register('pickup_driver_assigned')}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <Controller
-          name='pickup_details.pickup_terminal'
+          name='pickup_terminal'
           control={control}
           render={({ field, fieldState }) => (
             <Autocomplete
               {...field}
-              options={['TREM MTL', 'TREM OTT', 'TREM TOR']}
+              options={data?.map((dt => dt.terminal)) || []}
               onChange={(_, value) => field.onChange(value)}
               renderInput={params => (
                 <TextInput {...params} label='Terminal' fullWidth />
@@ -142,7 +150,7 @@ function PickupDetails (props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='pickup_details.appointment'
+                name='pickup_appointment'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -167,7 +175,7 @@ function PickupDetails (props) {
             textHelper='Add multiple appointment numbers separated by commas'
             noSpace
             setValue={setValue}
-            field='pickup_details.appointment_numbers'
+            field='pickup_appointment_numbers'
             data={appointment_numbers}
           />
         </Grid>

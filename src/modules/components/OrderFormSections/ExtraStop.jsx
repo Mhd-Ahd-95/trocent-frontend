@@ -10,7 +10,7 @@ import { useAddressBooks, useAddressBookMutations } from '../../hooks/useAddress
 function ExtraStop(props) {
 
   const { data } = useAddressBooks()
-  const { register, setValue, control } = props
+  const { setValue, control } = props
   const selectedValue = React.useRef({})
 
   const isExtraStop = useWatch({
@@ -88,7 +88,7 @@ function ExtraStop(props) {
               name='extra_stop_id'
               control={control}
               options={data || []}
-              // loading={isLoading}
+              above
               fieldProp='name'
               onSelect={value => {
                 selectedValue.current = value

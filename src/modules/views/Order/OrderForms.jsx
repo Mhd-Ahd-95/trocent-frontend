@@ -23,7 +23,7 @@ import { useSnackbar } from 'notistack'
 
 export default function OrderForm(props) {
 
-  const { initialValues, submit, editMode, isGenerating } = props
+  const { initialValues, submit, editMode } = props
 
   const { enqueueSnackbar } = useSnackbar()
 
@@ -67,34 +67,35 @@ export default function OrderForm(props) {
         <WizardCard title='Basic Information' minHeight={500}>
           <BasicInfo
             register={register}
-            errors={errors}
             control={control}
             setValue={setValue}
-            isGenerating={isGenerating}
             enqueueSnackbar={enqueueSnackbar}
-            watch={watch}
           />
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Client Information' minHeight={500}>
-          <ClientInfo control={control} setValue={setValue} />
+          <ClientInfo
+            control={control}
+            setValue={setValue}
+          />
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='References' minHeight={500}>
-          <References register={register} setValue={setValue} watch={watch} />
+          <References
+            register={register}
+            setValue={setValue}
+            watch={watch}
+          />
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Shipper Details' minHeight={500}>
           <ShipperDetails
-            watch={watch}
-            register={register}
-            errors={errors}
             control={control}
             setValue={setValue}
           />
@@ -103,9 +104,6 @@ export default function OrderForm(props) {
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Extra Stop' minHeight={500}>
           <ExtraStop
-            watch={watch}
-            register={register}
-            errors={errors}
             control={control}
             setValue={setValue}
           />
@@ -114,9 +112,6 @@ export default function OrderForm(props) {
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Receiver Details' minHeight={500}>
           <ReceiverDetails
-            watch={watch}
-            register={register}
-            errors={errors}
             control={control}
             setValue={setValue}
           />
@@ -128,9 +123,7 @@ export default function OrderForm(props) {
           <PickupDetails
             register={register}
             control={control}
-            errors={errors}
             setValue={setValue}
-            watch={watch}
           />
         </WizardCard>
       </Grid>
@@ -152,14 +145,12 @@ export default function OrderForm(props) {
           <DeliveryDetails
             register={register}
             control={control}
-            errors={errors}
             setValue={setValue}
-            watch={watch}
           />
         </WizardCard>
       </Grid>
 
-      <Grid size={12}>
+      {/* <Grid size={12}>
         <WizardCard minHeight={500} title='Freight Details'>
           <FreightDetails
             register={register}
@@ -190,7 +181,7 @@ export default function OrderForm(props) {
             errors={errors}
           />
         </WizardCard>
-      </Grid>
+      </Grid> */}
 
       <Grid size={12}>
         <Grid container spacing={2} justifyContent={'flex-start'}>

@@ -78,7 +78,7 @@ export function useCustomerMutation() {
         onSuccess: (newCust) => {
             if (hasCachedList) {
                 queryClient.setQueryData(['customers'], (old = []) => {
-                    return [newDriver, ...old]
+                    return [newCust, ...old]
                 });
             }
             else {

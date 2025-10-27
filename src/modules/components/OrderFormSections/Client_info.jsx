@@ -2,12 +2,12 @@ import React from 'react'
 import { Grid, Autocomplete, CircularProgress } from '@mui/material'
 import { Controller, useWatch } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
-import { useCustomers } from '../../hooks/useCustomers'
+import { useCustomersNames } from '../../hooks/useCustomers'
 
 function ClientInfo(props) {
-  const { setValue, control } = props
+  const { control } = props
 
-  const { data, isLoading, isError, error } = useCustomers()
+  const { data, isLoading, isError, error } = useCustomersNames()
 
   React.useEffect(() => {
     if (isError && error) {
@@ -28,17 +28,14 @@ function ClientInfo(props) {
           name='customer_id'
           control={control}
           rules={{ required: 'Customer is a required field' }}
-          render={({ field, fieldstate }) => {
+          render={({ field, fieldState }) => {
             return (
               <Autocomplete
                 {...field}
                 options={data || []}
                 loading={isLoading}
                 value={data?.find((c) => c.id === Number(field.value)) || ''}
-                onChange={(_, value) => {
-                  field.onChange(value)
-                  setValue('customer_id', value?.id || '')
-                }}
+                onChange={(_, value) => { field.onChange(value.id) }}
                 getOptionLabel={option =>
                   option ? `${option.account_number} - ${option.name}` : ''
                 }
@@ -47,8 +44,8 @@ function ClientInfo(props) {
                     {...params}
                     label='Customer*'
                     fullWidth
-                    error={!!fieldstate?.error}
-                    helperText={fieldstate?.error?.message}
+                    error={!!fieldState?.error}
+                    helperText={fieldState?.error?.message}
                     slotProps={{
                       input: {
                         ...params.InputProps,
@@ -136,4 +133,4 @@ function ClientInfo(props) {
   )
 }
 
-export default React.memo(ClientInfo)
+export default ClientInfo

@@ -229,8 +229,8 @@ export default function DriverForm(props) {
                                                                             <DatePicker
                                                                                 label={label}
                                                                                 views={['year', 'month', 'day']}
-                                                                                value={controllerField.value ?? null}
-                                                                                onChange={date => field.onChange(date)}
+                                                                                value={controllerField.value ? moment(controllerField.value) : null}
+                                                                                onChange={date => controllerField.onChange(date ? date.toISOString() : null)}
                                                                                 slotProps={{
                                                                                     textField: {
                                                                                         error: !!errors[field],

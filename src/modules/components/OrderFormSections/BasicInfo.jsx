@@ -12,39 +12,26 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
-import CounterApi from '../../apis/Counter.api'
 import { useTerminals } from '../../hooks/useTerminals'
+import { AddressBookContext } from '../../contexts'
+import moment from 'moment'
 
 function BasicInfo(props) {
-  const { register, errors, control, setValue, enqueueSnackbar } = props
-  const [loadingCounter, setLoadingCounter] = React.useState(false)
+  const { register, control, setValue, enqueueSnackbar } = props
 
   const { data, isLoading, isError, error } = useTerminals()
 
-  const getCounter = React.useCallback(() => {
-    setLoadingCounter(true)
-    CounterApi.getNewCounter()
-      .then(res => {
-        setValue('order_number', res.data?.counter || '')
-      })
-      .catch((error) => {
-        const message = error.response?.data?.message;
-        const status = error.response?.status;
-        const errorMessage = message ? `${message} - ${status}` : error.message;
-        enqueueSnackbar(errorMessage, { variant: 'error' });
-      })
-      .finally(() => setLoadingCounter(false))
-  }, [enqueueSnackbar])
+  const { counterOrder } = React.useContext(AddressBookContext)
 
   React.useEffect(() => {
-    if (props.isGenerating) getCounter()
+    setValue('order_number', counterOrder?.counter || '')
     if (isError && error) {
       const message = error.response?.data?.message;
       const status = error.response?.status;
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
-  }, [getCounter, isError])
+  }, [isError, error, counterOrder])
 
   return (
     <Grid container spacing={3}>
@@ -68,27 +55,22 @@ function BasicInfo(props) {
 
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        {loadingCounter ?
-          <Skeleton variant='rectangular' width={'100%'} height={45} />
-          :
-          <Controller
-            name='order_number'
-            rules={{ required: 'Order Number is a required field' }}
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextInput
-                {...field}
-                label='Order Number*'
-                variant='outlined'
-                fullWidth
-                disabled
-                error={!!fieldState?.error}
-                helperText={fieldState?.error?.message}
-              />
-            )}
-          />
-
-        }
+        <Controller
+          name='order_number'
+          rules={{ required: 'Order Number is a required field' }}
+          control={control}
+          render={({ field, fieldState }) => (
+            <TextInput
+              {...field}
+              label='Order Number*'
+              variant='outlined'
+              fullWidth
+              disabled
+              error={!!fieldState?.error}
+              helperText={fieldState?.error?.message}
+            />
+          )}
+        />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
@@ -99,8 +81,8 @@ function BasicInfo(props) {
             <DatePicker
               label='Create Date*'
               views={['year', 'month', 'day']}
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value) : null}
+              onChange={date => field.onChange(date ? date.toISOString() : null)}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -130,7 +112,11 @@ function BasicInfo(props) {
               {...field}
               loading={isLoading}
               options={data?.map((dt => dt.terminal)) || []}
-              onChange={(_, value) => field.onChange(value)}
+              onChange={(_, value) => {
+                field.onChange(value)
+                setValue('pickup_terminal', value || '')
+                setValue('delivery_terminal', value || '')
+              }}
               renderInput={params => (
                 <TextInput
                   {...params}
