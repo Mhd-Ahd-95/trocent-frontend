@@ -1,5 +1,11 @@
 const globalVariables = {
-  auth: {},
+  auth: {
+    get user() {
+      return localStorage.getItem('authedUser')
+        ? JSON.parse(localStorage.getItem('authedUser'))
+        : null
+    }
+  },
   apis: {
     baseURL: 'http://localhost:8000',
     headers: {
@@ -37,7 +43,7 @@ const globalVariables = {
       if (lst.length === 1) {
         return lst[0].length === 2
           ? lst[0][0] + lst[0][1]
-          : lst[0][0] + lst[0][1] + lst[0][2]
+          : lst[0][0] + lst[0][1]
       } else if (lst.length === 2) {
         return lst[0][0] + lst[1][0]
       } else {

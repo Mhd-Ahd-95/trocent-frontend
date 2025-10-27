@@ -3,25 +3,31 @@ import { Grid } from '@mui/material'
 import { MainLayout } from '../../layouts'
 import { Breadcrumbs } from '../../components'
 import OrderForm from './OrderForms'
+import global from '../../global'
+import CounterApi from '../../apis/Counter.api'
+import { useSnackbar } from 'notistack'
 
-export default function NewOrder(){
+export default function NewOrder() {
+
+    const authedUser = global.auth.user
 
     return (
         <MainLayout
             title='New Order'
-            activeDrawer={{active: 'Orders'}}
-            breadcrumbs={<Breadcrumbs 
+            activeDrawer={{ active: 'Orders' }}
+            breadcrumbs={<Breadcrumbs
                 items={[
-                    {text: 'Orders', url: '/orders'},
-                    {text: 'Create'}
+                    { text: 'Orders', url: '/orders' },
+                    { text: 'Create' }
                 ]}
             />}
         >
             <Grid container>
                 <Grid size={12}>
-                    <OrderForm 
-                        initialValues={{}}
+                    <OrderForm
+                        initialValues={{ username: authedUser?.username}}
                         onSubmit={{}}
+                        isGenerating
                     />
                 </Grid>
             </Grid>

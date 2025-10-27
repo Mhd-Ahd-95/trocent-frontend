@@ -61,6 +61,7 @@ export const useCustomersNames = () => {
 export function useCustomerMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
+    const hasCachedList = queryClient.getQueryData(['customers'])
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -75,9 +76,14 @@ export function useCustomerMutation() {
             return res.data.data;
         },
         onSuccess: (newCust) => {
-            queryClient.setQueryData(['customers'], (old = []) => {
-                return [newCust, ...old]
-            });
+            if (hasCachedList) {
+                queryClient.setQueryData(['customers'], (old = []) => {
+                    return [newDriver, ...old]
+                });
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['customers'], exact: true })
+            }
             enqueueSnackbar('Customer has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -90,9 +96,14 @@ export function useCustomerMutation() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['customers'], (old = []) =>
-                    old.map((item) => Number(item.id) === Number(updated.id) ? updated : item)
-                );
+                if (hasCachedList) {
+                    queryClient.setQueryData(['customers'], (old = []) =>
+                        old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['customers'], exact: true })
+                }
                 queryClient.setQueryData(['customer', Number(updated.id)], updated)
                 enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },

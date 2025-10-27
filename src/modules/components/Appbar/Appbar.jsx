@@ -13,12 +13,15 @@ import {
   IconButton,
   Divider,
   useMediaQuery,
+  Box,
+  Tooltip,
+  useTheme
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { AccountCircle, Logout, Search, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { useTheme } from "@emotion/react";
-import { AuthContext } from "../../contexts";
+import { AccountCircle, Logout, Search, ArrowBackIos, ArrowForwardIos, LightMode, DarkMode } from "@mui/icons-material";
+import { ThemeContext, AuthContext } from "../../contexts";
 import AuthAPI from "../../apis/login.api";
+import global from '../../global'
 
 const CustomInput = styled(OutlinedInput)(({ theme }) => ({
   borderRadius: 8,
@@ -57,6 +60,9 @@ export default function Appbar(props) {
   const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
   const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
   const authContext = React.useContext(AuthContext);
+  const { themeState } = React.useContext(ThemeContext);
+  const authedUser = JSON.parse(localStorage.getItem('authedUser'))
+  const { avatar } = global.methods
 
   const toggleMenu = React.useCallback(() => {
     setOpen((prev) => !prev);
@@ -74,11 +80,14 @@ export default function Appbar(props) {
       });
   };
 
+  // console.log(themeState);
+
   return (
     <AppBar
       position="fixed"
       sx={{
-        background: "#fff",
+        bgcolor: theme.palette.background.paper,
+        // color: "text.primary",
         pl: 1,
         pr: 8,
         boxShadow: "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;",
@@ -141,10 +150,11 @@ export default function Appbar(props) {
                     fontSize: 15,
                     height: 35,
                     width: 35,
+                    textTransform: 'uppercase'
                   }}
                   onClick={handleClick}
                 >
-                  SA
+                  {avatar(authedUser?.username)}
                 </Avatar>
                 <Menu
                   anchorEl={anchor}
@@ -154,8 +164,8 @@ export default function Appbar(props) {
                   transformOrigin={{ vertical: "top", horizontal: "right" }}
                   PaperProps={{
                     sx: {
-                      // width: 200,
-                      // paddingY: 1,
+                      width: 200,
+                      paddingY: 1,
                     },
                   }}
                 >
@@ -178,20 +188,26 @@ export default function Appbar(props) {
 
                   <Divider sx={{ my: 0.5 }} />
 
-                  {/* <Box display="flex" justifyContent="space-between" px={ 2 } gap={ 1 } py={ 0.5 }>
+                  <Box display="flex" justifyContent="space-between" px={2} gap={1} py={0.5}>
                     <Tooltip title="Enable Light Theme">
-                      <IconButton size="small" color="primary">
+                      <IconButton size="small"
+                        color={themeState.palette.mode === "light" ? "primary" : "default"}
+                      // onClick={() => themeState.palette.mode === "dark" ? handleToggleMode() : undefined}
+                      >
                         <LightMode fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Enable Dark Theme">
-                      <IconButton size="small">
+                      <IconButton size="small"
+                        color={themeState.palette.mode === "dark" ? "primary" : "default"}
+                      // onClick={() => themeState.palette.mode === "light" ? handleToggleMode() : undefined}
+                      >
                         <DarkMode fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </Box>
 
-                  <Divider sx={ { my: 0.5 } } /> */}
+                  <Divider sx={{ my: 0.5 }} />
 
                   <Button
                     fullWidth

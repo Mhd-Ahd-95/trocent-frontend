@@ -1,30 +1,18 @@
+import moment from "moment";
+
 export const defaultOrderValue = {
-  basic_info: {
-    username: '',
-    order_number: '',
-    create_date: null,
-    terminal: '',
-    quote: false,
-    is_crossdock: false,
-    order_entity: 'Order Entry',
-    order_status: 'Entered',
-    internal_note: ''
-  },
-  client_info: {
-    customer_id: '',
-    customer: '',
-    name: '',
-    email: '',
-    address: '',
-    suite: '',
-    city: '',
-    province: '',
-    postal_code: ''
-  },
-  references: {
-    reference_numbers: [],
-    caller: ''
-  },
+  username: '',
+  order_number: '',
+  create_date: moment(new Date()),
+  terminal: '',
+  quote: false,
+  is_crossdock: false,
+  order_entity: 'Order Entry',
+  order_status: 'Pending',
+  internal_note: '',
+  customer_id: '',
+  reference_numbers: [],
+  caller: '',
   shipper_details: {
     shipper: '',
     email: '',
@@ -116,7 +104,7 @@ export const defaultOrderValue = {
       invoice: ''
     }
   },
-   delivery_details: {
+  delivery_details: {
     delivery_date: null,
     time_from: null,
     time_to: null,

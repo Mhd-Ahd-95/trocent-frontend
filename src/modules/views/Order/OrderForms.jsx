@@ -19,9 +19,13 @@ import {
 } from '../../components'
 import { useForm } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
+import { useSnackbar } from 'notistack'
 
 export default function OrderForm(props) {
-  const { initialValues } = props
+
+  const { initialValues, submit, editMode, isGenerating } = props
+
+  const { enqueueSnackbar } = useSnackbar()
 
   const {
     register,
@@ -41,12 +45,23 @@ export default function OrderForm(props) {
     console.log('Form Data:', data)
   }
 
+  const onError = errors => {
+    const firstErrorField = Object.keys(errors)[0];
+    if (firstErrorField) {
+      const field = document.querySelector(`[name="${firstErrorField}"]`);
+      if (field) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        field.focus({ preventScroll: true });
+      }
+    }
+  };
+
   return (
     <Grid
       container
       component={'form'}
       spacing={3}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onError)}
     >
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Basic Information' minHeight={500}>
@@ -55,6 +70,8 @@ export default function OrderForm(props) {
             errors={errors}
             control={control}
             setValue={setValue}
+            isGenerating={isGenerating}
+            enqueueSnackbar={enqueueSnackbar}
             watch={watch}
           />
         </WizardCard>

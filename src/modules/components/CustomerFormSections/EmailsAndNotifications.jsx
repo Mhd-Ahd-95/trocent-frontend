@@ -36,7 +36,7 @@ function BasicInfo(props) {
                     noSpace
                     validatedEmail
                     setValue={setValue}
-                    data={billing_emails}
+                    data={billing_emails || []}
                     field={'billing_emails'}
                     placeholder='Type and Press Comma'
                     label='Billing Emails'
@@ -48,7 +48,7 @@ function BasicInfo(props) {
                     noSpace
                     validatedEmail
                     setValue={setValue}
-                    data={pod_emails}
+                    data={pod_emails || []}
                     field={'pod_emails'}
                     placeholder='Type and Press Comma'
                     label='POD Emails'
@@ -60,7 +60,7 @@ function BasicInfo(props) {
                     noSpace
                     validatedEmail
                     setValue={setValue}
-                    data={sts_emails}
+                    data={sts_emails || []}
                     field={'status_update_emails'}
                     placeholder='Type and Press Comma'
                     label='Status Update Emails'

@@ -4,46 +4,98 @@ import {
   TextField,
   Autocomplete,
   FormControl,
-  Switch
+  Switch,
+  Skeleton,
+  CircularProgress
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
+import CounterApi from '../../apis/Counter.api'
+import { useTerminals } from '../../hooks/useTerminals'
 
 function BasicInfo(props) {
-  const { register, errors, control, setValue } = props
+  const { register, errors, control, setValue, enqueueSnackbar } = props
+  const [loadingCounter, setLoadingCounter] = React.useState(false)
+
+  const { data, isLoading, isError, error } = useTerminals()
+
+  const getCounter = React.useCallback(() => {
+    setLoadingCounter(true)
+    CounterApi.getNewCounter()
+      .then(res => {
+        setValue('order_number', res.data?.counter || '')
+      })
+      .catch((error) => {
+        const message = error.response?.data?.message;
+        const status = error.response?.status;
+        const errorMessage = message ? `${message} - ${status}` : error.message;
+        enqueueSnackbar(errorMessage, { variant: 'error' });
+      })
+      .finally(() => setLoadingCounter(false))
+  }, [enqueueSnackbar])
+
+  React.useEffect(() => {
+    if (props.isGenerating) getCounter()
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [getCounter, isError])
 
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <TextInput
-          label='Username*'
-          variant='outlined'
-          fullWidth
-          {...register('basic_info.username', {
-            required: 'Username is required'
-          })}
-          error={!!errors?.basic_info?.username}
-          helperText={errors.basic_info?.username?.message}
+        <Controller
+          name='username'
+          rules={{ required: 'Username is a required field' }}
+          control={control}
+          render={({ field, fieldState }) => (
+            <TextInput
+              {...field}
+              label='Username*'
+              variant='outlined'
+              fullWidth
+              disabled
+              error={!!fieldState?.error}
+              helperText={fieldState?.error?.message}
+            />
+          )}
         />
+
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <TextInput
-          label='Order Number'
-          variant='outlined'
-          fullWidth
-          {...register('basic_info.order_number')}
-          error={!!errors?.basic_info?.order_number}
-          helperText={errors.basic_info?.order_number?.message}
-        />
+        {loadingCounter ?
+          <Skeleton variant='rectangular' width={'100%'} height={45} />
+          :
+          <Controller
+            name='order_number'
+            rules={{ required: 'Order Number is a required field' }}
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextInput
+                {...field}
+                label='Order Number*'
+                variant='outlined'
+                fullWidth
+                disabled
+                error={!!fieldState?.error}
+                helperText={fieldState?.error?.message}
+              />
+            )}
+          />
+
+        }
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
-          name='basic_info.create_date'
+          name='create_date'
           control={control}
           rules={{ required: 'Create Date is required' }}
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <DatePicker
               label='Create Date*'
               views={['year', 'month', 'day']}
@@ -52,8 +104,8 @@ function BasicInfo(props) {
               slotProps={{
                 textField: {
                   fullWidth: true,
-                  error: !!errors?.basic_info?.create_date,
-                  helperText: errors?.basic_info?.create_date?.message,
+                  error: !!fieldState?.error,
+                  helperText: fieldState?.error?.message,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -71,15 +123,33 @@ function BasicInfo(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
-          name='basic_info.terminal'
+          name='terminal'
           control={control}
           render={({ field, fieldState }) => (
             <Autocomplete
               {...field}
-              options={['TREM-MTL', 'TREM-OTT', 'TREM-TOR']}
+              loading={isLoading}
+              options={data?.map((dt => dt.terminal)) || []}
               onChange={(_, value) => field.onChange(value)}
               renderInput={params => (
-                <TextInput {...params} label='Terminal' fullWidth />
+                <TextInput
+                  {...params}
+                  label='Terminal'
+                  fullWidth
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {isLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    },
+                  }}
+                />
               )}
             />
           )}
@@ -90,7 +160,7 @@ function BasicInfo(props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='basic_info.quote'
+                name='quote'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -100,9 +170,13 @@ function BasicInfo(props) {
                       const checked = e.target.checked
                       field.onChange(checked)
                       if (checked) {
-                        setValue('basic_info.is_crossdock', false)
-                        setValue('basic_info.order_status', 'Quote')
-                        setValue('basic_info.order_entity', 'Order Entry')
+                        setValue('is_crossdock', false)
+                        setValue('order_status', 'Quote')
+                        setValue('order_entity', 'Order Entry')
+                      }
+                      else {
+                        setValue('order_status', 'Pending')
+                        setValue('order_entity', 'Order Entry')
                       }
                     }}
                   />
@@ -118,7 +192,7 @@ function BasicInfo(props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='basic_info.is_crossdock'
+                name='is_crossdock'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -128,9 +202,13 @@ function BasicInfo(props) {
                       const checked = e.target.checked
                       field.onChange(checked)
                       if (checked) {
-                        setValue('basic_info.quote', false)
-                        setValue('basic_info.order_status', 'Approved')
-                        setValue('basic_info.order_entity', 'Order Billing')
+                        setValue('quote', false)
+                        setValue('order_status', 'Approved')
+                        setValue('order_entity', 'Order Billing')
+                      }
+                      else {
+                        setValue('order_status', 'Pending')
+                        setValue('order_entity', 'Order Entry')
                       }
                     }}
                   />
@@ -143,7 +221,7 @@ function BasicInfo(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
-          name='basic_info.order_entity'
+          name='order_entity'
           control={control}
           render={({ field, fieldState }) => (
             <Autocomplete
@@ -165,7 +243,7 @@ function BasicInfo(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
-          name='basic_info.order_status'
+          name='order_status'
           control={control}
           rules={{ required: 'Order Status is required' }}
           render={({ field, fieldState }) => (
@@ -204,7 +282,7 @@ function BasicInfo(props) {
         <TextField
           label='Internal Note'
           variant='outlined'
-          {...register('basic_info.internal_note')}
+          {...register('internal_note')}
           multiline
           minRows={4}
           maxRows={4}

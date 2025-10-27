@@ -36,6 +36,7 @@ import {
 } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
+import { CssBaseline } from '@mui/material'
 
 function App() {
   const authContext = React.useContext(AuthContext)
@@ -47,6 +48,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      {/* <CssBaseline />  */}
       <Routes>
         <Route path='/login' Component={Login} />
         <Route element={<ProtectRoute />}>
