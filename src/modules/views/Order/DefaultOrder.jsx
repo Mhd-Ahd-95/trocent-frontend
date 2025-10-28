@@ -12,6 +12,8 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
+  customer_weight_rules: '',
+  customer_fuel_rules: '',
 
   reference_numbers: [],
   caller: '',
@@ -84,25 +86,25 @@ export const defaultOrderValue = {
   delivery_terminal: '',
   delivery_appointment: false,
   delivery_appointment_numbers: [],
+
+  service_type: 'Regular',
+  freights: [
+    {
+      type: 'Skid',
+      description: 'FAK',
+      pieces: 1,
+      weight: '',
+      unit: 'lbs',
+      length: '',
+      width: '',
+      height: '',
+      dim_unit: 'in',
+      not_stack: false,
+      volume_weight: 0,
+      is_converted: false
+    }
+  ],
   
-  freight_details: {
-    service_type: 'Regular',
-    freights: [
-      {
-        type: 'Skid',
-        description: 'FAK',
-        pieces: 1,
-        weight: '',
-        unit: 'lbs',
-        length: '',
-        width: '',
-        height: '',
-        dim_unit: 'IN',
-        not_stack: false,
-        is_converted: false
-      }
-    ]
-  },
   freight_charges: {
     no_charges: false,
     manual_charges: false,

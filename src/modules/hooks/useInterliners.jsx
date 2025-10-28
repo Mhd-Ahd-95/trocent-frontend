@@ -3,7 +3,7 @@ import InterlinersApi from "../apis/Interliners.api";
 import { useSnackbar } from "notistack";
 
 
-export function useInterliners() {
+export function useInterliners(enabled = true) {
     return useQuery({
         queryKey: ['interliners'],
         queryFn: async () => {
@@ -14,6 +14,7 @@ export function useInterliners() {
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,
+        enabled: enabled
         // refetchOnReconnect: false,
         // refetchOnMount: false,
     });

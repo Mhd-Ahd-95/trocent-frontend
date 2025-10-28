@@ -16,6 +16,8 @@ const getRateSheetsByCustomer = cid => CustomAxios.get(`/api/rate-sheets/custome
 
 const loadCustomerRateSheets = cid => CustomAxios.get(`/api/rate-sheets/customer/${cid}/sheets`)
 
+const loadRateSheetsByCustomerAndType = (cid, type) => CustomAxios.get(`/api/rate-sheets/customer/${cid}/type/${type}`)
+
 export default {
     getRateSheet,
     getRateSheets,
@@ -24,5 +26,6 @@ export default {
     deleteRateSheetByBatchId,
     deleteRateSheets,
     getRateSheetsByCustomer,
-    loadCustomerRateSheets
+    loadCustomerRateSheets,
+    loadRateSheetsByCustomerAndType
 }

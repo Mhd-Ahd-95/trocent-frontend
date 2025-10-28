@@ -25,7 +25,7 @@ import { useSnackbar } from 'notistack'
 export default function OrderForm(props) {
 
   const { initialValues, submit, editMode } = props
-
+  const [showAll, setShowAll] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
   // const formRef = React.useRef(null)
 
@@ -59,6 +59,11 @@ export default function OrderForm(props) {
       }
     }
   };
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowAll(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <Grid
@@ -122,48 +127,49 @@ export default function OrderForm(props) {
           />
         </WizardCard>
       </Grid>
+      {showAll &&
+        <>
+          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+            <WizardCard title='Pickup Details' minHeight={500}>
+              <PickupDetails
+                register={register}
+                control={control}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Pickup Details' minHeight={500}>
-          <PickupDetails
-            register={register}
-            control={control}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+            <WizardCard title='Interline Carrier' minHeight={500}>
+              <InterlineCarrier
+                control={control}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Interline Carrier' minHeight={500}>
-          <InterlineCarrier
-            control={control}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+            <WizardCard title='Delivery Details' minHeight={500}>
+              <DeliveryDetails
+                register={register}
+                control={control}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Delivery Details' minHeight={500}>
-          <DeliveryDetails
-            register={register}
-            control={control}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
+          <Grid size={12}>
+            <WizardCard minHeight={500} title='Freight Details'>
+              <FreightDetails
+                register={register}
+                control={control}
+                watch={watch}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      {/* <Grid size={12}>
-        <WizardCard minHeight={500} title='Freight Details'>
-          <FreightDetails
-            register={register}
-            control={control}
-            watch={watch}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
-
-      <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+          {/* <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <WizardCard minHeight={500} title='Freight & Charges'>
           <FreightCharges
             control={control}
@@ -184,7 +190,8 @@ export default function OrderForm(props) {
           />
         </WizardCard>
       </Grid> */}
-
+        </>
+      }
       <Grid size={12}>
         <Grid container spacing={2} justifyContent={'flex-start'}>
           <Grid size='auto'>

@@ -2,12 +2,13 @@ import React from 'react'
 import { Grid, Autocomplete, CircularProgress } from '@mui/material'
 import { Controller, useWatch } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
-import { useCustomersNames } from '../../hooks/useCustomers'
+import { useCustomers } from '../../hooks/useCustomers'
+import { useRateSheetsByCustomerAndType } from '../../hooks/useRateSheets'
 
 function ClientInfo(props) {
-  const { control } = props
+  const { control, setValue } = props
 
-  const { data, isLoading, isError, error } = useCustomersNames()
+  const { data, isLoading, isError, error } = useCustomers()
 
   React.useEffect(() => {
     if (isError && error) {
@@ -20,6 +21,8 @@ function ClientInfo(props) {
 
   const customerId = useWatch({ control, name: 'customer_id' })
   const selectedCustomer = data?.find(c => c.id === Number(customerId))
+
+  useRateSheetsByCustomerAndType(customerId, 'skid')
 
   return (
     <Grid container spacing={4}>
@@ -35,7 +38,11 @@ function ClientInfo(props) {
                 options={data || []}
                 loading={isLoading}
                 value={data?.find((c) => c.id === Number(field.value)) || ''}
-                onChange={(_, value) => { field.onChange(value?.id) }}
+                onChange={(_, value) => { 
+                  field.onChange(value?.id)
+                  setValue('customer_weight_rules', value?.weight_pieces_rule || '')
+                  setValue('customer_fuel_rules', value?.fuel_surcharge_rule || '')
+                 }}
                 getOptionLabel={option =>
                   option ? `${option.account_number} - ${option.name}` : ''
                 }

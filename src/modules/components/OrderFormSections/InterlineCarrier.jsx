@@ -4,18 +4,16 @@ import {
   FormControl,
   Switch,
   FormHelperText,
-  Typography
+  Typography,
+  useTheme
 } from '@mui/material'
 import { InterlineCarrierForm, TabInterlineForm } from './InterlineCarrierForm'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import { Controller, useWatch } from 'react-hook-form'
-import { useTheme } from '@mui/material/styles'
 import { useInterliners } from '../../hooks/useInterliners'
 
 function InterlineCarrier(props) {
   const { setValue, control } = props
-
-  const { data, isLoading, isError, error } = useInterliners()
 
   const isPickup = useWatch({
     control: control,
@@ -31,6 +29,18 @@ function InterlineCarrier(props) {
     control: control,
     name: 'is_same_carrier',
   })
+
+  const shouldFetchInterliners = isPickup || isDelivery || isSameCarrierForBoth
+  const { data, isLoading, isError, error } = useInterliners(shouldFetchInterliners)
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
 
   const theme = useTheme()
 

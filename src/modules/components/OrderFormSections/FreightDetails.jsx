@@ -6,27 +6,34 @@ import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import { Add, Calculate } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
+import EngineOrder from './EngineOrder'
 
-function FreightDetails (props) {
+function FreightDetails(props) {
   const { control, register, watch, setValue } = props
   const theme = useTheme()
   const [mode, setMode] = React.useState(false)
 
-  const freights = useWatch({ control, name: 'freight_details.freights' })
+  const freights = useWatch({ control, name: 'freights' })
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'freight_details.freights'
+    name: 'freights'
   })
 
   const totals = React.useMemo(() => {
-    const totalPieces =
-      freights?.reduce((acc, f) => acc + Number(f.pieces || 0), 0) || 0
-    const totalWeight =
-      freights?.reduce((acc, f) => acc + Number(f.weight || 0), 0).toFixed(2) ||
-      0
-    const totalSkids = freights?.filter(f => f.type === 'Skid')?.length || 0
-    return { totalPieces, totalWeight, totalSkids }
+    const totalPieces = freights?.reduce((acc, f) => acc + Number(f.pieces || 0), 0) || 0
+    const totalWeight = freights?.reduce((acc, f) => acc + Number(f.weight || 0), 0).toFixed(2) || 0
+    const totalSkids = freights?.reduce((acc, f) => {
+      if (f.type === 'Skid') {
+        if (f.not_stack) acc = acc + (Number(f.pieces) * 2)
+        else acc = acc + Number(f.pieces)
+      }
+      return acc
+    }, 0)
+
+    const totalVolumeWeight = freights?.reduce((acc, f) => acc + (Math.round(Number(EngineOrder.calculateVolumeWeight(f) || 0) * 100) / 100), 0)
+
+    return { totalPieces, totalWeight, totalSkids, totalVolumeWeight }
   }, [freights])
 
   const handleAddFreight = React.useCallback(() => {
@@ -51,7 +58,7 @@ function FreightDetails (props) {
         <Grid container spacing={2}>
           <Grid size={12}>
             <Controller
-              name='freight_details.service_type'
+              name='service_type'
               control={control}
               render={({ field, fieldState }) => (
                 <Autocomplete
@@ -217,7 +224,7 @@ function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Total Volume Weight'
-                  value={'0.02'}
+                  value={totals.totalVolumeWeight}
                   variant='outlined'
                   disabled
                   fullWidth
@@ -233,7 +240,7 @@ function FreightDetails (props) {
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextInput
                   label='Total Chargeable Weight'
-                  value={totals.totalWeight}
+                  value={totals.totalVolumeWeight}
                   variant='outlined'
                   disabled
                   fullWidth

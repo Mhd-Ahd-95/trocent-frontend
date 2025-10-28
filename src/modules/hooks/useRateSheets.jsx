@@ -77,6 +77,28 @@ export function useRateSheet(iid, cid) {
     });
 }
 
+export function useRateSheetsByCustomerAndType(cid, type) {
+    const queryClient = useQueryClient();
+    return useQuery({
+        queryKey: ['rateSheetsCustomerAndType', Number(cid), type],
+        queryFn: async () => {
+            console.log('object');
+            const cachedRSheets = queryClient.getQueryData(['customersRateSheets', Number(cid)]) || [];
+            const cached = cachedRSheets.filter(rs => rs.type === type)
+            console.log(cached);
+            if (cached.length > 0) return cached;
+            const res = await RateSheetsApi.loadRateSheetsByCustomerAndType(Number(cid), type);
+            console.log(res.data);
+            return res.data;
+        },
+        enabled: !!cid && !!type,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 // const updateCachedList = (cachedList, updated, queryClient) => {
 //     cachedList.forEach((rsp) => {
 //         const data = rsp[1] || {}

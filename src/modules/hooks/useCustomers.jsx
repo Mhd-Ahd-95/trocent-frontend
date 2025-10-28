@@ -42,9 +42,13 @@ export function useCustomer(cid) {
 }
 
 export const useCustomersNames = () => {
+    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['customersNames'],
         queryFn: async () => {
+            const cachedCust = queryClient.getQueryData(['customers']) || [];
+            const cached = cachedCust.map((cust) => ({ id: cust.id, name: cust.name, account_number: cust.account_number }))
+            if (cached?.length > 0) return cached
             const response = await CustomersApi.getCustomersNames();
             return response.data;
         },
@@ -62,6 +66,7 @@ export function useCustomerMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
     const hasCachedList = queryClient.getQueryData(['customers'])
+    const hasCachedListOfCNames = queryClient.getQueryData(['customersNames'])
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -80,9 +85,15 @@ export function useCustomerMutation() {
                 queryClient.setQueryData(['customers'], (old = []) => {
                     return [newCust, ...old]
                 });
+
             }
             else {
                 queryClient.invalidateQueries({ queryKey: ['customers'], exact: true })
+            }
+            if (hasCachedListOfCNames) {
+                queryClient.setQueryData(['customersNames'], (old = []) => {
+                    return [{ id: newCust.id, name: newCust.name, account_number: newCust.account_number }, ...old]
+                })
             }
             enqueueSnackbar('Customer has been created successfully', { variant: 'success' });
         },
@@ -104,6 +115,11 @@ export function useCustomerMutation() {
                 else {
                     queryClient.invalidateQueries({ queryKey: ['customers'], exact: true })
                 }
+                if (hasCachedListOfCNames) {
+                    queryClient.setQueryData(['customersNames'], (old = []) => {
+                        return old.map(item => item.id === Number(updated.id) ? { id: updated.id, name: updated.name, account_number: updated.account_number } : item)
+                    })
+                }
                 queryClient.setQueryData(['customer', Number(updated.id)], updated)
                 enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },
@@ -121,6 +137,11 @@ export function useCustomerMutation() {
                 queryClient.setQueryData(['customers'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
+                if (hasCachedListOfCNames) {
+                    queryClient.setQueryData(['customersNames', (old = []) => {
+                        old.filter((item) => item.id !== iid)
+                    }])
+                }
                 queryClient.invalidateQueries({ queryKey: ['customersRateSheets', Number(iid)] })
                 enqueueSnackbar('Customer has been deleted successfully', { variant: 'success' });
             }
@@ -139,9 +160,11 @@ export function useCustomerMutation() {
                     old.filter((item) => !iids.includes(item.id))
                 );
                 // customersNames
-                queryClient.setQueryData(['customersNames'], (old = []) =>
-                    old.filter((item) => !iids.includes(item.id))
-                );
+                if (hasCachedListOfCNames) {
+                    queryClient.setQueryData(['customersNames'], (old = []) =>
+                        old.filter((item) => !iids.includes(item.id))
+                    );
+                }
                 for (let cid of iids) {
                     queryClient.removeQueries({ queryKey: ['customersRateSheets', Number(cid)] });
                     queryClient.removeQueries({ queryKey: ['rateSheetsCustomer', Number(cid)] });

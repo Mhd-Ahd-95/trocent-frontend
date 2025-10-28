@@ -13,17 +13,28 @@ import { Controller, useWatch } from 'react-hook-form'
 import { AccordionComponent } from '../../components'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
+import EngineOrder from './EngineOrder'
 
-const FrightRow = React.memo(({ fields, index, control, register, remove, setValue }) => {
+const FrightRow = React.memo(({ fields, index, control, register, remove, setValue, watch }) => {
   const theme = useTheme()
   const item = fields[index]
 
   const freight = useWatch({
     control,
-    name: `freight_details.freights.${index}`
+    name: `freights.${index}`
   })
 
   const handleRemove = React.useCallback(() => remove(index), [index, remove])
+
+  const volumeWeight = React.useMemo(() => {
+    const vw = EngineOrder.calculateVolumeWeight(freight)
+    return vw
+  }, [freight])
+
+  const customerWeightPiecesRule = useWatch({
+    name: 'customer_weight_rules',
+    control
+  })
 
   return (
     <AccordionComponent
@@ -37,7 +48,7 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
           {/* Type */}
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <Controller
-              name={`freight_details.freights.${index}.type`}
+              name={`freights.${index}.type`}
               control={control}
               rules={{ required: 'Type is required' }}
               render={({ field, fieldState }) => (
@@ -65,132 +76,209 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
               label='Description'
               variant='outlined'
               fullWidth
-              {...register(`freight_details.freights.${index}.description`)}
+              {...register(`freights.${index}.description`)}
             />
           </Grid>
 
           {/* Pieces */}
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              label='Pieces'
-              variant='outlined'
-              type='number'
-              fullWidth
-              {...register(`freight_details.freights.${index}.pieces`)}
+            <Controller
+              name={`freights.${index}.pieces`}
+              control={control}
+              render={({ field }) => {
+                return <TextInput
+                  {...field}
+                  label='Pieces'
+                  variant='outlined'
+                  type='number'
+                  fullWidth
+                />
+              }}
             />
           </Grid>
 
           {/* Weight */}
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              label='Weight'
-              variant='outlined'
-              type='number'
-              fullWidth
-              {...register(`freight_details.freights.${index}.weight`)}
-              helperText={'Vol: 0.00 lbs'}
+            <Controller
+              name={`freights.${index}.weight`}
+              control={control}
+              render={({ field }) => {
+                return <TextInput
+                  {...field}
+                  label='Weight'
+                  variant='outlined'
+                  type='number'
+                  fullWidth
+                  onChange={(e) => {
+                    const value = e.target.value
+                    field.onChange(value)
+                    if (Number(value) >= Number(customerWeightPiecesRule)){
+                      const pieces = Math.floor(Number(value) / Number(customerWeightPiecesRule))
+                      setValue(`freights.${index}.pieces`, Number(freight.pieces) + pieces)
+                    }
+                  }}
+                  helperText={volumeWeight ? `vol: ${Math.round(volumeWeight * 100) / 100} lbs` : 'Vol: 0.00 lbs'}
+                />
+              }}
             />
           </Grid>
 
           {/* Unit with conversion */}
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              select
-              label='Unit'
-              variant='outlined'
-              fullWidth
-              defaultValue={'lbs'}
-              {...register(`freight_details.freights.${index}.unit`)}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton
-                        onClick={() =>
-                          setValue(
-                            `freight_details.freights.${index}.is_converted`,
-                            !freight.is_converted
-                          )
-                        }
-                        color={freight.is_converted ? 'success' : 'default'}
-                      >
-                        <Sync />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }
-              }}
-              helperText={freight.is_converted ? 'Conv.: ON' : 'Conv.: OFF'}
-              sx={{
-                position: 'relative',
-                '& button': {
-                  borderLeft: `1px solid ${theme.palette.grey[200]}`,
-                  borderRadius: 0,
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  height: '100%',
-                  '& svg': { fontSize: 18, marginTop: 0.3 }
-                },
-                '& .MuiSelect-icon': {
-                  position: 'absolute',
-                  top: 14,
-                  right: 35,
-                  fontSize: 20
-                }
-              }}
-            >
-              <MenuItem value='lbs'>LBS</MenuItem>
-              <MenuItem value='kg'>KG</MenuItem>
-            </TextInput>
+            <Controller
+              name={`freights.${index}.unit`}
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label='Unit'
+                  variant='outlined'
+                  fullWidth
+                  value={field.value || ''}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    field.onChange(value)
+                    if (value === 'lbs') setValue(`freights.${index}.dim_unit`, 'in')
+                    else setValue(`freights.${index}.dim_unit`, 'cm')
+                  }}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton
+                            onClick={() =>
+                              setValue(
+                                `freights.${index}.is_converted`,
+                                !freight.is_converted
+                              )
+                            }
+                            color={freight.is_converted ? 'success' : 'default'}
+                          >
+                            <Sync />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                  helperText={freight.is_converted ? 'Conv.: ON' : 'Conv.: OFF'}
+                  sx={{
+                    position: 'relative',
+                    '& button': {
+                      borderLeft: `1px solid ${theme.palette.grey[200]}`,
+                      borderRadius: 0,
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      height: '100%',
+                      '& svg': { fontSize: 18, marginTop: 0.3 }
+                    },
+                    '& .MuiSelect-icon': {
+                      position: 'absolute',
+                      top: 14,
+                      right: 35,
+                      fontSize: 20
+                    }
+                  }}
+                >
+                  <MenuItem value='lbs'>LBS</MenuItem>
+                  <MenuItem value='kg'>KG</MenuItem>
+                </TextInput>
+              )}
+            />
           </Grid>
 
           {/* Dimensions */}
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              label='Length'
-              variant='outlined'
-              fullWidth
-              {...register(`freight_details.freights.${index}.length`)}
+            <Controller
+              name={`freights.${index}.length`}
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  label='Length'
+                  variant='outlined'
+                  type='number'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              label='Width'
-              variant='outlined'
-              fullWidth
-              {...register(`freight_details.freights.${index}.width`)}
+            <Controller
+              name={`freights.${index}.width`}
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  label='Width'
+                  variant='outlined'
+                  type='number'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              label='Height'
-              variant='outlined'
-              fullWidth
-              {...register(`freight_details.freights.${index}.height`)}
+            <Controller
+              name={`freights.${index}.height`}
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  label='Height'
+                  variant='outlined'
+                  type='number'
+                  fullWidth
+                />
+              )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-            <TextInput
-              select
-              label='Dim Unit'
-              variant='outlined'
-              fullWidth
-              defaultValue={'in'}
-              {...register(`freight_details.freights.${index}.dim_unit`)}
-            >
-              <MenuItem value='in'>IN</MenuItem>
-              <MenuItem value='cm'>CM</MenuItem>
-            </TextInput>
+            <Controller
+              name={`freights.${index}.dim_unit`}
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  select
+                  label='Dim Unit'
+                  variant='outlined'
+                  fullWidth
+                  value={field.value || ''}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    field.onChange(value)
+                    if (value === 'in') setValue(`freights.${index}.unit`, 'lbs')
+                    else setValue(`freights.${index}.unit`, 'kg')
+                  }}
+                >
+                  <MenuItem value='in'>IN</MenuItem>
+                  <MenuItem value='cm'>CM</MenuItem>
+                </TextInput>
+              )}
+            />
           </Grid>
 
           {/* Not Stack */}
           <Grid size={{ xs: 12, sm: 6, md: 1 }}>
             <CustomFormControlLabel
               control={
-                <Switch
-                  {...register(`freight_details.freights.${index}.not_stack`)}
+                <Controller
+                  name={`freights.${index}.not_stack`}
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      {...field}
+                      checked={field.value || false}
+                      onChange={(e) => {
+                        const checked = e.target.checked
+                        field.onChange(checked)
+                      }}
+                    />
+                  )}
                 />
+
               }
               label='Not Stack'
               sx={{ '& span': { fontSize: 12, whiteSpace: 'nowrap' } }}
