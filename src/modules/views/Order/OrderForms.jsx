@@ -20,12 +20,14 @@ import {
 import { useForm } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
 import { useSnackbar } from 'notistack'
+// import { useTabNavigation } from '../../hooks/useTabNavigation'
 
 export default function OrderForm(props) {
 
   const { initialValues, submit, editMode } = props
 
   const { enqueueSnackbar } = useSnackbar()
+  // const formRef = React.useRef(null)
 
   const {
     register,
@@ -40,6 +42,8 @@ export default function OrderForm(props) {
       ...initialValues
     }
   })
+
+  // useTabNavigation(watch, formRef)
 
   const onSubmit = data => {
     console.log('Form Data:', data)
@@ -62,6 +66,7 @@ export default function OrderForm(props) {
       component={'form'}
       spacing={3}
       onSubmit={handleSubmit(onSubmit, onError)}
+    // ref={formRef}
     >
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Basic Information' minHeight={500}>
@@ -131,9 +136,6 @@ export default function OrderForm(props) {
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Interline Carrier' minHeight={500}>
           <InterlineCarrier
-            watch={watch}
-            register={register}
-            errors={errors}
             control={control}
             setValue={setValue}
           />

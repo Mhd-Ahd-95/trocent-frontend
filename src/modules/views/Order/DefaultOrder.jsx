@@ -10,9 +10,12 @@ export const defaultOrderValue = {
   order_entity: 'Order Entry',
   order_status: 'Pending',
   internal_note: '',
+
   customer_id: '',
+
   reference_numbers: [],
   caller: '',
+
   shipper_id: '',
   shipper_email: '',
   shipper_contact_name: '',
@@ -23,6 +26,7 @@ export const defaultOrderValue = {
   shipper_province: '',
   shipper_postal_code: '',
   shipper_special_instructions: '',
+
   is_extra_stop: false,
   extra_stop_id: '',
   extra_stop_email: '',
@@ -34,6 +38,7 @@ export const defaultOrderValue = {
   extra_stop_province: '',
   extra_stop_postal_code: '',
   extra_stop_special_instructions: '',
+
   receiver_id: '',
   receiver_email: '',
   receiver_contact_name: '',
@@ -44,6 +49,7 @@ export const defaultOrderValue = {
   receiver_province: '',
   receiver_postal_code: '',
   receiver_special_instructions: '',
+
   pickup_date: new Date(),
   pickup_time_from: '07:00 PM',
   pickup_time_to: '07:00 PM',
@@ -51,53 +57,26 @@ export const defaultOrderValue = {
   pickup_terminal: '',
   pickup_appointment: false,
   pickup_appointment_numbers: [],
-  interline_carrier: {
-    isPickup: false,
-    isDelivery: false,
-    isSameCarrier: false,
-    sameCarrier: {
-      interline: '',
-      email: '',
-      contact_name: '',
-      phone_number: '',
-      address: '',
-      suite: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      special_intructions: '',
-      charge_amount: '',
-      invoice: ''
-    },
-    pickup: {
-      interline: '',
-      email: '',
-      contact_name: '',
-      phone_number: '',
-      address: '',
-      suite: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      special_intructions: '',
-      charge_amount: '',
-      invoice: ''
-    },
-    delivery: {
-      interline: '',
-      email: '',
-      contact_name: '',
-      phone_number: '',
-      address: '',
-      suite: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      special_intructions: '',
-      charge_amount: '',
-      invoice: ''
-    }
-  },
+
+  is_pickup: false,
+  is_delivery: false,
+  is_same_carrier: false,
+
+  interliner_id: '',
+  interliner_special_instructions: '',
+  interliner_charge_amount: '',
+  interliner_invoice: '',
+
+  interliner_pickup_id: '',
+  interliner_pickup_special_instructions: '',
+  interliner_pickup_charge_amount: '',
+  interliner_pickup_invoice: '',
+
+  interliner_delivery_id: '',
+  interliner_delivery_special_instructions: '',
+  interliner_delivery_charge_amount: '',
+  interliner_delivery_invoice: '',
+
   delivery_date: new Date(),
   delivery_time_from: '12:00 PM',
   delivery_time_to: '12:00 PM',
@@ -105,6 +84,7 @@ export const defaultOrderValue = {
   delivery_terminal: '',
   delivery_appointment: false,
   delivery_appointment_numbers: [],
+  
   freight_details: {
     service_type: 'Regular',
     freights: [

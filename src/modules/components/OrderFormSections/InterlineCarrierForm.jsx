@@ -5,7 +5,9 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  InputAdornment
+  InputAdornment,
+  CircularProgress,
+  Autocomplete
 } from '@mui/material'
 import { TextInput } from '../'
 import PropTypes from 'prop-types'
@@ -14,9 +16,7 @@ import AppBar from '@mui/material/AppBar'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Box from '@mui/material/Box'
-import SearchableInput from '../CustomComponents/SearchableInput'
-import { Controller } from 'react-hook-form'
-import global from '../../global'
+import { Controller, useWatch } from 'react-hook-form'
 
 const Appbar = styled(AppBar)(({ theme }) => ({
   borderRadius: 10,
@@ -41,129 +41,129 @@ const Fieldset = styled('fieldset')(({ theme }) => ({
   }
 }))
 
-export function InterlineCarrierForm (props) {
-  const { interline_type, setValue, label, control } = props
+export function InterlineCarrierForm(props) {
+  const { interline_type, label, control, data, loading } = props
 
-  const inputName = nm => `interline_carrier.${interline_type}.${nm}`
+  const inputName = nm => interline_type ? `interliner_${interline_type}_${nm}` : `interliner_${nm}`
+
+  const interlinerId = useWatch({ control, name: inputName('id') })
+  const selectedInterliner = data?.find(c => c.id === Number(interlinerId))
 
   return (
     <Grid container spacing={2} mt={2}>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <SearchableInput
-          name={inputName('interline')}
+        <Controller
+          name={inputName('id')}
           control={control}
-          options={global.static.interliners}
-          fieldProp='company_name'
-          onSelect={value => {
-            setValue(inputName('email'), value?.email || '')
-            setValue(inputName('contact_name'), value?.contact_person || '')
-            setValue(inputName('phone_number'), value?.phone_number || '')
-            setValue(inputName('address'), value?.address || '')
-            setValue(inputName('suite'), value?.suite || '')
-            setValue(inputName('city'), value?.city || '')
-            setValue(inputName('province'), value?.province || '')
-            setValue(inputName('postal_code'), value?.postal_code || '')
+          rules={{ required: 'Interliner is a required field' }}
+          render={({ field, fieldState }) => {
+            return (
+              <Autocomplete
+                {...field}
+                options={data || []}
+                loading={loading}
+                value={data?.find((c) => c.id === Number(field.value)) || ''}
+                onChange={(_, value) => { field.onChange(value?.id) }}
+                getOptionLabel={option =>
+                  option ? `${option.name}` : ''
+                }
+                renderInput={params => (
+                  <TextInput
+                    {...params}
+                    label={label ? `${label}*` : 'Interliner*'}
+                    fullWidth
+                    error={!!fieldState?.error}
+                    helperText={fieldState?.error?.message}
+                    slotProps={{
+                      input: {
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {loading ? (
+                              <CircularProgress color="inherit" size={20} />
+                            ) : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      },
+                    }}
+                  />
+                )}
+              />
+            )
           }}
-          rules={{ required: 'Interline is a required field' }}
-          label={label ? `${label} Interline*` : 'Interline*'}
-          placeholder='Type name...'
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('email')}
-          render={({ field, fieldState }) => (
-            <TextInput {...field} label='Email' variant='outlined' fullWidth />
-          )}
+        <TextInput
+          label='Email'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.email || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('contact_name')}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Contact Name'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Contact Name'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.contact_name || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('phone_number')}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Phone Number'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Phone Number'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.phone || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-        <Controller
-          control={control}
-          name={inputName('address')}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Address'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Address'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.address || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('suite')}
-          render={({ field, fieldState }) => (
-            <TextInput {...field} label='Suite' variant='outlined' fullWidth />
-          )}
+        <TextInput
+          label='Suite'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.suite || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('city')}
-          render={({ field, fieldState }) => (
-            <TextInput {...field} label='City' variant='outlined' fullWidth />
-          )}
+        <TextInput
+          label='City'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.city || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('province')}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Province/State'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Province/State'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.province || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          control={control}
-          name={inputName('postal_code')}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Postal Code'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Postal Code'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedInterliner?.postal_code || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
@@ -176,8 +176,8 @@ export function InterlineCarrierForm (props) {
               label='Special Instructions'
               variant='outlined'
               multiline
-              minRows={3}
-              maxRows={3}
+              minRows={2}
+              maxRows={2}
               fullWidth
               sx={{
                 '& .MuiInputLabel-root': {
@@ -258,7 +258,7 @@ export function InterlineCarrierForm (props) {
   )
 }
 
-function TabPanel (props) {
+function TabPanel(props) {
   const { children, value, index, ...other } = props
 
   return (
@@ -286,14 +286,14 @@ TabPanel.propTypes = {
   value: PropTypes.number.isRequired
 }
 
-function a11yProps (index) {
+function a11yProps(index) {
   return {
     id: `full-width-tab-${index}`,
     'aria-controls': `full-width-tabpanel-${index}`
   }
 }
 
-export function TabInterlineForm (props) {
+export function TabInterlineForm(props) {
   const { labels, contents } = props
   const theme = useTheme()
   const [value, setValue] = React.useState(0)
