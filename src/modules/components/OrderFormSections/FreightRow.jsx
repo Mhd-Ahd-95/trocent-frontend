@@ -9,40 +9,36 @@ import {
 } from '@mui/material'
 import { Sync } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller, useWatch, useFormContext } from 'react-hook-form'
 import { AccordionComponent } from '../../components'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
-import EngineOrder from './EngineOrder'
 
-const FrightRow = React.memo(({ fields, index, control, register, remove, setValue, watch }) => {
+const FreightRow = ({ fields, index, control, register, remove, setValue, watch }) => {
   const theme = useTheme()
   const item = fields[index]
 
-  const freight = useWatch({
+  const fieldValues = useWatch({
     control,
-    name: `freights.${index}`
+    name: `freights.${index}`,
   })
+
+  const { type, pieces, weight, unit, volume_weight, is_converted } = fieldValues || {}
 
   const handleRemove = React.useCallback(() => remove(index), [index, remove])
 
-  const volumeWeight = React.useMemo(() => {
-    const vw = EngineOrder.calculateVolumeWeight(freight)
-    return vw
-  }, [freight])
+  console.log('type');
 
-  const customerWeightPiecesRule = useWatch({
-    name: 'customer_weight_rules',
-    control
-  })
+  const title = React.useMemo(() => {
+    return `${type || 'Skid'}: ${pieces || 0} pcs, ${weight || 0} ${unit?.toLowerCase() || 'lbs'}`
+  }, [pieces, type, weight, unit])
 
   return (
     <AccordionComponent
       fieldsLength={fields.length}
       handleDelete={handleRemove}
       key={item.id}
-      title={`${freight.type || ''}: ${freight.pieces || 0} pcs, ${freight.weight || 0
-        } ${freight.unit?.toLowerCase() || ''}`}
+      title={title}
       content={
         <Grid container spacing={1}>
           {/* Type */}
@@ -55,6 +51,7 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
                 <Autocomplete
                   {...field}
                   options={['Skid', 'Box', 'Envelope']}
+                  value={field.value || ''}
                   onChange={(_, value) => field.onChange(value)}
                   renderInput={params => (
                     <TextInput
@@ -88,6 +85,7 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
               render={({ field }) => {
                 return <TextInput
                   {...field}
+                  value={field.value || ''}
                   label='Pieces'
                   variant='outlined'
                   type='number'
@@ -109,15 +107,12 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
                   variant='outlined'
                   type='number'
                   fullWidth
+                  value={field.value || ''}
                   onChange={(e) => {
                     const value = e.target.value
                     field.onChange(value)
-                    if (Number(value) >= Number(customerWeightPiecesRule)){
-                      const pieces = Math.floor(Number(value) / Number(customerWeightPiecesRule))
-                      setValue(`freights.${index}.pieces`, Number(freight.pieces) + pieces)
-                    }
                   }}
-                  helperText={volumeWeight ? `vol: ${Math.round(volumeWeight * 100) / 100} lbs` : 'Vol: 0.00 lbs'}
+                helperText={volume_weight ? `vol: ${Math.round(volume_weight * 100) / 100} ${unit}` : `Vol: 0.00 ${unit}`}
                 />
               }}
             />
@@ -128,63 +123,65 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
             <Controller
               name={`freights.${index}.unit`}
               control={control}
-              render={({ field }) => (
-                <TextInput
-                  {...field}
-                  select
-                  label='Unit'
-                  variant='outlined'
-                  fullWidth
-                  value={field.value || ''}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    field.onChange(value)
-                    if (value === 'lbs') setValue(`freights.${index}.dim_unit`, 'in')
-                    else setValue(`freights.${index}.dim_unit`, 'cm')
-                  }}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <IconButton
+              render={({ field, fieldState, formState }) => {
+                return (
+                  <TextInput
+                    {...field}
+                    select
+                    label='Unit'
+                    variant='outlined'
+                    fullWidth
+                    value={field.value || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      field.onChange(value)
+                      if (value === 'lbs') setValue(`freights.${index}.dim_unit`, 'in')
+                      else setValue(`freights.${index}.dim_unit`, 'cm')
+                    }}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            <IconButton
                             onClick={() =>
                               setValue(
                                 `freights.${index}.is_converted`,
-                                !freight.is_converted
+                                !is_converted
                               )
                             }
-                            color={freight.is_converted ? 'success' : 'default'}
-                          >
-                            <Sync />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }
-                  }}
-                  helperText={freight.is_converted ? 'Conv.: ON' : 'Conv.: OFF'}
-                  sx={{
-                    position: 'relative',
-                    '& button': {
-                      borderLeft: `1px solid ${theme.palette.grey[200]}`,
-                      borderRadius: 0,
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      height: '100%',
-                      '& svg': { fontSize: 18, marginTop: 0.3 }
-                    },
-                    '& .MuiSelect-icon': {
-                      position: 'absolute',
-                      top: 14,
-                      right: 35,
-                      fontSize: 20
-                    }
-                  }}
-                >
-                  <MenuItem value='lbs'>LBS</MenuItem>
-                  <MenuItem value='kg'>KG</MenuItem>
-                </TextInput>
-              )}
+                            color={is_converted ? 'success' : 'default'}
+                            >
+                              <Sync />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }
+                    }}
+                    helperText={is_converted ? 'Conv.: ON' : 'Conv.: OFF'}
+                    sx={{
+                      position: 'relative',
+                      '& button': {
+                        borderLeft: `1px solid ${theme.palette.grey[200]}`,
+                        borderRadius: 0,
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        height: '100%',
+                        '& svg': { fontSize: 18, marginTop: 0.3 }
+                      },
+                      '& .MuiSelect-icon': {
+                        position: 'absolute',
+                        top: 14,
+                        right: 35,
+                        fontSize: 20
+                      }
+                    }}
+                  >
+                    <MenuItem value='lbs'>LBS</MenuItem>
+                    <MenuItem value='kg'>KG</MenuItem>
+                  </TextInput>
+                )
+              }}
             />
           </Grid>
 
@@ -196,6 +193,8 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
               render={({ field }) => (
                 <TextInput
                   {...field}
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   label='Length'
                   variant='outlined'
                   type='number'
@@ -211,6 +210,7 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
               render={({ field }) => (
                 <TextInput
                   {...field}
+                  value={field.value || ''}
                   label='Width'
                   variant='outlined'
                   type='number'
@@ -226,6 +226,7 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
               render={({ field }) => (
                 <TextInput
                   {...field}
+                  value={field.value || ''}
                   label='Height'
                   variant='outlined'
                   type='number'
@@ -290,6 +291,5 @@ const FrightRow = React.memo(({ fields, index, control, register, remove, setVal
     />
   )
 }
-)
 
-export default FrightRow
+export default FreightRow

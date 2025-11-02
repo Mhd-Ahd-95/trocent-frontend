@@ -35,7 +35,8 @@ export default function OrderForm(props) {
     formState: { errors },
     control,
     setValue,
-    watch
+    watch,
+    getValues
   } = useForm({
     defaultValues: {
       ...defaultOrderValue,
@@ -165,6 +166,7 @@ export default function OrderForm(props) {
                 control={control}
                 watch={watch}
                 setValue={setValue}
+                getValues={getValues}
               />
             </WizardCard>
           </Grid>

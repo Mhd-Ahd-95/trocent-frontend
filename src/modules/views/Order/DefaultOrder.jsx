@@ -12,8 +12,7 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
-  customer_weight_rules: '',
-  customer_fuel_rules: '',
+  customer: '',
 
   reference_numbers: [],
   caller: '',
@@ -104,6 +103,13 @@ export const defaultOrderValue = {
       is_converted: false
     }
   ],
+
+  total_pieces: 0,
+  total_pieces_skid: 0,
+  total_actual_weight: 0,
+  total_volume_weight: 0,
+  total_chargeable_weight: 0,
+  total_weight_in_kg: 0,
   
   freight_charges: {
     no_charges: false,

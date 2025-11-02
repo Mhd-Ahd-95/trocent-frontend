@@ -5,7 +5,6 @@ import {
   Autocomplete,
   FormControl,
   Switch,
-  Skeleton,
   CircularProgress
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
@@ -13,7 +12,6 @@ import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import { useTerminals } from '../../hooks/useTerminals'
-import { AddressBookContext } from '../../contexts'
 import moment from 'moment'
 
 function BasicInfo(props) {
@@ -21,17 +19,14 @@ function BasicInfo(props) {
 
   const { data, isLoading, isError, error } = useTerminals()
 
-  const { counterOrder } = React.useContext(AddressBookContext)
-
   React.useEffect(() => {
-    setValue('order_number', counterOrder?.counter || '')
     if (isError && error) {
       const message = error.response?.data?.message;
       const status = error.response?.status;
       const errorMessage = message ? `${message} - ${status}` : error.message;
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
-  }, [isError, error, counterOrder])
+  }, [isError, error])
 
   return (
     <Grid container spacing={3}>
@@ -55,21 +50,12 @@ function BasicInfo(props) {
 
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='order_number'
-          rules={{ required: 'Order Number is a required field' }}
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Order Number*'
-              variant='outlined'
-              fullWidth
-              disabled
-              error={!!fieldState?.error}
-              helperText={fieldState?.error?.message}
-            />
-          )}
+        <TextInput
+          label='Order Number'
+          variant='outlined'
+          fullWidth
+          disabled
+          {...register('order_number')}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>

@@ -1,7 +1,6 @@
 import React from 'react'
 import { useSnackbar } from 'notistack'
 import AddressBooksApi from '../apis/AddressBooks.api'
-import CounterApi from '../apis/Counter.api'
 import { AuthContext } from './Auth.context'
 
 const AddressBookContext = React.createContext()
@@ -10,14 +9,12 @@ const AddressBookContextProvider = props => {
     const [loading, setLoading] = React.useState(true)
     const { enqueueSnackbar } = useSnackbar()
     const [countAddress, setCountAddress] = React.useState(0)
-    const [counterOrder, setCounterOrder] = React.useState(0)
     const { isAuthenticated } = React.useContext(AuthContext)
 
     const loadCountAddress = React.useCallback(() => {
-        Promise.all([AddressBooksApi.countAddressBooks(), CounterApi.getNewCounter()])
-            .then(([abc, oc]) => {
-                setCountAddress(abc.data)
-                setCounterOrder(oc.data)
+        AddressBooksApi.countAddressBooks()
+            .then((res) => {
+                setCountAddress(res.data)
             })
             .catch((error) => {
                 const message = error.response?.data.message
@@ -36,7 +33,7 @@ const AddressBookContextProvider = props => {
 
     return (
         <AddressBookContext.Provider
-            value={{ loading, setLoading, countAddress, setCountAddress, counterOrder }}
+            value={{ loading, setLoading, countAddress, setCountAddress }}
         >
             {props.children}
         </AddressBookContext.Provider>

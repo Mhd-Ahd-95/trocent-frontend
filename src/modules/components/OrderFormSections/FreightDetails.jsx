@@ -1,17 +1,18 @@
 import React from 'react'
-import { Grid, Autocomplete, Typography, Button } from '@mui/material'
+import { Grid, Autocomplete, Typography, Button, InputAdornment, CircularProgress } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { StyledButton } from '../../components'
 import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import { Add, Calculate } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
-import EngineOrder from './EngineOrder'
+import OrderEngine from './OrderEngine'
 
 function FreightDetails(props) {
   const { control, register, watch, setValue } = props
   const theme = useTheme()
   const [mode, setMode] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
 
   const freights = useWatch({ control, name: 'freights' })
 
@@ -20,21 +21,59 @@ function FreightDetails(props) {
     name: 'freights'
   })
 
-  const totals = React.useMemo(() => {
-    const totalPieces = freights?.reduce((acc, f) => acc + Number(f.pieces || 0), 0) || 0
-    const totalWeight = freights?.reduce((acc, f) => acc + Number(f.weight || 0), 0).toFixed(2) || 0
-    const totalSkids = freights?.reduce((acc, f) => {
-      if (f.type === 'Skid') {
-        if (f.not_stack) acc = acc + (Number(f.pieces) * 2)
-        else acc = acc + Number(f.pieces)
+  const shipper_city = watch('shipper_city')
+  const receiver_city = watch('receiver_city')
+  const customer = watch('customer')
+
+  const request = () => ({
+    freights,
+    shipper_city,
+    receiver_city,
+    customer
+  })
+
+  React.useEffect(() => {
+
+    if (freights.length === 0) return
+
+    freights.forEach((item, index) => {
+      const { pieces, length, width, height } = item
+      if (!pieces || !length || !width || !height) return
+
+      const newVolume = OrderEngine.calculateVolumeWeight(item)
+      const oldVolume = item.volume_weight
+
+      if (newVolume !== oldVolume) {
+        setValue(`freights.${index}.volume_weight`, newVolume, { shouldDirty: false, shouldValidate: false })
       }
-      return acc
-    }, 0)
+    })
 
-    const totalVolumeWeight = freights?.reduce((acc, f) => acc + (Math.round(Number(EngineOrder.calculateVolumeWeight(f) || 0) * 100) / 100), 0)
+    if (!customer) return
 
-    return { totalPieces, totalWeight, totalSkids, totalVolumeWeight }
-  }, [freights])
+    setLoading(true)
+
+    const timer = setTimeout(() => {
+      try {
+        const engine = new OrderEngine(request())
+        const totals = engine.calculateTotalFreights()
+        setValue('total_pieces', totals.total_pieces ?? 0)
+        setValue('total_pieces_skid', totals.total_pieces_skid ?? 0)
+        setValue('total_actual_weight', totals.total_actual_weight ?? 0)
+        setValue('total_volume_weight', totals.total_volume_weight ?? 0)
+        setValue('total_chargeable_weight', totals.total_chargeable_weight ?? 0)
+        setValue('total_weight_in_kg', totals.total_weight_in_kg ?? 0)
+      }
+      catch (err) {
+        console.log(err);
+      }
+      finally {
+        setLoading(false)
+      }
+    }, 2000)
+    
+    return () => clearTimeout(timer)
+  }, [freights, shipper_city, receiver_city, customer])
+
 
   const handleAddFreight = React.useCallback(() => {
     append({
@@ -93,6 +132,7 @@ function FreightDetails(props) {
             </Typography>
             {fields.map((item, index) => (
               <FreightRow
+                getValues={props.getValues}
                 key={item.id}
                 remove={remove}
                 control={control}
@@ -174,99 +214,177 @@ function FreightDetails(props) {
           >
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-                <TextInput
-                  label='Total Pieces'
-                  value={totals.totalPieces}
-                  variant='outlined'
-                  disabled
-                  fullWidth
-                  sx={{
-                    '& .MuiInputLabel-shrink': {
-                      color: '#000',
-                      fontWeight: 600,
-                      fontSize: 15
-                    }
-                  }}
+                <Controller
+                  name={'total_pieces'}
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Total Pieces'
+                      variant='outlined'
+                      disabled
+                      fullWidth
+                      InputProps={{
+                        endAdornment: loading && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        '& .MuiInputLabel-shrink': {
+                          color: '#000',
+                          fontWeight: 600,
+                          fontSize: 15
+                        }
+                      }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-                <TextInput
-                  label='Total Chargeable Skids'
-                  value={totals.totalSkids}
-                  variant='outlined'
-                  disabled={!mode}
-                  fullWidth
-                  sx={{
-                    '& .MuiInputLabel-shrink': {
-                      color: '#000',
-                      fontWeight: 600,
-                      fontSize: 15
-                    }
-                  }}
+                <Controller
+                  name={'total_pieces_skid'}
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Total Chargeable Skids'
+                      variant='outlined'
+                      disabled={!mode}
+                      fullWidth
+                      InputProps={{
+                        endAdornment: loading && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        '& .MuiInputLabel-shrink': {
+                          color: '#000',
+                          fontWeight: 600,
+                          fontSize: 15
+                        }
+                      }}
+                    />
+                  )}
+                />
+
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+                <Controller
+                  name={'total_actual_weight'}
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Total Actual Weight'
+                      variant='outlined'
+                      disabled
+                      fullWidth
+                      InputProps={{
+                        endAdornment: loading && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        '& .MuiInputLabel-shrink': {
+                          color: '#000',
+                          fontWeight: 600,
+                          fontSize: 15
+                        }
+                      }}
+                    />
+                  )} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+                <Controller
+                  name='total_volume_weight'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Total Volume Weight'
+                      variant='outlined'
+                      disabled
+                      fullWidth
+                      InputProps={{
+                        endAdornment: loading && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        '& .MuiInputLabel-shrink': {
+                          color: '#000',
+                          fontWeight: 600,
+                          fontSize: 15
+                        }
+                      }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-                <TextInput
-                  label='Total Actual Weight'
-                  value={totals.totalWeight}
-                  variant='outlined'
-                  disabled
-                  fullWidth
-                  sx={{
-                    '& .MuiInputLabel-shrink': {
-                      color: '#000',
-                      fontWeight: 600,
-                      fontSize: 15
-                    }
-                  }}
+                <Controller
+                  name='total_chargeable_weight'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Total Chargeable Weight'
+                      variant='outlined'
+                      disabled
+                      fullWidth
+                      InputProps={{
+                        endAdornment: loading && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        '& .MuiInputLabel-shrink': {
+                          color: '#000',
+                          fontWeight: 600,
+                          fontSize: 15
+                        }
+                      }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-                <TextInput
-                  label='Total Volume Weight'
-                  value={totals.totalVolumeWeight}
-                  variant='outlined'
-                  disabled
-                  fullWidth
-                  sx={{
-                    '& .MuiInputLabel-shrink': {
-                      color: '#000',
-                      fontWeight: 600,
-                      fontSize: 15
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-                <TextInput
-                  label='Total Chargeable Weight'
-                  value={totals.totalVolumeWeight}
-                  variant='outlined'
-                  disabled
-                  fullWidth
-                  sx={{
-                    '& .MuiInputLabel-shrink': {
-                      color: '#000',
-                      fontWeight: 600,
-                      fontSize: 15
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
-                <TextInput
-                  label='Weight In KG'
-                  value={totals.totalWeight}
-                  variant='outlined'
-                  disabled
-                  fullWidth
-                  sx={{
-                    '& .MuiInputLabel-shrink': {
-                      color: '#000',
-                      fontWeight: 600,
-                      fontSize: 15
-                    }
-                  }}
+                <Controller
+                  name='total_weight_in_kg'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Weight In KG'
+                      variant='outlined'
+                      disabled
+                      fullWidth
+                      InputProps={{
+                        endAdornment: loading && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={20} />
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        '& .MuiInputLabel-shrink': {
+                          color: '#000',
+                          fontWeight: 600,
+                          fontSize: 15
+                        }
+                      }}
+                    />
+                  )}
                 />
               </Grid>
             </Grid>

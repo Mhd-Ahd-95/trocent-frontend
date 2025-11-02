@@ -40,8 +40,7 @@ function ClientInfo(props) {
                 value={data?.find((c) => c.id === Number(field.value)) || ''}
                 onChange={(_, value) => { 
                   field.onChange(value?.id)
-                  setValue('customer_weight_rules', value?.weight_pieces_rule || '')
-                  setValue('customer_fuel_rules', value?.fuel_surcharge_rule || '')
+                  setValue('customer', value || '')
                  }}
                 getOptionLabel={option =>
                   option ? `${option.account_number} - ${option.name}` : ''
