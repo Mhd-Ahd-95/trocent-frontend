@@ -58,14 +58,14 @@ export function useRateSheetsCustomer(cid) {
 }
 
 
-export function useRateSheet(iid, cid) {
-    const queryClient = useQueryClient();
+export function useRateSheet(iid) {
+    // const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['rateSheet', Number(iid)],
         queryFn: async () => {
-            const cachedRSheets = queryClient.getQueryData(['customersRateSheets', Number(cid)]) || [];
-            const cached = cachedRSheets.find(item => Number(item.id) === Number(iid));
-            if (cached) return cached;
+            // const cachedRSheets = queryClient.getQueryData(['customersRateSheets', Number(cid)]) || [];
+            // const cached = cachedRSheets.find(item => Number(item.id) === Number(iid));
+            // if (cached) return cached;
             const res = await RateSheetsApi.getRateSheet(Number(iid));
             return res.data;
         },
@@ -82,13 +82,10 @@ export function useRateSheetsByCustomerAndType(cid, type) {
     return useQuery({
         queryKey: ['rateSheetsCustomerAndType', Number(cid), type],
         queryFn: async () => {
-            console.log('object');
             const cachedRSheets = queryClient.getQueryData(['customersRateSheets', Number(cid)]) || [];
             const cached = cachedRSheets.filter(rs => rs.type === type)
-            console.log(cached);
             if (cached.length > 0) return cached;
             const res = await RateSheetsApi.loadRateSheetsByCustomerAndType(Number(cid), type);
-            console.log(res.data);
             return res.data;
         },
         enabled: !!cid && !!type,

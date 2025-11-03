@@ -7,7 +7,8 @@ const globalVariables = {
     }
   },
   apis: {
-    baseURL: 'http://localhost:8000',
+    // baseURL: 'http://localhost:8000',
+    baseURL: 'https://mhdahd.duckdns.org',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
@@ -15,8 +16,7 @@ const globalVariables = {
   },
   methods: {
     formatNumber: nb => (isNaN(nb) ? Number(0).toFixed : Number(nb).toFixed(2)),
-    formatAccessorial: (n, a) =>
-      `${n} @ $${globalVariables.methods.formatNumber(a)}`,
+    formatAccessorial: (n, a) => `${n} @ $${globalVariables.methods.formatNumber(a)}`,
     capitalize: s => (s && s[0].toUpperCase() + s.slice(1).toLowerCase()) || '',
     capitalizeMany: s =>
       s && s.split(' ').length > 1

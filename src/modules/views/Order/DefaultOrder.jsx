@@ -12,7 +12,7 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
-  customer: '',
+  // customer: '',
 
   reference_numbers: [],
   caller: '',
@@ -104,19 +104,25 @@ export const defaultOrderValue = {
     }
   ],
 
+  is_manual_skid: false,
   total_pieces: 0,
   total_pieces_skid: 0,
   total_actual_weight: 0,
   total_volume_weight: 0,
   total_chargeable_weight: 0,
   total_weight_in_kg: 0,
-  
-  freight_charges: {
-    no_charges: false,
-    manual_charges: false,
-    manual_fuel_surcharges: false,
-    freight_rate: '',
-    freight_fuel_surcharge: '',
-    additional_service_charges: []
-  }
+
+  no_charges: false,
+  manual_charges: false,
+  manual_fuel_surcharges: false,
+  freight_rate: '',
+  freight_fuel_surcharge: '',
+  customer_accessorials: [],
+  additional_service_charges: [],
+  freight_rate: '',
+  fuel_surcharge: '',
+  sub_total: '',
+  provincial_tax: '',
+  federal_tax: '',
+  grand_tax: ''
 }

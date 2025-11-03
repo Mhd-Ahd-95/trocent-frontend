@@ -1,28 +1,38 @@
 import React from 'react'
 import { Grid, Autocomplete, CircularProgress } from '@mui/material'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import { useCustomers } from '../../hooks/useCustomers'
 import { useRateSheetsByCustomerAndType } from '../../hooks/useRateSheets'
+import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
-  const { control, setValue } = props
-
+  const { control, engine, setValue } = props
   const { data, isLoading, isError, error } = useCustomers()
+
+  const [selectedCustomer, setSelectedCustomer] = React.useState(null)
+  const [customerId, setCustomerId] = React.useState('')
 
   React.useEffect(() => {
     if (isError && error) {
-      const message = error.response?.data?.message;
-      const status = error.response?.status;
-      const errorMessage = message ? `${message} - ${status}` : error.message;
-      enqueueSnackbar(errorMessage, { variant: 'error' });
+      const message = error.response?.data?.message
+      const status = error.response?.status
+      const errorMessage = message ? `${message} - ${status}` : error.message
+      console.error(errorMessage)
     }
-  }, [isError])
-
-  const customerId = useWatch({ control, name: 'customer_id' })
-  const selectedCustomer = data?.find(c => c.id === Number(customerId))
+  }, [isError, error])
 
   useRateSheetsByCustomerAndType(customerId, 'skid')
+
+  React.useEffect(() => {
+    if (data && customerId) {
+      const customer = data.find(c => c.id === Number(customerId))
+      if (customer) {
+        setSelectedCustomer(customer)
+        engine.customer = customer
+      }
+    }
+  }, [data, customerId, engine])
 
   return (
     <Grid container spacing={4}>
@@ -37,14 +47,22 @@ function ClientInfo(props) {
                 {...field}
                 options={data || []}
                 loading={isLoading}
-                value={data?.find((c) => c.id === Number(field.value)) || ''}
-                onChange={(_, value) => { 
-                  field.onChange(value?.id)
-                  setValue('customer', value || '')
-                 }}
+                value={data?.find((c) => c.id === Number(field.value)) || null}
+                onChange={(_, value) => {
+                  unstable_batchedUpdates(() => {
+                    field.onChange(value?.id || '')
+                    setCustomerId(value?.id || '')
+                    setSelectedCustomer(value)
+                    const access = value?.accessorials.map((acc) => ({ charge_name: acc.access_name, amount: acc.amount, charge_amount: 0, charge_quantity: 0, is_included: false })) || []
+                    console.log(access);
+                    setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
+                    engine.customer = value
+                  })
+                }}
                 getOptionLabel={option =>
                   option ? `${option.account_number} - ${option.name}` : ''
                 }
+                isOptionEqualToValue={(option, value) => option?.id === value?.id}
                 renderInput={params => (
                   <TextInput
                     {...params}
@@ -139,4 +157,4 @@ function ClientInfo(props) {
   )
 }
 
-export default ClientInfo
+export default React.memo(ClientInfo)
