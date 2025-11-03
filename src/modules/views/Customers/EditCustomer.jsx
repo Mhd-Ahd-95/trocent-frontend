@@ -12,8 +12,7 @@ export default function EditCustomer() {
     const { enqueueSnackbar } = useSnackbar()
     const { update } = useCustomerMutation()
     const { data, isLoading, isRefetching, error, isError } = useCustomer(id)
-
-
+    
     React.useEffect(() => {
         if (isError && error) {
             const message = error.response?.data?.message;

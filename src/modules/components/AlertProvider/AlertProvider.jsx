@@ -16,7 +16,7 @@ const SnackbarAlert = React.forwardRef(function SnackbarAlert(props, ref) {
 const AlertProvider = (props) => {
   const notistackRef = React.createRef();
   const onClickDismiss = (key) => () => {
-    notistackRef.current.closeSnackbar(key);
+    notistackRef.current?.closeSnackbar(key);
   };
   return (
     <SnackbarProvider

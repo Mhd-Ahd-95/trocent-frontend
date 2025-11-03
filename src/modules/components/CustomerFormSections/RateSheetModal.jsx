@@ -14,7 +14,7 @@ export default function RateSheetModal(props) {
     const [loading, setLoading] = React.useState(false)
     const { create } = useRateSheetMutations()
 
-    const { control, setError, handleSubmit } = useForm({
+    const { control, setError, handleSubmit, watch, setValue } = useForm({
         defaultValues: {
             type: '',
             skid_by_weight: false,
@@ -69,7 +69,11 @@ export default function RateSheetModal(props) {
                             error={!!fieldState.error}
                             helperText={fieldState?.error?.message}
                             value={field.value}
-                            onChange={(e) => field.onChange(e.target.value)}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                if (value === 'weight') setValue('skid_by_weight', false)
+                                field.onChange(value)
+                            }}
                         >
                             <MenuItem value=''><em>Select an Option</em></MenuItem>
                             <MenuItem value='skid'>Skid Base</MenuItem>
@@ -89,6 +93,7 @@ export default function RateSheetModal(props) {
                                     <Switch
                                         name='skid_by_weight'
                                         checked={field.value || false}
+                                        disabled={watch('type') === 'weight'}
                                         onChange={e => {
                                             const checked = e.target.checked
                                             field.onChange(checked)

@@ -27,7 +27,8 @@ export default function CustomerForm(props) {
         formState: { errors },
         control,
         setValue,
-        watch
+        watch,
+        reset
     } = useForm({
         defaultValues: {
             account_number: '',
@@ -102,9 +103,12 @@ export default function CustomerForm(props) {
         for (let [key, value] of Object.entries(data)) {
             if (['accessorials', 'vehicle_types'].includes(key)) continue
             if (key === 'billing_emails' || key === 'pod_emails' || key === 'status_update_emails' || key === 'notification_preferences') {
-                value?.forEach((vl, idx) => {
-                    formData.append(`${key}[${idx}]`, vl)
-                })
+                if (value?.length > 0) {
+                    value?.forEach((vl, idx) => {
+                        formData.append(`${key}[${idx}]`, vl)
+                    })
+                }
+                else formData.append(key, null)
             }
             else {
                 formData.append(key, value)

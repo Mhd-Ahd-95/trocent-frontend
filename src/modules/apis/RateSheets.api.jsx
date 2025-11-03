@@ -1,6 +1,6 @@
 import CustomAxios from './customAxios'
 
-const getRateSheets = () => CustomAxios.get('/api/rate-sheets')
+const getRateSheets = (pmode) => CustomAxios.get('/api/rate-sheets', { params: { ...pmode } })
 
 const getRateSheet = rid => CustomAxios.get(`/api/rate-sheets/${rid}`)
 
@@ -12,7 +12,11 @@ const deleteRateSheetByBatchId = rid => CustomAxios.delete(`/api/rate-sheets/bat
 
 const deleteRateSheets = rids => CustomAxios.delete('/api/rate-sheets', { data: { rids } })
 
-const getRateSheetsByCustomer = cid => CustomAxios.get(`/api/rate-sheets/customer/${cid}`)
+const getRateSheetsByCustomer = cid => CustomAxios.get(`/api/rate-sheets/customer/${cid}/batch`)
+
+const loadCustomerRateSheets = cid => CustomAxios.get(`/api/rate-sheets/customer/${cid}/sheets`)
+
+const loadRateSheetsByCustomerAndType = (cid, type) => CustomAxios.get(`/api/rate-sheets/customer/${cid}/type/${type}`)
 
 export default {
     getRateSheet,
@@ -21,5 +25,7 @@ export default {
     updateRateSheet,
     deleteRateSheetByBatchId,
     deleteRateSheets,
-    getRateSheetsByCustomer
+    getRateSheetsByCustomer,
+    loadCustomerRateSheets,
+    loadRateSheetsByCustomerAndType
 }

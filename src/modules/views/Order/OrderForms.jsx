@@ -8,20 +8,26 @@ import {
   References,
   ShipperDetails,
   WizardCard,
-  ExtraShop,
+  ExtraStop,
   ReceiverDetails,
   PickupDetails,
   InterlineCarrier,
   DeliveryDetails,
   FreightDetails,
   FreightCharges,
-  TimeAndBilling
+  TimeAndBilling,
+  OrderEngine
 } from '../../components'
 import { useForm } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
+import { useSnackbar } from 'notistack'
 
 export default function OrderForm(props) {
-  const { initialValues } = props
+  const { initialValues, submit, editMode } = props
+  const [showAll, setShowAll] = React.useState(false)
+  const { enqueueSnackbar } = useSnackbar()
+  const engine = React.useRef(new OrderEngine()).current
+  const calculationRef = React.useRef(null)
 
   const {
     register,
@@ -29,77 +35,117 @@ export default function OrderForm(props) {
     formState: { errors },
     control,
     setValue,
-    watch
+    watch,
+    getValues
   } = useForm({
     defaultValues: {
       ...defaultOrderValue,
       ...initialValues
-    }
+    },
+    mode: 'onBlur', // Only validate on blur to reduce re-renders
   })
+
+  const customerId = watch('customer_id')
+  const shipperCity = watch('shipper_city')
+  const receiverCity = watch('receiver_city')
+
+  React.useEffect(() => {
+    if (calculationRef.current && engine.customer) {
+      calculationRef.current.recalculate()
+    }
+  }, [customerId, shipperCity, receiverCity, engine])
 
   const onSubmit = data => {
     console.log('Form Data:', data)
   }
+
+  const onError = errors => {
+    const firstErrorField = Object.keys(errors)[0]
+    if (firstErrorField) {
+      const field = document.querySelector(`[name="${firstErrorField}"]`)
+      if (field) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        field.focus({ preventScroll: true })
+      }
+    }
+  }
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowAll(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const memoizedBasicInfo = React.useMemo(
+    () => (
+      <BasicInfo
+        register={register}
+        control={control}
+        enqueueSnackbar={enqueueSnackbar}
+      />
+    ),
+    [register, control, enqueueSnackbar]
+  )
+
+  const memoizedClientInfo = React.useMemo(
+    () => (
+      <ClientInfo
+        control={control}
+        setValue={setValue}
+        engine={engine}
+      />
+    ),
+    [control, setValue, engine]
+  )
+
+  const memoizedReferences = React.useMemo(
+    () => (
+      <References
+        register={register}
+        setValue={setValue}
+        watch={watch}
+      />
+    ),
+    [register, setValue, watch]
+  )
 
   return (
     <Grid
       container
       component={'form'}
       spacing={3}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onError)}
     >
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Basic Information' minHeight={500}>
-          <BasicInfo
-            register={register}
-            errors={errors}
-            control={control}
-            setValue={setValue}
-            watch={watch}
-          />
+          {memoizedBasicInfo}
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Client Information' minHeight={500}>
-          <ClientInfo control={control} setValue={setValue} />
+          {memoizedClientInfo}
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='References' minHeight={500}>
-          <References register={register} setValue={setValue} watch={watch} />
+          {memoizedReferences}
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <WizardCard title='Shipper Details' minHeight={500}>
           <ShipperDetails
-            watch={watch}
-            register={register}
-            errors={errors}
             control={control}
             setValue={setValue}
+            engine={engine}
           />
         </WizardCard>
       </Grid>
+
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Extra Shop' minHeight={500}>
-          <ExtraShop
-            watch={watch}
-            register={register}
-            errors={errors}
-            control={control}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Receiver Details' minHeight={500}>
-          <ReceiverDetails
-            watch={watch}
-            register={register}
-            errors={errors}
+        <WizardCard title='Extra Stop' minHeight={500}>
+          <ExtraStop
             control={control}
             setValue={setValue}
           />
@@ -107,73 +153,83 @@ export default function OrderForm(props) {
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Pickup Details' minHeight={500}>
-          <PickupDetails
-            register={register}
-            control={control}
-            errors={errors}
-            setValue={setValue}
-            watch={watch}
-          />
-        </WizardCard>
-      </Grid>
-
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Interline Carrier' minHeight={500}>
-          <InterlineCarrier
-            watch={watch}
-            register={register}
-            errors={errors}
+        <WizardCard title='Receiver Details' minHeight={500}>
+          <ReceiverDetails
             control={control}
             setValue={setValue}
+            engine={engine}
           />
         </WizardCard>
       </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Delivery Details' minHeight={500}>
-          <DeliveryDetails
-            register={register}
-            control={control}
-            errors={errors}
-            setValue={setValue}
-            watch={watch}
-          />
-        </WizardCard>
-      </Grid>
+      {showAll && (
+        <>
+          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+            <WizardCard title='Pickup Details' minHeight={500}>
+              <PickupDetails
+                register={register}
+                control={control}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      <Grid size={12}>
-        <WizardCard minHeight={500} title='Freight Details'>
-          <FreightDetails
-            register={register}
-            control={control}
-            watch={watch}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+            <WizardCard title='Interline Carrier' minHeight={500}>
+              <InterlineCarrier
+                control={control}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <WizardCard minHeight={500} title='Freight & Charges'>
-          <FreightCharges
-            control={control}
-            register={register}
-            watch={watch}
-            errors={errors}
-          />
-        </WizardCard>
-      </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+            <WizardCard title='Delivery Details' minHeight={500}>
+              <DeliveryDetails
+                register={register}
+                control={control}
+                setValue={setValue}
+              />
+            </WizardCard>
+          </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <WizardCard minHeight={500} title='Waiting Time & Billing'>
-          <TimeAndBilling
-            control={control}
-            register={register}
-            watch={watch}
-            errors={errors}
-          />
-        </WizardCard>
-      </Grid>
+          <Grid size={12}>
+            <WizardCard minHeight={500} title='Freight Details'>
+              <FreightDetails
+                register={register}
+                control={control}
+                setValue={setValue}
+                getValues={getValues}
+                engine={engine}
+                calculationRef={calculationRef}
+              />
+            </WizardCard>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+            <WizardCard minHeight={500} title='Freight & Charges'>
+              <FreightCharges
+                control={control}
+                getValues={getValues}
+                register={register}
+                setValue={setValue}
+                engine={engine}
+                errors={errors}
+              />
+            </WizardCard>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+            <WizardCard minHeight={500} title='Waiting Time & Billing'>
+              <TimeAndBilling
+                control={control}
+                register={register}
+                watch={watch}
+                errors={errors}
+              />
+            </WizardCard>
+          </Grid>
+        </>
+      )}
 
       <Grid size={12}>
         <Grid container spacing={2} justifyContent={'flex-start'}>

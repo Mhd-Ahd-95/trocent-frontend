@@ -6,7 +6,6 @@ import {
     Switch,
     TextField
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
 import {
     TextInput,
     CustomFormControlLabel,
@@ -15,18 +14,14 @@ import {
     FieldSetComponent
 } from '../../components'
 import { useForm, Controller } from 'react-hook-form'
-import { useSnackbar } from 'notistack'
-import { useNavigate } from 'react-router-dom'
 import { TimePicker } from '@mui/x-date-pickers'
 import moment from 'moment'
 
 
 export default function AddressBookForm(props) {
-    const { enqueueSnackbar } = useSnackbar()
-    const theme = useTheme()
-    const { initialValues, submit, editMode, addressBooks, setAddressBooks } = props
+
+    const { initialValues, submit, editMode, setOpen } = props
     const [isLoading, setIsLoading] = React.useState(false)
-    const navigate = useNavigate()
 
     const {
         register,
@@ -54,41 +49,24 @@ export default function AddressBookForm(props) {
         }
     })
 
-    const onSubmit = (data, e) => {
+    const onSubmit = async (data, e) => {
         e.preventDefault()
         setIsLoading(true)
         const action = e?.nativeEvent?.submitter?.id
-        submit(data)
-            .then(res => {
-                const result = res.data.data
-                if (editMode) {
-                    const updatedData = [...addressBooks]
-                    const index = updatedData.findIndex(up => up.id === result.id)
-                    updatedData[index] = result
-                    setAddressBooks([...updatedData])
-                    enqueueSnackbar(
-                        `Address Book "${result.name} has been updated successfully"`,
-                        { variant: 'success' }
-                    )
-                } else {
-                    setAddressBooks([res.data.data, ...addressBooks])
-                    enqueueSnackbar('New Address Book has been successfully created', {
-                        variant: 'success'
-                    })
-                }
-                reset()
-                if (action === 'apply-address-action') {
-                    props.setOpen(false)
-                }
-            })
-            .catch(error => {
-                const message = error.response?.data.message
-                const status = error.response?.status
-                const errorMessage = message ? message + ' - ' + status : error.message
-                enqueueSnackbar(errorMessage, { variant: 'error' })
+        try {
+            await submit(data);
+            if (action === 'apply-address-action') {
+                setOpen(false)
             }
-            )
-            .finally(() => setIsLoading(false))
+            else {
+                reset()
+            }
+        } catch (error) {
+            // console.log(error);
+            //
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (

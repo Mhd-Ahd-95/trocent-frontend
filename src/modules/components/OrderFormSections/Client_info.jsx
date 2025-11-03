@@ -1,48 +1,88 @@
 import React from 'react'
-import { Grid, Autocomplete } from '@mui/material'
+import { Grid, Autocomplete, CircularProgress } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
-import global from '../../global'
+import { useCustomers } from '../../hooks/useCustomers'
+import { useRateSheetsByCustomerAndType } from '../../hooks/useRateSheets'
+import { unstable_batchedUpdates } from 'react-dom'
 
-function ClientInfo (props) {
-  const { setValue, control } = props
-  const customerData = global.static.customers
+function ClientInfo(props) {
+  const { control, engine, setValue } = props
+  const { data, isLoading, isError, error } = useCustomers()
+
+  const [selectedCustomer, setSelectedCustomer] = React.useState(null)
+  const [customerId, setCustomerId] = React.useState('')
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message
+      const status = error.response?.status
+      const errorMessage = message ? `${message} - ${status}` : error.message
+      console.error(errorMessage)
+    }
+  }, [isError, error])
+
+  useRateSheetsByCustomerAndType(customerId, 'skid')
+
+  React.useEffect(() => {
+    if (data && customerId) {
+      const customer = data.find(c => c.id === Number(customerId))
+      if (customer) {
+        setSelectedCustomer(customer)
+        engine.customer = customer
+      }
+    }
+  }, [data, customerId, engine])
+
   return (
     <Grid container spacing={4}>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <Controller
-          name='client_info.customer'
+          name='customer_id'
           control={control}
           rules={{ required: 'Customer is a required field' }}
-          render={({ field, fieldstate }) => {
+          render={({ field, fieldState }) => {
             return (
               <Autocomplete
                 {...field}
-                options={customerData}
+                options={data || []}
+                loading={isLoading}
+                value={data?.find((c) => c.id === Number(field.value)) || null}
                 onChange={(_, value) => {
-                  field.onChange(value)
-                  setValue('client_info.customer_id', value?.id || '')
-                  setValue('client_info.name', value?.name || '')
-                  setValue('client_info.email', value?.email || '')
-                  setValue('client_info.address', value?.address || '')
-                  setValue('client_info.suite', value?.suite || '')
-                  setValue('client_info.city', value?.city || '')
-                  setValue('client_info.province', value?.province || '')
-                  setValue('client_info.postal_code', value?.postal_code || '')
+                  unstable_batchedUpdates(() => {
+                    field.onChange(value?.id || '')
+                    setCustomerId(value?.id || '')
+                    setSelectedCustomer(value)
+                    const access = value?.accessorials.map((acc) => ({ charge_name: acc.access_name, amount: acc.amount, charge_amount: 0, charge_quantity: 0, is_included: false })) || []
+                    console.log(access);
+                    setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
+                    engine.customer = value
+                  })
                 }}
                 getOptionLabel={option =>
                   option ? `${option.account_number} - ${option.name}` : ''
                 }
-                // isOptionEqualToValue={(option, value) =>
-                //   option.id === value?.id
-                // }
+                isOptionEqualToValue={(option, value) => option?.id === value?.id}
                 renderInput={params => (
                   <TextInput
                     {...params}
-                    label='Customer'
+                    label='Customer*'
                     fullWidth
-                    error={!!fieldstate?.error}
-                    helperText={fieldstate?.error?.message}
+                    error={!!fieldState?.error}
+                    helperText={fieldState?.error?.message}
+                    slotProps={{
+                      input: {
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {isLoading ? (
+                              <CircularProgress color="inherit" size={20} />
+                            ) : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      },
+                    }}
                   />
                 )}
               />
@@ -51,89 +91,66 @@ function ClientInfo (props) {
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='client_info.name'
-          control={control}
-          rules={{ required: 'Name is a required field' }}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Name*'
-              variant='outlined'
-              fullWidth
-              error={!!fieldState?.error}
-              helperText={fieldState?.error?.message}
-            />
-          )}
+        <TextInput
+          label='Name'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedCustomer?.name || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='client_info.email'
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput {...field} label='Email' variant='outlined' fullWidth />
-          )}
+        <TextInput
+          label='Email'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={(selectedCustomer?.billing_emails && selectedCustomer?.billing_emails[0]) || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-        <Controller
-          name='client_info.address'
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Address'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Address'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedCustomer?.address || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='client_info.suite'
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput {...field} label='Suite' variant='outlined' fullWidth />
-          )}
+        <TextInput
+          label='Suite'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedCustomer?.suite || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='client_info.city'
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput {...field} label='City' variant='outlined' fullWidth />
-          )}
+        <TextInput
+          label='City'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedCustomer?.city || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='client_info.province'
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Province/State'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Province/State'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedCustomer?.province || ''}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <Controller
-          name='client_info.postal_code'
-          control={control}
-          render={({ field, fieldState }) => (
-            <TextInput
-              {...field}
-              label='Postal Code'
-              variant='outlined'
-              fullWidth
-            />
-          )}
+        <TextInput
+          label='Postal Code'
+          disabled
+          variant='outlined'
+          fullWidth
+          value={selectedCustomer?.postal_code || ''}
         />
       </Grid>
     </Grid>

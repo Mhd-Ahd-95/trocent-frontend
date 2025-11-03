@@ -9,10 +9,10 @@ import RateSheetForm from './RateSheetForm'
 
 export default function EditRateSheet() {
 
-    const { id } = useParams()
+    const { id, cid } = useParams()
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data, isLoading, isError, error, isRefetching } = useRateSheet(id)
+    const { data, isLoading, isError, error, isRefetching } = useRateSheet(id, cid)
     const { update } = useRateSheetMutations()
 
     React.useEffect(() => {
@@ -30,7 +30,7 @@ export default function EditRateSheet() {
             activeDrawer={{ active: 'Rate Sheets' }}
             breadcrumbs={
                 <Breadcrumbs
-                    items={[{ text: 'Rate Sheets', url: '/rate-sheets' }, { text: 'Edit' }]}
+                    items={[{ text: 'Rate Sheets', url: '/rate-sheets', state: { customer_id: cid } }, { text: 'Edit' }]}
                 />
             }
         >
@@ -38,9 +38,10 @@ export default function EditRateSheet() {
                 {!isLoading && !isRefetching ?
                     <Grid size={12}>
                         <RateSheetForm
+                            customerID={cid}
                             initialValues={{ ...data }}
                             editMode
-                            submit={async (payload) => await update.mutateAsync({ id, payload })} />
+                            submit={async (payload) => await update.mutateAsync({ cid, id, payload })} />
                     </Grid>
                     :
                     <Grid size={12} container component={Box} py={15} justifyContent='center' alignItems='center'>

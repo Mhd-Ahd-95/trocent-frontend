@@ -9,8 +9,9 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers'
 import { Controller } from 'react-hook-form'
+import moment from 'moment'
 
-export default function OrderForm (props) {
+export default function OrderForm(props) {
   const { register, control, watch, errors } = props
   const theme = useTheme()
 
@@ -78,8 +79,8 @@ export default function OrderForm (props) {
             <DatePicker
               label='Pickup At'
               views={['year', 'month', 'day']}
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value) : null}
+              onChange={date => field.onChange(date ? date.toISOString() : null)}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -160,8 +161,8 @@ export default function OrderForm (props) {
             <DatePicker
               label='Delivery At'
               views={['year', 'month', 'day']}
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value) : null}
+              onChange={date => field.onChange(date ? date.toISOString() : null)}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -270,8 +271,8 @@ export default function OrderForm (props) {
                     <DatePicker
                       label='Invoice Date'
                       views={['year', 'month', 'day']}
-                      value={field.value}
-                      onChange={date => field.onChange(date)}
+                      value={field.value ? moment(field.value) : null}
+                      onChange={date => field.onChange(date ? date.toISOString() : null)}
                       slotProps={{
                         textField: {
                           fullWidth: true,

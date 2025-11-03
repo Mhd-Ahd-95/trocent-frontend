@@ -31,8 +31,6 @@ export default function dataProcessing(stprop, items) {
                     processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Required': `${prop.name} (${index + 2}) is a required field` }
                 }
                 if (prop.constrained && prop.constrained.length > 0 && value) {
-                    console.log('constrained', prop);
-                    console.log(value.toLowerCase());
                     if (!prop.constrained.includes(value.toLowerCase())) {
                         processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Constrained': `${prop.name} must be ${prop.constrained.join(', ')}` }
                     }

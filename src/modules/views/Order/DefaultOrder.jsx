@@ -1,153 +1,128 @@
+import moment from "moment";
+
 export const defaultOrderValue = {
-  basic_info: {
-    username: '',
-    order_number: '',
-    create_date: null,
-    terminal: '',
-    quote: false,
-    is_crossdock: false,
-    order_entity: 'Order Entry',
-    order_status: 'Entered',
-    internal_note: ''
-  },
-  client_info: {
-    customer_id: '',
-    customer: '',
-    name: '',
-    email: '',
-    address: '',
-    suite: '',
-    city: '',
-    province: '',
-    postal_code: ''
-  },
-  references: {
-    reference_numbers: [],
-    caller: ''
-  },
-  shipper_details: {
-    shipper: '',
-    email: '',
-    contact_name: '',
-    phone_number: '',
-    address: '',
-    suite: '',
-    city: '',
-    province: '',
-    postal_code: '',
-    special_instructions: ''
-  },
-  extra_shop: {
-    extra_shop: false,
-    crossdock: '',
-    email: '',
-    contact_name: '',
-    phone_number: '',
-    address: '',
-    suite: '',
-    city: '',
-    province: '',
-    postal_code: ''
-  },
-  receiver_details: {
-    receiver: '',
-    email: '',
-    contact_name: '',
-    phone_number: '',
-    address: '',
-    suite: '',
-    city: '',
-    province: '',
-    postal_code: '',
-    special_instructions: ''
-  },
-  pickup_details: {
-    pickup_date: null,
-    time_from: null,
-    time_to: null,
-    driver_assigned: '',
-    pickup_terminal: '',
-    appointment: false
-  },
-  interline_carrier: {
-    isPickup: false,
-    isDelivery: false,
-    isSameCarrier: false,
-    sameCarrier: {
-      interline: '',
-      email: '',
-      contact_name: '',
-      phone_number: '',
-      address: '',
-      suite: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      special_intructions: '',
-      charge_amount: '',
-      invoice: ''
-    },
-    pickup: {
-      interline: '',
-      email: '',
-      contact_name: '',
-      phone_number: '',
-      address: '',
-      suite: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      special_intructions: '',
-      charge_amount: '',
-      invoice: ''
-    },
-    delivery: {
-      interline: '',
-      email: '',
-      contact_name: '',
-      phone_number: '',
-      address: '',
-      suite: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      special_intructions: '',
-      charge_amount: '',
-      invoice: ''
+  username: '',
+  order_number: '',
+  create_date: new Date(),
+  terminal: '',
+  quote: false,
+  is_crossdock: false,
+  order_entity: 'Order Entry',
+  order_status: 'Pending',
+  internal_note: '',
+
+  customer_id: '',
+  // customer: '',
+
+  reference_numbers: [],
+  caller: '',
+
+  shipper_id: '',
+  shipper_email: '',
+  shipper_contact_name: '',
+  shipper_phone_number: '',
+  shipper_address: '',
+  shipper_suite: '',
+  shipper_city: '',
+  shipper_province: '',
+  shipper_postal_code: '',
+  shipper_special_instructions: '',
+
+  is_extra_stop: false,
+  extra_stop_id: '',
+  extra_stop_email: '',
+  extra_stop_contact_name: '',
+  extra_stop_phone_number: '',
+  extra_stop_address: '',
+  extra_stop_suite: '',
+  extra_stop_city: '',
+  extra_stop_province: '',
+  extra_stop_postal_code: '',
+  extra_stop_special_instructions: '',
+
+  receiver_id: '',
+  receiver_email: '',
+  receiver_contact_name: '',
+  receiver_phone_number: '',
+  receiver_address: '',
+  receiver_suite: '',
+  receiver_city: '',
+  receiver_province: '',
+  receiver_postal_code: '',
+  receiver_special_instructions: '',
+
+  pickup_date: new Date(),
+  pickup_time_from: '07:00 PM',
+  pickup_time_to: '07:00 PM',
+  pickup_driver_assigned: '',
+  pickup_terminal: '',
+  pickup_appointment: false,
+  pickup_appointment_numbers: [],
+
+  is_pickup: false,
+  is_delivery: false,
+  is_same_carrier: false,
+
+  interliner_id: '',
+  interliner_special_instructions: '',
+  interliner_charge_amount: '',
+  interliner_invoice: '',
+
+  interliner_pickup_id: '',
+  interliner_pickup_special_instructions: '',
+  interliner_pickup_charge_amount: '',
+  interliner_pickup_invoice: '',
+
+  interliner_delivery_id: '',
+  interliner_delivery_special_instructions: '',
+  interliner_delivery_charge_amount: '',
+  interliner_delivery_invoice: '',
+
+  delivery_date: new Date(),
+  delivery_time_from: '12:00 PM',
+  delivery_time_to: '12:00 PM',
+  delivery_driver_assigned: '',
+  delivery_terminal: '',
+  delivery_appointment: false,
+  delivery_appointment_numbers: [],
+
+  service_type: 'Regular',
+  freights: [
+    {
+      type: 'Skid',
+      description: 'FAK',
+      pieces: 1,
+      weight: '',
+      unit: 'lbs',
+      length: '',
+      width: '',
+      height: '',
+      dim_unit: 'in',
+      not_stack: false,
+      volume_weight: 0,
+      is_converted: false
     }
-  },
-   delivery_details: {
-    delivery_date: null,
-    time_from: null,
-    time_to: null,
-    driver_assigned: '',
-    delivery_terminal: '',
-    appointment: false
-  },
-  freight_details: {
-    service_type: 'Regular',
-    freights: [
-      {
-        type: 'Skid',
-        description: 'FAK',
-        pieces: 1,
-        weight: '',
-        unit: 'lbs',
-        length: '',
-        width: '',
-        height: '',
-        dim_unit: 'IN',
-        not_stack: false,
-        is_converted: false
-      }
-    ]
-  },
-  freight_charges: {
-    no_charges: false,
-    manual_charges: false,
-    manual_fuel_surcharges: false,
-    freight_rate: '',
-    freight_fuel_surcharge: '',
-    additional_service_charges: []
-  }
+  ],
+
+  is_manual_skid: false,
+  total_pieces: 0,
+  total_pieces_skid: 0,
+  total_actual_weight: 0,
+  total_volume_weight: 0,
+  total_chargeable_weight: 0,
+  total_weight_in_kg: 0,
+
+  no_charges: false,
+  manual_charges: false,
+  manual_fuel_surcharges: false,
+  freight_rate: '',
+  freight_fuel_surcharge: '',
+  customer_accessorials: [],
+  additional_service_charges: [],
+  freight_rate: '',
+  fuel_surcharge: '',
+  sub_total: '',
+  provincial_tax: '',
+  federal_tax: '',
+  grand_tax: ''
 }

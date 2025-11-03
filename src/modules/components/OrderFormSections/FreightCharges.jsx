@@ -17,12 +17,18 @@ import {
 import { useFieldArray } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
-import { useWatch, Controller } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 function FreightCharges (props) {
-  const { register, watch, control } = props
+  const { register, engine, control, getValues, setValue } = props
   const { formatAccessorial } = global.methods
   const theme = useTheme()
+
+  const [charges, setCharges] = React.useState({no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges')})
+  
+  const customerAccessorials = React.useMemo(() => getValues('customer_accessorials') || [], [engine.customer, getValues('customer_accessorials')])
+
+  console.log(customerAccessorials);
 
   const {
     fields: additionalServiceCharges,
@@ -30,31 +36,16 @@ function FreightCharges (props) {
     remove: removeServiceCharge
   } = useFieldArray({
     control,
-    name: 'freight_charges.additional_service_charges'
+    name: 'additional_service_charges'
   })
 
-  const isNoCharge = useWatch({
-    control: control,
-    name: 'freight_charges.no_charge',
-    defaultValue: false
-  })
+  // const loadAccessorials = React.useCallback(() => {
+  //   const accessorials = engine.customer['accessorials']
+  // }, [engine.customer])
 
-  const isManualCharges = useWatch({
-    control: control,
-    name: 'freight_charges.manual_charges'
-  })
-
-  const isManualFuelCharges = useWatch({
-    control: control,
-    name: 'freight_charges.manual_fuel_surcharges',
-    defaultValue: false
-  })
-
-  const isCustomerAccessorials =
-    useWatch({
-      name: 'client_info.customer',
-      control
-    }) || {}
+  // React.useImperativeHandle(props.customerRef, () => ({
+  //   accessorials: loadAccessorials 
+  // }))
 
   return (
     <Grid container spacing={3}>
@@ -63,7 +54,7 @@ function FreightCharges (props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='freight_charges.no_charge'
+                name='no_charges'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -72,6 +63,8 @@ function FreightCharges (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      setCharges((prev) => ({...prev, no_charges: checked}))
+                      // setValue
                     }}
                   />
                 )}
@@ -86,7 +79,7 @@ function FreightCharges (props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='freight_charges.manual_charges'
+                name='manual_charges'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -95,6 +88,7 @@ function FreightCharges (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      setCharges((prev) => ({...prev, manual_charges: checked}))
                     }}
                   />
                 )}
@@ -112,7 +106,7 @@ function FreightCharges (props) {
           <CustomFormControlLabel
             control={
               <Controller
-                name='freight_charges.manual_fuel_surcharges'
+                name='manual_fuel_surcharges'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -121,6 +115,7 @@ function FreightCharges (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      setCharges((prev) => ({...prev, manual_fuel_surcharges: checked}))
                     }}
                   />
                 )}
@@ -130,7 +125,7 @@ function FreightCharges (props) {
           />
         </FormControl>
       </Grid>
-      {!isNoCharge && (
+      {!charges.no_charges && (
         <Grid size={12}>
           <Grid
             container
@@ -162,8 +157,8 @@ function FreightCharges (props) {
                     variant='outlined'
                     fullWidth
                     type='number'
-                    {...register('freight_charges.freight_rate')}
-                    disabled={!isManualCharges}
+                    {...register('freight_rate')}
+                    disabled={!charges.manual_charges}
                     slotProps={{
                       input: {
                         endAdornment: (
@@ -181,8 +176,8 @@ function FreightCharges (props) {
                     variant='outlined'
                     fullWidth
                     type='number'
-                    {...register('freight_charges.fuel_surcharge')}
-                    disabled={!isManualFuelCharges}
+                    {...register('fuel_surcharge')}
+                    disabled={!charges.manual_fuel_surcharges}
                     slotProps={{
                       input: {
                         endAdornment: (
@@ -222,10 +217,10 @@ function FreightCharges (props) {
               Customer-specific accessorial charges and fees
             </Typography>
           </Grid>
-          {isCustomerAccessorials && isCustomerAccessorials?.accessorials && (
+          {customerAccessorials.length > 0 && (
             <Grid size={12} sx={{ py: 2, px: 3 }}>
               <Grid container spacing={2}>
-                {isCustomerAccessorials?.accessorials.map((access, index) => (
+                {customerAccessorials.map((access, index) => (
                   <Grid
                     container
                     spacing={2}
@@ -245,7 +240,7 @@ function FreightCharges (props) {
                         sx={{ fontSize: 12, fontWeight: 400 }}
                       >
                         {formatAccessorial(
-                          access.accessorial_name,
+                          access.charge_name,
                           access.amount
                         )}
                       </Typography>
@@ -256,7 +251,7 @@ function FreightCharges (props) {
                           control={
                             <Switch
                               {...register(
-                                `freight_charges.customer_accessorials.${index}.is_included`
+                                `customer_accessorials.${index}.is_included`
                               )}
                             />
                           }
@@ -271,7 +266,7 @@ function FreightCharges (props) {
                         fullWidth
                         size='small'
                         {...register(
-                          `freight_charges.customer_accessorials.${index}.quantity`
+                          `customer_accessorials.${index}.charge_quantity`
                         )}
                       />
                     </Grid>
@@ -282,7 +277,7 @@ function FreightCharges (props) {
                         fullWidth
                         size='small'
                         {...register(
-                          `freight_charges.customer_accessorials.${index}.amount`
+                          `customer_accessorials.${index}.charge_amount`
                         )}
                         slotProps={{
                           input: {
@@ -317,7 +312,7 @@ function FreightCharges (props) {
                             variant='outlined'
                             fullWidth
                             {...register(
-                              `freight_charges.additional_service_charges.${index}.charge_name`
+                              `additional_service_charges.${index}.charge_name`
                             )}
                           />
                         </Grid>
@@ -329,7 +324,7 @@ function FreightCharges (props) {
                             type='number'
                             fullWidth
                             {...register(
-                              `freight_charges.additional_service_charges.${index}.charge_quantity`
+                              `additional_service_charges.${index}.charge_quantity`
                             )}
                           />
                         </Grid>
@@ -341,7 +336,7 @@ function FreightCharges (props) {
                             type='number'
                             fullWidth
                             {...register(
-                              `freight_charges.additional_service_charges.${index}.charge_amount`
+                              `additional_service_charges.${index}.charge_amount`
                             )}
                             slotProps={{
                               input: {
@@ -440,9 +435,9 @@ function FreightCharges (props) {
                       label='Actual Weight'
                       variant='outlined'
                       fullWidth
-                      type='number'
+                      disabled
                       {...register(
-                        'freight_charges.order_summary.weight_calculation.actual_weight'
+                        'total_actual_weight'
                       )}
                       slotProps={{
                         input: {
@@ -467,9 +462,9 @@ function FreightCharges (props) {
                       label='Volume Weight'
                       variant='outlined'
                       fullWidth
-                      type='number'
+                      disabled
                       {...register(
-                        'freight_charges.order_summary.weight_calculation.volume_weight'
+                        'total_volume_weight'
                       )}
                       slotProps={{
                         input: {
@@ -494,9 +489,9 @@ function FreightCharges (props) {
                       label='Chargeable Weight'
                       variant='outlined'
                       fullWidth
-                      type='number'
+                      disabled
                       {...register(
-                        'freight_charges.order_summary.weight_calculation.chargeable_weight'
+                        'total_chargeable_weight'
                       )}
                       slotProps={{
                         input: {
@@ -520,10 +515,10 @@ function FreightCharges (props) {
                     <TextInput
                       label='Total Pieces'
                       variant='outlined'
-                      type='number'
+                      disabled
                       fullWidth
                       {...register(
-                        'freight_charges.order_summary.weight_calculation.total_pieces'
+                        'total_pieces'
                       )}
                     />
                   </Grid>
@@ -531,10 +526,10 @@ function FreightCharges (props) {
                     <TextInput
                       label='Weight (KG)'
                       variant='outlined'
-                      type='number'
+                      disabled
                       fullWidth
                       {...register(
-                        'freight_charges.order_summary.weight_calculation.weight_kg'
+                        'total_weight_in_kg'
                       )}
                       slotProps={{
                         input: {
@@ -588,7 +583,7 @@ function FreightCharges (props) {
                         fullWidth
                         variant='outlined'
                         {...register(
-                          'freight_charges.order_summary.pricing_breakdown.freight_rate'
+                          'freight_rate'
                         )}
                         slotProps={{
                           input: {
@@ -607,7 +602,7 @@ function FreightCharges (props) {
                         fullWidth
                         variant='outlined'
                         {...register(
-                          'freight_charges.order_summary.pricing_breakdown.fuel_surcharge'
+                          'fuel_surcharge'
                         )}
                         slotProps={{
                           input: {
@@ -626,7 +621,7 @@ function FreightCharges (props) {
                         fullWidth
                         variant='outlined'
                         {...register(
-                          'freight_charges.order_summary.pricing_breakdown.sub_total'
+                          'sub_total'
                         )}
                         size='large'
                         slotProps={{
@@ -646,7 +641,7 @@ function FreightCharges (props) {
                         fullWidth
                         variant='outlined'
                         {...register(
-                          'freight_charges.order_summary.pricing_breakdown.provincial_tax'
+                          'provincial_tax'
                         )}
                         slotProps={{
                           input: {
@@ -665,7 +660,7 @@ function FreightCharges (props) {
                         fullWidth
                         variant='outlined'
                         {...register(
-                          'freight_charges.order_summary.pricing_breakdown.federal_tax'
+                          'federal_tax'
                         )}
                         slotProps={{
                           input: {
@@ -684,7 +679,7 @@ function FreightCharges (props) {
                         fullWidth
                         variant='outlined'
                         {...register(
-                          'freight_charges.order_summary.pricing_breakdown.grand_tax'
+                          'grand_tax'
                         )}
                         slotProps={{
                           input: {

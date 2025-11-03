@@ -12,8 +12,8 @@ export default function References (props) {
         <InputWrapper 
           setValue={setValue}
           watch={watch}
-          data={watch('references.reference_numbers')}
-          field={'references.reference_numbers'}
+          data={watch('reference_numbers') || []}
+          field={'reference_numbers'}
           textHelper={'Add multiple reference numbers (use comma, or space)'}
           placeholder='Reference Numbers'
         />
@@ -23,7 +23,7 @@ export default function References (props) {
           label='Caller'
           variant='outlined'
           fullWidth
-          {...register('references.caller')}
+          {...register('caller')}
         />
       </Grid>
     </Grid>

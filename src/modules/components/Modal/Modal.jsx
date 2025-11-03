@@ -36,6 +36,7 @@ export default function TransitionsModal (props) {
         open={props.open}
         onClose={props.handleClose}
         closeAfterTransition
+        disableEnforceFocus={false}
       >
         <Fade in={props.open}>
           <CustomPaper size={props.size || 'small'}>{props.children}</CustomPaper>
