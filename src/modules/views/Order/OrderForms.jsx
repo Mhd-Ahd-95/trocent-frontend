@@ -139,6 +139,7 @@ export default function OrderForm(props) {
             control={control}
             setValue={setValue}
             engine={engine}
+            enqueueSnackbar={enqueueSnackbar}
           />
         </WizardCard>
       </Grid>
@@ -158,6 +159,7 @@ export default function OrderForm(props) {
             control={control}
             setValue={setValue}
             engine={engine}
+            enqueueSnackbar={enqueueSnackbar}
           />
         </WizardCard>
       </Grid>

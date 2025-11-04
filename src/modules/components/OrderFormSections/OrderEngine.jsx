@@ -4,7 +4,7 @@ export default class OrderEngine {
 
     static INCH_TO_CM = 2.54
     static CM_TO_INCH = 0.393701
-    static LBS_TO_KG = 0.453592
+    static LBS_TO_KG = 0.45359237
     static KG_TO_LBS = 2.20462
 
     constructor() {
@@ -33,7 +33,11 @@ export default class OrderEngine {
             total_volume_weight: 0,
             total_pieces_skid: 0,
             total_chargeable_weight: 0,
-            total_weight_in_kg: 0
+            total_weight_in_kg: 0,
+            is_skid_rate_exists: false,
+            is_weight_rate_exists: false,
+            total_chargeable_weight_skid: 0,
+            total_chargeable_weight_weight: 0
         })
     }
 
@@ -47,7 +51,8 @@ export default class OrderEngine {
         let notStacked = freight.not_stack ?? false
 
         if (notStacked) {
-            height = 102
+            if (dimUnit === 'cm') height = 259.08
+            else height = 102
         }
 
         if (dimUnit === 'in') volumeWeight = Number(pieces) * ((Number(length) * Number(width) * Number(height)) / 172)
@@ -80,15 +85,16 @@ export default class OrderEngine {
             this.context['total_actual_weight'] += weight
 
             this.context['total_chargeable_weight'] += volumeWeight
-            this.context['total_volume_weight'] = this.context['total_chargeable_weight']
 
-            if (this.context['total_chargeable_weight'] < this.context['total_actual_weight']) {
-                this.context['total_chargeable_weight'] = this.context['total_actual_weight']
-            }
+            if (unit === 'lbs') this.context['total_weight_in_kg'] += volumeWeight * OrderEngine.LBS_TO_KG
+            else this.context['total_weight_in_kg'] += volumeWeight 
 
-            if (unit === 'kg') this.context['total_weight_in_kg'] += volumeWeight
-            else this.context['total_weight_in_kg'] += volumeWeight * OrderEngine.LBS_TO_KG
+        }
 
+        this.context['total_volume_weight'] = this.context['total_chargeable_weight']
+
+        if (this.context['total_chargeable_weight'] < this.context['total_actual_weight']) {
+            this.context['total_chargeable_weight'] = this.context['total_actual_weight']
         }
         return this.format_value()
     }
@@ -103,9 +109,17 @@ export default class OrderEngine {
         let l = Math.ceil(f.length)
         let w = Math.ceil(f.width)
         let h = Math.ceil(f.height)
-        if (l > 48 || w > 48 || h > 82) {
-            nfn = Math.ceil(l / 48) * f.pieces
-            if (w > 48 || h > 82) nfn = nfn * 2
+        if (f.dim_unit === 'cm' && f.unit === 'kg') {
+            if (l > 121.92 || w > 121.92 || h > 208.28) {
+                nfn = Math.ceil(l / 121.92) * f.pieces
+                if (w > 121.92 || h > 208.28) nfn = nfn * 2
+            }
+        }
+        else if (f.dim_unit === 'in' && f.unit === 'lbs') {
+            if (l > 48 || w > 48 || h > 82) {
+                nfn = Math.ceil(l / 48) * f.pieces
+                if (w > 48 || h > 82) nfn = nfn * 2
+            }
         }
         if (f.not_stack) nfn = nfn * 2
         return Math.max(pieces, nfn)
@@ -122,7 +136,6 @@ export default class OrderEngine {
         let is_converted = freight.is_converted ?? false
         let not_stack = freight.not_stack ?? false
         let weight = Number(freight.weight) ?? 0
-        let volumeWeight = OrderEngine.calculateVolumeWeight(freight)
 
 
         if (is_converted) {
@@ -131,22 +144,26 @@ export default class OrderEngine {
                 width = width * OrderEngine.CM_TO_INCH
                 height = height * OrderEngine.CM_TO_INCH
                 unit = 'lbs'
+                dim_unit = 'in'
             }
             else if (unit === 'lbs' && dim_unit === 'in') {
                 length = length * OrderEngine.INCH_TO_CM
                 width = width * OrderEngine.INCH_TO_CM
                 height = height * OrderEngine.INCH_TO_CM
                 unit = 'kg'
+                dim_unit = 'cm'
             }
         }
 
+        let volumeWeight = OrderEngine.calculateVolumeWeight({...freight, length, width, height, dim_unit, unit})
+
         if (is_converted) {
             if (unit === 'kg') {
-                volumeWeight = volumeWeight * OrderEngine.LBS_TO_KG
+                // volumeWeight = volumeWeight * OrderEngine.LBS_TO_KG
                 weight = weight * OrderEngine.LBS_TO_KG
             }
             else if (unit === 'lbs') {
-                volumeWeight = volumeWeight * OrderEngine.KG_TO_LBS
+                // volumeWeight = volumeWeight * OrderEngine.KG_TO_LBS
                 weight = weight * OrderEngine.KG_TO_LBS
             }
         }

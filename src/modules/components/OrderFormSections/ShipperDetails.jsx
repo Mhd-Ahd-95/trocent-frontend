@@ -7,7 +7,7 @@ import { useAddressBookMutations, useAddressBooks } from '../../hooks/useAddress
 
 function ShipperDetails(props) {
 
-  const { control, setValue } = props
+  const { control, setValue, enqueueSnackbar } = props
 
   const { data, isLoading, isError, error } = useAddressBooks()
 

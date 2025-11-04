@@ -19,13 +19,13 @@ import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
 import { Controller } from 'react-hook-form'
 
-function FreightCharges (props) {
+function FreightCharges(props) {
   const { register, engine, control, getValues, setValue } = props
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
-  const [charges, setCharges] = React.useState({no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges')})
-  
+  const [charges, setCharges] = React.useState({ no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges') })
+
   const customerAccessorials = React.useMemo(() => getValues('customer_accessorials') || [], [engine.customer, getValues('customer_accessorials')])
 
   console.log(customerAccessorials);
@@ -63,7 +63,7 @@ function FreightCharges (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
-                      setCharges((prev) => ({...prev, no_charges: checked}))
+                      setCharges((prev) => ({ ...prev, no_charges: checked }))
                       // setValue
                     }}
                   />
@@ -88,7 +88,7 @@ function FreightCharges (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
-                      setCharges((prev) => ({...prev, manual_charges: checked}))
+                      setCharges((prev) => ({ ...prev, manual_charges: checked }))
                     }}
                   />
                 )}
@@ -115,7 +115,7 @@ function FreightCharges (props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
-                      setCharges((prev) => ({...prev, manual_fuel_surcharges: checked}))
+                      setCharges((prev) => ({ ...prev, manual_fuel_surcharges: checked }))
                     }}
                   />
                 )}
@@ -150,7 +150,7 @@ function FreightCharges (props) {
               </Typography>
             </Grid>
             <Grid size={12}>
-              <Grid container spacing={2} p={3}>
+              <Grid container spacing={2} px={3} py={2}>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextInput
                     label='Freight Rate'
@@ -405,295 +405,84 @@ function FreightCharges (props) {
               Order Summary
             </Typography>
           </Grid>
-          <Grid size={12} sx={{ p: 2 }}>
-            <Grid
-              container
-              sx={{
-                border: `1px solid ${theme.palette.grey[200]}`,
-                borderRadius: 2
-              }}
-            >
-              <Grid
-                size={12}
-                sx={{
-                  borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                  px: 2,
-                  py: 1
-                }}
-              >
-                <Typography
-                  component={'p'}
-                  sx={{ fontSize: 15, fontWeight: 600 }}
-                >
-                  Weight Calculations
-                </Typography>
-              </Grid>
-              <Grid size={12} sx={{ p: 2 }}>
-                <Grid container spacing={2} sx={{ px: 2, py: 1 }}>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <TextInput
-                      label='Actual Weight'
-                      variant='outlined'
-                      fullWidth
-                      disabled
-                      {...register(
-                        'total_actual_weight'
-                      )}
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment
-                              position='end'
-                              sx={{
-                                '& p': {
-                                  fontSize: 12
-                                }
-                              }}
-                            >
-                              LBS
-                            </InputAdornment>
-                          )
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <TextInput
-                      label='Volume Weight'
-                      variant='outlined'
-                      fullWidth
-                      disabled
-                      {...register(
-                        'total_volume_weight'
-                      )}
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment
-                              position='end'
-                              sx={{
-                                '& p': {
-                                  fontSize: 12
-                                }
-                              }}
-                            >
-                              LBS
-                            </InputAdornment>
-                          )
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <TextInput
-                      label='Chargeable Weight'
-                      variant='outlined'
-                      fullWidth
-                      disabled
-                      {...register(
-                        'total_chargeable_weight'
-                      )}
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment
-                              position='end'
-                              sx={{
-                                '& p': {
-                                  fontSize: 12
-                                }
-                              }}
-                            >
-                              LBS
-                            </InputAdornment>
-                          )
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                    <TextInput
-                      label='Total Pieces'
-                      variant='outlined'
-                      disabled
-                      fullWidth
-                      {...register(
-                        'total_pieces'
-                      )}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <TextInput
-                      label='Weight (KG)'
-                      variant='outlined'
-                      disabled
-                      fullWidth
-                      {...register(
-                        'total_weight_in_kg'
-                      )}
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment
-                              position='end'
-                              sx={{
-                                '& p': {
-                                  fontSize: 12
-                                }
-                              }}
-                            >
-                              KG
-                            </InputAdornment>
-                          )
-                        }
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid size={12} mt={2}>
-              <Grid
-                container
-                sx={{
-                  border: `1px solid ${theme.palette.grey[200]}`,
-                  borderRadius: 2
-                }}
-              >
-                <Grid
-                  size={12}
-                  sx={{
-                    borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                    py: 1,
-                    px: 2
+          <Grid size={12} sx={{ py: 2, px: 3 }}>
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <TextInput
+                  label='Sub Total'
+                  fullWidth
+                  variant='outlined'
+                  {...register(
+                    'sub_total'
+                  )}
+                  size='large'
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
+                          $
+                        </InputAdornment>
+                      )
+                    }
                   }}
-                >
-                  <Typography
-                    component={'p'}
-                    sx={{ fontSize: 15, fontWeight: 600 }}
-                  >
-                    Pricing Breakdown
-                  </Typography>
-                </Grid>
-                <Grid size={12} sx={{ py: 3, px: 4 }}>
-                  <Grid container spacing={4}>
-                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                      <TextInput
-                        label='Freight Rate'
-                        fullWidth
-                        variant='outlined'
-                        {...register(
-                          'freight_rate'
-                        )}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                                $
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                      <TextInput
-                        label='Fuel Surcharge'
-                        fullWidth
-                        variant='outlined'
-                        {...register(
-                          'fuel_surcharge'
-                        )}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                                $
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={12}>
-                      <TextInput
-                        label='Sub Total'
-                        fullWidth
-                        variant='outlined'
-                        {...register(
-                          'sub_total'
-                        )}
-                        size='large'
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
-                                $
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                      <TextInput
-                        label='Provincial Tax'
-                        fullWidth
-                        variant='outlined'
-                        {...register(
-                          'provincial_tax'
-                        )}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                                $
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                      <TextInput
-                        label='Federal Tax'
-                        fullWidth
-                        variant='outlined'
-                        {...register(
-                          'federal_tax'
-                        )}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                                $
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                      />
-                    </Grid>
-                    <Grid size={12}>
-                      <TextInput
-                        label='Grand Tax'
-                        fullWidth
-                        variant='outlined'
-                        {...register(
-                          'grand_tax'
-                        )}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                                $
-                              </InputAdornment>
-                            )
-                          }
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <TextInput
+                  label='Provincial Tax'
+                  fullWidth
+                  variant='outlined'
+                  {...register(
+                    'provincial_tax'
+                  )}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
+                          $
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <TextInput
+                  label='Federal Tax'
+                  fullWidth
+                  variant='outlined'
+                  {...register(
+                    'federal_tax'
+                  )}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
+                          $
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <TextInput
+                  label='Grand Tax'
+                  fullWidth
+                  variant='outlined'
+                  {...register(
+                    'grand_tax'
+                  )}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
+                          $
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
               </Grid>
             </Grid>
           </Grid>
