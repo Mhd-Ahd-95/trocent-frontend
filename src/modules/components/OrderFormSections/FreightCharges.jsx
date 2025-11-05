@@ -152,41 +152,53 @@ function FreightCharges(props) {
             <Grid size={12}>
               <Grid container spacing={2} px={3} py={2}>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextInput
-                    label='Freight Rate'
-                    variant='outlined'
-                    fullWidth
-                    type='number'
-                    {...register('freight_rate')}
-                    disabled={!charges.manual_charges}
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position='start'>
-                            <AttachMoney />
-                          </InputAdornment>
-                        )
-                      }
-                    }}
+                  <Controller
+                    name={'freight_rate'}
+                    control={control}
+                    render={({ field }) => (
+                      <TextInput
+                        {...field}
+                        label='Freight Rate'
+                        variant='outlined'
+                        fullWidth
+                        type='number'
+                        disabled={!charges.manual_charges}
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position='start'>
+                                <AttachMoney />
+                              </InputAdornment>
+                            )
+                          }
+                        }}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextInput
-                    label='Fuel Surcharge'
-                    variant='outlined'
-                    fullWidth
-                    type='number'
-                    {...register('fuel_surcharge')}
-                    disabled={!charges.manual_fuel_surcharges}
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position='start'>
-                            <AttachMoney />
-                          </InputAdornment>
-                        )
-                      }
-                    }}
+                  <Controller
+                    name='freight_fuel_surcharge'
+                    control={control}
+                    render={({ field }) => (
+                      <TextInput
+                        {...field}
+                        label='Fuel Surcharge'
+                        variant='outlined'
+                        fullWidth
+                        type='number'
+                        disabled={!charges.manual_fuel_surcharges}
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position='start'>
+                                <AttachMoney />
+                              </InputAdornment>
+                            )
+                          }
+                        }}
+                      />
+                    )}
                   />
                 </Grid>
               </Grid>

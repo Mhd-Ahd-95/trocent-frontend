@@ -16,7 +16,7 @@ const getRateSheetsByCustomer = cid => CustomAxios.get(`/api/rate-sheets/custome
 
 const loadCustomerRateSheets = cid => CustomAxios.get(`/api/rate-sheets/customer/${cid}/sheets`)
 
-const loadRateSheetsByCustomerAndType = (cid, type) => CustomAxios.get(`/api/rate-sheets/customer/${cid}/type/${type}`)
+const loadRateSheetsByCustomerAndType = (cid, type) => CustomAxios.get(`/api/rate-sheets/customer/${cid}/type`)
 
 export default {
     getRateSheet,

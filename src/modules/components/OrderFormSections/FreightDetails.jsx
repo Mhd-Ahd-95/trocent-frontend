@@ -98,7 +98,8 @@ function FreightDetails(props) {
     const freights = getValues('freights')
     if (freights && engine.customer) {
       engine.freights = freights
-      const totals = engine.calculateTotalFreights()
+      const totals = engine.calculateOrder()
+      console.log(totals);
       requestAnimationFrame(() => {
         setValue('total_pieces', totals.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_pieces_skid', totals.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -106,6 +107,7 @@ function FreightDetails(props) {
         setValue('total_volume_weight', totals.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_chargeable_weight', totals.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_weight_in_kg', totals.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('freight_rate', totals.freight_rate)
       })
     }
   }, [engine.customer, engine, getValues, setValue])
@@ -221,6 +223,7 @@ function FreightDetails(props) {
                   onClick={() => {
                     setMode(!mode)
                     setValue('is_manual_skid', !mode)
+                    engine.isManualSkid = !mode
                   }}
                 >
                   Manually Mode: {mode ? 'ON' : 'OFF'}
@@ -281,6 +284,12 @@ function FreightDetails(props) {
                       disabled={!mode}
                       type='number'
                       fullWidth
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+                        // setValue('total_pieces_skid', value)
+                        engine.overrideTotalPiecesSkid = value
+                        triggerRecalculation()
+                      }}
                       InputProps={{
                         endAdornment: isCalculating && (
                           <InputAdornment position="end">

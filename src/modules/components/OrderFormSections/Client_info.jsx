@@ -22,7 +22,7 @@ function ClientInfo(props) {
     }
   }, [isError, error])
 
-  useRateSheetsByCustomerAndType(customerId, 'skid')
+  // useRateSheetsByCustomerAndType(customerId)
 
   React.useEffect(() => {
     if (data && customerId) {
@@ -49,7 +49,7 @@ function ClientInfo(props) {
                 loading={isLoading}
                 value={data?.find((c) => c.id === Number(field.value)) || null}
                 onChange={(_, value) => {
-                  unstable_batchedUpdates(() => {
+                  unstable_batchedUpdates(async () => {
                     field.onChange(value?.id || '')
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
@@ -57,6 +57,7 @@ function ClientInfo(props) {
                     console.log(access);
                     setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
                     engine.customer = value
+                    if (value?.id) await engine.get_customer_rate_sheet(value.id)
                   })
                 }}
                 getOptionLabel={option =>

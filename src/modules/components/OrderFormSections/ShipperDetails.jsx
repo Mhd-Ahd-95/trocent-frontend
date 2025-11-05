@@ -7,7 +7,7 @@ import { useAddressBookMutations, useAddressBooks } from '../../hooks/useAddress
 
 function ShipperDetails(props) {
 
-  const { control, setValue, enqueueSnackbar } = props
+  const { control, setValue, enqueueSnackbar, engine } = props
 
   const { data, isLoading, isError, error } = useAddressBooks()
 
@@ -52,6 +52,7 @@ function ShipperDetails(props) {
             setValue('pickup_time_from', value?.op_time_from || null)
             setValue('pickup_time_to', value?.op_time_to || null)
             setValue('pickup_appointment', value?.requires_appointment || false)
+            engine.shipper_city = value?.city || ''
           }}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Shipper is a required field' }}
@@ -193,6 +194,7 @@ function ShipperDetails(props) {
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
                   field.onChange(nAB.city)
+                  engine.shipper_city = nAB.city
                 }
               }}
               variant='outlined'
