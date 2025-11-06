@@ -1,7 +1,7 @@
 import React from 'react'
-import { Grid, Autocomplete, Typography, Button, InputAdornment, CircularProgress } from '@mui/material'
+import { Grid, Autocomplete, Typography, Button, InputAdornment, CircularProgress, FormControl, Switch } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { StyledButton } from '../../components'
+import { CustomFormControlLabel, StyledButton } from '../../components'
 import { Controller, useFieldArray } from 'react-hook-form'
 import { Add, Calculate } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
@@ -46,7 +46,7 @@ const useFreightCalculations = (freights, customer, setValue) => {
           setValue('total_chargeable_weight', totals?.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
-          setValue('freight_fuel_surcharge', totals.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
           setIsCalculating(false)
         })
       } catch (err) {
@@ -186,7 +186,10 @@ function FreightDetails(props) {
                 <Button
                   startIcon={<Add />}
                   sx={{ textTransform: 'capitalize' }}
-                  onClick={handleAddFreight}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleAddFreight()
+                  }}
                 >
                   Add To Freights
                 </Button>
@@ -219,20 +222,33 @@ function FreightDetails(props) {
                 </Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 'auto', md: 'auto' }}>
-                <StyledButton
-                  color='primary'
-                  variant='contained'
-                  startIcon={<Calculate />}
-                  size='small'
-                  textTransform='capitalize'
-                  onClick={() => {
-                    setMode(!mode)
-                    setValue('is_manual_skid', !mode)
-                    engine.isManualSkid = !mode
-                  }}
-                >
-                  Manually Mode: {mode ? 'ON' : 'OFF'}
-                </StyledButton>
+                <FormControl>
+                  <CustomFormControlLabel
+                    control={
+                      <Controller
+                        name='is_manual_skid'
+                        control={control}
+                        render={({ field }) => (
+                          <Switch
+                            {...field}
+                            checked={field.value || false}
+                            onChange={e => {
+                              const checked = e.target.checked
+                              field.onChange(checked)
+                              engine.isManualSkid = checked
+                              if (!checked) {
+                                engine.overrideTotalPiecesSkid = 0
+                                triggerRecalculation()
+                              }
+                              setMode(checked)
+                            }}
+                          />
+                        )}
+                      />
+                    }
+                    label='Manual Skids'
+                  />
+                </FormControl>
               </Grid>
             </Grid>
           </Grid>
@@ -289,6 +305,7 @@ function FreightDetails(props) {
                       disabled={!mode}
                       type='number'
                       fullWidth
+                      // value={field.value || ''}
                       onChange={(e) => {
                         const value = Number(e.target.value)
                         // setValue('total_pieces_skid', value)
