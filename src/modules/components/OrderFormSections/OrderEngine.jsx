@@ -1,5 +1,6 @@
 import RateSheetsApi from "../../apis/RateSheets.api"
-
+import FuelSurchargeAPI from '../../apis/FuelSurcharges.api'
+import moment from "moment"
 
 export default class OrderEngine {
 
@@ -8,10 +9,16 @@ export default class OrderEngine {
     static LBS_TO_KG = 0.45359237
     static KG_TO_LBS = 2.20462
 
-    constructor() {
+    constructor(enqueueSnackbar) {
+        this.enqueueSnackbar = enqueueSnackbar
         this.request = {}
         this.context = {}
         this.customerRateSheets = []
+        this.fuelSurchargeByDate = null
+        let currentDate = moment(new Date())
+        if (!this.fuelSurchargeByDate) {
+            this.get_fuel_surcharge_by_date(currentDate.toISOString())
+        }
     }
 
     get customer() { return this.request['customer'] }
@@ -27,10 +34,18 @@ export default class OrderEngine {
     set overrideTotalPiecesSkid(ps) { this.request['override_total_skid_pieces'] = ps }
     get overrideTotalPiecesSkid() { return this.request['override_total_skid_pieces'] }
 
+    set override_fuel_surcharge(fs) { this.request['override_fuel_surcharge'] = fs }
+    set freight_rate(fr) { this.request['freight_rate'] = fr }
+    set override_freight_rate(ofr) { this.request['override_freight_rate'] = ofr }
+    set isManualFreightRate(fr) { this.request['manual_freight_rate'] = fr }
+    set isManualFuelSurcharge(fr) { this.request['manual_fuel_surcharge'] = fr }
+    set isNoCharge(nc) { this.request['no_charge'] = nc }
+
     calculateOrder = () => {
         this.context = this.initializeContext()
         this.calculateTotalFreights()
         this.calculateFreightRate()
+        this.calculateFuelSurcharge()
         return this.format_value()
     }
 
@@ -43,6 +58,11 @@ export default class OrderEngine {
             customer_weight_rules: Number(this.request['customer']['weight_pieces_rule']) || 0,
             customer_fuel_rules: Number(this.request['customer']['fuel_surcharge_rule']) || 0,
             is_manual_skid: this.request['is_manual_skid'] || false,
+            manual_freight_rate: this.request['manual_freight_rate'] || 0,
+            override_freight_rate: this.request['override_freight_rate'] || 0,
+            manual_fuel_surcharge: this.request['manual_fuel_surcharge'] || false,
+            override_fuel_surcharge: this.request['override_fuel_surcharge'] || 0,
+            no_charge: this.request['no_charge'] || false,
 
             total_pieces: 0,
             total_actual_weight: 0,
@@ -55,12 +75,14 @@ export default class OrderEngine {
             is_skid_rate_exists: false,
             is_weight_rate_exists: false,
             total_chargeable_weight_skid: 0,
+            total_actual_weight_skid: 0,
             total_chargeable_weight_weight: 0,
             total_actual_weight_weight: 0,
             freight_rate: 0,
             freight_rate_skid: 0,
             freight_rate_weight: 0,
-            freight_fuel_surcharge: 0
+            freight_fuel_surcharge: 0,
+            fuel_based_accessorial_charges: 0
         })
     }
 
@@ -78,6 +100,7 @@ export default class OrderEngine {
                 this.context['is_skid_rate_exists'] = true
                 if (!this.context['is_manual_skid']) this.context['total_pieces_skid'] += this.calculateTotalPieces(normalizedFreight)
                 this.context['total_chargeable_weight_skid'] += volumeWeight
+                this.context['total_actual_weight_skid'] += weight
             }
             else {
                 this.context['is_weight_rate_exists'] = true
@@ -94,6 +117,7 @@ export default class OrderEngine {
 
         this.context['total_volume_weight'] = this.context['total_chargeable_weight']
         this.context['total_chargeable_weight_weight'] = Math.max(this.context['total_chargeable_weight_weight'], this.context['total_actual_weight_weight'])
+        this.context['total_chargeable_weight_skid'] = Math.max(this.context['total_chargeable_weight_skid'], this.context['total_actual_weight_skid'])
         this.context['total_chargeable_weight'] = Math.max(this.context['total_chargeable_weight'], this.context['total_actual_weight'])
 
         if (this.context['is_manual_skid']) this.context['total_pieces_skid'] = this.context['override_total_skid_pieces']
@@ -194,6 +218,13 @@ export default class OrderEngine {
 
         if (!this.customer) return
 
+        if (this.context['no_charge']) return
+
+        if (this.context['manual_freight_rate']) {
+            this.context['freight_rate'] = this.context['override_freight_rate']
+            return
+        }
+
         let hasSkidRateSheet = this.customerRateSheets.some(rs => rs.type === 'skid')
 
         this.context['freight_rate_skid'] = 0
@@ -224,7 +255,6 @@ export default class OrderEngine {
         const shipper_city = this.context['shipper_city']
         const receiver_city = this.context['receiver_city']
 
-        // Check if customer uses skid by weight
         const skidByWeight = this.customerRateSheets.some(rs => rs.type === 'skid' && rs.skid_by_weight === 1)
         let sheet_rate = 0
 
@@ -275,8 +305,6 @@ export default class OrderEngine {
     fetchRateFromSheets = (type, value, source_city, destination_city) => {
 
         const sourceSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === source_city)
-        console.log('this.customerRateSheets: ', this.customerRateSheets);
-        console.log('sourceSheets: ', sourceSheets);
 
         if (sourceSheets.length === 0) return 0
 
@@ -287,12 +315,10 @@ export default class OrderEngine {
         const firstRate = this.getRateFromSheet(firstSheet, value, type)
         if (firstRate === 0) return 0
 
-        // Find matching destination sheet with same rate_code
         const destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
 
         if (destSheets.length === 0) return firstRate
 
-        // Prefer external if first sheet is external
         let secondSheet
         if (firstSheet.external === 'external') {
             secondSheet = destSheets.find(rs => rs.external === 'external')
@@ -327,18 +353,15 @@ export default class OrderEngine {
 
             if (!bracket) return 0
 
-            // Calculate rate: (bracket_rate * weight / 100)
             const calculatedRate = (Number(bracket.rate) * value) / 100
             const minRate = Number(sheet.min_rate) || 0
 
-            // Return max of calculated rate and min rate
             return Math.max(calculatedRate, minRate)
         }
     }
 
 
     getWeightBracket = (weight) => {
-        // Get all unique brackets from all weight rate sheets
         const allBrackets = this.customerRateSheets
             .filter(rs => rs.type === 'weight')
             .flatMap(rs => rs.brackets.map(b => b.rate_bracket))
@@ -349,10 +372,8 @@ export default class OrderEngine {
 
         if (allBrackets.length === 0) return 'ltl_rate'
 
-        // If weight is below smallest bracket, use ltl
         if (weight < allBrackets[0]) return 'ltl_rate'
 
-        // Find highest bracket that doesn't exceed weight
         let selectedBracket = 'ltl_rate'
         for (const bracket of allBrackets) {
             if (weight >= bracket) {
@@ -365,6 +386,53 @@ export default class OrderEngine {
         return selectedBracket
     }
 
+    calculateFuelSurcharge = () => {
+
+        if (this.context['no_charge']) return
+
+        let fuel_rules = this.context['customer_fuel_rules']
+        let weight = this.context['total_chargeable_weight']
+        let fuelSurcharge = this.fuelSurchargeByDate
+        let fuel_value = 0
+        let amount = this.context['freight_rate'] + this.context['fuel_based_accessorial_charges']
+
+        if (!this.customer) return
+
+        if (this.context['manual_fuel_surcharge']) {
+            fuel_value = this.context['override_fuel_surcharge']
+        }
+        else {
+            fuel_value = this.calcFuel(fuel_rules, weight, fuelSurcharge, amount)
+        }
+
+        this.context['freight_fuel_surcharge'] = fuel_value
+
+    }
+
+    calcFuel = (rules, weight, data, amount) => {
+
+        let fuel_ltl = Number(this.customer['fuel_ltl']) || 0
+        let fuel_ltl_other = this.customer['fuel_ltl_other'] || false
+        let fuel_ltl_other_value = Number(this.customer['fuel_ltl_other_value']) || 0
+
+        let fuel_ftl = Number(this.customer['fuel_ftl']) || 0
+        let fuel_ftl_other = this.customer['fuel_ftl_other'] || false
+        let fuel_ftl_other_value = Number(this.customer['fuel_ltl_other_value']) || 0
+
+        let fuel_charge = 0
+
+        if (weight < rules) {
+            if (fuel_ltl_other) fuel_charge = (fuel_ltl / 100) * fuel_ltl_other_value
+            else fuel_charge = (fuel_ltl / 100) * Number(data.ltl_surcharge)
+        }
+        else {
+            if (fuel_ftl_other) fuel_charge = (fuel_ftl / 100) * fuel_ftl_other_value
+            else fuel_charge = (fuel_ftl / 100) * Number(data.ftl_surcharge)
+        }
+
+        return (fuel_charge / 100) * amount
+    }
+
     format_value = () => {
         return ({
             total_pieces: Math.round(this.context['total_pieces'] * 100) / 100 || 0,
@@ -375,7 +443,8 @@ export default class OrderEngine {
             total_chargeable_weight: Math.round(this.context['total_chargeable_weight'] * 100) / 100 || 0,
             freight_rate: Math.round(this.context['freight_rate'] * 100) / 100 || 0,
             freight_rate_skid: Math.round(this.context['freight_rate_skid'] * 100) / 100 || 0,
-            freight_rate_weight: Math.round(this.context['freight_rate_weight'] * 100) / 100 || 0
+            freight_rate_weight: Math.round(this.context['freight_rate_weight'] * 100) / 100 || 0,
+            freight_fuel_surcharge: Math.round(this.context['freight_fuel_surcharge'] * 100) / 100 || 0
         })
     }
 
@@ -385,7 +454,20 @@ export default class OrderEngine {
             this.customerRateSheets = res.data
         } catch (error) {
             console.error('Failed to load rate sheets:', error)
+            this.enqueueSnackbar('Failed to load rate sheets', { variant: 'error' })
             this.customerRateSheets = []
+        }
+    }
+
+    get_fuel_surcharge_by_date = async (odate) => {
+        try {
+            const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
+            this.fuelSurchargeByDate = res.data.data
+        }
+        catch {
+            console.error('Failed to load fuel surcharge:', error)
+            this.enqueueSnackbar('Failed to load fuel surcharge', { variant: 'error' })
+            this.fuelSurchargeByDate = null
         }
     }
 }

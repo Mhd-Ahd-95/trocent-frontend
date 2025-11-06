@@ -20,15 +20,13 @@ import global from '../../global'
 import { Controller } from 'react-hook-form'
 
 function FreightCharges(props) {
-  const { register, engine, control, getValues, setValue } = props
+  const { register, engine, control, getValues } = props
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
   const [charges, setCharges] = React.useState({ no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges') })
 
   const customerAccessorials = React.useMemo(() => getValues('customer_accessorials') || [], [engine.customer, getValues('customer_accessorials')])
-
-  console.log(customerAccessorials);
 
   const {
     fields: additionalServiceCharges,
@@ -64,7 +62,8 @@ function FreightCharges(props) {
                       const checked = e.target.checked
                       field.onChange(checked)
                       setCharges((prev) => ({ ...prev, no_charges: checked }))
-                      // setValue
+                      engine.isNoCharge = checked
+                      props.calculationRef?.current?.recalculate()
                     }}
                   />
                 )}
@@ -89,6 +88,11 @@ function FreightCharges(props) {
                       const checked = e.target.checked
                       field.onChange(checked)
                       setCharges((prev) => ({ ...prev, manual_charges: checked }))
+                      engine.isManualFreightRate = checked
+                      if (!checked) {
+                        engine.override_freight_rate = 0
+                        props.calculationRef?.current?.recalculate()
+                      }
                     }}
                   />
                 )}
@@ -115,6 +119,11 @@ function FreightCharges(props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      engine.isManualFuelSurcharge = checked
+                      if (!checked) {
+                        engine.override_fuel_surcharge = 0
+                        props.calculationRef?.current?.recalculate()
+                      }
                       setCharges((prev) => ({ ...prev, manual_fuel_surcharges: checked }))
                     }}
                   />
@@ -162,7 +171,14 @@ function FreightCharges(props) {
                         variant='outlined'
                         fullWidth
                         type='number'
+                        inputProps={{ step: "any" }}
                         disabled={!charges.manual_charges}
+                        value={field.value || ''}
+                        onChange={e => {
+                          const value = e.target.value
+                          engine.override_freight_rate = Number(value)
+                          props.calculationRef?.current?.recalculate()
+                        }}
                         slotProps={{
                           input: {
                             endAdornment: (
@@ -187,6 +203,14 @@ function FreightCharges(props) {
                         variant='outlined'
                         fullWidth
                         type='number'
+                        inputProps={{ step: "any" }}
+                        value={field.value || ''}
+                        onChange={e => {
+                          const value = e.target.value
+                          console.log(value);
+                          engine.override_fuel_surcharge = Number(value)
+                          props.calculationRef?.current?.recalculate()
+                        }}
                         disabled={!charges.manual_fuel_surcharges}
                         slotProps={{
                           input: {

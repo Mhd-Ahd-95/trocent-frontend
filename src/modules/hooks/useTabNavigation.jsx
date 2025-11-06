@@ -3,12 +3,9 @@ import { useEffect } from 'react'
 export const useTabNavigation = (watch, formRef) => {
     useEffect(() => {
         const handleKeyDown = (e) => {
-            console.log(document.activeElement.tagName);
             if (e.key !== 'Tab' || e.shiftKey) return
 
             const activeElement = document.activeElement
-
-            console.log(activeElement.tagName);
 
             const isFormField = ['INPUT', 'TEXTAREA', 'SELECT', 'SPAN'].includes(
                 activeElement.tagName

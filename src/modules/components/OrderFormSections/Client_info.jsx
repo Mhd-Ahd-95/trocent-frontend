@@ -3,7 +3,6 @@ import { Grid, Autocomplete, CircularProgress } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import { useCustomers } from '../../hooks/useCustomers'
-import { useRateSheetsByCustomerAndType } from '../../hooks/useRateSheets'
 import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
@@ -54,7 +53,6 @@ function ClientInfo(props) {
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
                     const access = value?.accessorials.map((acc) => ({ charge_name: acc.access_name, amount: acc.amount, charge_amount: 0, charge_quantity: 0, is_included: false })) || []
-                    console.log(access);
                     setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
                     engine.customer = value
                     if (value?.id) await engine.get_customer_rate_sheet(value.id)

@@ -80,8 +80,6 @@ export default function Appbar(props) {
       });
   };
 
-  // console.log(themeState);
-
   return (
     <AppBar
       position="fixed"

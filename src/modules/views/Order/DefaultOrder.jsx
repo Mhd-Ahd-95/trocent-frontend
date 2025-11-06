@@ -117,6 +117,7 @@ export const defaultOrderValue = {
   manual_fuel_surcharges: false,
   freight_rate: '',
   freight_fuel_surcharge: '',
+  
   customer_accessorials: [],
   additional_service_charges: [],
   freight_rate: '',

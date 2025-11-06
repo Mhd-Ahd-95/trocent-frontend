@@ -13,11 +13,14 @@ const deleteFuelSurcharge = rid => CustomAxios.delete(`/api/fuel-surcharges/${ri
 
 const deleteFuelSurcharges = ids => CustomAxios.delete('/api/fuel-surcharges', { data: { ids } })
 
+const getFuelSurchargeByDate = date => CustomAxios.get(`/api/fuel-surcharges/${date}/date`)
+
 export default {
     getFuelSurcharge,
     getFuelSurcharges,
     createFuelSurcharge,
     updateFuelSurcharge,
     deleteFuelSurcharge,
-    deleteFuelSurcharges
+    deleteFuelSurcharges,
+    getFuelSurchargeByDate
 }

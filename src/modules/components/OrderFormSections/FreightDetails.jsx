@@ -7,12 +7,14 @@ import { Add, Calculate } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
 import OrderEngine from './OrderEngine'
+import { useSnackbar } from 'notistack'
 
 // Memoized calculation hook
 const useFreightCalculations = (freights, customer, setValue) => {
   const calculationTimeoutRef = React.useRef(null)
   const [isCalculating, setIsCalculating] = React.useState(false)
   const previousFreightsRef = React.useRef(null)
+  const { enqueueSnackbar } = useSnackbar()
 
   React.useEffect(() => {
     if (!freights || freights.length === 0 || !customer) return
@@ -30,19 +32,21 @@ const useFreightCalculations = (freights, customer, setValue) => {
 
     calculationTimeoutRef.current = setTimeout(() => {
       try {
-        const engine = new OrderEngine()
+        const engine = new OrderEngine(enqueueSnackbar)
         engine.customer = customer
         engine.freights = freights
 
         const totals = engine.calculateTotalFreights()
 
         requestAnimationFrame(() => {
-          setValue('total_pieces', totals.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
-          setValue('total_pieces_skid', totals.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
-          setValue('total_actual_weight', totals.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-          setValue('total_volume_weight', totals.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-          setValue('total_chargeable_weight', totals.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-          setValue('total_weight_in_kg', totals.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_actual_weight', totals?.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_volume_weight', totals?.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_chargeable_weight', totals?.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_fuel_surcharge', totals.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
           setIsCalculating(false)
         })
       } catch (err) {
@@ -107,7 +111,8 @@ function FreightDetails(props) {
         setValue('total_volume_weight', totals.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_chargeable_weight', totals.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_weight_in_kg', totals.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('freight_rate', totals.freight_rate)
+        setValue('freight_rate', totals.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('freight_fuel_surcharge', totals.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
       })
     }
   }, [engine.customer, engine, getValues, setValue])
