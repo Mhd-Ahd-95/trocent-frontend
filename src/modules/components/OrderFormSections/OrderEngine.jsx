@@ -25,7 +25,9 @@ export default class OrderEngine {
     set customer(cust) { this.request['customer'] = cust }
 
     set shipper_city(sc) { this.request['shipper_city'] = sc }
+    get shipper_city() { return this.request['shipper_city'] }
     set receiver_city(rc) { this.request['receiver_city'] = rc }
+    get receiver_city() { return this.request['receiver_city'] }
 
     set freights(fs) { this.request['freights'] = fs }
 
@@ -258,7 +260,7 @@ export default class OrderEngine {
         const skidByWeight = this.customerRateSheets.some(rs => rs.type === 'skid' && rs.skid_by_weight === 1)
         let sheet_rate = 0
 
-        if (skidByWeight) sheet_rate = this.findRate('weight', total_chargeable_weight_skid, shipper_city, receiver_city)
+        if (skidByWeight) sheet_rate = this.findRate('skid_by_weight', total_chargeable_weight_skid, shipper_city, receiver_city)
         else {
             sheet_rate = this.findRate('skid', total_pieces, shipper_city, receiver_city)
             if (sheet_rate === 0) sheet_rate = this.findRate('weight', total_chargeable_weight_weight, shipper_city, receiver_city)
@@ -296,7 +298,7 @@ export default class OrderEngine {
 
         let rate = this.fetchRateFromSheets(type, value, source_city, destination_city)
 
-        if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city)
+        // if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city)
 
         return rate
     }
@@ -304,7 +306,12 @@ export default class OrderEngine {
 
     fetchRateFromSheets = (type, value, source_city, destination_city) => {
 
-        const sourceSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === source_city)
+        let sourceSheets
+
+        if (type === 'skid_by_weight') {
+            sourceSheets = this.customerRateSheets.filter(rs => rs.type === 'skid' && rs.skid_by_weight === 1 && rs.destination.toLowerCase().trim() === source_city)
+        }
+        else sourceSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === source_city)
 
         if (sourceSheets.length === 0) return 0
 
@@ -315,9 +322,15 @@ export default class OrderEngine {
         const firstRate = this.getRateFromSheet(firstSheet, value, type)
         if (firstRate === 0) return 0
 
-        const destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
+        let destSheets
+        if (type === 'skid_by_weight') {
+            destSheets = this.customerRateSheets.filter(rs => rs.type === 'skid' && rs.skid_by_weight === 1 && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
+        }
+        else {
+            destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
+        }
 
-        if (destSheets.length === 0) return firstRate
+        if (destSheets.length === 0) return 0
 
         let secondSheet
         if (firstSheet.external === 'external') {
@@ -342,7 +355,7 @@ export default class OrderEngine {
             const bracket = sheet.brackets.find(b => String(b.rate_bracket) === String(Math.round(value)))
             return bracket ? Number(bracket.rate) : 0
         } else {
-            const bracketName = this.getWeightBracket(value)
+            const bracketName = this.getWeightBracket(type, value)
             let bracket
             if (bracketName === 'ltl_rate') {
                 bracket = { rate: sheet[bracketName] }
@@ -361,14 +374,27 @@ export default class OrderEngine {
     }
 
 
-    getWeightBracket = (weight) => {
-        const allBrackets = this.customerRateSheets
-            .filter(rs => rs.type === 'weight')
-            .flatMap(rs => rs.brackets.map(b => b.rate_bracket))
-            .filter(b => !isNaN(Number(b)))
-            .map(b => Number(b))
-            .filter((v, i, a) => a.indexOf(v) === i)
-            .sort((a, b) => a - b)
+    getWeightBracket = (type, weight) => {
+        // type = type === 'skid_by_weight' ? 'skid' : 'weight'
+        let allBrackets
+        if (type === 'skid_by_weight') {
+            allBrackets = this.customerRateSheets
+                .filter(rs => rs.type === 'skid' && rs.skid_by_weight === 1)
+                .flatMap(rs => rs.brackets.map(b => b.rate_bracket))
+                .filter(b => !isNaN(Number(b)))
+                .map(b => Number(b))
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .sort((a, b) => a - b)
+        }
+        else {
+            allBrackets = this.customerRateSheets
+                .filter(rs => rs.type === 'weight')
+                .flatMap(rs => rs.brackets.map(b => b.rate_bracket))
+                .filter(b => !isNaN(Number(b)))
+                .map(b => Number(b))
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .sort((a, b) => a - b)
+        }
 
         if (allBrackets.length === 0) return 'ltl_rate'
 
@@ -397,7 +423,15 @@ export default class OrderEngine {
         let fuel_value = 0
         let amount = this.context['freight_rate'] + this.context['fuel_based_accessorial_charges']
 
-        if (!this.customer) return
+        console.log('customer: ', this.customer);
+        console.log('shipper_city: ', this.shipper_city);
+        console.log('receiver_city: ', this.receiver_city);
+        console.log('fuelSurcharge: ', fuelSurcharge);
+
+        if (!this.customer || !this.shipper_city || !this.receiver_city || !fuelSurcharge) {
+            console.log('object');
+            return 
+        }
 
         if (this.context['manual_fuel_surcharge']) {
             fuel_value = this.context['override_fuel_surcharge']
@@ -424,7 +458,10 @@ export default class OrderEngine {
 
         if (weight < rules) {
             if (fuel_ltl_other) fuel_charge = (fuel_ltl / 100) * fuel_ltl_other_value
-            else fuel_charge = (fuel_ltl / 100) * Number(data.ltl_surcharge)
+            else {
+                fuel_charge = (fuel_ltl / 100) * Number(data.ltl_surcharge)
+                console.log(fuel_charge);
+            }
         }
         else {
             if (fuel_ftl_other) fuel_charge = (fuel_ftl / 100) * fuel_ftl_other_value

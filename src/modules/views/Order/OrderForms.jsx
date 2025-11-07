@@ -118,19 +118,19 @@ export default function OrderForm(props) {
       onSubmit={handleSubmit(onSubmit, onError)}
     >
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Basic Information' minHeight={500}>
+        <WizardCard title='Basic Information'>
           {memoizedBasicInfo}
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Client Information' minHeight={500}>
+        <WizardCard title='Client Information'>
           {memoizedClientInfo}
         </WizardCard>
       </Grid>
 
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='References' minHeight={500}>
+        <WizardCard title='References'>
           {memoizedReferences}
         </WizardCard>
       </Grid>
@@ -141,6 +141,7 @@ export default function OrderForm(props) {
             control={control}
             setValue={setValue}
             engine={engine}
+            calculationRef={calculationRef}
             enqueueSnackbar={enqueueSnackbar}
           />
         </WizardCard>
@@ -161,6 +162,7 @@ export default function OrderForm(props) {
             control={control}
             setValue={setValue}
             engine={engine}
+            calculationRef={calculationRef}
             enqueueSnackbar={enqueueSnackbar}
           />
         </WizardCard>
@@ -210,7 +212,7 @@ export default function OrderForm(props) {
             </WizardCard>
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <WizardCard minHeight={500} title='Freight & Charges'>
+            <WizardCard minHeight={500} title='Freight Charges'>
               <FreightCharges
                 control={control}
                 getValues={getValues}

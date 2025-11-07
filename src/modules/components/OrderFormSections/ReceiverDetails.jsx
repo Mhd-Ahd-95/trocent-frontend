@@ -196,6 +196,7 @@ function ReceiverDetails(props) {
                   const nAB = await patch.mutateAsync({ id: receiverSelected, payload: { [key]: value } })
                   field.onChange(nAB.city)
                   engine.receiver_city = nAB.city
+                  props.calculationRef?.current?.recalculate()
                 }
               }}
               variant='outlined'
@@ -277,8 +278,8 @@ function ReceiverDetails(props) {
                   field.onChange(nAB.special_instructions)
                 }
               }}
-              minRows={4}
-              maxRows={4}
+              minRows={2}
+              maxRows={2}
               fullWidth
               sx={{
                 '& .MuiInputLabel-root': {
