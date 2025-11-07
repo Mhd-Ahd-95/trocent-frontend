@@ -397,7 +397,7 @@ export default class OrderEngine {
         let fuel_value = 0
         let amount = this.context['freight_rate'] + this.context['fuel_based_accessorial_charges']
 
-        if (!this.customer) return
+        if (!this.customer || !this.shipper_city || !this.receiver_city || !fuelSurcharge) return
 
         if (this.context['manual_fuel_surcharge']) {
             fuel_value = this.context['override_fuel_surcharge']
