@@ -68,7 +68,12 @@ function BasicInfo(props) {
               label='Create Date*'
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
-              onChange={date => field.onChange(date ? date.toISOString() : null)}
+              onChange={date => {
+                if (date) {
+                  field.onChange(date.toISOString())
+                  props.engine.get_fuel_surcharge_by_date(date.toISOString())
+                }
+              }}
               slotProps={{
                 textField: {
                   fullWidth: true,

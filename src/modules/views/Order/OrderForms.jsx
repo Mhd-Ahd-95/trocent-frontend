@@ -26,7 +26,7 @@ export default function OrderForm(props) {
   const { initialValues, submit, editMode } = props
   const [showAll, setShowAll] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
-  const engine = React.useRef(new OrderEngine()).current
+  const engine = React.useRef(new OrderEngine(enqueueSnackbar)).current
   const calculationRef = React.useRef(null)
 
   const {
@@ -81,6 +81,7 @@ export default function OrderForm(props) {
         register={register}
         control={control}
         enqueueSnackbar={enqueueSnackbar}
+        engine={engine}
       />
     ),
     [register, control, enqueueSnackbar]
@@ -139,6 +140,7 @@ export default function OrderForm(props) {
             control={control}
             setValue={setValue}
             engine={engine}
+            enqueueSnackbar={enqueueSnackbar}
           />
         </WizardCard>
       </Grid>
@@ -158,6 +160,7 @@ export default function OrderForm(props) {
             control={control}
             setValue={setValue}
             engine={engine}
+            enqueueSnackbar={enqueueSnackbar}
           />
         </WizardCard>
       </Grid>
@@ -214,6 +217,7 @@ export default function OrderForm(props) {
                 setValue={setValue}
                 engine={engine}
                 errors={errors}
+                calculationRef={calculationRef}
               />
             </WizardCard>
           </Grid>

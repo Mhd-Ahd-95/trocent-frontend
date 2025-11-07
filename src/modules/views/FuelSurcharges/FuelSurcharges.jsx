@@ -102,7 +102,7 @@ export default function FuelSurcharges() {
                 flex: 1,
                 minWidth: 200,
                 valueFormatter: (rowData) =>
-                  moment(rowData).format("MMM DD, YYYY hh:mm:ss"),
+                  moment(rowData).format("MMM DD, YYYY HH:mm:SS"),
               },
               {
                 headerName: "To Date",
@@ -111,7 +111,7 @@ export default function FuelSurcharges() {
                 minWidth: 200,
                 // renderCell: (params) => <CustomCell>{params.value}</CustomCell>,
                 valueFormatter: (rowData) =>
-                  moment(rowData).format("MMM DD, YYYY hh:mm:ss"),
+                  moment(rowData).format("MMM DD, YYYY HH:mm:ss"),
               },
               {
                 field: "actions",

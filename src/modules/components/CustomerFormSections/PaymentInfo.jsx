@@ -25,6 +25,8 @@ function PaymentInfo(props) {
                 <TextInput
                     label='Weight to Pieces Rule'
                     variant='outlined'
+                    type='number'
+                    inputProps={{ step: "any" }}
                     fullWidth
                     {...register('weight_pieces_rule')}
                 />
@@ -33,6 +35,8 @@ function PaymentInfo(props) {
                 <TextInput
                     label='Fuel Surcharge Rule'
                     variant='outlined'
+                    type='number'
+                    inputProps={{ step: "any" }}
                     fullWidth
                     {...register('fuel_surcharge_rule')}
                 />

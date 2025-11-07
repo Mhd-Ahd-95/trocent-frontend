@@ -3,7 +3,6 @@ import { Grid, Autocomplete, CircularProgress } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import { useCustomers } from '../../hooks/useCustomers'
-import { useRateSheetsByCustomerAndType } from '../../hooks/useRateSheets'
 import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
@@ -22,7 +21,7 @@ function ClientInfo(props) {
     }
   }, [isError, error])
 
-  useRateSheetsByCustomerAndType(customerId, 'skid')
+  // useRateSheetsByCustomerAndType(customerId)
 
   React.useEffect(() => {
     if (data && customerId) {
@@ -49,14 +48,14 @@ function ClientInfo(props) {
                 loading={isLoading}
                 value={data?.find((c) => c.id === Number(field.value)) || null}
                 onChange={(_, value) => {
-                  unstable_batchedUpdates(() => {
+                  unstable_batchedUpdates(async () => {
                     field.onChange(value?.id || '')
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
                     const access = value?.accessorials.map((acc) => ({ charge_name: acc.access_name, amount: acc.amount, charge_amount: 0, charge_quantity: 0, is_included: false })) || []
-                    console.log(access);
                     setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
                     engine.customer = value
+                    if (value?.id) await engine.get_customer_rate_sheet(value.id)
                   })
                 }}
                 getOptionLabel={option =>
