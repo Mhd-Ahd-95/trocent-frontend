@@ -8,13 +8,14 @@ import moment from 'moment'
 export default function FuelSurchargeForm(props) {
     const { initialValues, submit, editMode, setOpen } = props
     const [loading, setLoading] = React.useState(false)
-    
+
     const {
         register,
         handleSubmit,
         reset,
         control,
         formState: { errors },
+        setValue
     } = useForm({
         defaultValues: {
             ftl_surcharge: '',
@@ -30,6 +31,9 @@ export default function FuelSurchargeForm(props) {
         const action = e?.nativeEvent?.submitter?.id
         data['ltl_surcharge'] = Number(data['ltl_surcharge'])
         data['ftl_surcharge'] = Number(data['ftl_surcharge'])
+        data['from_date'] = moment(data['from_date']).format('YYYY-MM-DD 00:00:00')
+        data['to_date'] = moment(data['to_date']).format('YYYY-MM-DD 23:59:59')
+        
         try {
             await submit(data);
             if (action === 'apply-fuel-action') {
@@ -90,7 +94,12 @@ export default function FuelSurchargeForm(props) {
                                     label={'From Date*'}
                                     views={['year', 'month', 'day']}
                                     value={field.value ? moment(field.value) : null}
-                                    onChange={date => field.onChange(date ? date.toISOString() : null)}
+                                    onChange={date => {
+                                        if (date) {
+                                            field.onChange(date.toISOString())
+                                            setValue('to_date', moment(date.toISOString()).add(7, 'days'))
+                                        }
+                                    }}
                                     slotProps={{
                                         textField: {
                                             error: !!errors?.from_date,
@@ -115,9 +124,10 @@ export default function FuelSurchargeForm(props) {
                         <Controller
                             name={'to_date'}
                             control={control}
+                            rules={{ required: `To Date is a required field` }}
                             render={({ field }) => (
                                 <DatePicker
-                                    label={'To Date'}
+                                    label={'To Date*'}
                                     views={['year', 'month', 'day']}
                                     value={field.value ? moment(field.value) : null}
                                     onChange={date => field.onChange(date ? date.toISOString() : null)}
