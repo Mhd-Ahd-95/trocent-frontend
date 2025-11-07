@@ -261,8 +261,8 @@ function BasicInfo(props) {
           variant='outlined'
           {...register('internal_note')}
           multiline
-          minRows={4}
-          maxRows={4}
+          minRows={2}
+          maxRows={2}
           fullWidth
           sx={{
             '& .MuiInputLabel-root': {

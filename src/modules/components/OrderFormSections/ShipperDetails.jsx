@@ -195,6 +195,7 @@ function ShipperDetails(props) {
                   const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
                   field.onChange(nAB.city)
                   engine.shipper_city = nAB.city
+                  props.calculationRef?.current?.recalculate()
                 }
               }}
               variant='outlined'
@@ -276,8 +277,8 @@ function ShipperDetails(props) {
                   field.onChange(nAB.special_instructions)
                 }
               }}
-              minRows={4}
-              maxRows={4}
+              minRows={2}
+              maxRows={2}
               fullWidth
               sx={{
                 '& .MuiInputLabel-root': {

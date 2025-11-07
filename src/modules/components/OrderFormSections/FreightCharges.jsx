@@ -143,7 +143,7 @@ function FreightCharges(props) {
               borderRadius: 3
             }}
           >
-            <Grid
+            {/* <Grid
               size={12}
               sx={{
                 borderBottom: `1px solid ${theme.palette.grey[200]}`,
@@ -157,7 +157,7 @@ function FreightCharges(props) {
               >
                 Freight & Charges
               </Typography>
-            </Grid>
+            </Grid> */}
             <Grid size={12}>
               <Grid container spacing={2} px={3} py={2}>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -186,6 +186,11 @@ function FreightCharges(props) {
                                 <AttachMoney />
                               </InputAdornment>
                             )
+                          }
+                        }}
+                        sx={{
+                          '& .Mui-disabled': {
+                            color: '#000'
                           }
                         }}
                       />
@@ -430,7 +435,7 @@ function FreightCharges(props) {
             borderRadius: 2
           }}
         >
-          <Grid
+          {/* <Grid
             size={12}
             sx={{
               borderBottom: `1px solid ${theme.palette.grey[200]}`,
@@ -440,7 +445,7 @@ function FreightCharges(props) {
             <Typography component={'p'} sx={{ fontSize: 16, fontWeight: 600 }}>
               Order Summary
             </Typography>
-          </Grid>
+          </Grid> */}
           <Grid size={12} sx={{ py: 2, px: 3 }}>
             <Grid container spacing={4}>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>

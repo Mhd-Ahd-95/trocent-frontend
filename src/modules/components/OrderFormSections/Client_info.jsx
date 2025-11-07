@@ -34,7 +34,7 @@ function ClientInfo(props) {
   }, [data, customerId, engine])
 
   return (
-    <Grid container spacing={4}>
+    <Grid container spacing={3}>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
         <Controller
           name='customer_id'

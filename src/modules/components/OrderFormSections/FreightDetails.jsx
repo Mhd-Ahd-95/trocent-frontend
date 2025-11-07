@@ -145,7 +145,7 @@ function FreightDetails(props) {
     if (freights && engine.customer) {
       engine.freights = freights
       const totals = engine.calculateOrder()
-
+      console.log(totals)
       requestAnimationFrame(() => {
         setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -164,9 +164,9 @@ function FreightDetails(props) {
   }))
 
   return (
-    <Grid container spacing={3}>
+    <Grid container spacing={1}>
       <Grid size={12}>
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
           <Grid size={12}>
             <Controller
               name='service_type'
@@ -190,8 +190,8 @@ function FreightDetails(props) {
               )}
             />
           </Grid>
-          <Grid size={12}>
-            <Typography
+          <Grid size={12} pt={2}>
+            {/* <Typography
               component='p'
               sx={{
                 fontSize: 16,
@@ -201,7 +201,7 @@ function FreightDetails(props) {
               }}
             >
               Freights
-            </Typography>
+            </Typography> */}
             {fields.map((item, index) => (
               <FreightRow
                 key={item.id}
@@ -221,7 +221,7 @@ function FreightDetails(props) {
               container
               justifyContent={'center'}
               alignItems={'center'}
-              pb={2}
+              // pb={2}
             >
               <Grid size='auto'>
                 <Button
