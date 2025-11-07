@@ -82,6 +82,7 @@ export default function OrderForm(props) {
         control={control}
         enqueueSnackbar={enqueueSnackbar}
         engine={engine}
+        setValue={setValue}
       />
     ),
     [register, control, enqueueSnackbar]
