@@ -97,7 +97,7 @@ export default function FuelSurchargeForm(props) {
                                     onChange={date => {
                                         if (date) {
                                             field.onChange(date.toISOString())
-                                            setValue('to_date', moment(date.toISOString()).add(7, 'days'))
+                                            setValue('to_date', moment(date.toISOString()).add(6, 'days'))
                                         }
                                     }}
                                     slotProps={{
