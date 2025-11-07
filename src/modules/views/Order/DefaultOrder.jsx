@@ -120,8 +120,6 @@ export const defaultOrderValue = {
   
   customer_accessorials: [],
   additional_service_charges: [],
-  freight_rate: '',
-  fuel_surcharge: '',
   sub_total: '',
   provincial_tax: '',
   federal_tax: '',

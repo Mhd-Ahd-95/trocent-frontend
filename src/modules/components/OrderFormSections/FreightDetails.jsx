@@ -1,28 +1,28 @@
 import React from 'react'
 import { Grid, Autocomplete, Typography, Button, InputAdornment, CircularProgress, FormControl, Switch } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { CustomFormControlLabel, StyledButton } from '../../components'
+import { CustomFormControlLabel } from '../../components'
 import { Controller, useFieldArray } from 'react-hook-form'
-import { Add, Calculate } from '@mui/icons-material'
+import { Add } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
-import OrderEngine from './OrderEngine'
-import { useSnackbar } from 'notistack'
 
-// Memoized calculation hook
-const useFreightCalculations = (freights, customer, setValue) => {
+const useFreightCalculations = (freights, customer, setValue, fieldsLength, engine) => {
   const calculationTimeoutRef = React.useRef(null)
   const [isCalculating, setIsCalculating] = React.useState(false)
   const previousFreightsRef = React.useRef(null)
-  const { enqueueSnackbar } = useSnackbar()
+  const previousLengthRef = React.useRef(0)
 
   React.useEffect(() => {
     if (!freights || freights.length === 0 || !customer) return
 
+    const lengthChanged = fieldsLength !== previousLengthRef.current
     const freightsChanged = JSON.stringify(freights) !== JSON.stringify(previousFreightsRef.current)
-    if (!freightsChanged) return
+
+    if (!freightsChanged && !lengthChanged) return
 
     previousFreightsRef.current = freights
+    previousLengthRef.current = fieldsLength
 
     if (calculationTimeoutRef.current) {
       clearTimeout(calculationTimeoutRef.current)
@@ -30,13 +30,14 @@ const useFreightCalculations = (freights, customer, setValue) => {
 
     setIsCalculating(true)
 
+    const timeout = lengthChanged ? 100 : 300
+
     calculationTimeoutRef.current = setTimeout(() => {
       try {
-        const engine = new OrderEngine(enqueueSnackbar)
         engine.customer = customer
         engine.freights = freights
 
-        const totals = engine.calculateTotalFreights()
+        const totals = engine.calculateOrder()
 
         requestAnimationFrame(() => {
           setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -53,14 +54,14 @@ const useFreightCalculations = (freights, customer, setValue) => {
         console.error('Calculation error:', err)
         setIsCalculating(false)
       }
-    }, 300)
+    }, timeout)
 
     return () => {
       if (calculationTimeoutRef.current) {
         clearTimeout(calculationTimeoutRef.current)
       }
     }
-  }, [freights, customer, setValue])
+  }, [freights, customer, setValue, fieldsLength])
 
   return isCalculating
 }
@@ -78,7 +79,9 @@ function FreightDetails(props) {
   const isCalculating = useFreightCalculations(
     getValues('freights'),
     engine.customer,
-    setValue
+    setValue,
+    fields.length,
+    engine
   )
 
   const handleAddFreight = React.useCallback(() => {
@@ -96,28 +99,66 @@ function FreightDetails(props) {
       is_converted: false,
       volume_weight: 0
     })
-  }, [append])
+    setTimeout(() => {
+      const freights = getValues('freights')
+      if (freights && engine.customer) {
+        engine.freights = freights
+        const totals = engine.calculateOrder()
+        requestAnimationFrame(() => {
+          setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_actual_weight', totals?.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_volume_weight', totals?.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_chargeable_weight', totals?.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+        })
+      }
+    }, 50)
+  }, [append, getValues, engine, setValue])
+
+  const handleRemoveFreight = React.useCallback((index) => {
+    remove(index)
+    setTimeout(() => {
+      const freights = getValues('freights')
+      if (freights && freights.length > 0 && engine.customer) {
+        engine.freights = freights
+        const totals = engine.calculateOrder()
+
+        requestAnimationFrame(() => {
+          setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_actual_weight', totals?.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_volume_weight', totals?.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_chargeable_weight', totals?.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+        })
+      }
+    }, 50)
+  }, [remove, getValues, engine, setValue])
 
   const triggerRecalculation = React.useCallback(() => {
     const freights = getValues('freights')
     if (freights && engine.customer) {
       engine.freights = freights
       const totals = engine.calculateOrder()
-      console.log(totals);
+
       requestAnimationFrame(() => {
-        setValue('total_pieces', totals.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('total_pieces_skid', totals.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('total_actual_weight', totals.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('total_volume_weight', totals.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('total_chargeable_weight', totals.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('total_weight_in_kg', totals.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('freight_rate', totals.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
-        setValue('freight_fuel_surcharge', totals.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_actual_weight', totals?.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_volume_weight', totals?.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_chargeable_weight', totals?.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
       })
     }
-  }, [engine.customer, engine, getValues, setValue])
+  }, [engine, getValues, setValue])
 
-  // Expose recalculation function to parent
   React.useImperativeHandle(props.calculationRef, () => ({
     recalculate: triggerRecalculation
   }))
@@ -164,7 +205,7 @@ function FreightDetails(props) {
             {fields.map((item, index) => (
               <FreightRow
                 key={item.id}
-                remove={remove}
+                remove={handleRemoveFreight}
                 control={control}
                 register={register}
                 index={index}
@@ -305,10 +346,9 @@ function FreightDetails(props) {
                       disabled={!mode}
                       type='number'
                       fullWidth
-                      // value={field.value || ''}
                       onChange={(e) => {
                         const value = Number(e.target.value)
-                        // setValue('total_pieces_skid', value)
+                        field.onChange(value)
                         engine.overrideTotalPiecesSkid = value
                         triggerRecalculation()
                       }}

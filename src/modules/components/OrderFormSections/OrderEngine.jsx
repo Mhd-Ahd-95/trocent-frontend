@@ -393,6 +393,7 @@ export default class OrderEngine {
         let fuel_rules = this.context['customer_fuel_rules']
         let weight = this.context['total_chargeable_weight']
         let fuelSurcharge = this.fuelSurchargeByDate
+
         let fuel_value = 0
         let amount = this.context['freight_rate'] + this.context['fuel_based_accessorial_charges']
 
