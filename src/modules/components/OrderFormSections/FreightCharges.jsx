@@ -14,19 +14,59 @@ import {
   TextInput,
   CustomFormControlLabel
 } from '../../components'
-import { useFieldArray } from 'react-hook-form'
+import { useFieldArray, useWatch } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
 import { Controller } from 'react-hook-form'
 
 function FreightCharges(props) {
-  const { register, engine, control, getValues } = props
+
+  const { register, engine, control, getValues, setValue } = props
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
-  const [charges, setCharges] = React.useState({ no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges') })
+  const [charges, setCharges] = React.useState({
+    no_charges: getValues('no_charges'),
+    manual_charges: getValues('manual_charges'),
+    manual_fuel_surcharges: getValues('manual_fuel_surcharges')
+  })
 
-  const customerAccessorials = React.useMemo(() => getValues('customer_accessorials') || [], [engine.customer, getValues('customer_accessorials')])
+  const { fields: customerAccessorials, replace: replaceCustomerAccessorials, update: updateCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
+  const { fields: customerVehicleTypes, replace: replaceCustomerVehicleTypes, update: updateCustomerVehicleTypes } = useFieldArray({ control, name: 'customer_vehicle_types' })
+
+  const customerId = useWatch({ control, name: 'customer_id' })
+  const serviceType = useWatch({ control, name: 'service_type' })
+
+  // const isInitialLoad = React.useRef(!props.editMode)
+
+  React.useEffect(() => {
+    let vehicleTypes = []
+    if (engine.customer && customerId) {
+      vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
+        id: v.id,
+        name: v.name,
+        amount: v.amount,
+        is_included: false,
+      }))
+    }
+    replaceCustomerVehicleTypes(vehicleTypes)
+  }, [engine.customer?.id, customerId, replaceCustomerVehicleTypes])
+
+  React.useEffect(() => {
+    let accessorials = []
+    if (engine.customer && customerId) {
+      accessorials = (engine.customer.accessorials || []).map(a => ({
+        id: a.id,
+        charge_name: a.access_name,
+        amount: a.amount,
+        charge_amount: 0,
+        charge_quantity: 0,
+        is_included: false,
+      }))
+    }
+    replaceCustomerAccessorials(accessorials)
+  }, [engine.customer?.id, customerId, replaceCustomerAccessorials])
+
 
   const {
     fields: additionalServiceCharges,
@@ -36,14 +76,6 @@ function FreightCharges(props) {
     control,
     name: 'additional_service_charges'
   })
-
-  // const loadAccessorials = React.useCallback(() => {
-  //   const accessorials = engine.customer['accessorials']
-  // }, [engine.customer])
-
-  // React.useImperativeHandle(props.customerRef, () => ({
-  //   accessorials: loadAccessorials 
-  // }))
 
   return (
     <Grid container spacing={3}>
@@ -134,6 +166,132 @@ function FreightCharges(props) {
           />
         </FormControl>
       </Grid>
+      {serviceType === 'Direct' &&
+        <Grid size={12}>
+          <Grid container sx={{ border: `1px solid ${theme.palette.grey[200]}`, borderRadius: 2 }}>
+            <Grid size={12} sx={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, py: 1, px: 2 }}>
+              <Typography component={'p'} sx={{ fontSize: 16, fontWeight: 600 }}>
+                Vehicle Types
+              </Typography>
+            </Grid>
+            {customerVehicleTypes.length > 0 ? (
+              <Grid size={12} sx={{ py: 2, px: 3 }}>
+                <Grid container spacing={2} width={'100%'}>
+                  <Grid size={12}>
+                    <Controller
+                      name='direct_km'
+                      control={control}
+                      render={({ field }) => (
+                        <TextInput
+                          {...field}
+                          label='Direct KM'
+                          variant='outlined'
+                          fullWidth
+                          type='number'
+                          inputProps={{ step: 'any' }}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            field.onChange(Number(value))
+                            engine.directKM = Number(value)
+                            props.calculationRef.current?.recalculate()
+                          }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  {customerVehicleTypes.map((vtype, index) => (
+                    <Grid
+                      container
+                      spacing={2}
+                      key={`${vtype.name}-${index}`}
+                      sx={{
+                        border: `1px solid ${theme.palette.grey[200]}`,
+                        py: 1,
+                        px: 2,
+                        borderRadius: 3
+                      }}
+                      justifyContent={'center'}
+                      alignItems={'center'}
+                      width={'100%'}
+                    >
+                      <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                        <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}                        >
+                          {vtype.name}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <FormControl>
+                          <CustomFormControlLabel
+                            control={
+                              <Controller
+                                name={`customer_vehicle_types.${index}.is_included`}
+                                control={control}
+                                render={({ field }) => (
+                                  <Switch
+                                    {...field}
+                                    checked={field.value || false}
+                                    onChange={e => {
+                                      const checked = e.target.checked
+                                      field.onChange(checked)
+                                      engine.customer_vehicle_types = getValues('customer_vehicle_types')
+                                      props.calculationRef.current?.recalculate()
+                                    }}
+                                  />
+                                )}
+                              />
+                            }
+                            label='Is included'
+                          />
+                        </FormControl>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <Controller
+                          name={`customer_vehicle_types.${index}.amount`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextInput
+                              {...field}
+                              label="Amount"
+                              variant="outlined"
+                              fullWidth
+                              type="number"
+                              inputProps={{ step: 'any' }}
+                              value={field.value || ''}
+                              size="small"
+                              onChange={(e) => {
+                                const value = e.target.value
+                                field.onChange(Number(value))
+                                engine.customer_vehicle_types = getValues('customer_vehicle_types')
+                                props.calculationRef.current?.recalculate()
+                              }}
+                              slotProps={{
+                                input: {
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <AttachMoney />
+                                    </InputAdornment>
+                                  )
+                                }
+                              }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+            ) : (
+              <Grid size={12} sx={{ py: 4, px: 3 }}>
+                <Typography variant='body2' color='textSecondary' textAlign='center'>
+                  {customerId ? 'No Vehicle Types available for this customer' : 'Select a customer to view vehicle types'}
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
+        </Grid>
+      }
       {!charges.no_charges && (
         <Grid size={12}>
           <Grid
@@ -143,21 +301,6 @@ function FreightCharges(props) {
               borderRadius: 3
             }}
           >
-            {/* <Grid
-              size={12}
-              sx={{
-                borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                py: 2,
-                px: 3
-              }}
-            >
-              <Typography
-                component={'p'}
-                sx={{ fontSize: 15, fontWeight: 600 }}
-              >
-                Freight & Charges
-              </Typography>
-            </Grid> */}
             <Grid size={12}>
               <Grid container spacing={2} px={3} py={2}>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -176,6 +319,7 @@ function FreightCharges(props) {
                         value={field.value || ''}
                         onChange={e => {
                           const value = e.target.value
+                          field.onChange(value)
                           engine.override_freight_rate = Number(value)
                           props.calculationRef?.current?.recalculate()
                         }}
@@ -189,9 +333,11 @@ function FreightCharges(props) {
                           }
                         }}
                         sx={{
-                          '& .Mui-disabled': {
-                            color: '#000'
-                          }
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            color: 'black',
+                            fontWeight: 600,
+                            WebkitTextFillColor: 'black',
+                          },
                         }}
                       />
                     )}
@@ -212,7 +358,7 @@ function FreightCharges(props) {
                         value={field.value || ''}
                         onChange={e => {
                           const value = e.target.value
-                          console.log(value);
+                          field.onChange(value)
                           engine.override_fuel_surcharge = Number(value)
                           props.calculationRef?.current?.recalculate()
                         }}
@@ -225,6 +371,13 @@ function FreightCharges(props) {
                               </InputAdornment>
                             )
                           }
+                        }}
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            color: 'black',
+                            fontWeight: 600,
+                            WebkitTextFillColor: 'black',
+                          },
                         }}
                       />
                     )}
@@ -258,14 +411,14 @@ function FreightCharges(props) {
               Customer-specific accessorial charges and fees
             </Typography>
           </Grid>
-          {customerAccessorials.length > 0 && (
+          {customerAccessorials.length > 0 ? (
             <Grid size={12} sx={{ py: 2, px: 3 }}>
               <Grid container spacing={2}>
                 {customerAccessorials.map((access, index) => (
                   <Grid
                     container
                     spacing={2}
-                    key={index}
+                    key={`${customerId}-${index}`}
                     sx={{
                       border: `1px solid ${theme.palette.grey[200]}`,
                       py: 2,
@@ -290,10 +443,23 @@ function FreightCharges(props) {
                       <FormControl>
                         <CustomFormControlLabel
                           control={
-                            <Switch
-                              {...register(
-                                `customer_accessorials.${index}.is_included`
-                              )}
+                            <Controller
+                              name={`customer_accessorials.${index}.is_included`}
+                              control={control}
+                              render={({ field }) => {
+                                return (
+                                  <Switch
+                                    {...field}
+                                    checked={field.value || false}
+                                    onChange={e => {
+                                      const checked = e.target.checked
+                                      field.onChange(checked)
+                                      setValue(`customer_accessorials.${index}.charge_quantity`, checked ? 1 : 0);
+                                      setValue(`customer_accessorials.${index}.charge_amount`, checked ? getValues(`customer_accessorials.${index}.amount`) : 0)
+                                    }}
+                                  />
+                                )
+                              }}
                             />
                           }
                           label='Is included'
@@ -301,39 +467,59 @@ function FreightCharges(props) {
                       </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 2 }} pl={2}>
-                      <TextInput
-                        label='Qty'
-                        variant='outlined'
-                        fullWidth
-                        size='small'
-                        {...register(
-                          `customer_accessorials.${index}.charge_quantity`
+                      <Controller
+                        name={`customer_accessorials.${index}.charge_quantity`}
+                        control={control}
+                        render={({ field }) => (
+                          <TextInput
+                            {...field}
+                            label='Qty'
+                            variant='outlined'
+                            fullWidth
+                            type='number'
+                            inputProps={{ step: 'any' }}
+                            value={field.value || ''}
+                            size='small'
+                          />
                         )}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <TextInput
-                        label='Amount'
-                        variant='outlined'
-                        fullWidth
-                        size='small'
-                        {...register(
-                          `customer_accessorials.${index}.charge_amount`
+                      <Controller
+                        name={`customer_accessorials.${index}.charge_amount`}
+                        control={control}
+                        render={({ field }) => (
+                          <TextInput
+                            {...field}
+                            label='Amount'
+                            variant='outlined'
+                            fullWidth
+                            type='number'
+                            inputProps={{ step: 'any' }}
+                            value={field.value || ''}
+                            size='small'
+                            slotProps={{
+                              input: {
+                                endAdornment: (
+                                  <InputAdornment position='end'>
+                                    <AttachMoney />
+                                  </InputAdornment>
+                                )
+                              }
+                            }}
+                          />
                         )}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <AttachMoney />
-                              </InputAdornment>
-                            )
-                          }
-                        }}
                       />
                     </Grid>
                   </Grid>
                 ))}
               </Grid>
+            </Grid>
+          ) : (
+            <Grid size={12} sx={{ py: 4, px: 3 }}>
+              <Typography variant='body2' color='textSecondary' textAlign='center'>
+                {customerId ? 'No accessorials available for this customer' : 'Select a customer to view accessorials'}
+              </Typography>
             </Grid>
           )}
           <Grid size={12} sx={{ py: 2, px: 3 }}>
@@ -435,17 +621,6 @@ function FreightCharges(props) {
             borderRadius: 2
           }}
         >
-          {/* <Grid
-            size={12}
-            sx={{
-              borderBottom: `1px solid ${theme.palette.grey[200]}`,
-              p: 2
-            }}
-          >
-            <Typography component={'p'} sx={{ fontSize: 16, fontWeight: 600 }}>
-              Order Summary
-            </Typography>
-          </Grid> */}
           <Grid size={12} sx={{ py: 2, px: 3 }}>
             <Grid container spacing={4}>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>

@@ -43,10 +43,17 @@ export default class OrderEngine {
     set isManualFuelSurcharge(fr) { this.request['manual_fuel_surcharge'] = fr }
     set isNoCharge(nc) { this.request['no_charge'] = nc }
 
+    set directKM(km) { this.request['direct_km'] = km }
+
+    set service_type(st) { this.request['service_type'] = st }
+
+    set customer_vehicle_types(cvt) { this.request['customer_vehicle_types'] = cvt }
+
     calculateOrder = () => {
         this.context = this.initializeContext()
         this.calculateTotalFreights()
         this.calculateFreightRate()
+        this.applyServiceCharge()
         this.calculateFuelSurcharge()
         return this.format_value()
     }
@@ -65,6 +72,9 @@ export default class OrderEngine {
             manual_fuel_surcharge: this.request['manual_fuel_surcharge'] || false,
             override_fuel_surcharge: this.request['override_fuel_surcharge'] || 0,
             no_charge: this.request['no_charge'] || false,
+            direct_km: this.request['direct_km'] || 0,
+            service_type: this.request['service_type'] || 'Regular',
+            customer_vehicle_types: this.request['customer_vehicle_types'] || [],
 
             total_pieces: 0,
             total_actual_weight: 0,
@@ -84,7 +94,8 @@ export default class OrderEngine {
             freight_rate_skid: 0,
             freight_rate_weight: 0,
             freight_fuel_surcharge: 0,
-            fuel_based_accessorial_charges: 0
+            fuel_based_accessorial_charges: 0,
+            direct_service_charge_amount: 0
         })
     }
 
@@ -423,14 +434,8 @@ export default class OrderEngine {
         let fuel_value = 0
         let amount = this.context['freight_rate'] + this.context['fuel_based_accessorial_charges']
 
-        console.log('customer: ', this.customer);
-        console.log('shipper_city: ', this.shipper_city);
-        console.log('receiver_city: ', this.receiver_city);
-        console.log('fuelSurcharge: ', fuelSurcharge);
-
         if (!this.customer || !this.shipper_city || !this.receiver_city || !fuelSurcharge) {
-            console.log('object');
-            return 
+            return
         }
 
         if (this.context['manual_fuel_surcharge']) {
@@ -460,7 +465,6 @@ export default class OrderEngine {
             if (fuel_ltl_other) fuel_charge = (fuel_ltl / 100) * fuel_ltl_other_value
             else {
                 fuel_charge = (fuel_ltl / 100) * Number(data.ltl_surcharge)
-                console.log(fuel_charge);
             }
         }
         else {
@@ -469,6 +473,28 @@ export default class OrderEngine {
         }
 
         return (fuel_charge / 100) * amount
+    }
+
+    applyServiceCharge = () => {
+        let serviceType = this.context['service_type']
+        let directKM = this.context['direct_km']
+        const vehicleTypes = this.context['customer_vehicle_types'] || []
+
+        if (this.context['manual_freight_rate']) {
+            this.context['freight_rate'] = this.context['override_freight_rate']
+            return
+        }
+
+        if (serviceType === 'Direct') {
+            const vehicleIncluded = vehicleTypes.filter(vt => vt.is_included)
+            if (vehicleIncluded.length > 0) {
+                for (let vtype of vehicleIncluded) {
+                    this.context['direct_service_charge_amount'] += Number(vtype.amount) * Number(directKM)
+                }
+            }
+            this.context['freight_rate'] = this.context['direct_service_charge_amount']
+        }
+
     }
 
     format_value = () => {

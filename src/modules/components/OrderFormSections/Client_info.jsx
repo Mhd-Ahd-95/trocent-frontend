@@ -6,22 +6,21 @@ import { useCustomers } from '../../hooks/useCustomers'
 import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
-  const { control, engine, setValue } = props
+  const { control, engine, setValue, editMode, enqueueSnackbar } = props
   const { data, isLoading, isError, error } = useCustomers()
 
   const [selectedCustomer, setSelectedCustomer] = React.useState(null)
   const [customerId, setCustomerId] = React.useState('')
+  const isInitialLoad = React.useRef(true)
 
   React.useEffect(() => {
     if (isError && error) {
       const message = error.response?.data?.message
       const status = error.response?.status
       const errorMessage = message ? `${message} - ${status}` : error.message
-      console.error(errorMessage)
+      enqueueSnackbar(errorMessage, { variant: 'error' })
     }
   }, [isError, error])
-
-  // useRateSheetsByCustomerAndType(customerId)
 
   React.useEffect(() => {
     if (data && customerId) {
@@ -52,8 +51,25 @@ function ClientInfo(props) {
                     field.onChange(value?.id || '')
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
-                    const access = value?.accessorials.map((acc) => ({ charge_name: acc.access_name, amount: acc.amount, charge_amount: 0, charge_quantity: 0, is_included: false })) || []
-                    setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
+                    // if (!editMode || !isInitialLoad.current) {
+                    //   const access = value?.accessorials.map((acc) => ({
+                    //     charge_name: acc.access_name,
+                    //     amount: acc.amount,
+                    //     charge_amount: 0,
+                    //     charge_quantity: 0,
+                    //     is_included: false
+                    //   })) || []
+                    //   setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
+                    //   const vtypes = value?.vehicle_types.map((vt) => ({
+                    //     name: vt.name,
+                    //     is_include: false,
+                    //     amount: vt.amount
+                    //   }))
+                    //   setValue('customer_vehicle_types', vtypes, { shouldValidate: false, shouldDirty: false })
+                    // }
+                    // if (isInitialLoad.current) {
+                    //   isInitialLoad.current = false
+                    // }
                     engine.customer = value
                     if (value?.id) await engine.get_customer_rate_sheet(value.id)
                   })

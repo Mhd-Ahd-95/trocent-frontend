@@ -118,6 +118,8 @@ export const defaultOrderValue = {
   freight_rate: '',
   freight_fuel_surcharge: '',
   
+  direct_km: 0,
+  customer_vehicle_types: [],
   customer_accessorials: [],
   additional_service_charges: [],
   sub_total: '',
