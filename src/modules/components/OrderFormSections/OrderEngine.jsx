@@ -49,12 +49,18 @@ export default class OrderEngine {
 
     set customer_vehicle_types(cvt) { this.request['customer_vehicle_types'] = cvt }
 
+    set accessorialsCharge(ac) { this.request['customer_accessorials_charges'] = ac }
+
+    set otherAccessorialsCharges(oac) { this.request['other_accessorials_charges'] = oac }
+
     calculateOrder = () => {
         this.context = this.initializeContext()
         this.calculateTotalFreights()
         this.calculateFreightRate()
         this.applyServiceCharge()
+        this.applyAccessorialsCharge()
         this.calculateFuelSurcharge()
+        this.applyOtherCharges()
         return this.format_value()
     }
 
@@ -75,6 +81,8 @@ export default class OrderEngine {
             direct_km: this.request['direct_km'] || 0,
             service_type: this.request['service_type'] || 'Regular',
             customer_vehicle_types: this.request['customer_vehicle_types'] || [],
+            customer_accessorials_charges: this.request['customer_accessorials_charges'] || [],
+            other_accessorials_charges: this.request['other_accessorials_charges'] || [],
 
             total_pieces: 0,
             total_actual_weight: 0,
@@ -95,7 +103,8 @@ export default class OrderEngine {
             freight_rate_weight: 0,
             freight_fuel_surcharge: 0,
             fuel_based_accessorial_charges: 0,
-            direct_service_charge_amount: 0
+            direct_service_charge_amount: 0,
+            charges_total: 0
         })
     }
 
@@ -486,6 +495,34 @@ export default class OrderEngine {
 
     }
 
+    applyAccessorialsCharge = () => {
+        const accessorials = this.context['customer_accessorials_charges']
+        const accessorialsIncluded = accessorials.filter(acc => acc.is_included)
+        if (accessorialsIncluded.length === 0) return
+
+        for (let access of accessorialsIncluded) {
+            const amount = Number(access['charge_amount'])
+            const type = access['type']
+            if (type === 'fuel_based') {
+                this.context['fuel_based_accessorial_charges'] += amount
+                this.context['charges_total'] += amount
+            }
+            else this.context['charges_total'] += amount
+        }
+    }
+
+    applyOtherCharges = () => {
+        const otherAccessorials = this.context['other_accessorials_charges']
+        if (otherAccessorials.length === 0) return
+        for (let oaccess of otherAccessorials) {
+            const name = oaccess['charge_name']
+            const amount = Number(oaccess['charge_amount'])
+            if (name && amount > 0) {
+                this.context['charges_total'] += amount
+            }
+        }
+    }
+
     format_value = () => {
         return ({
             total_pieces: Math.round(this.context['total_pieces'] * 100) / 100 || 0,
@@ -522,5 +559,49 @@ export default class OrderEngine {
             this.enqueueSnackbar('Failed to load fuel surcharge', { variant: 'error' })
             this.fuelSurchargeByDate = null
         }
+    }
+
+    static accessorials_types = (type, access, frate, qty) => {
+        let calculated_amount = 0
+        const amount = Number(access['amount']) || 0
+        const amountType = access['amount_type'] || ''
+        const timeUnit = access['time_unit']
+        let freeTime = access['free_time'] ? Number(access['free_time']) : 0
+        frate = Number(frate)
+        const min = access['min'] ? Number(access['min']) : 0
+        const max = access['max'] ? Number(access['max']) : 0
+
+        switch (type) {
+            case 'fixed_price':
+                calculated_amount = amount
+                break
+            case 'fuel_based':
+                if (amountType === 'percentage') calculated_amount = (amount / 100) * frate
+                else calculated_amount = amount * frate
+                break
+            case 'time_based':
+                if (timeUnit !== 'minute') freeTime = freeTime * 60
+                calculated_amount = amount
+                break
+            case 'transport_based':
+                if (amountType === 'percentage') calculated_amount = (amount / 100) * frate
+                else calculated_amount = amount * frate
+                break
+            case 'product_base':
+                calculated_amount = amount
+                break
+            case 'package_based':
+                calculated_amount = amount
+                break
+        }
+
+        calculated_amount *= qty
+
+        if (access['min']) calculated_amount = Math.max(calculated_amount, min)
+
+        if (access['max']) calculated_amount = Math.min(calculated_amount, max)
+
+        return calculated_amount
+
     }
 }

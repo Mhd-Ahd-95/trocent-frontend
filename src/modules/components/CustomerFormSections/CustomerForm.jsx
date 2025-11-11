@@ -28,7 +28,8 @@ export default function CustomerForm(props) {
         control,
         setValue,
         watch,
-        reset
+        reset,
+        getValues
     } = useForm({
         defaultValues: {
             account_number: '',
@@ -81,52 +82,51 @@ export default function CustomerForm(props) {
         setLoading(true)
         const action = e?.nativeEvent?.submitter?.id;
         const formData = new FormData()
-        const accessorials = data['accessorials']
-        const vehicleTypes = data['vehicle_types']
 
-        if (accessorials && accessorials.length > 0) {
-            accessorials.forEach((access, index) => {
-                Object.entries(access).forEach(([key, val]) => {
-                    formData.append(`accessorials[${index}][${key}]`, val)
-                })
-            })
-        }
-
-        if (vehicleTypes && vehicleTypes.length > 0) {
-            vehicleTypes.forEach((vtype, index) => {
-                Object.entries(vtype).forEach(([key, val]) => {
-                    formData.append(`vehicle_types[${index}][${key}]`, val)
-                })
-            })
-        }
-
-        for (let [key, value] of Object.entries(data)) {
-            if (['accessorials', 'vehicle_types'].includes(key)) continue
-            if (key === 'billing_emails' || key === 'pod_emails' || key === 'status_update_emails' || key === 'notification_preferences') {
-                if (value?.length > 0) {
-                    value?.forEach((vl, idx) => {
-                        formData.append(`${key}[${idx}]`, vl)
+        const appendArrayToFormData = (key, array) => {
+            if (array && array.length > 0) {
+                array.forEach((item, index) => {
+                    Object.entries(item).forEach(([field, value]) => {
+                        formData.append(`${key}[${index}][${field}]`, value ?? '')
                     })
-                }
-                else formData.append(key, null)
-            }
-            else {
-                formData.append(key, value)
+                })
             }
         }
+
+        const appendSimpleArray = (key, array) => {
+            if (array?.length > 0) {
+                array.forEach((value, idx) => {
+                    formData.append(`${key}[${idx}]`, value)
+                })
+            } else {
+                formData.append(key, '')
+            }
+        }
+
+        const emailFields = ['billing_emails', 'pod_emails', 'status_update_emails', 'notification_preferences']
+        const complexArrays = ['accessorials', 'vehicle_types']
+
+        appendArrayToFormData('accessorials', data.accessorials)
+        appendArrayToFormData('vehicle_types', data.vehicle_types)
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (complexArrays.includes(key)) return
+            if (emailFields.includes(key)) {
+                appendSimpleArray(key, value)
+            } else {
+                formData.append(key, value ?? '')
+            }
+        })
 
         try {
             await submit(formData);
             if (action === 'apply-customer-action') {
                 navigate('/customers', { state: { fromEditOrCreate: true } });
-            }
-            else {
+            } else {
                 reset()
             }
-            // editMode && props.refetch()
         } catch (error) {
-            // console.log(error);
-            //
+            // console.error(error);
         } finally {
             setLoading(false);
         }
@@ -153,7 +153,6 @@ export default function CustomerForm(props) {
                                 register={register}
                                 errors={errors}
                                 control={control}
-                                watch={watch}
                                 setValue={setValue}
                             />
                         </WizardCard>
@@ -164,7 +163,6 @@ export default function CustomerForm(props) {
                                 register={register}
                                 errors={errors}
                                 setValue={setValue}
-                                watch={watch}
                                 control={control}
                             />
                         </WizardCard>
@@ -175,7 +173,6 @@ export default function CustomerForm(props) {
                                 register={register}
                                 errors={errors}
                                 setValue={setValue}
-                                watch={watch}
                                 control={control}
                             />
                         </WizardCard>
@@ -186,7 +183,6 @@ export default function CustomerForm(props) {
                                 register={register}
                                 errors={errors}
                                 setValue={setValue}
-                                watch={watch}
                                 control={control}
                             />
                         </WizardCard>
@@ -208,7 +204,6 @@ export default function CustomerForm(props) {
                                 register={register}
                                 errors={errors}
                                 setValue={setValue}
-                                watch={watch}
                                 control={control}
                             />
                         </WizardCard>
@@ -218,7 +213,7 @@ export default function CustomerForm(props) {
                             register={register}
                             errors={errors}
                             setValue={setValue}
-                            watch={watch}
+                            getValues={getValues}
                             control={control}
                         />
                     </Grid>

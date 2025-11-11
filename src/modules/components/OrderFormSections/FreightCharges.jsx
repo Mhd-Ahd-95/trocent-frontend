@@ -12,7 +12,8 @@ import { useTheme } from '@mui/material/styles'
 import {
   AccordionComponent,
   TextInput,
-  CustomFormControlLabel
+  CustomFormControlLabel,
+  OrderEngine
 } from '../../components'
 import { useFieldArray, useWatch } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
@@ -56,9 +57,8 @@ function FreightCharges(props) {
     let accessorials = []
     if (engine.customer && customerId) {
       accessorials = (engine.customer.accessorials || []).map(a => ({
-        id: a.id,
+        ...a,
         charge_name: a.access_name,
-        amount: a.amount,
         charge_amount: 0,
         charge_quantity: 0,
         is_included: false,
@@ -454,8 +454,17 @@ function FreightCharges(props) {
                                     onChange={e => {
                                       const checked = e.target.checked
                                       field.onChange(checked)
-                                      setValue(`customer_accessorials.${index}.charge_quantity`, checked ? 1 : 0);
-                                      setValue(`customer_accessorials.${index}.charge_amount`, checked ? getValues(`customer_accessorials.${index}.amount`) : 0)
+                                      if (checked) {
+                                        const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1)
+                                        setValue(`customer_accessorials.${index}.charge_quantity`, 1);
+                                        setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+                                      }
+                                      else {
+                                        setValue(`customer_accessorials.${index}.charge_quantity`, 0);
+                                        setValue(`customer_accessorials.${index}.charge_amount`, 0)
+                                      }
+                                      engine.accessorialsCharge = getValues('customer_accessorials')
+                                      props.calculationRef.current?.recalculate()
                                     }}
                                   />
                                 )
@@ -476,9 +485,20 @@ function FreightCharges(props) {
                             label='Qty'
                             variant='outlined'
                             fullWidth
+                            disabled={!getValues(`customer_accessorials.${index}.is_included`)}
                             type='number'
                             inputProps={{ step: 'any' }}
                             value={field.value || ''}
+                            onChange={e => {
+                              const value = e.target.value
+                              if (Number(value) >= 0) {
+                                const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value))
+                                setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
+                                setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+                                engine.accessorialsCharge = getValues('customer_accessorials')
+                                props.calculationRef.current?.recalculate()
+                              }
+                            }}
                             size='small'
                           />
                         )}
@@ -494,10 +514,15 @@ function FreightCharges(props) {
                             label='Amount'
                             variant='outlined'
                             fullWidth
-                            type='number'
-                            inputProps={{ step: 'any' }}
-                            value={field.value || ''}
+                            disabled
                             size='small'
+                            sx={{
+                              '& .MuiInputBase-input.Mui-disabled': {
+                                color: 'black',
+                                fontWeight: 600,
+                                WebkitTextFillColor: 'black',
+                              },
+                            }}
                             slotProps={{
                               input: {
                                 endAdornment: (
@@ -533,53 +558,87 @@ function FreightCharges(props) {
                     <Grid size={12} key={serviceCharge.id}>
                       <Grid container spacing={2}>
                         <Grid size={{ xs: 12, sm: 12, md: 5 }}>
-                          <TextInput
-                            size='small'
-                            label='Charge Name'
-                            variant='outlined'
-                            fullWidth
-                            {...register(
-                              `additional_service_charges.${index}.charge_name`
+                          <Controller
+                            name={`additional_service_charges.${index}.charge_name`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextInput
+                                {...field}
+                                size='small'
+                                label='Charge Name'
+                                variant='outlined'
+                                fullWidth
+                              />
                             )}
                           />
+
                         </Grid>
                         <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                          <TextInput
-                            size='small'
-                            label='Quantity'
-                            variant='outlined'
-                            type='number'
-                            fullWidth
-                            {...register(
-                              `additional_service_charges.${index}.charge_quantity`
+                          <Controller
+                            name={`additional_service_charges.${index}.charge_quantity`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextInput
+                                {...field}
+                                size='small'
+                                label='Quantity'
+                                variant='outlined'
+                                type='number'
+                                disabled={getValues(`additional_service_charges.${index}.charge_name`) === ''}
+                                fullWidth
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value
+                                  field.onChange(Number(value))
+                                  engine.otherAccessorialsCharges = getValues('additional_service_charges')
+                                  props.calculationRef.current?.recalculate()
+                                }}
+                              />
                             )}
                           />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 8, md: 4 }}>
-                          <TextInput
-                            size='small'
-                            label='Amount'
-                            variant='outlined'
-                            type='number'
-                            fullWidth
-                            {...register(
-                              `additional_service_charges.${index}.charge_amount`
+                          <Controller
+                            name={`additional_service_charges.${index}.charge_amount`}
+                            control={control}
+                            render={({ field }) => (
+                              <TextInput
+                                {...field}
+                                size='small'
+                                label='Amount'
+                                variant='outlined'
+                                type='number'
+                                disabled={getValues(`additional_service_charges.${index}.charge_name`) === ''}
+                                inputProps={{ step: 'any' }}
+                                fullWidth
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value
+                                  field.onChange(Number(value))
+                                  engine.otherAccessorialsCharges = getValues('additional_service_charges')
+                                  props.calculationRef.current?.recalculate()
+                                }}
+                                slotProps={{
+                                  input: {
+                                    endAdornment: (
+                                      <InputAdornment position='end'>
+                                        <AttachMoney />
+                                      </InputAdornment>
+                                    )
+                                  }
+                                }}
+                              />
                             )}
-                            slotProps={{
-                              input: {
-                                endAdornment: (
-                                  <InputAdornment position='end'>
-                                    <AttachMoney />
-                                  </InputAdornment>
-                                )
-                              }
-                            }}
                           />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 2, md: 1 }}>
                           <IconButton
                             color='error'
-                            onClick={() => removeServiceCharge(index)}
+                            onClick={() => {
+                              removeServiceCharge(index)
+                              engine.otherAccessorialsCharges = getValues('additional_service_charges')
+                              props.calculationRef.current?.recalculate()
+                            }}
                           >
                             <Delete />
                           </IconButton>
