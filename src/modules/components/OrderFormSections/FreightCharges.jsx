@@ -15,14 +15,132 @@ import {
   CustomFormControlLabel,
   OrderEngine
 } from '../../components'
-import { useFieldArray, useWatch } from 'react-hook-form'
+import { useFieldArray, useWatch, Controller } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
-import { Controller } from 'react-hook-form'
+
+const ServiceChargeRow = React.memo(function ServiceChargeRow({
+  index,
+  control,
+  getValues,
+  removeServiceCharge,
+  engine,
+  calculationRef,
+  id
+}) {
+
+  const chargeName = useWatch({
+    control,
+    name: `additional_service_charges.${index}.charge_name`
+  })
+
+  const isDisabled = !chargeName?.trim()
+
+  return (
+    <Grid size={12} key={id}>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 12, md: 5 }}>
+          <Controller
+            name={`additional_service_charges.${index}.charge_name`}
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                {...field}
+                size='small'
+                label='Charge Name'
+                variant='outlined'
+                value={field.value || ''}
+                onChange={(e) => {
+                  const value = e.target.value
+                  field.onChange(value)
+                }}
+                fullWidth
+              />
+            )}
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 3, md: 2 }}>
+          <Controller
+            name={`additional_service_charges.${index}.charge_quantity`}
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                {...field}
+                size='small'
+                label='Quantity'
+                variant='outlined'
+                type='number'
+                fullWidth
+                disabled={isDisabled}
+                value={field.value ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value
+                  field.onChange(Number(value))
+                  engine.otherAccessorialsCharges = getValues('additional_service_charges')
+                  calculationRef.current?.recalculate()
+                }}
+              />
+            )}
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 8, md: 4 }}>
+          <Controller
+            name={`additional_service_charges.${index}.charge_amount`}
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                {...field}
+                size='small'
+                label='Amount'
+                variant='outlined'
+                type='number'
+                inputProps={{ step: 'any' }}
+                fullWidth
+                disabled={isDisabled}
+                value={field.value ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value
+                  field.onChange(Number(value))
+                  engine.otherAccessorialsCharges = getValues('additional_service_charges')
+                  calculationRef.current?.recalculate()
+                }}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position='end'>
+                        <AttachMoney />
+                      </InputAdornment>
+                    )
+                  }
+                }}
+              />
+            )}
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 2, md: 1 }}>
+          <IconButton
+            color='error'
+            onClick={() => {
+              removeServiceCharge(index)
+              engine.otherAccessorialsCharges = getValues('additional_service_charges')
+              calculationRef.current?.recalculate()
+            }}
+          >
+            <Delete />
+          </IconButton>
+        </Grid>
+      </Grid>
+    </Grid>
+  )
+})
+
 
 function FreightCharges(props) {
 
-  const { register, engine, control, getValues, setValue } = props
+  const { engine, control, getValues, setValue } = props
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
@@ -37,8 +155,6 @@ function FreightCharges(props) {
 
   const customerId = useWatch({ control, name: 'customer_id' })
   const serviceType = useWatch({ control, name: 'service_type' })
-
-  // const isInitialLoad = React.useRef(!props.editMode)
 
   React.useEffect(() => {
     let vehicleTypes = []
@@ -555,96 +671,17 @@ function FreightCharges(props) {
               content={
                 <Grid container spacing={2} justifyContent={'center'}>
                   {additionalServiceCharges.map((serviceCharge, index) => (
-                    <Grid size={12} key={serviceCharge.id}>
-                      <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, sm: 12, md: 5 }}>
-                          <Controller
-                            name={`additional_service_charges.${index}.charge_name`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextInput
-                                {...field}
-                                size='small'
-                                label='Charge Name'
-                                variant='outlined'
-                                fullWidth
-                              />
-                            )}
-                          />
-
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-                          <Controller
-                            name={`additional_service_charges.${index}.charge_quantity`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextInput
-                                {...field}
-                                size='small'
-                                label='Quantity'
-                                variant='outlined'
-                                type='number'
-                                disabled={getValues(`additional_service_charges.${index}.charge_name`) === ''}
-                                fullWidth
-                                value={field.value || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value
-                                  field.onChange(Number(value))
-                                  engine.otherAccessorialsCharges = getValues('additional_service_charges')
-                                  props.calculationRef.current?.recalculate()
-                                }}
-                              />
-                            )}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 8, md: 4 }}>
-                          <Controller
-                            name={`additional_service_charges.${index}.charge_amount`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextInput
-                                {...field}
-                                size='small'
-                                label='Amount'
-                                variant='outlined'
-                                type='number'
-                                disabled={getValues(`additional_service_charges.${index}.charge_name`) === ''}
-                                inputProps={{ step: 'any' }}
-                                fullWidth
-                                value={field.value || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value
-                                  field.onChange(Number(value))
-                                  engine.otherAccessorialsCharges = getValues('additional_service_charges')
-                                  props.calculationRef.current?.recalculate()
-                                }}
-                                slotProps={{
-                                  input: {
-                                    endAdornment: (
-                                      <InputAdornment position='end'>
-                                        <AttachMoney />
-                                      </InputAdornment>
-                                    )
-                                  }
-                                }}
-                              />
-                            )}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 2, md: 1 }}>
-                          <IconButton
-                            color='error'
-                            onClick={() => {
-                              removeServiceCharge(index)
-                              engine.otherAccessorialsCharges = getValues('additional_service_charges')
-                              props.calculationRef.current?.recalculate()
-                            }}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Grid>
-                      </Grid>
-                    </Grid>
+                    <ServiceChargeRow
+                      key={serviceCharge.id}
+                      id={serviceCharge.id}
+                      index={index}
+                      control={control}
+                      getValues={getValues}
+                      setValue={setValue}
+                      removeServiceCharge={removeServiceCharge}
+                      engine={engine}
+                      calculationRef={props.calculationRef}
+                    />
                   ))}
                   <Grid size='auto'>
                     <Button
@@ -683,80 +720,134 @@ function FreightCharges(props) {
           <Grid size={12} sx={{ py: 2, px: 3 }}>
             <Grid container spacing={4}>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                <TextInput
-                  label='Sub Total'
-                  fullWidth
-                  variant='outlined'
-                  {...register(
-                    'sub_total'
+                <Controller
+                  name='sub_total'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      disabled
+                      label='Sub Total'
+                      fullWidth
+                      variant='outlined'
+                      size='large'
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
+                              $
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          color: 'black',
+                          fontWeight: 600,
+                          WebkitTextFillColor: 'black',
+                        },
+                      }}
+                    />
                   )}
-                  size='large'
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
-                          $
-                        </InputAdornment>
-                      )
-                    }
-                  }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                <TextInput
-                  label='Provincial Tax'
-                  fullWidth
-                  variant='outlined'
-                  {...register(
-                    'provincial_tax'
+                <Controller
+                  name='provincial_tax'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      disabled
+                      label='Provincial Tax'
+                      fullWidth
+                      variant='outlined'
+                      value={field.value || 0}
+                      size='large'
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
+                              $
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          color: 'black',
+                          fontWeight: 600,
+                          WebkitTextFillColor: 'black',
+                        },
+                      }}
+                    />
                   )}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                          $
-                        </InputAdornment>
-                      )
-                    }
-                  }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                <TextInput
-                  label='Federal Tax'
-                  fullWidth
-                  variant='outlined'
-                  {...register(
-                    'federal_tax'
+                <Controller
+                  name='federal_tax'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      disabled
+                      label='Federal Tax'
+                      fullWidth
+                      variant='outlined'
+                      value={field.value || 0}
+                      size='large'
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
+                              $
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          color: 'black',
+                          fontWeight: 600,
+                          WebkitTextFillColor: 'black',
+                        },
+                      }}
+                    />
                   )}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                          $
-                        </InputAdornment>
-                      )
-                    }
-                  }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                <TextInput
-                  label='Grand Tax'
-                  fullWidth
-                  variant='outlined'
-                  {...register(
-                    'grand_tax'
+                <Controller
+                  name='grand_total'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      disabled
+                      label='Grand Total'
+                      fullWidth
+                      variant='outlined'
+                      size='large'
+                      value={field.value || 0}
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
+                              $
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          color: 'black',
+                          fontWeight: 600,
+                          WebkitTextFillColor: 'black',
+                        },
+                      }}
+                    />
                   )}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment sx={{ '& p': { fontSize: 12 } }}>
-                          $
-                        </InputAdornment>
-                      )
-                    }
-                  }}
                 />
               </Grid>
             </Grid>

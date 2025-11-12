@@ -54,6 +54,8 @@ function ReceiverDetails(props) {
             setValue('delivery_time_to', value?.op_time_to || null)
             setValue('delivery_appointment', value?.requires_appointment || false)
             engine.receiver_city = value?.city || ''
+            engine.receiverProvince = value?.province || ''
+            props.calculationRef?.current?.recalculate()
           }}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Receiver is a required field' }}
@@ -223,6 +225,8 @@ function ReceiverDetails(props) {
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   const nAB = await patch.mutateAsync({ id: receiverSelected, payload: { [key]: value } })
                   field.onChange(nAB.province)
+                  engine.receiverProvince = nAB.province
+                  props.calculationRef.current?.recalculate()
                 }
               }}
               variant='outlined'

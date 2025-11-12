@@ -53,6 +53,8 @@ export default class OrderEngine {
 
     set otherAccessorialsCharges(oac) { this.request['other_accessorials_charges'] = oac }
 
+    set receiverProvince(rp) { this.request['receiver_province'] = rp }
+
     calculateOrder = () => {
         this.context = this.initializeContext()
         this.calculateTotalFreights()
@@ -61,6 +63,7 @@ export default class OrderEngine {
         this.applyAccessorialsCharge()
         this.calculateFuelSurcharge()
         this.applyOtherCharges()
+        this.applyProvincialTaxes()
         return this.format_value()
     }
 
@@ -83,6 +86,7 @@ export default class OrderEngine {
             customer_vehicle_types: this.request['customer_vehicle_types'] || [],
             customer_accessorials_charges: this.request['customer_accessorials_charges'] || [],
             other_accessorials_charges: this.request['other_accessorials_charges'] || [],
+            receiver_province: this.request['receiver_province'] || '',
 
             total_pieces: 0,
             total_actual_weight: 0,
@@ -104,7 +108,11 @@ export default class OrderEngine {
             freight_fuel_surcharge: 0,
             fuel_based_accessorial_charges: 0,
             direct_service_charge_amount: 0,
-            charges_total: 0
+            charges_total: 0,
+            provincial_tax: 0,
+            federal_tax: 0,
+            sub_totals: 0,
+            grand_totals: 0
         })
     }
 
@@ -523,6 +531,46 @@ export default class OrderEngine {
         }
     }
 
+    applyProvincialTaxes = () => {
+        let customer = this.customer
+        let sub_total = this.context['freight_rate'] + this.context['freight_fuel_surcharge'] + this.context['charges_total']
+        let taxes = this.provincialTaxes(this.context['receiver_province'], sub_total, customer)
+
+        this.context['sub_totals'] = sub_total
+        this.context['provincial_tax'] = taxes['pst']
+        this.context['federal_tax'] = taxes['gst']
+        this.context['grand_totals'] = sub_total + taxes['pst'] + taxes['gst']
+    }
+
+    provincialTaxes = (rprovince, frate, customer) => {
+        let pst = 0, gst = 0
+
+        if (customer['tax_options'] === 'no_tax') {
+            return { pst, gst }
+        }
+
+        let rates = {
+            'ON': { 'pst': 8, 'gst': 5 },
+            'BC': { 'pst': 7, 'gst': 5 },
+            'AB': { 'pst': 0, 'gst': 5 },
+            'SK': { 'pst': 6, 'gst': 5 },
+            'MB': { 'pst': 7, 'gst': 5 },
+            'QC': { 'pst': 9.975, 'gst': 5 },
+            'NB': { 'pst': 10, 'gst': 5 },
+            'NS': { 'pst': 10, 'gst': 5 },
+            'PE': { 'pst': 10, 'gst': 5 },
+            'NL': { 'pst': 10, 'gst': 5 },
+            'YT': { 'pst': 0, 'gst': 5 },
+            'NT': { 'pst': 0, 'gst': 5 },
+            'NU': { 'pst': 0, 'gst': 5 }
+        }
+        if (rprovince in rates) {
+            pst = (rates[rprovince].pst / 100) * frate
+            gst = (rates[rprovince].gst / 100) * frate
+        }
+        return { pst, gst }
+    }
+
     format_value = () => {
         return ({
             total_pieces: Math.round(this.context['total_pieces'] * 100) / 100 || 0,
@@ -534,7 +582,11 @@ export default class OrderEngine {
             freight_rate: Math.round(this.context['freight_rate'] * 100) / 100 || 0,
             freight_rate_skid: Math.round(this.context['freight_rate_skid'] * 100) / 100 || 0,
             freight_rate_weight: Math.round(this.context['freight_rate_weight'] * 100) / 100 || 0,
-            freight_fuel_surcharge: Math.round(this.context['freight_fuel_surcharge'] * 100) / 100 || 0
+            freight_fuel_surcharge: Math.round(this.context['freight_fuel_surcharge'] * 100) / 100 || 0,
+            sub_totals: Math.round(this.context['sub_totals'] * 100) / 100 || 0,
+            provincial_tax: Math.round(this.context['provincial_tax'] * 100) / 100 || 0,
+            federal_tax: Math.round(this.context['federal_tax'] * 100) / 100 || 0,
+            grand_totals: Math.round(this.context['grand_totals'] * 100) / 100 || 0,
         })
     }
 
@@ -562,6 +614,11 @@ export default class OrderEngine {
     }
 
     static accessorials_types = (type, access, frate, qty) => {
+
+        // if (type === 'unknown'){
+        //     return Number(access['charge_amount'])
+        // }
+
         let calculated_amount = 0
         const amount = Number(access['amount']) || 0
         const amountType = access['amount_type'] || ''

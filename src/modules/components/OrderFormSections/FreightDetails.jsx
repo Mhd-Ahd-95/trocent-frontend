@@ -48,6 +48,10 @@ const useFreightCalculations = (freights, customer, setValue, fieldsLength, engi
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
           setIsCalculating(false)
         })
       } catch (err) {
@@ -113,6 +117,10 @@ function FreightDetails(props) {
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
         })
       }
     }, 50)
@@ -135,6 +143,10 @@ function FreightDetails(props) {
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
         })
       }
     }, 50)
@@ -154,6 +166,10 @@ function FreightDetails(props) {
         setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
       })
     }
   }, [engine, getValues, setValue])

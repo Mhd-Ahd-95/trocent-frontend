@@ -53,6 +53,7 @@ function ShipperDetails(props) {
             setValue('pickup_time_to', value?.op_time_to || null)
             setValue('pickup_appointment', value?.requires_appointment || false)
             engine.shipper_city = value?.city || ''
+            props.calculationRef?.current?.recalculate()
           }}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Shipper is a required field' }}
