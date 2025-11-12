@@ -4,28 +4,40 @@ import { useTheme } from '@mui/material/styles'
 import {
   AccordionComponent,
   TextInput,
-  CustomFormControlLabel
+  CustomFormControlLabel,
+  OrderEngine
 } from '../../components'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers'
 import { Controller } from 'react-hook-form'
 import moment from 'moment'
+import { unstable_batchedUpdates } from 'react-dom'
 
 export default function OrderForm(props) {
-  const { register, control, watch, errors } = props
+  const { register, control, getValues, setValue } = props
   const theme = useTheme()
 
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Controller
-          name='waiting_time_billing.pickup_in'
+          name='pickup_in'
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TimePicker
               label='Pickup In'
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value, 'HH:mm') : null}
+              onChange={date => {
+                unstable_batchedUpdates(() => {
+                  field.onChange(date ? moment(date).format('HH:mm') : null)
+                  const time = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                  const { total_pickup, total_delivery, total_time } = OrderEngine.calculatePDTotalTimes(time[0], time[1], time[2], time[3])
+                  setValue('total_pickup', total_pickup)
+                  setValue('total_delivery', total_delivery)
+                  setValue('total_time', total_time)
+                })
+              }}
+              ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -46,13 +58,23 @@ export default function OrderForm(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Controller
-          name='waiting_time_billing.pickup_out'
+          name='pickup_out'
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TimePicker
               label='Pickup Out'
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value, 'HH:mm') : null}
+              onChange={date => {
+                unstable_batchedUpdates(() => {
+                  field.onChange(date ? moment(date).format('HH:mm') : null)
+                  const time = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                  const { total_pickup, total_delivery, total_time } = OrderEngine.calculatePDTotalTimes(time[0], time[1], time[2], time[3])
+                  setValue('total_pickup', total_pickup)
+                  setValue('total_delivery', total_delivery)
+                  setValue('total_time', total_time)
+                })
+              }}
+              ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -73,7 +95,7 @@ export default function OrderForm(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <Controller
-          name='waiting_time_billing.pickup_at'
+          name='pickup_at'
           control={control}
           render={({ field }) => (
             <DatePicker
@@ -101,13 +123,23 @@ export default function OrderForm(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Controller
-          name='waiting_time_billing.delivery_in'
+          name='delivery_in'
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TimePicker
               label='Delivery In'
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value, 'HH:mm') : null}
+              onChange={date => {
+                unstable_batchedUpdates(() => {
+                  field.onChange(date ? moment(date).format('HH:mm') : null)
+                  const time = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                  const { total_pickup, total_delivery, total_time } = OrderEngine.calculatePDTotalTimes(time[0], time[1], time[2], time[3])
+                  setValue('total_pickup', total_pickup)
+                  setValue('total_delivery', total_delivery)
+                  setValue('total_time', total_time)
+                })
+              }}
+              ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -128,13 +160,23 @@ export default function OrderForm(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Controller
-          name='waiting_time_billing.delivery_out'
+          name='delivery_out'
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TimePicker
               label='Delivery Out'
-              value={field.value}
-              onChange={date => field.onChange(date)}
+              value={field.value ? moment(field.value, 'HH:mm') : null}
+              onChange={date => {
+                unstable_batchedUpdates(() => {
+                  field.onChange(date ? moment(date).format('HH:mm') : null)
+                  const time = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                  const { total_pickup, total_delivery, total_time } = OrderEngine.calculatePDTotalTimes(time[0], time[1], time[2], time[3])
+                  setValue('total_pickup', total_pickup)
+                  setValue('total_delivery', total_delivery)
+                  setValue('total_time', total_time)
+                })
+              }}
+              ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -155,7 +197,7 @@ export default function OrderForm(props) {
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 4 }}>
         <Controller
-          name='waiting_time_billing.delivery_at'
+          name='delivery_at'
           control={control}
           render={({ field }) => (
             <DatePicker
@@ -196,41 +238,59 @@ export default function OrderForm(props) {
           <Typography variant='button' fontWeight={600}>
             Pickup Total Time
           </Typography>
-          <Typography
-            variant='subtitle2'
-            fontWeight={theme.typography.fontWeightLight}
-          >
-            0 mins
-          </Typography>
+          <Controller
+            name='total_pickup'
+            control={control}
+            render={({ field }) => (
+              <Typography
+                variant='subtitle2'
+                fontWeight={theme.typography.fontWeightLight}
+              >
+                {field.value || 0} {' '} mins
+              </Typography>
+            )}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <Typography variant='button' fontWeight={600}>
             Delivery Total Time
           </Typography>
-          <Typography
-            variant='subtitle2'
-            fontWeight={theme.typography.fontWeightLight}
-          >
-            0 mins
-          </Typography>
+          <Controller
+            name='total_delivery'
+            control={control}
+            render={({ field }) => (
+              <Typography
+                variant='subtitle2'
+                fontWeight={theme.typography.fontWeightLight}
+              >
+                {field.value || 0} {' '} mins
+              </Typography>
+            )}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <Typography variant='button' fontWeight={600}>
             Total Time
           </Typography>
-          <Typography
-            variant='subtitle2'
-            fontWeight={theme.typography.fontWeightLight}
-          >
-            0 mins
-          </Typography>
+          <Controller
+            name='total_time'
+            control={control}
+            render={({ field }) => (
+              <Typography
+                variant='subtitle2'
+                fontWeight={theme.typography.fontWeightLight}
+              >
+                {field.value || 0} {' '} mins
+              </Typography>
+            )}
+          />
         </Grid>
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <TextField
           label='Pickup Signee'
           variant='outlined'
-          {...register('waiting_time_billing.pickup_signee')}
+          {...register('pickup_signee')}
           multiline
           minRows={3}
           maxRows={3}
@@ -246,7 +306,7 @@ export default function OrderForm(props) {
         <TextField
           label='Delivery Signee'
           variant='outlined'
-          {...register('waiting_time_billing.delivery_signee')}
+          {...register('delivery_signee')}
           multiline
           minRows={3}
           maxRows={3}
@@ -265,7 +325,7 @@ export default function OrderForm(props) {
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 12, md: 4 }}>
                 <Controller
-                  name='waiting_time_billing.billing.invoice_date'
+                  name='billing_invoice_date'
                   control={control}
                   render={({ field }) => (
                     <DatePicker
@@ -300,7 +360,7 @@ export default function OrderForm(props) {
                   label='Invoice #'
                   fullWidth
                   variant='outlined'
-                  {...register('waiting_time_billing.billing.invoice')}
+                  {...register('billing_invoice')}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 4 }}>
@@ -308,7 +368,7 @@ export default function OrderForm(props) {
                   <CustomFormControlLabel
                     control={
                       <Switch
-                        {...register('waiting_time_billing.billing.invoiced')}
+                        {...register('billing_invoiced')}
                       />
                     }
                     label='Invoiced'

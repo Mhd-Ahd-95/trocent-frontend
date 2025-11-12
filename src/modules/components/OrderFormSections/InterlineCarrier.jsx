@@ -46,12 +46,12 @@ function InterlineCarrier(props) {
 
   return (
     <Grid container spacing={2}>
-      <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+      <Grid size={12}>
         <FormControl>
           <CustomFormControlLabel
             control={
               <Controller
-                name='is_pickup'
+                name='is_same_carrier'
                 control={control}
                 render={({ field }) => (
                   <Switch
@@ -60,46 +60,19 @@ function InterlineCarrier(props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
-                      if (!checked) {
-                        setValue('is_same_carrier', false)
-                        setValue('interliner_pickup_id', '')
-                        setValue('interliner_pickup_special_instructions', '')
-                        setValue('interliner_pickup_charge_amount', '')
-                        setValue('interliner_pickup_invoice', '')
-                        setValue('interliner_id', '')
-                        setValue('interliner_special_instructions', '')
-                        setValue('interliner_charge_amount', '')
-                        setValue('interliner_invoice', '')
-                      }
-                    }}
-                  />
-                )}
-              />
-            }
-            label='Pickup'
-          />
-        </FormControl>
-      </Grid>
-      <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-        <FormControl>
-          <CustomFormControlLabel
-            control={
-              <Controller
-                name='is_delivery'
-                control={control}
-                render={({ field }) => (
-                  <Switch
-                    {...field}
-                    checked={field.value || false}
-                    onChange={e => {
-                      const checked = e.target.checked
-                      field.onChange(checked)
-                      if (!checked) {
-                        setValue('is_same_carrier', false)
+                      if (checked) {
+                        setValue('is_pickup', true)
+                        setValue('is_delivery', true)
                         setValue('interliner_delivery_id', '')
                         setValue('interliner_delivery_special_instructions', '')
                         setValue('interliner_delivery_charge_amount', '')
                         setValue('interliner_delivery_invoice', '')
+                        setValue('interliner_pickup_id', '')
+                        setValue('interliner_pickup_special_instructions', '')
+                        setValue('interliner_pickup_charge_amount', '')
+                        setValue('interliner_pickup_invoice', '')
+                      }
+                      if (!checked) {
                         setValue('interliner_id', '')
                         setValue('interliner_special_instructions', '')
                         setValue('interliner_charge_amount', '')
@@ -110,54 +83,84 @@ function InterlineCarrier(props) {
                 )}
               />
             }
-            label='Delivery'
+            label='Same Carrier for Both'
           />
+          <FormHelperText>
+            Uncheck to use different carriers for pickup and delivery
+          </FormHelperText>
         </FormControl>
       </Grid>
-      <Grid size={12}>
-        {isPickup && isDelivery && (
-          <FormControl>
-            <CustomFormControlLabel
-              control={
-                <Controller
-                  name='is_same_carrier'
-                  control={control}
-                  render={({ field }) => (
-                    <Switch
-                      {...field}
-                      checked={field.value || false}
-                      onChange={e => {
-                        const checked = e.target.checked
-                        field.onChange(checked)
-                        if (checked) {
-                          setValue('interliner_delivery_id', '')
-                          setValue('interliner_delivery_special_instructions', '')
-                          setValue('interliner_delivery_charge_amount', '')
-                          setValue('interliner_delivery_invoice', '')
-                          setValue('interliner_pickup_id', '')
-                          setValue('interliner_pickup_special_instructions', '')
-                          setValue('interliner_pickup_charge_amount', '')
-                          setValue('interliner_pickup_invoice', '')
-                        }
-                        if (!checked) {
-                          setValue('interliner_id', '')
-                          setValue('interliner_special_instructions', '')
-                          setValue('interliner_charge_amount', '')
-                          setValue('interliner_invoice', '')
-                        }
-                      }}
-                    />
-                  )}
-                />
-              }
-              label='Same Carrier for Both'
-            />
-            <FormHelperText>
-              Uncheck to use different carriers for pickup and delivery
-            </FormHelperText>
-          </FormControl>
-        )}
-      </Grid>
+      {(isSameCarrierForBoth || isPickup || isDelivery) &&
+        <>
+          <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+            <FormControl>
+              <CustomFormControlLabel
+                control={
+                  <Controller
+                    name='is_pickup'
+                    control={control}
+                    render={({ field }) => (
+                      <Switch
+                        {...field}
+                        checked={field.value || false}
+                        onChange={e => {
+                          const checked = e.target.checked
+                          field.onChange(checked)
+                          if (!checked) {
+                            setValue('is_same_carrier', false)
+                            setValue('interliner_pickup_id', '')
+                            setValue('interliner_pickup_special_instructions', '')
+                            setValue('interliner_pickup_charge_amount', '')
+                            setValue('interliner_pickup_invoice', '')
+                            setValue('interliner_id', '')
+                            setValue('interliner_special_instructions', '')
+                            setValue('interliner_charge_amount', '')
+                            setValue('interliner_invoice', '')
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                }
+                label='Pickup'
+              />
+            </FormControl>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+            <FormControl>
+              <CustomFormControlLabel
+                control={
+                  <Controller
+                    name='is_delivery'
+                    control={control}
+                    render={({ field }) => (
+                      <Switch
+                        {...field}
+                        checked={field.value || false}
+                        onChange={e => {
+                          const checked = e.target.checked
+                          field.onChange(checked)
+                          if (!checked) {
+                            setValue('is_same_carrier', false)
+                            setValue('interliner_delivery_id', '')
+                            setValue('interliner_delivery_special_instructions', '')
+                            setValue('interliner_delivery_charge_amount', '')
+                            setValue('interliner_delivery_invoice', '')
+                            setValue('interliner_id', '')
+                            setValue('interliner_special_instructions', '')
+                            setValue('interliner_charge_amount', '')
+                            setValue('interliner_invoice', '')
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                }
+                label='Delivery'
+              />
+            </FormControl>
+          </Grid>
+        </>}
       <Grid size={12}>
         {!isPickup && !isDelivery && (
           <Grid container>

@@ -4,66 +4,68 @@ import {
     Autocomplete,
     TextField
 } from '@mui/material'
-import { Controller, useWatch } from 'react-hook-form'
-import { TextInput, InputWrapper } from '../../components'
+import { Controller } from 'react-hook-form'
+import { InputWrapper } from '../../components'
 
-function BasicInfo(props) {
-
+function EmailsAndNotifications(props) {
     const { setValue, control } = props
 
     const options = ['Arrived at Pickup', 'Pickedup', 'Departed Pickup', 'Arrived at Delivery', 'Delivered', 'Departed from Delivery']
 
-    const billing_emails = useWatch({
-        name: 'billing_emails',
-        control,
-    })
-
-    const pod_emails = useWatch({
-        name: 'pod_emails',
-        control,
-    })
-
-    const sts_emails = useWatch({
-        name: 'status_update_emails',
-        control,
-    })
-
     return (
         <Grid container spacing={1}>
             <Grid size={{ xs: 12, sm: 12, md: 12 }} pt={2}>
-                <InputWrapper
-                    shrinkOut='true'
-                    noSpace
-                    validatedEmail
-                    setValue={setValue}
-                    data={billing_emails || []}
-                    field={'billing_emails'}
-                    placeholder='Type and Press Comma'
-                    label='Billing Emails'
+                <Controller
+                    name='billing_emails'
+                    control={control}
+                    render={({ field }) => (
+                        <InputWrapper
+                            shrinkOut='true'
+                            noSpace
+                            validatedEmail
+                            setValue={setValue}
+                            data={field.value || []}
+                            field='billing_emails'
+                            placeholder='Type and Press Comma'
+                            label='Billing Emails'
+                        />
+                    )}
                 />
             </Grid>
             <Grid size={{ xs: 12, sm: 12, md: 12 }} pt={2}>
-                <InputWrapper
-                    shrinkOut='true'
-                    noSpace
-                    validatedEmail
-                    setValue={setValue}
-                    data={pod_emails || []}
-                    field={'pod_emails'}
-                    placeholder='Type and Press Comma'
-                    label='POD Emails'
+                <Controller
+                    name='pod_emails'
+                    control={control}
+                    render={({ field }) => (
+                        <InputWrapper
+                            shrinkOut='true'
+                            noSpace
+                            validatedEmail
+                            setValue={setValue}
+                            data={field.value || []}
+                            field='pod_emails'
+                            placeholder='Type and Press Comma'
+                            label='POD Emails'
+                        />
+                    )}
                 />
             </Grid>
             <Grid size={{ xs: 12, sm: 12, md: 12 }} pt={2}>
-                <InputWrapper
-                    shrinkOut='true'
-                    noSpace
-                    validatedEmail
-                    setValue={setValue}
-                    data={sts_emails || []}
-                    field={'status_update_emails'}
-                    placeholder='Type and Press Comma'
-                    label='Status Update Emails'
+                <Controller
+                    name='status_update_emails'
+                    control={control}
+                    render={({ field }) => (
+                        <InputWrapper
+                            shrinkOut='true'
+                            noSpace
+                            validatedEmail
+                            setValue={setValue}
+                            data={field.value || []}
+                            field='status_update_emails'
+                            placeholder='Type and Press Comma'
+                            label='Status Update Emails'
+                        />
+                    )}
                 />
             </Grid>
             <Grid size={12} pt={2}>
@@ -105,4 +107,4 @@ function BasicInfo(props) {
     )
 }
 
-export default React.memo(BasicInfo)
+export default React.memo(EmailsAndNotifications)

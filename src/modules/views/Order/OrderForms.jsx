@@ -42,7 +42,7 @@ export default function OrderForm(props) {
       ...defaultOrderValue,
       ...initialValues
     },
-    mode: 'onBlur', // Only validate on blur to reduce re-renders
+    mode: 'onBlur',
   })
 
   const customerId = watch('customer_id')
@@ -94,6 +94,8 @@ export default function OrderForm(props) {
         control={control}
         setValue={setValue}
         engine={engine}
+        editMode={editMode}
+        enqueueSnackbar={enqueueSnackbar}
       />
     ),
     [control, setValue, engine]
@@ -230,8 +232,9 @@ export default function OrderForm(props) {
               <TimeAndBilling
                 control={control}
                 register={register}
-                watch={watch}
                 errors={errors}
+                setValue={setValue}
+                getValues={getValues}
               />
             </WizardCard>
           </Grid>

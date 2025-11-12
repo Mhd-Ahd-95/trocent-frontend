@@ -1,35 +1,70 @@
-import React from 'react'
+import React, { useState, useCallback, memo } from 'react'
 import TextInput from './TextInput'
 import { colors, FormHelperText, Grid, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import global from '../../global'
 
-function InputWrapper(props) {
+const EmailChip = memo(({ value, index, onRemove }) => {
+  const trimValue = value.split(',')[0].trim()
 
+  return (
+    <Typography
+      variant='caption'
+      display={'inline-flex'}
+      alignItems={'center'}
+      flexWrap={1}
+      gap={1}
+      align='center'
+      color='primary'
+      sx={{
+        borderRadius: 1,
+        border: `0.01rem solid ${colors.yellow[200]}`,
+        background: colors.yellow[50],
+        paddingInline: 1,
+        paddingBlock: 0.2,
+        marginRight: 1,
+        marginBlock: 0.5
+      }}
+    >
+      {trimValue}{' '}
+      <span
+        style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14, marginTop: -2 }}
+        onClick={() => onRemove(index)}
+      >
+        x
+      </span>
+    </Typography>
+  )
+})
+
+EmailChip.displayName = 'EmailChip'
+
+function InputWrapper(props) {
   const theme = useTheme()
-  const { setValue, data, field, placeholder, textHelper, noSpace } = props
-  const [inputValue, setInputValue] = React.useState('')
-  const [focus, setFocus] = React.useState(false)
-  const [error, setError] = React.useState('')
+  const { setValue, data, field, placeholder, textHelper, noSpace, validatedEmail, label, shrinkOut } = props
+  const [inputValue, setInputValue] = useState('')
+  const [focus, setFocus] = useState(false)
+  const [error, setError] = useState('')
   const { isEmail } = global.methods
-  const handleRemove = index => {
+
+  const handleRemove = useCallback((index) => {
     const refs = [...data]
     refs.splice(index, 1)
     setValue(field, refs)
     setInputValue('')
-  }
+  }, [data, field, setValue])
 
-  const handleChange = e => {
-
+  const handleChange = useCallback((e) => {
     const value = e.target.value
     setInputValue(value)
 
-    if (props.validatedEmail) setError('');
+    if (validatedEmail) setError('')
+
     const splitComma = value.includes(',')
     const splitSpace = value.includes(' ')
     const trimValue = value.split(',')[0].trim()
 
-    if (props.validatedEmail && !isEmail(trimValue) && splitComma) {
+    if (validatedEmail && !isEmail(trimValue) && splitComma) {
       setError(`${trimValue} must be email.`)
       setInputValue(trimValue)
       return
@@ -42,19 +77,21 @@ function InputWrapper(props) {
       }
       setValue(field, [...data, trimValue])
       setInputValue('')
+      return
     }
 
-    if (!noSpace) {
-      if (splitSpace) {
-        if (data.includes(trimValue)) {
-          setInputValue('')
-          return
-        }
-        setValue(field, [...data, trimValue])
+    if (!noSpace && splitSpace) {
+      if (data.includes(trimValue)) {
         setInputValue('')
+        return
       }
+      setValue(field, [...data, trimValue])
+      setInputValue('')
     }
-  }
+  }, [data, field, isEmail, noSpace, setValue, validatedEmail])
+
+  const handleFocus = useCallback(() => setFocus(true), [])
+  const handleBlur = useCallback(() => setFocus(false), [])
 
   return (
     <Grid container>
@@ -76,11 +113,11 @@ function InputWrapper(props) {
             placeholder={placeholder}
             variant='outlined'
             fullWidth
-            label={props.label || ''}
+            label={label || ''}
             value={inputValue}
             onChange={handleChange}
-            onFocus={() => setFocus(true)}
-            onBlur={() => setFocus(false)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             sx={{
               '& .MuiOutlinedInput-root': {
                 zIndex: 1,
@@ -104,7 +141,7 @@ function InputWrapper(props) {
                 outline: 'none',
                 boxShadow: 'none'
               },
-              '& .MuiInputLabel-shrink': props.shrinkOut === 'true' ? {
+              '& .MuiInputLabel-shrink': shrinkOut === 'true' ? {
                 zIndex: 100,
                 paddingInline: 1,
                 backgroundColor: '#fff'
@@ -112,46 +149,27 @@ function InputWrapper(props) {
             }}
           />
         </Grid>
-        <Grid size={12} px={1} py={0.5}>
-          {data?.map((ref, index) => {
-            const trimRef = ref.split(',')[0].trim()
-            return (
-              <Typography
-                variant='caption'
-                display={'inline-flex'}
-                alignItems={'center'}
-                flexWrap={1}
-                gap={1}
-                align='center'
-                key={index}
-                color='primary'
-                sx={{
-                  borderRadius: 1,
-                  border: `0.01rem solid ${colors.yellow[200]}`,
-                  background: colors.yellow[50],
-                  paddingInline: 1,
-                  paddingBlock: 0.2,
-                  marginRight: 1,
-                  marginBlock: 0.5
-                }}
-              >
-                {trimRef}{' '}
-                <span
-                  style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14, marginTop: -2 }}
-                  onClick={() => handleRemove(index)}
-                >
-                  x
-                </span>
-              </Typography>
-            )
-          })}
-        </Grid>
+        {data?.length > 0 && (
+          <Grid size={12} px={1} py={0.5}>
+            {data.map((ref, index) => (
+              <EmailChip
+                key={`${field}-${index}`}
+                value={ref}
+                index={index}
+                onRemove={handleRemove}
+              />
+            ))}
+          </Grid>
+        )}
       </Grid>
       {textHelper && <FormHelperText>{textHelper}</FormHelperText>}
-      {error && props.validatedEmail && <FormHelperText sx={{ color: props.validatedEmail ? '#e74c3c' : '' }}>{error}</FormHelperText>}
+      {error && validatedEmail && (
+        <FormHelperText sx={{ color: '#e74c3c' }}>
+          {error}
+        </FormHelperText>
+      )}
     </Grid>
   )
 }
 
-
-export default React.memo(InputWrapper)
+export default memo(InputWrapper)

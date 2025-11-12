@@ -64,11 +64,9 @@ function DeliveryDetails(props) {
           render={({ field, fieldState }) => (
             <TimePicker
               label='Time From'
-              value={field.value ? moment(field.value, 'hh:mm A') : null}
-              onChange={(date) => {
-                const formattedTime = date?.format('hh:mm A') || null;
-                field.onChange(formattedTime);
-              }}
+              value={field.value ? moment(field.value, 'HH:mm') : null}
+              onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+              ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -96,11 +94,9 @@ function DeliveryDetails(props) {
           render={({ field, fieldState }) => (
             <TimePicker
               label='Time To'
-              value={field.value ? moment(field.value, 'hh:mm A') : null}
-              onChange={(date) => {
-                const formattedTime = date?.format('hh:mm A') || null;
-                field.onChange(formattedTime);
-              }}
+              value={field.value ? moment(field.value, 'HH:mm') : null}
+              onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+              ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,

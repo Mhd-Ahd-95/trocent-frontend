@@ -48,6 +48,10 @@ const useFreightCalculations = (freights, customer, setValue, fieldsLength, engi
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
           setIsCalculating(false)
         })
       } catch (err) {
@@ -113,6 +117,10 @@ function FreightDetails(props) {
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
         })
       }
     }, 50)
@@ -135,6 +143,10 @@ function FreightDetails(props) {
           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+          setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
         })
       }
     }, 50)
@@ -145,7 +157,6 @@ function FreightDetails(props) {
     if (freights && engine.customer) {
       engine.freights = freights
       const totals = engine.calculateOrder()
-      console.log(totals)
       requestAnimationFrame(() => {
         setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -155,6 +166,10 @@ function FreightDetails(props) {
         setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
+        setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
       })
     }
   }, [engine, getValues, setValue])
@@ -175,7 +190,21 @@ function FreightDetails(props) {
                 <Autocomplete
                   {...field}
                   options={['Regular', 'Direct', 'Rush']}
-                  onChange={(_, value) => field.onChange(value)}
+                  onChange={(_, value) => {
+                    field.onChange(value)
+                    const customerAccess = getValues('customer_accessorials') || []
+                    const access = customerAccess.find(acc => acc.charge_name.toLowerCase() === 'rush service')
+                    const accIdx = customerAccess.findIndex(acc => acc.charge_name.toLowerCase() === 'rush service')
+                    if (value === 'Rush' && access) {
+                      setValue(`customer_accessorials.${accIdx}`, { ...access, is_included: true, charge_quantity: 1, charge_amount: access.amount })
+                    }
+                    else {
+                      setValue(`customer_accessorials.${accIdx}`, { ...access, is_included: false, charge_quantity: 0, charge_amount: 0 })
+                    }
+                    engine.service_type = value
+                    engine.accessorialsCharge = customerAccess
+                    triggerRecalculation()
+                  }}
                   defaultValue={'Regular'}
                   renderInput={params => (
                     <TextInput
@@ -221,7 +250,7 @@ function FreightDetails(props) {
               container
               justifyContent={'center'}
               alignItems={'center'}
-              // pb={2}
+            // pb={2}
             >
               <Grid size='auto'>
                 <Button

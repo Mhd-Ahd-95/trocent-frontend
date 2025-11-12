@@ -112,7 +112,7 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
           </Grid>
         </Grid>
       </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 1.4 }}>
         <Controller
           name={`freights.${index}.type`}
           control={control}
@@ -161,7 +161,7 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
       </Grid>
 
       {/* Pieces */}
-      <Grid size={{ xs: 12, sm: 6, md: 1 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 1.3 }}>
         <Controller
           name={`freights.${index}.pieces`}
           control={control}
@@ -183,7 +183,7 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
       </Grid>
 
       {/* Weight */}
-      <Grid size={{ xs: 12, sm: 6, md: 1 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 1.3 }}>
         <Controller
           name={`freights.${index}.weight`}
           control={control}

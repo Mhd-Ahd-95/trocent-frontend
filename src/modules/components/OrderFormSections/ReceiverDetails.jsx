@@ -4,6 +4,7 @@ import TextInput from '../CustomComponents/TextInput'
 import SearchableInput from '../CustomComponents/SearchableInput'
 import { Controller, useWatch } from 'react-hook-form'
 import { useAddressBookMutations, useAddressBooks } from '../../hooks/useAddressBooks'
+import { unstable_batchedUpdates } from 'react-dom'
 
 function ReceiverDetails(props) {
 
@@ -40,20 +41,25 @@ function ReceiverDetails(props) {
           options={data || []}
           fieldProp='name'
           onSelect={value => {
-            selectedValue.current = value
-            setValue('receiver_email', value?.email || '')
-            setValue('receiver_contact_name', value?.contact_name || '')
-            setValue('receiver_phone_number', value?.phone_number || '')
-            setValue('receiver_address', value?.address || '')
-            setValue('receiver_suite', value?.suite || '')
-            setValue('receiver_city', value?.city || '')
-            setValue('receiver_province', value?.province || '')
-            setValue('receiver_postal_code', value?.postal_code || '')
-            setValue('receiver_special_instructions', value?.special_instructions || '')
-            setValue('delivery_time_from', value?.op_time_from || null)
-            setValue('delivery_time_to', value?.op_time_to || null)
-            setValue('delivery_appointment', value?.requires_appointment || false)
-            engine.receiver_city = value?.city || ''
+            unstable_batchedUpdates(() => {
+              selectedValue.current = value
+              setValue('receiver_email', value?.email || '')
+              setValue('receiver_contact_name', value?.contact_name || '')
+              setValue('receiver_phone_number', value?.phone_number || '')
+              setValue('receiver_address', value?.address || '')
+              setValue('receiver_suite', value?.suite || '')
+              setValue('receiver_city', value?.city || '')
+              setValue('receiver_province', value?.province || '')
+              setValue('receiver_postal_code', value?.postal_code || '')
+              setValue('receiver_special_instructions', value?.special_instructions || '')
+              setValue('delivery_time_from', value?.op_time_from || null)
+              setValue('delivery_time_to', value?.op_time_to || null)
+              setValue('delivery_appointment', value?.requires_appointment || false)
+              setValue('receiver_no_waiting_time', value?.no_waiting_time || false)
+              engine.receiver_city = value?.city || ''
+              engine.receiverProvince = value?.province || ''
+              props.calculationRef?.current?.recalculate()
+            })
           }}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Receiver is a required field' }}
@@ -211,7 +217,17 @@ function ReceiverDetails(props) {
         <Controller
           control={control}
           name='receiver_province'
-          rules={{ required: 'Province/State is a required field' }}
+          rules={{
+            required: 'Province/State is a required field',
+            maxLength: {
+              value: 2,
+              message: 'Province must be 2 Character'
+            },
+            validate: value => {
+              value > 2 ? 'Province must be 2 Character' : true
+            }
+          }}
+          inputProps={{ maxLength: 2 }}
           render={({ field, fieldState }) => (
             <TextInput
               {...field}
@@ -223,6 +239,8 @@ function ReceiverDetails(props) {
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   const nAB = await patch.mutateAsync({ id: receiverSelected, payload: { [key]: value } })
                   field.onChange(nAB.province)
+                  engine.receiverProvince = nAB.province
+                  props.calculationRef.current?.recalculate()
                 }
               }}
               variant='outlined'

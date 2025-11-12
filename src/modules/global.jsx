@@ -118,7 +118,7 @@ const globalVariables = {
       { field: 'amount', label: 'Amount', type: 'number' },
       { field: 'package_type', label: 'Package Type', selected: true, options: ['envelope', 'box', 'tube', 'crate', 'carton', 'skid', 'pallet'] }
     ],
-    product_base: [
+    product_based: [
       { field: 'amount', label: 'Amount', type: 'number' },
       { field: 'product_type', label: 'Product Type', selected: true, options: ['carton', 'box', 'skid', 'pallet'] }
     ],

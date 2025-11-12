@@ -43,11 +43,27 @@ export default class OrderEngine {
     set isManualFuelSurcharge(fr) { this.request['manual_fuel_surcharge'] = fr }
     set isNoCharge(nc) { this.request['no_charge'] = nc }
 
+    set directKM(km) { this.request['direct_km'] = km }
+
+    set service_type(st) { this.request['service_type'] = st }
+
+    set customer_vehicle_types(cvt) { this.request['customer_vehicle_types'] = cvt }
+
+    set accessorialsCharge(ac) { this.request['customer_accessorials_charges'] = ac }
+
+    set otherAccessorialsCharges(oac) { this.request['other_accessorials_charges'] = oac }
+
+    set receiverProvince(rp) { this.request['receiver_province'] = rp }
+
     calculateOrder = () => {
         this.context = this.initializeContext()
         this.calculateTotalFreights()
         this.calculateFreightRate()
+        this.applyServiceCharge()
+        this.applyAccessorialsCharge()
         this.calculateFuelSurcharge()
+        this.applyOtherCharges()
+        this.applyProvincialTaxes()
         return this.format_value()
     }
 
@@ -65,6 +81,12 @@ export default class OrderEngine {
             manual_fuel_surcharge: this.request['manual_fuel_surcharge'] || false,
             override_fuel_surcharge: this.request['override_fuel_surcharge'] || 0,
             no_charge: this.request['no_charge'] || false,
+            direct_km: this.request['direct_km'] || 0,
+            service_type: this.request['service_type'] || 'Regular',
+            customer_vehicle_types: this.request['customer_vehicle_types'] || [],
+            customer_accessorials_charges: this.request['customer_accessorials_charges'] || [],
+            other_accessorials_charges: this.request['other_accessorials_charges'] || [],
+            receiver_province: this.request['receiver_province'] || '',
 
             total_pieces: 0,
             total_actual_weight: 0,
@@ -84,7 +106,13 @@ export default class OrderEngine {
             freight_rate_skid: 0,
             freight_rate_weight: 0,
             freight_fuel_surcharge: 0,
-            fuel_based_accessorial_charges: 0
+            fuel_based_accessorial_charges: 0,
+            direct_service_charge_amount: 0,
+            charges_total: 0,
+            provincial_tax: 0,
+            federal_tax: 0,
+            sub_totals: 0,
+            grand_totals: 0
         })
     }
 
@@ -260,7 +288,7 @@ export default class OrderEngine {
         const skidByWeight = this.customerRateSheets.some(rs => rs.type === 'skid' && rs.skid_by_weight === 1)
         let sheet_rate = 0
 
-        if (skidByWeight) sheet_rate = this.findRate('skid_by_weight', total_chargeable_weight_skid, shipper_city, receiver_city)
+        if (skidByWeight) sheet_rate = this.findRate('skid', total_chargeable_weight_skid, shipper_city, receiver_city, skidByWeight)
         else {
             sheet_rate = this.findRate('skid', total_pieces, shipper_city, receiver_city)
             if (sheet_rate === 0) sheet_rate = this.findRate('weight', total_chargeable_weight_weight, shipper_city, receiver_city)
@@ -290,13 +318,13 @@ export default class OrderEngine {
         return sheet_rate
     }
 
-    findRate = (type, value, source_city, destination_city) => {
+    findRate = (type, value, source_city, destination_city, isSkidByWeight = false) => {
 
         if (!source_city || !destination_city) return 0
         source_city = source_city.toLowerCase().trim()
         destination_city = destination_city.toLowerCase().trim()
 
-        let rate = this.fetchRateFromSheets(type, value, source_city, destination_city)
+        let rate = this.fetchRateFromSheets(type, value, source_city, destination_city, isSkidByWeight)
 
         // if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city)
 
@@ -304,14 +332,9 @@ export default class OrderEngine {
     }
 
 
-    fetchRateFromSheets = (type, value, source_city, destination_city) => {
+    fetchRateFromSheets = (type, value, source_city, destination_city, isSkidByWeight) => {
 
-        let sourceSheets
-
-        if (type === 'skid_by_weight') {
-            sourceSheets = this.customerRateSheets.filter(rs => rs.type === 'skid' && rs.skid_by_weight === 1 && rs.destination.toLowerCase().trim() === source_city)
-        }
-        else sourceSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === source_city)
+        let sourceSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.skid_by_weight === Number(isSkidByWeight) && rs.destination.toLowerCase().trim() === source_city)
 
         if (sourceSheets.length === 0) return 0
 
@@ -319,43 +342,38 @@ export default class OrderEngine {
 
         if (!firstSheet) return 0
 
-        const firstRate = this.getRateFromSheet(firstSheet, value, type)
+        const firstRate = this.getRateFromSheet(firstSheet, value, type, isSkidByWeight)
         if (firstRate === 0) return 0
 
-        let destSheets
-        if (type === 'skid_by_weight') {
-            destSheets = this.customerRateSheets.filter(rs => rs.type === 'skid' && rs.skid_by_weight === 1 && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
-        }
-        else {
-            destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
-        }
+        let destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.skid_by_weight === Number(isSkidByWeight) && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
+
 
         if (destSheets.length === 0) return 0
 
         let secondSheet
-        if (firstSheet.external === 'external') {
-            secondSheet = destSheets.find(rs => rs.external === 'external')
+        if (firstSheet.external === 'E') {
+            secondSheet = destSheets.find(rs => rs.external === 'E')
             if (!secondSheet) {
-                secondSheet = destSheets.sort((a, b) => (b.external === 'external' ? 1 : 0) - (a.external === 'external' ? 1 : 0))[0]
+                secondSheet = destSheets.sort((a, b) => (b.external === 'E' ? 1 : 0) - (a.external === 'E' ? 1 : 0))[0]
             }
         } else {
-            secondSheet = destSheets.sort((a, b) => (b.external === 'external' ? 1 : 0) - (a.external === 'external' ? 1 : 0))[0]
+            secondSheet = destSheets.sort((a, b) => (b.external === 'E' ? 1 : 0) - (a.external === 'E' ? 1 : 0))[0]
         }
 
         if (!secondSheet) return firstRate
 
-        const secondRate = this.getRateFromSheet(secondSheet, value, type)
+        const secondRate = this.getRateFromSheet(secondSheet, value, type, isSkidByWeight)
 
         return Math.max(firstRate, secondRate)
     }
 
 
-    getRateFromSheet = (sheet, value, type) => {
-        if (type === 'skid') {
+    getRateFromSheet = (sheet, value, type, isSkidByWeight) => {
+        if (type === 'skid' && !isSkidByWeight) {
             const bracket = sheet.brackets.find(b => String(b.rate_bracket) === String(Math.round(value)))
             return bracket ? Number(bracket.rate) : 0
         } else {
-            const bracketName = this.getWeightBracket(type, value)
+            const bracketName = this.getWeightBracket(value, isSkidByWeight)
             let bracket
             if (bracketName === 'ltl_rate') {
                 bracket = { rate: sheet[bracketName] }
@@ -374,10 +392,9 @@ export default class OrderEngine {
     }
 
 
-    getWeightBracket = (type, weight) => {
-        // type = type === 'skid_by_weight' ? 'skid' : 'weight'
+    getWeightBracket = (weight, isSkidByWeight) => {
         let allBrackets
-        if (type === 'skid_by_weight') {
+        if (isSkidByWeight) {
             allBrackets = this.customerRateSheets
                 .filter(rs => rs.type === 'skid' && rs.skid_by_weight === 1)
                 .flatMap(rs => rs.brackets.map(b => b.rate_bracket))
@@ -423,14 +440,8 @@ export default class OrderEngine {
         let fuel_value = 0
         let amount = this.context['freight_rate'] + this.context['fuel_based_accessorial_charges']
 
-        console.log('customer: ', this.customer);
-        console.log('shipper_city: ', this.shipper_city);
-        console.log('receiver_city: ', this.receiver_city);
-        console.log('fuelSurcharge: ', fuelSurcharge);
-
         if (!this.customer || !this.shipper_city || !this.receiver_city || !fuelSurcharge) {
-            console.log('object');
-            return 
+            return
         }
 
         if (this.context['manual_fuel_surcharge']) {
@@ -460,7 +471,6 @@ export default class OrderEngine {
             if (fuel_ltl_other) fuel_charge = (fuel_ltl / 100) * fuel_ltl_other_value
             else {
                 fuel_charge = (fuel_ltl / 100) * Number(data.ltl_surcharge)
-                console.log(fuel_charge);
             }
         }
         else {
@@ -469,6 +479,99 @@ export default class OrderEngine {
         }
 
         return (fuel_charge / 100) * amount
+    }
+
+    applyServiceCharge = () => {
+        let serviceType = this.context['service_type']
+        let directKM = this.context['direct_km']
+        const vehicleTypes = this.context['customer_vehicle_types'] || []
+
+        if (this.context['manual_freight_rate']) {
+            this.context['freight_rate'] = this.context['override_freight_rate']
+            return
+        }
+
+        if (serviceType === 'Direct') {
+            const vehicleIncluded = vehicleTypes.filter(vt => vt.is_included)
+            if (vehicleIncluded.length > 0) {
+                for (let vtype of vehicleIncluded) {
+                    this.context['direct_service_charge_amount'] += Number(vtype.amount) * Number(directKM)
+                }
+            }
+            this.context['freight_rate'] = this.context['direct_service_charge_amount']
+        }
+
+    }
+
+    applyAccessorialsCharge = () => {
+        const accessorials = this.context['customer_accessorials_charges']
+        const accessorialsIncluded = accessorials.filter(acc => acc.is_included)
+        if (accessorialsIncluded.length === 0) return
+
+        for (let access of accessorialsIncluded) {
+            const amount = Number(access['charge_amount'])
+            const type = access['type']
+            if (type === 'fuel_based') {
+                this.context['fuel_based_accessorial_charges'] += amount
+                this.context['charges_total'] += amount
+            }
+            else this.context['charges_total'] += amount
+        }
+    }
+
+    applyOtherCharges = () => {
+        const otherAccessorials = this.context['other_accessorials_charges']
+        if (otherAccessorials.length === 0) return
+        for (let oaccess of otherAccessorials) {
+            const name = oaccess['charge_name']
+            const amount = Number(oaccess['charge_amount'])
+            if (name && amount > 0) {
+                this.context['charges_total'] += amount
+            }
+        }
+    }
+
+    applyProvincialTaxes = () => {
+        let customer = this.customer
+        let sub_total = this.context['freight_rate'] + this.context['freight_fuel_surcharge'] + this.context['charges_total']
+        let taxes = this.provincialTaxes(this.context['receiver_province'], sub_total, customer)
+
+        this.context['sub_totals'] = sub_total
+        this.context['provincial_tax'] = taxes['pst']
+        this.context['federal_tax'] = taxes['gst']
+        this.context['grand_totals'] = sub_total + taxes['pst'] + taxes['gst']
+    }
+
+    provincialTaxes = (rprovince, frate, customer) => {
+        let pst = 0, gst = 0
+
+        if (customer['tax_options'] === 'no_tax') {
+            return { pst, gst }
+        }
+
+        rprovince = rprovince ? rprovince.toUpperCase() : rprovince
+
+        let rates = {
+            'ON': { 'pst': 8, 'gst': 5 },
+            'BC': { 'pst': 7, 'gst': 5 },
+            'AB': { 'pst': 0, 'gst': 5 },
+            'SK': { 'pst': 6, 'gst': 5 },
+            'MB': { 'pst': 7, 'gst': 5 },
+            'QC': { 'pst': 9.975, 'gst': 5 },
+            'NB': { 'pst': 10, 'gst': 5 },
+            'NS': { 'pst': 10, 'gst': 5 },
+            'PE': { 'pst': 10, 'gst': 5 },
+            'NL': { 'pst': 10, 'gst': 5 },
+            'YT': { 'pst': 0, 'gst': 5 },
+            'NT': { 'pst': 0, 'gst': 5 },
+            'NU': { 'pst': 0, 'gst': 5 }
+        }
+
+        if (rprovince in rates) {
+            pst = (rates[rprovince].pst / 100) * frate
+            gst = (rates[rprovince].gst / 100) * frate
+        }
+        return { pst, gst }
     }
 
     format_value = () => {
@@ -482,7 +585,11 @@ export default class OrderEngine {
             freight_rate: Math.round(this.context['freight_rate'] * 100) / 100 || 0,
             freight_rate_skid: Math.round(this.context['freight_rate_skid'] * 100) / 100 || 0,
             freight_rate_weight: Math.round(this.context['freight_rate_weight'] * 100) / 100 || 0,
-            freight_fuel_surcharge: Math.round(this.context['freight_fuel_surcharge'] * 100) / 100 || 0
+            freight_fuel_surcharge: Math.round(this.context['freight_fuel_surcharge'] * 100) / 100 || 0,
+            sub_totals: Math.round(this.context['sub_totals'] * 100) / 100 || 0,
+            provincial_tax: Math.round(this.context['provincial_tax'] * 100) / 100 || 0,
+            federal_tax: Math.round(this.context['federal_tax'] * 100) / 100 || 0,
+            grand_totals: Math.round(this.context['grand_totals'] * 100) / 100 || 0,
         })
     }
 
@@ -507,5 +614,131 @@ export default class OrderEngine {
             this.enqueueSnackbar('Failed to load fuel surcharge', { variant: 'error' })
             this.fuelSurchargeByDate = null
         }
+    }
+
+    static accessorials_types = (type, access, frate, qty, pdtimes, waiting_time) => {
+
+        const pickup_delivery_time = {
+            pickup_in: pdtimes[0],
+            pickup_out: pdtimes[1],
+            delivery_in: pdtimes[2],
+            delivery_out: pdtimes[3]
+        }
+
+        const amount = Number(access['amount']) || 0
+        const amountType = access['amount_type'] || ''
+        const timeUnit = access['time_unit']
+        const baseAmount = access['base_amount'] || 0
+        let freeTime = access['free_time'] ? Number(access['free_time']) : 0
+        frate = Number(frate)
+        const min = access['min'] ? Number(access['min']) : 0
+        const max = access['max'] ? Number(access['max']) : 0
+
+        console.log(access);
+
+        let { totalDelivery, totalPickup } = OrderEngine.calculateTotalWaitingTime(pickup_delivery_time, waiting_time);
+        let calculated_amount = 0
+
+        switch (type) {
+            case 'fixed_price':
+                calculated_amount = amount
+                break
+            case 'fuel_based':
+                if (amountType === 'percentage') calculated_amount = (amount / 100) * frate
+                else calculated_amount = amount * frate
+                break
+            case 'time_based':
+                let free_time_minute = timeUnit === 'minute' ? freeTime : freeTime * 60
+                let totalPickupWaitingTime = Math.max(0, (totalPickup - free_time_minute))
+                let totalDeliveryWaitingTime = Math.max(0, (totalDelivery - free_time_minute))
+                console.log('total delivery: ', totalDelivery);
+                console.log('totalDeliveryWaitingTime: ', totalDeliveryWaitingTime);
+                calculated_amount += baseAmount
+                if (totalPickupWaitingTime > 0) calculated_amount += totalPickupWaitingTime * amount
+                if (totalDeliveryWaitingTime > 0) calculated_amount += totalDeliveryWaitingTime * amount
+                break
+            case 'transport_based':
+                if (amountType === 'percentage') calculated_amount = (amount / 100) * frate
+                else calculated_amount = amount * frate
+                break
+            case 'product_based':
+                calculated_amount = amount
+                break
+            case 'package_based':
+                calculated_amount = amount
+                break
+        }
+
+        calculated_amount *= qty
+
+        if (access['min']) calculated_amount = Math.max(calculated_amount, min)
+
+        if (access['max']) calculated_amount = Math.min(calculated_amount, max)
+
+        return calculated_amount
+
+    }
+
+    static calculateTotalWaitingTime = (time, wtime) => {
+        console.log('waiting_time: ', wtime);
+        console.log('time: ', time);
+        let pnwt = wtime[0]
+        let dnwt = wtime[1]
+        let pickup_in = time['pickup_in'] ?? null
+        let pickup_out = time['pickup_out'] ?? null
+        let delivery_in = time['delivery_in'] ?? null;
+        let delivery_out = time['delivery_out'] ?? null;
+
+        let totalPickup = 0
+        let totalDelivery = 0
+
+        if (pickup_in && pickup_out && !Boolean(pnwt)) {
+            totalPickup = OrderEngine.calculateTimeDifferenceInMinutes(pickup_in, pickup_out)
+        }
+        if (delivery_in && delivery_out && !dnwt) {
+            totalDelivery = OrderEngine.calculateTimeDifferenceInMinutes(delivery_in, delivery_out)
+        }
+        return { totalPickup, totalDelivery }
+    }
+
+    static calculateTimeDifferenceInMinutes = (timeIn, timeOut) => {
+        try {
+            const [inHours, inMinutes] = timeIn.split(':').map(t => Number(t));
+            const [outHours, outMinutes] = timeOut.split(':').map(t => Number(t));
+
+            const start = new Date();
+            start.setHours(inHours, inMinutes, 0, 0);
+
+            const end = new Date();
+            end.setHours(outHours, outMinutes, 0, 0);
+
+            if (end < start) {
+                end.setDate(end.getDate() + 1);
+            }
+
+            const diffMs = end - start;
+            const diffMinutes = diffMs / (1000 * 60);
+
+            return diffMinutes;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    static calculatePDTotalTimes = (pin, pout, din, dout) => {
+
+        let total_pickup = 0
+        let total_delivery = 0
+        let total_time = 0
+
+        if (pin && pout) {
+            total_pickup = OrderEngine.calculateTimeDifferenceInMinutes(pin, pout)
+        }
+        if (din && dout) {
+            total_delivery = OrderEngine.calculateTimeDifferenceInMinutes(din, dout)
+        }
+        total_time = total_pickup + total_delivery
+
+        return { total_delivery, total_pickup, total_time }
     }
 }

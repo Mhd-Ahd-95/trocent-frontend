@@ -27,6 +27,7 @@ export const defaultOrderValue = {
   shipper_province: '',
   shipper_postal_code: '',
   shipper_special_instructions: '',
+  shipper_no_waiting_time: false,
 
   is_extra_stop: false,
   extra_stop_id: '',
@@ -50,10 +51,11 @@ export const defaultOrderValue = {
   receiver_province: '',
   receiver_postal_code: '',
   receiver_special_instructions: '',
+  receiver_no_waiting_time: false,
 
   pickup_date: new Date(),
-  pickup_time_from: '07:00 PM',
-  pickup_time_to: '07:00 PM',
+  pickup_time_from: '07:00',
+  pickup_time_to: '07:00',
   pickup_driver_assigned: '',
   pickup_terminal: '',
   pickup_appointment: false,
@@ -79,8 +81,8 @@ export const defaultOrderValue = {
   interliner_delivery_invoice: '',
 
   delivery_date: new Date(),
-  delivery_time_from: '12:00 PM',
-  delivery_time_to: '12:00 PM',
+  delivery_time_from: '12:00',
+  delivery_time_to: '12:00',
   delivery_driver_assigned: '',
   delivery_terminal: '',
   delivery_appointment: false,
@@ -117,11 +119,28 @@ export const defaultOrderValue = {
   manual_fuel_surcharges: false,
   freight_rate: '',
   freight_fuel_surcharge: '',
-  
+
+  direct_km: 0,
+  customer_vehicle_types: [],
   customer_accessorials: [],
   additional_service_charges: [],
   sub_total: '',
   provincial_tax: '',
   federal_tax: '',
-  grand_tax: ''
+  grand_tax: '',
+
+  pickup_in: null,
+  pickup_out: null,
+  pickup_at: null,
+  delivery_in: null,
+  delivery_out: null,
+  delivery_at: null,
+  pickup_signee: '',
+  delivery_signee: '',
+  billing_invoice_date: new Date(),
+  billing_invoice: '',
+  billing_invoiced: false,
+  total_pickup: 0,
+  total_delivery: 0,
+  total_time: 0
 }

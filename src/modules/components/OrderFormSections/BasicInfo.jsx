@@ -11,22 +11,13 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
-import { useTerminals } from '../../hooks/useTerminals'
 import moment from 'moment'
+import { AddressBookContext } from '../../contexts'
 
 function BasicInfo(props) {
-  const { register, control, setValue, enqueueSnackbar } = props
+  const { register, control, setValue } = props
 
-  const { data, isLoading, isError, error } = useTerminals()
-
-  React.useEffect(() => {
-    if (isError && error) {
-      const message = error.response?.data?.message;
-      const status = error.response?.status;
-      const errorMessage = message ? `${message} - ${status}` : error.message;
-      enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-  }, [isError, error])
+  const { terminals, loading } = React.useContext(AddressBookContext)
 
   return (
     <Grid container spacing={3}>
@@ -101,8 +92,8 @@ function BasicInfo(props) {
           render={({ field, fieldState }) => (
             <Autocomplete
               {...field}
-              loading={isLoading}
-              options={data?.map((dt => dt.terminal)) || []}
+              loading={loading}
+              options={terminals?.map((dt => dt.terminal)) || []}
               onChange={(_, value) => {
                 field.onChange(value)
                 setValue('pickup_terminal', value || '')
@@ -118,7 +109,7 @@ function BasicInfo(props) {
                       ...params.InputProps,
                       endAdornment: (
                         <>
-                          {isLoading ? (
+                          {loading ? (
                             <CircularProgress color="inherit" size={20} />
                           ) : null}
                           {params.InputProps.endAdornment}
