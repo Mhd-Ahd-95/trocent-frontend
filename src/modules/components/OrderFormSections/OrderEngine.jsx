@@ -549,6 +549,8 @@ export default class OrderEngine {
             return { pst, gst }
         }
 
+        rprovince = rprovince ? rprovince.toUpperCase() : rprovince
+
         let rates = {
             'ON': { 'pst': 8, 'gst': 5 },
             'BC': { 'pst': 7, 'gst': 5 },
