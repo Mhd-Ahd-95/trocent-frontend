@@ -162,7 +162,7 @@ function FreightCharges(props) {
       vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
         id: v.id,
         name: v.name,
-        amount: v.amount,
+        amount: v.rate,
         is_included: false,
       }))
     }
@@ -375,11 +375,13 @@ function FreightCharges(props) {
                               inputProps={{ step: 'any' }}
                               value={field.value || ''}
                               size="small"
-                              onChange={(e) => {
-                                const value = e.target.value
-                                field.onChange(Number(value))
-                                engine.customer_vehicle_types = getValues('customer_vehicle_types')
-                                props.calculationRef.current?.recalculate()
+                              disabled
+                              sx={{
+                                '& .MuiInputBase-input.Mui-disabled': {
+                                  color: 'black',
+                                  fontWeight: 600,
+                                  WebkitTextFillColor: 'black',
+                                },
                               }}
                               slotProps={{
                                 input: {
@@ -608,6 +610,9 @@ function FreightCharges(props) {
                             onChange={e => {
                               const value = e.target.value
                               if (Number(value) >= 0) {
+                                if (Number(value) === 0) {
+                                  setValue(`customer_accessorials.${index}.is_included`, false);
+                                }
                                 const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value))
                                 setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
                                 setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))

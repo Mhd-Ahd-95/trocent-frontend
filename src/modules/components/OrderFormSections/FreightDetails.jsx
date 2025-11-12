@@ -198,8 +198,11 @@ function FreightDetails(props) {
                     if (value === 'Rush' && access) {
                       setValue(`customer_accessorials.${accIdx}`, { ...access, is_included: true, charge_quantity: 1, charge_amount: access.amount })
                     }
-                    else setValue(`customer_accessorials.${accIdx}`, { ...access, is_included: false, charge_quantity: 0, charge_amount: 0 })
+                    else {
+                      setValue(`customer_accessorials.${accIdx}`, { ...access, is_included: false, charge_quantity: 0, charge_amount: 0 })
+                    }
                     engine.service_type = value
+                    engine.accessorialsCharge = customerAccess
                     triggerRecalculation()
                   }}
                   defaultValue={'Regular'}

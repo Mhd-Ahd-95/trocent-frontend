@@ -615,11 +615,13 @@ export default class OrderEngine {
         }
     }
 
-    static accessorials_types = (type, access, frate, qty) => {
+    static accessorials_types = (type, access, frate, qty, parentOrderId) => {
 
         // if (type === 'unknown'){
         //     return Number(access['charge_amount'])
         // }
+
+        let times = OrderEngine.getLatestPickupAndDeliveryTimes(parentOrderId);
 
         let calculated_amount = 0
         const amount = Number(access['amount']) || 0
@@ -663,4 +665,23 @@ export default class OrderEngine {
         return calculated_amount
 
     }
+
+    static getLatestPickupAndDeliveryTimes = (poid) => {
+        if (!poid) {
+            return ({
+                'latestPickupInDate': '',
+                'latestPickupInTime': '',
+                'latestPickupOutDate': '',
+                'latestPickupOutTime': '',
+                'latestDeliveryInDate': '',
+                'latestDeliveryInTime': '',
+                'latestDeliveryOutDate': '',
+                'latestDeliveryOutTime': '',
+                'totalPickupWaitingTime': '',
+                'totalDeliveryWaitingTime': '',
+                'totalWaitingTime': ''
+            })
+        }
+    }
+
 }
