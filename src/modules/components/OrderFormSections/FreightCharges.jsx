@@ -331,12 +331,12 @@ function FreightCharges(props) {
                       alignItems={'center'}
                       width={'100%'}
                     >
-                      <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                      <Grid size={{ xs: 12, sm: 6, md: 7 }}>
                         <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}                        >
                           {vtype.name}
                         </Typography>
                       </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <Grid size={{ xs: 12, sm: 6, md: 1 }}>
                         <FormControl>
                           <CustomFormControlLabel
                             control={
@@ -357,11 +357,11 @@ function FreightCharges(props) {
                                 )}
                               />
                             }
-                            label='Is included'
+                            label=''
                           />
                         </FormControl>
                       </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Controller
                           name={`customer_vehicle_types.${index}.amount`}
                           control={control}
@@ -573,7 +573,9 @@ function FreightCharges(props) {
                                       const checked = e.target.checked
                                       field.onChange(checked)
                                       if (checked) {
-                                        const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1)
+                                        const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                                        const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+                                        const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1, pdtimes, waiting_time)
                                         setValue(`customer_accessorials.${index}.charge_quantity`, 1);
                                         setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
                                       }
@@ -589,7 +591,7 @@ function FreightCharges(props) {
                               }}
                             />
                           }
-                          label='Is included'
+                          label=''
                         />
                       </FormControl>
                     </Grid>
@@ -613,7 +615,9 @@ function FreightCharges(props) {
                                 if (Number(value) === 0) {
                                   setValue(`customer_accessorials.${index}.is_included`, false);
                                 }
-                                const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value))
+                                const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                                const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+                                const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value), pdtimes, waiting_time)
                                 setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
                                 setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
                                 engine.accessorialsCharge = getValues('customer_accessorials')

@@ -566,6 +566,7 @@ export default class OrderEngine {
             'NT': { 'pst': 0, 'gst': 5 },
             'NU': { 'pst': 0, 'gst': 5 }
         }
+
         if (rprovince in rates) {
             pst = (rates[rprovince].pst / 100) * frate
             gst = (rates[rprovince].gst / 100) * frate
@@ -615,22 +616,28 @@ export default class OrderEngine {
         }
     }
 
-    static accessorials_types = (type, access, frate, qty, parentOrderId) => {
+    static accessorials_types = (type, access, frate, qty, pdtimes, waiting_time) => {
 
-        // if (type === 'unknown'){
-        //     return Number(access['charge_amount'])
-        // }
+        const pickup_delivery_time = {
+            pickup_in: pdtimes[0],
+            pickup_out: pdtimes[1],
+            delivery_in: pdtimes[2],
+            delivery_out: pdtimes[3]
+        }
 
-        let times = OrderEngine.getLatestPickupAndDeliveryTimes(parentOrderId);
-
-        let calculated_amount = 0
         const amount = Number(access['amount']) || 0
         const amountType = access['amount_type'] || ''
         const timeUnit = access['time_unit']
+        const baseAmount = access['base_amount'] || 0
         let freeTime = access['free_time'] ? Number(access['free_time']) : 0
         frate = Number(frate)
         const min = access['min'] ? Number(access['min']) : 0
         const max = access['max'] ? Number(access['max']) : 0
+
+        console.log(access);
+
+        let { totalDelivery, totalPickup } = OrderEngine.calculateTotalWaitingTime(pickup_delivery_time, waiting_time);
+        let calculated_amount = 0
 
         switch (type) {
             case 'fixed_price':
@@ -641,14 +648,20 @@ export default class OrderEngine {
                 else calculated_amount = amount * frate
                 break
             case 'time_based':
-                if (timeUnit !== 'minute') freeTime = freeTime * 60
-                calculated_amount = amount
+                let free_time_minute = timeUnit === 'minute' ? freeTime : freeTime * 60
+                let totalPickupWaitingTime = Math.max(0, (totalPickup - free_time_minute))
+                let totalDeliveryWaitingTime = Math.max(0, (totalDelivery - free_time_minute))
+                console.log('total delivery: ', totalDelivery);
+                console.log('totalDeliveryWaitingTime: ', totalDeliveryWaitingTime);
+                calculated_amount += baseAmount
+                if (totalPickupWaitingTime > 0) calculated_amount += totalPickupWaitingTime * amount
+                if (totalDeliveryWaitingTime > 0) calculated_amount += totalDeliveryWaitingTime * amount
                 break
             case 'transport_based':
                 if (amountType === 'percentage') calculated_amount = (amount / 100) * frate
                 else calculated_amount = amount * frate
                 break
-            case 'product_base':
+            case 'product_based':
                 calculated_amount = amount
                 break
             case 'package_based':
@@ -666,22 +679,66 @@ export default class OrderEngine {
 
     }
 
-    static getLatestPickupAndDeliveryTimes = (poid) => {
-        if (!poid) {
-            return ({
-                'latestPickupInDate': '',
-                'latestPickupInTime': '',
-                'latestPickupOutDate': '',
-                'latestPickupOutTime': '',
-                'latestDeliveryInDate': '',
-                'latestDeliveryInTime': '',
-                'latestDeliveryOutDate': '',
-                'latestDeliveryOutTime': '',
-                'totalPickupWaitingTime': '',
-                'totalDeliveryWaitingTime': '',
-                'totalWaitingTime': ''
-            })
+    static calculateTotalWaitingTime = (time, wtime) => {
+        console.log('waiting_time: ', wtime);
+        console.log('time: ', time);
+        let pnwt = wtime[0]
+        let dnwt = wtime[1]
+        let pickup_in = time['pickup_in'] ?? null
+        let pickup_out = time['pickup_out'] ?? null
+        let delivery_in = time['delivery_in'] ?? null;
+        let delivery_out = time['delivery_out'] ?? null;
+
+        let totalPickup = 0
+        let totalDelivery = 0
+
+        if (pickup_in && pickup_out && !Boolean(pnwt)) {
+            totalPickup = OrderEngine.calculateTimeDifferenceInMinutes(pickup_in, pickup_out)
+        }
+        if (delivery_in && delivery_out && !dnwt) {
+            totalDelivery = OrderEngine.calculateTimeDifferenceInMinutes(delivery_in, delivery_out)
+        }
+        return { totalPickup, totalDelivery }
+    }
+
+    static calculateTimeDifferenceInMinutes = (timeIn, timeOut) => {
+        try {
+            const [inHours, inMinutes] = timeIn.split(':').map(t => Number(t));
+            const [outHours, outMinutes] = timeOut.split(':').map(t => Number(t));
+
+            const start = new Date();
+            start.setHours(inHours, inMinutes, 0, 0);
+
+            const end = new Date();
+            end.setHours(outHours, outMinutes, 0, 0);
+
+            if (end < start) {
+                end.setDate(end.getDate() + 1);
+            }
+
+            const diffMs = end - start;
+            const diffMinutes = diffMs / (1000 * 60);
+
+            return diffMinutes;
+        } catch (error) {
+            return 0;
         }
     }
 
+    static calculatePDTotalTimes = (pin, pout, din, dout) => {
+
+        let total_pickup = 0
+        let total_delivery = 0
+        let total_time = 0
+
+        if (pin && pout) {
+            total_pickup = OrderEngine.calculateTimeDifferenceInMinutes(pin, pout)
+        }
+        if (din && dout) {
+            total_delivery = OrderEngine.calculateTimeDifferenceInMinutes(din, dout)
+        }
+        total_time = total_pickup + total_delivery
+
+        return { total_delivery, total_pickup, total_time }
+    }
 }

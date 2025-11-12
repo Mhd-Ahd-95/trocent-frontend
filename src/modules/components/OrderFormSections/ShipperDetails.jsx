@@ -54,6 +54,7 @@ function ShipperDetails(props) {
               setValue('pickup_time_from', value?.op_time_from || null)
               setValue('pickup_time_to', value?.op_time_to || null)
               setValue('pickup_appointment', value?.requires_appointment || false)
+              setValue('shipper_no_waiting_time', value?.no_waiting_time || false)
               engine.shipper_city = value?.city || ''
               props.calculationRef?.current?.recalculate()
             })

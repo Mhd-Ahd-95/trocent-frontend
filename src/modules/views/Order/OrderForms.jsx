@@ -232,8 +232,9 @@ export default function OrderForm(props) {
               <TimeAndBilling
                 control={control}
                 register={register}
-                watch={watch}
                 errors={errors}
+                setValue={setValue}
+                getValues={getValues}
               />
             </WizardCard>
           </Grid>

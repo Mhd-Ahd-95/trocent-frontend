@@ -204,12 +204,11 @@ export default function AddressBookForm(props) {
                                         control={control}
                                         render={({ field }) => (
                                             <TimePicker
+                                                {...field}
                                                 label='Operating Hours From'
-                                                value={field.value ? moment(field.value, 'hh:mm A') : null}
-                                                onChange={(date) => {
-                                                    const formattedTime = date?.format('hh:mm A') || null;
-                                                    field.onChange(formattedTime);
-                                                }}
+                                                value={field.value ? moment(field.value, 'HH:mm') : null}
+                                                onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+                                                ampm={false}
                                                 slotProps={{
                                                     textField: {
                                                         fullWidth: true,
@@ -234,12 +233,11 @@ export default function AddressBookForm(props) {
                                         control={control}
                                         render={({ field }) => (
                                             <TimePicker
+                                                {...field}
                                                 label='Operating Hours To'
-                                                value={field.value ? moment(field.value, 'hh:mm A') : null}
-                                                onChange={(date) => {
-                                                    const formattedTime = date?.format('hh:mm A') || null;
-                                                    field.onChange(formattedTime);
-                                                }}
+                                                value={field.value ? moment(field.value, 'HH:mm') : null}
+                                                onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+                                                ampm={false}
                                                 slotProps={{
                                                     textField: {
                                                         fullWidth: true,

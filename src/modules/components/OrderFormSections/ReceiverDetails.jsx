@@ -55,6 +55,7 @@ function ReceiverDetails(props) {
               setValue('delivery_time_from', value?.op_time_from || null)
               setValue('delivery_time_to', value?.op_time_to || null)
               setValue('delivery_appointment', value?.requires_appointment || false)
+              setValue('receiver_no_waiting_time', value?.no_waiting_time || false)
               engine.receiver_city = value?.city || ''
               engine.receiverProvince = value?.province || ''
               props.calculationRef?.current?.recalculate()
