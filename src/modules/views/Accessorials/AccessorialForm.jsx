@@ -124,6 +124,7 @@ export default function AccessorialForm(props) {
                                                 label={label}
                                                 fullWidth
                                                 type={type ? type : 'text'}
+                                                value={field.value || ''}
                                                 variant='outlined'
                                             />
                                         )}
@@ -142,6 +143,7 @@ export default function AccessorialForm(props) {
                                                 type='text'
                                                 variant='outlined'
                                                 select
+                                                value={field.value || ''}
                                             >
                                                 {options.map((option) => (
                                                     <MenuItem value={option} key={option}>{_spacing(option)}</MenuItem>
