@@ -571,14 +571,7 @@ function FreightCharges(props) {
             borderRadius: 2
           }}
         >
-          <Grid
-            size={12}
-            sx={{
-              borderBottom: `1px solid ${theme.palette.grey[200]}`,
-              py: 1,
-              px: 2
-            }}
-          >
+          <Grid size={12} sx={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, py: 1, px: 2 }}          >
             <Typography component={'p'} sx={{ fontSize: 16, fontWeight: 600 }}>
               Customer Accessorial Charges
             </Typography>
@@ -590,31 +583,13 @@ function FreightCharges(props) {
             <Grid size={12} sx={{ py: 2, px: 3 }}>
               <Grid container spacing={2}>
                 {customerAccessorials.map((access, index) => (
-                  <Grid
-                    container
-                    spacing={2}
-                    key={`${customerId}-${index}`}
-                    sx={{
-                      border: `1px solid ${theme.palette.grey[200]}`,
-                      py: 2,
-                      px: 2,
-                      borderRadius: 3
-                    }}
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                  >
-                    <Grid size={{ xs: 12, sm: 6, md: 5 }}>
-                      <Typography
-                        variant='caption'
-                        sx={{ fontSize: 12, fontWeight: 400 }}
-                      >
-                        {formatAccessorial(
-                          access.charge_name,
-                          access.amount
-                        )}
+                  <Grid container spacing={2} key={`${customerId}-${index}`} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1.5, px: 2, borderRadius: 3 }} justifyContent={'center'} alignItems={'center'} width={'100%'}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                      <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}>
+                        {formatAccessorial(access.charge_name, access.amount)}
                       </Typography>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
                       <FormControl>
                         <CustomFormControlLabel
                           control={
