@@ -7,7 +7,7 @@ import { Add } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
 
-const useFreightCalculations = (freights, customer, setValue, fieldsLength, engine) => {
+const useFreightCalculations = (freights, customer, setValue, fieldsLength, engine, frate, accessorialRef) => {
   const calculationTimeoutRef = React.useRef(null)
   const [isCalculating, setIsCalculating] = React.useState(false)
   const previousFreightsRef = React.useRef(null)
@@ -38,7 +38,6 @@ const useFreightCalculations = (freights, customer, setValue, fieldsLength, engi
         engine.freights = freights
 
         const totals = engine.calculateOrder()
-
         requestAnimationFrame(() => {
           setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -52,6 +51,9 @@ const useFreightCalculations = (freights, customer, setValue, fieldsLength, engi
           setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          if (frate !== totals?.freight_rate) {
+            accessorialRef.current?.recalculateAccessorials()
+          }
           setIsCalculating(false)
         })
       } catch (err) {
@@ -85,7 +87,9 @@ function FreightDetails(props) {
     engine.customer,
     setValue,
     fields.length,
-    engine
+    engine,
+    getValues('freight_rate'),
+    props.accessorialRef
   )
 
   const handleAddFreight = React.useCallback(() => {
@@ -108,6 +112,7 @@ function FreightDetails(props) {
       if (freights && engine.customer) {
         engine.freights = freights
         const totals = engine.calculateOrder()
+        const ofrate = getValues('freight_rate')
         requestAnimationFrame(() => {
           setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -121,6 +126,9 @@ function FreightDetails(props) {
           setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          if (ofrate !== totals?.freight_rate) {
+            props.accessorialRef.current?.recalculateAccessorials()
+          }
         })
       }
     }, 50)
@@ -133,7 +141,7 @@ function FreightDetails(props) {
       if (freights && freights.length > 0 && engine.customer) {
         engine.freights = freights
         const totals = engine.calculateOrder()
-
+        const ofrate = getValues('freight_rate')
         requestAnimationFrame(() => {
           setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -147,6 +155,9 @@ function FreightDetails(props) {
           setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
           setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+          if (ofrate !== totals?.freight_rate) {
+            props.accessorialRef.current?.recalculateAccessorials()
+          }
         })
       }
     }, 50)
@@ -157,6 +168,7 @@ function FreightDetails(props) {
     if (freights && engine.customer) {
       engine.freights = freights
       const totals = engine.calculateOrder()
+      const ofrate = getValues('freight_rate')
       requestAnimationFrame(() => {
         setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
@@ -170,6 +182,9 @@ function FreightDetails(props) {
         setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
         setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
+        if (Number(ofrate) !== Number(totals?.freight_rate)) {
+          props.accessorialRef.current?.recalculateAccessorials()
+        }
       })
     }
   }, [engine, getValues, setValue])

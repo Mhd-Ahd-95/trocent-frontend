@@ -51,27 +51,8 @@ function ClientInfo(props) {
                     field.onChange(value?.id || '')
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
-                    // if (!editMode || !isInitialLoad.current) {
-                    //   const access = value?.accessorials.map((acc) => ({
-                    //     charge_name: acc.access_name,
-                    //     amount: acc.amount,
-                    //     charge_amount: 0,
-                    //     charge_quantity: 0,
-                    //     is_included: false
-                    //   })) || []
-                    //   setValue('customer_accessorials', access, { shouldValidate: false, shouldDirty: false })
-                    //   const vtypes = value?.vehicle_types.map((vt) => ({
-                    //     name: vt.name,
-                    //     is_include: false,
-                    //     amount: vt.amount
-                    //   }))
-                    //   setValue('customer_vehicle_types', vtypes, { shouldValidate: false, shouldDirty: false })
-                    // }
-                    // if (isInitialLoad.current) {
-                    //   isInitialLoad.current = false
-                    // }
                     engine.customer = value
-                    if (value?.id) await engine.get_customer_rate_sheet(value.id)
+                    if (value && value.id) await engine.get_customer_rate_sheet(value.id)
                   })
                 }}
                 getOptionLabel={option =>

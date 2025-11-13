@@ -15,7 +15,7 @@ import moment from 'moment'
 import { AddressBookContext } from '../../contexts'
 
 function BasicInfo(props) {
-  const { register, control, setValue } = props
+  const { register, control, setValue, getValues } = props
 
   const { terminals, loading } = React.useContext(AddressBookContext)
 
@@ -169,6 +169,11 @@ function BasicInfo(props) {
                     onChange={e => {
                       const checked = e.target.checked
                       field.onChange(checked)
+                      const accessorials = getValues('customer_accessorials')
+                      const index = accessorials.findIndex(acc => acc.charge_name.toLowerCase() === 'crossdock')
+                      if (index !== -1) {
+                        props.accessorialRef.current?.change(checked, accessorials[index], index)
+                      }
                       if (checked) {
                         setValue('quote', false)
                         setValue('order_status', 'Approved')
@@ -191,12 +196,18 @@ function BasicInfo(props) {
         <Controller
           name='order_entity'
           control={control}
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <Autocomplete
               {...field}
               options={['Order Entity', 'Order Billing']}
               getOptionLabel={option => option}
-              onChange={(_, value) => field.onChange(value)}
+              onChange={(_, value) => {
+                field.onChange(value)
+                if (value === 'Order Billing') {
+                  setValue('order_status', 'Approved')
+                }
+                else setValue('order_status', 'Pending')
+              }}
               renderInput={params => (
                 <TextInput
                   {...params}

@@ -254,7 +254,7 @@ export default class OrderEngine {
             this.context['freight_rate'] = this.context['override_freight_rate']
             return
         }
-
+        
         let hasSkidRateSheet = this.customerRateSheets.some(rs => rs.type === 'skid')
 
         this.context['freight_rate_skid'] = 0
@@ -273,12 +273,10 @@ export default class OrderEngine {
 
         this.context['freight_rate'] = this.context['freight_rate_skid'] + this.context['freight_rate_weight']
 
-        return this.context['freight_rate']
     }
 
 
     calculateSkidRate = () => {
-
         const total_chargeable_weight_skid = this.context['total_chargeable_weight_skid']
         const total_chargeable_weight_weight = this.context['total_chargeable_weight_weight']
         const total_pieces = this.context['total_pieces_skid']
@@ -295,7 +293,6 @@ export default class OrderEngine {
         }
 
         let freight_rate_skid = skidByWeight ? sheet_rate : (total_pieces * sheet_rate)
-
         return freight_rate_skid
     }
 
@@ -607,7 +604,7 @@ export default class OrderEngine {
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
-            this.fuelSurchargeByDate = res.data.data
+            if (res.data.data) this.fuelSurchargeByDate = res.data.data
         }
         catch {
             console.error('Failed to load fuel surcharge:', error)
@@ -634,8 +631,6 @@ export default class OrderEngine {
         const min = access['min'] ? Number(access['min']) : 0
         const max = access['max'] ? Number(access['max']) : 0
 
-        console.log(access);
-
         let { totalDelivery, totalPickup } = OrderEngine.calculateTotalWaitingTime(pickup_delivery_time, waiting_time);
         let calculated_amount = 0
 
@@ -651,8 +646,6 @@ export default class OrderEngine {
                 let free_time_minute = timeUnit === 'minute' ? freeTime : freeTime * 60
                 let totalPickupWaitingTime = Math.max(0, (totalPickup - free_time_minute))
                 let totalDeliveryWaitingTime = Math.max(0, (totalDelivery - free_time_minute))
-                console.log('total delivery: ', totalDelivery);
-                console.log('totalDeliveryWaitingTime: ', totalDeliveryWaitingTime);
                 calculated_amount += baseAmount
                 if (totalPickupWaitingTime > 0) calculated_amount += totalPickupWaitingTime * amount
                 if (totalDeliveryWaitingTime > 0) calculated_amount += totalDeliveryWaitingTime * amount
@@ -680,8 +673,6 @@ export default class OrderEngine {
     }
 
     static calculateTotalWaitingTime = (time, wtime) => {
-        console.log('waiting_time: ', wtime);
-        console.log('time: ', time);
         let pnwt = wtime[0]
         let dnwt = wtime[1]
         let pickup_in = time['pickup_in'] ?? null

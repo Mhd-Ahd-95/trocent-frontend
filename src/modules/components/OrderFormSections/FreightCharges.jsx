@@ -18,6 +18,7 @@ import {
 import { useFieldArray, useWatch, Controller } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
+import { unstable_batchedUpdates } from 'react-dom'
 
 const ServiceChargeRow = React.memo(function ServiceChargeRow({
   index,
@@ -172,13 +173,22 @@ function FreightCharges(props) {
   React.useEffect(() => {
     let accessorials = []
     if (engine.customer && customerId) {
-      accessorials = (engine.customer.accessorials || []).map(a => ({
+      const isCrossDock = getValues('is_crossdock')
+      accessorials = (engine.customer.accessorials || []).map(a => isCrossDock && a.access_name?.toLowerCase() === 'crossdock' ? ({
         ...a,
         charge_name: a.access_name,
-        charge_amount: 0,
-        charge_quantity: 0,
-        is_included: false,
-      }))
+        charge_amount: a.amount,
+        charge_quantity: 1,
+        is_included: true,
+      }) :
+        ({
+          ...a,
+          charge_name: a.access_name,
+          charge_amount: 0,
+          charge_quantity: 0,
+          is_included: false,
+        })
+      )
     }
     replaceCustomerAccessorials(accessorials)
   }, [engine.customer?.id, customerId, replaceCustomerAccessorials])
@@ -192,6 +202,53 @@ function FreightCharges(props) {
     control,
     name: 'additional_service_charges'
   })
+
+  const handleChange = (checked, access, index) => {
+    requestAnimationFrame(() => {
+      setValue(`customer_accessorials.${index}.is_included`, checked);
+      if (checked) {
+        const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+        const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+        const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1, pdtimes, waiting_time)
+        setValue(`customer_accessorials.${index}.charge_quantity`, 1);
+        setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+      }
+      else {
+        setValue(`customer_accessorials.${index}.charge_quantity`, 0);
+        setValue(`customer_accessorials.${index}.charge_amount`, 0)
+      }
+      engine.accessorialsCharge = getValues('customer_accessorials')
+      props.calculationRef.current?.recalculate()
+    })
+  }
+
+  const triggerCalculateAccessorials = () => {
+    const accessorials = getValues('customer_accessorials')
+    const filterAccessorials = accessorials.reduce((result, acc, index) => {
+      if (acc.is_included && ['fuel_based', 'transport_based'].includes(acc.type)) {
+        result.push({ ...acc, idx: index })
+      }
+      return result
+    }, [])
+    if (filterAccessorials.length === 0) return
+    for (let access of filterAccessorials) {
+      const idx = access.idx
+      const qty = access.charge_quantity
+      const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+      const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+      const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), qty, pdtimes, waiting_time)
+      unstable_batchedUpdates(() => {
+        setValue(`customer_accessorials.${idx}.charge_quantity`, qty);
+        setValue(`customer_accessorials.${idx}.charge_amount`, (Math.round(amount * 100) / 100))
+        props.calculationRef.current?.recalculate()
+      })
+    }
+  }
+
+  React.useImperativeHandle(props.accessorialRef, () => ({
+    change: handleChange,
+    recalculateAccessorials: triggerCalculateAccessorials
+  }))
 
   return (
     <Grid container spacing={3}>
@@ -571,20 +628,7 @@ function FreightCharges(props) {
                                     checked={field.value || false}
                                     onChange={e => {
                                       const checked = e.target.checked
-                                      field.onChange(checked)
-                                      if (checked) {
-                                        const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
-                                        const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
-                                        const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1, pdtimes, waiting_time)
-                                        setValue(`customer_accessorials.${index}.charge_quantity`, 1);
-                                        setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
-                                      }
-                                      else {
-                                        setValue(`customer_accessorials.${index}.charge_quantity`, 0);
-                                        setValue(`customer_accessorials.${index}.charge_amount`, 0)
-                                      }
-                                      engine.accessorialsCharge = getValues('customer_accessorials')
-                                      props.calculationRef.current?.recalculate()
+                                      handleChange(checked, access, index)
                                     }}
                                   />
                                 )
