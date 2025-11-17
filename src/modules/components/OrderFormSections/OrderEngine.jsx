@@ -254,7 +254,7 @@ export default class OrderEngine {
             this.context['freight_rate'] = this.context['override_freight_rate']
             return
         }
-        
+
         let hasSkidRateSheet = this.customerRateSheets.some(rs => rs.type === 'skid')
 
         this.context['freight_rate_skid'] = 0
@@ -323,7 +323,7 @@ export default class OrderEngine {
 
         let rate = this.fetchRateFromSheets(type, value, source_city, destination_city, isSkidByWeight)
 
-        // if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city)
+        if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city, isSkidByWeight)
 
         return rate
     }
@@ -344,7 +344,6 @@ export default class OrderEngine {
 
         let destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.skid_by_weight === Number(isSkidByWeight) && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
 
-
         if (destSheets.length === 0) return 0
 
         let secondSheet
@@ -357,7 +356,7 @@ export default class OrderEngine {
             secondSheet = destSheets.sort((a, b) => (b.external === 'E' ? 1 : 0) - (a.external === 'E' ? 1 : 0))[0]
         }
 
-        if (!secondSheet) return firstRate
+        if (!secondSheet) return 0
 
         const secondRate = this.getRateFromSheet(secondSheet, value, type, isSkidByWeight)
 

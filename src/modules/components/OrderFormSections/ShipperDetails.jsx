@@ -2,32 +2,47 @@ import React from 'react'
 import { Grid, TextField } from '@mui/material'
 import TextInput from '../CustomComponents/TextInput'
 import SearchableInput from '../CustomComponents/SearchableInput'
-import { Controller, useWatch } from 'react-hook-form'
-import { useAddressBookMutations, useAddressBooks } from '../../hooks/useAddressBooks'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
+import { useAddressBookMutations } from '../../hooks/useAddressBooks'
 import { unstable_batchedUpdates } from 'react-dom'
 
 function ShipperDetails(props) {
 
-  const { control, setValue, enqueueSnackbar, engine } = props
+  const { data, isLoading, engine, selectedValue } = props
 
-  const { data, isLoading, isError, error } = useAddressBooks()
+  const {
+    control,
+    setValue,
+    getValues,
+  } = useFormContext()
 
   const { create, patch } = useAddressBookMutations()
-  const selectedValue = React.useRef({})
-
-  React.useEffect(() => {
-    if (isError && error) {
-      const message = error.response?.data?.message;
-      const status = error.response?.status;
-      const errorMessage = message ? `${message} - ${status}` : error.message;
-      enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-  }, [isError, error])
 
   const shipperSelected = useWatch({
     name: 'shipper_id',
     control: control
   })
+
+  const handleSelect = (value) => {
+    unstable_batchedUpdates(() => {
+      selectedValue.current = value
+      setValue('shipper_email', value?.email || '')
+      setValue('shipper_contact_name', value?.contact_name || '')
+      setValue('shipper_phone_number', value?.phone_number || '')
+      setValue('shipper_address', value?.address || '')
+      setValue('shipper_suite', value?.suite || '')
+      setValue('shipper_city', value?.city || '')
+      setValue('shipper_province', value?.province || '')
+      setValue('shipper_postal_code', value?.postal_code || '')
+      setValue('shipper_special_instructions', value?.special_instructions || '')
+      setValue('pickup_time_from', value?.op_time_from || null)
+      setValue('pickup_time_to', value?.op_time_to || null)
+      setValue('pickup_appointment', value?.requires_appointment || false)
+      setValue('shipper_no_waiting_time', value?.no_waiting_time || false)
+      engine.shipper_city = value?.city || ''
+      props.calculationRef?.current?.recalculate()
+    })
+  }
 
   return (
     <Grid container spacing={3}>
@@ -39,26 +54,7 @@ function ShipperDetails(props) {
           control={control}
           options={data || []}
           fieldProp='name'
-          onSelect={value => {
-            unstable_batchedUpdates(() => {
-              selectedValue.current = value
-              setValue('shipper_email', value?.email || '')
-              setValue('shipper_contact_name', value?.contact_name || '')
-              setValue('shipper_phone_number', value?.phone_number || '')
-              setValue('shipper_address', value?.address || '')
-              setValue('shipper_suite', value?.suite || '')
-              setValue('shipper_city', value?.city || '')
-              setValue('shipper_province', value?.province || '')
-              setValue('shipper_postal_code', value?.postal_code || '')
-              setValue('shipper_special_instructions', value?.special_instructions || '')
-              setValue('pickup_time_from', value?.op_time_from || null)
-              setValue('pickup_time_to', value?.op_time_to || null)
-              setValue('pickup_appointment', value?.requires_appointment || false)
-              setValue('shipper_no_waiting_time', value?.no_waiting_time || false)
-              engine.shipper_city = value?.city || ''
-              props.calculationRef?.current?.recalculate()
-            })
-          }}
+          onSelect={value => handleSelect(value)}
           onBlur={async (value) => await create.mutateAsync({ name: value })}
           rules={{ required: 'Shipper is a required field' }}
           label='Shipper*'
@@ -69,17 +65,25 @@ function ShipperDetails(props) {
         <Controller
           control={control}
           name='shipper_email'
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TextInput
               {...field}
               label='Email'
               disabled={!shipperSelected}
               id='email'
-              onBlur={async (e) => {
+              type='email'
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_email', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.email)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -92,17 +96,24 @@ function ShipperDetails(props) {
         <Controller
           control={control}
           name='shipper_contact_name'
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TextInput
               {...field}
               label='Contact Name'
               disabled={!shipperSelected}
               id='contact_name'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_contact_name', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.contact_name)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -115,17 +126,24 @@ function ShipperDetails(props) {
         <Controller
           control={control}
           name='shipper_phone_number'
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TextInput
               {...field}
               label='Phone Number'
               disabled={!shipperSelected}
               id='phone_number'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_phone_number', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.phone_number)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -146,11 +164,18 @@ function ShipperDetails(props) {
               variant='outlined'
               disabled={!shipperSelected}
               id='address'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_address', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.address)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               fullWidth
@@ -164,17 +189,24 @@ function ShipperDetails(props) {
         <Controller
           control={control}
           name='shipper_suite'
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TextInput
               {...field}
               label='Suite'
               disabled={!shipperSelected}
               id='suite'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_suite', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.suite)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -194,14 +226,25 @@ function ShipperDetails(props) {
               label='City*'
               disabled={!shipperSelected}
               id='city'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => {
+                const value = e.target.value
+                field.onChange(value)
+                engine.shipper_city = value
+              }}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
-                if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.city)
-                  engine.shipper_city = nAB.city
-                  props.calculationRef?.current?.recalculate()
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_city', value)
+                  engine.receiver_city = value
+                  props.receiverSelectedValue.current[key] = value
                 }
+                if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                }
+                props.calculationRef?.current?.recalculate()
               }}
               variant='outlined'
               fullWidth
@@ -232,11 +275,18 @@ function ShipperDetails(props) {
               label='Province*'
               disabled={!shipperSelected}
               id='province'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_province', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.province)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -259,11 +309,18 @@ function ShipperDetails(props) {
               disabled={!shipperSelected}
               variant='outlined'
               id='postal_code'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_postal_code', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.postal_code)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               fullWidth
@@ -277,7 +334,7 @@ function ShipperDetails(props) {
         <Controller
           control={control}
           name='shipper_special_instructions'
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <TextField
               {...field}
               label='Special Instructions'
@@ -285,11 +342,18 @@ function ShipperDetails(props) {
               disabled={!shipperSelected}
               multiline
               id='special_instructions'
-              onBlur={async (e) => {
+              value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={(e) => {
                 const { id: key, value } = e.target
+                const receiver_id = getValues('receiver_id')
+                if (receiver_id === shipperSelected) {
+                  setValue('receiver_special_instructions', value)
+                  props.receiverSelectedValue.current[key] = value
+                }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                  const nAB = await patch.mutateAsync({ id: shipperSelected, payload: { [key]: value } })
-                  field.onChange(nAB.special_instructions)
+                  selectedValue.current[key] = value
+                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
               }}
               minRows={2}

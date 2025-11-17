@@ -3,15 +3,20 @@ import { Grid, FormControl, Switch, TextField } from '@mui/material'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import global from '../../global'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller, useWatch, useFormContext } from 'react-hook-form'
 import SearchableInput from '../CustomComponents/SearchableInput'
 import { useAddressBooks, useAddressBookMutations } from '../../hooks/useAddressBooks'
 
 function ExtraStop(props) {
 
   const { data } = useAddressBooks()
-  const { setValue, control } = props
   const selectedValue = React.useRef({})
+
+  const {
+      control,
+      setValue,
+      getValues,
+    } = useFormContext()
 
   const isExtraStop = useWatch({
     control,
@@ -25,7 +30,7 @@ function ExtraStop(props) {
   })
 
   const handleChange = checked => {
-    const address_book = data?.find(ab => ab.name.toLowerCase() === 'MESSAGERS'.toLowerCase())
+    const address_book = data?.find(ab => ab.name.toLowerCase() === 'messagers')
     if (checked) {
       selectedValue.current = address_book
       setValue('extra_stop_id', address_book.id || '')
@@ -72,6 +77,11 @@ function ExtraStop(props) {
                       const checked = e.target.checked
                       field.onChange(checked)
                       handleChange(checked)
+                      const accessorials = getValues('customer_accessorials')
+                      const index = accessorials.findIndex(acc => acc.charge_name?.trim()?.toLowerCase() === 'extra stop')
+                      if (index !== -1) {
+                        props.accessorialRef.current?.change(checked, accessorials[index], index)
+                      }
                     }}
                   />
                 )}

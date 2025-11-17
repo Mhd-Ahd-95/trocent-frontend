@@ -2,7 +2,7 @@ import React from 'react'
 import { Grid, Autocomplete, FormControl, Switch } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import InputWrapper from '../CustomComponents/InputWrapper'
@@ -10,7 +10,12 @@ import moment from 'moment'
 import { useTerminals } from '../../hooks/useTerminals'
 
 function DeliveryDetails(props) {
-  const { register, control, setValue } = props
+
+  const {
+    register,
+    control,
+    setValue,
+  } = useFormContext()
 
   const { data } = useTerminals()
 

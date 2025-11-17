@@ -1,13 +1,17 @@
 import React from 'react'
 import { Grid, Autocomplete, CircularProgress } from '@mui/material'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import { useCustomers } from '../../hooks/useCustomers'
 import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
-  const { control, engine, setValue, editMode, enqueueSnackbar } = props
+  const { engine, editMode, enqueueSnackbar } = props
   const { data, isLoading, isError, error } = useCustomers()
+
+  const {
+    control,
+  } = useFormContext()
 
   const [selectedCustomer, setSelectedCustomer] = React.useState(null)
   const [customerId, setCustomerId] = React.useState('')

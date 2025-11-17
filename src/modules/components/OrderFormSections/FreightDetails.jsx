@@ -2,7 +2,7 @@ import React from 'react'
 import { Grid, Autocomplete, Typography, Button, InputAdornment, CircularProgress, FormControl, Switch } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { CustomFormControlLabel } from '../../components'
-import { Controller, useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { Add } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
@@ -73,7 +73,15 @@ const useFreightCalculations = (freights, customer, setValue, fieldsLength, engi
 }
 
 function FreightDetails(props) {
-  const { control, register, setValue, engine, getValues } = props
+  const { engine } = props
+
+  const {
+    control,
+    setValue,
+    getValues,
+    register
+  } = useFormContext()
+
   const theme = useTheme()
   const [mode, setMode] = React.useState(getValues('is_manual_skid') || false)
 

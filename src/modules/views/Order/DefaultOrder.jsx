@@ -12,7 +12,6 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
-  // customer: '',
 
   reference_numbers: [],
   caller: '',

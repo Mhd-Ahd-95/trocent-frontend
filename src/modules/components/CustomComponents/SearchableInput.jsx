@@ -28,6 +28,13 @@ export default function SearchableInput(props) {
       control={control}
       render={({ field, fieldState }) => {
         const valueObject = propsOptions?.find(o => o.id === Number(field.value)) || null;
+        React.useEffect(() => {
+          if (!field.value || field.value === '') {
+            setInputValue('')
+          } else if (valueObject && valueObject[fieldProp]) {
+            setInputValue(valueObject[fieldProp])
+          }
+        }, [field.value, valueObject?.[fieldProp]])
         return (
           <Autocomplete
             {...field}
@@ -35,12 +42,13 @@ export default function SearchableInput(props) {
             loading={props.loading || false}
             options={propsOptions || []}
             inputValue={inputValue}
-            onInputChange={(e, value) => {
+            onInputChange={(e, value, reason) => {
+              if (reason === 'reset') return
               setInputValue(value)
               // fetchSuggestions(value)
               if (!value) setSelectedValue(null)
             }}
-            value={valueObject || selectedValue || null}
+            value={valueObject}
             onChange={(e, value) => {
               if (value) {
                 const selected = propsOptions.find(op => op.id === Number(value.id)) || value

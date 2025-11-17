@@ -91,6 +91,7 @@ export function useAddressBookMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
+                console.log(updated);
                 queryClient.setQueryData(['addressBooks'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );

@@ -9,11 +9,15 @@ import {
 } from '@mui/material'
 import { InterlineCarrierForm, TabInterlineForm } from './InterlineCarrierForm'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
 import { useInterliners } from '../../hooks/useInterliners'
 
 function InterlineCarrier(props) {
-  const { setValue, control } = props
+
+  const {
+        control,
+        setValue,
+      } = useFormContext()
 
   const isPickup = useWatch({
     control: control,

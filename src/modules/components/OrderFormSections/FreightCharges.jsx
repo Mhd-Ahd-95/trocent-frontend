@@ -15,7 +15,7 @@ import {
   CustomFormControlLabel,
   OrderEngine
 } from '../../components'
-import { useFieldArray, useWatch, Controller } from 'react-hook-form'
+import { useFieldArray, useWatch, Controller, useFormContext } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
 import { unstable_batchedUpdates } from 'react-dom'
@@ -141,7 +141,14 @@ const ServiceChargeRow = React.memo(function ServiceChargeRow({
 
 function FreightCharges(props) {
 
-  const { engine, control, getValues, setValue } = props
+  const { engine } = props
+
+  const {
+    control,
+    setValue,
+    getValues,
+  } = useFormContext()
+
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
@@ -156,43 +163,6 @@ function FreightCharges(props) {
 
   const customerId = useWatch({ control, name: 'customer_id' })
   const serviceType = useWatch({ control, name: 'service_type' })
-
-  React.useEffect(() => {
-    let vehicleTypes = []
-    if (engine.customer && customerId) {
-      vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
-        id: v.id,
-        name: v.name,
-        amount: v.rate,
-        is_included: false,
-      }))
-    }
-    replaceCustomerVehicleTypes(vehicleTypes)
-  }, [engine.customer?.id, customerId, replaceCustomerVehicleTypes])
-
-  React.useEffect(() => {
-    let accessorials = []
-    if (engine.customer && customerId) {
-      const isCrossDock = getValues('is_crossdock')
-      accessorials = (engine.customer.accessorials || []).map(a => isCrossDock && a.access_name?.toLowerCase() === 'crossdock' ? ({
-        ...a,
-        charge_name: a.access_name,
-        charge_amount: a.amount,
-        charge_quantity: 1,
-        is_included: true,
-      }) :
-        ({
-          ...a,
-          charge_name: a.access_name,
-          charge_amount: 0,
-          charge_quantity: 0,
-          is_included: false,
-        })
-      )
-    }
-    replaceCustomerAccessorials(accessorials)
-  }, [engine.customer?.id, customerId, replaceCustomerAccessorials])
-
 
   const {
     fields: additionalServiceCharges,
@@ -245,10 +215,64 @@ function FreightCharges(props) {
     }
   }
 
+  const handleChangeNoCharge = (checked) => {
+    unstable_batchedUpdates(() => {
+      setValue('no_charges', checked)
+      setCharges((prev) => ({ ...prev, no_charges: checked }))
+      engine.isNoCharge = checked
+    })
+  }
+
   React.useImperativeHandle(props.accessorialRef, () => ({
     change: handleChange,
-    recalculateAccessorials: triggerCalculateAccessorials
+    recalculateAccessorials: triggerCalculateAccessorials,
+    handleChangeNoCharge: handleChangeNoCharge
   }))
+
+  React.useEffect(() => {
+    let vehicleTypes = []
+    if (engine.customer && customerId) {
+      vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
+        id: v.id,
+        name: v.name,
+        amount: v.rate,
+        is_included: false,
+      }))
+    }
+    replaceCustomerVehicleTypes(vehicleTypes)
+  }, [engine.customer?.id, customerId, replaceCustomerVehicleTypes])
+
+  React.useEffect(() => {
+    let accessorials = []
+    if (engine.customer && customerId) {
+      const isCrossDock = getValues('is_crossdock')
+      const isExtraStop = getValues('is_extra_stop')
+      accessorials = (engine.customer.accessorials || []).map(a => isCrossDock && a.access_name?.trim().toLowerCase() === 'crossdock' ? ({
+        ...a,
+        charge_name: a.access_name,
+        charge_amount: a.amount,
+        charge_quantity: 1,
+        is_included: true,
+      }) : isExtraStop && a.access_name?.trim().toLowerCase() === 'extra stop' ?
+        ({
+          ...a,
+          charge_name: a.access_name,
+          charge_amount: a.amount,
+          charge_quantity: 1,
+          is_included: true,
+        })
+        :
+        ({
+          ...a,
+          charge_name: a.access_name,
+          charge_amount: 0,
+          charge_quantity: 0,
+          is_included: false,
+        })
+      )
+    }
+    replaceCustomerAccessorials(accessorials)
+  }, [engine.customer?.id, customerId, replaceCustomerAccessorials])
 
   return (
     <Grid container spacing={3}>
@@ -263,7 +287,7 @@ function FreightCharges(props) {
                   <Switch
                     {...field}
                     checked={field.value || false}
-                    onChange={e => {
+                    onChange={(e) => {
                       const checked = e.target.checked
                       field.onChange(checked)
                       setCharges((prev) => ({ ...prev, no_charges: checked }))
