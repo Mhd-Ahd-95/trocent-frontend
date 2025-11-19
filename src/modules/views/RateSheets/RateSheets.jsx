@@ -195,7 +195,13 @@ export default function RateSheets() {
                 },
                 {
                   headerName: "LTL",
-                  field: "ltl_rate",
+                  field: "ltl",
+                  flex: 1,
+                  minWidth: 120
+                },
+                {
+                  headerName: "FTL",
+                  field: "ftl",
                   flex: 1,
                   minWidth: 120
                 },

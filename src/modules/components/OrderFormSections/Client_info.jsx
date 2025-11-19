@@ -56,7 +56,7 @@ function ClientInfo(props) {
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
                     engine.customer = value
-                    if (value && value.id) await engine.get_customer_rate_sheet(value.id)
+                    props.rateSheetRef.current?.loadRateSheet()
                   })
                 }}
                 getOptionLabel={option =>

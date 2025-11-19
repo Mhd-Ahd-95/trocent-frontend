@@ -32,6 +32,7 @@ export default function OrderForm(props) {
   const accessorialRef = React.useRef(null)
   const shipperSelectValue = React.useRef(null)
   const receiverSelectValue = React.useRef(null)
+  const rateSheetRef = React.useRef(null)
 
   const methods = useForm({
     defaultValues: {
@@ -103,6 +104,7 @@ export default function OrderForm(props) {
       <ClientInfo
         engine={engine}
         editMode={editMode}
+        rateSheetRef={rateSheetRef}
         enqueueSnackbar={enqueueSnackbar}
       />
     ),
@@ -151,6 +153,7 @@ export default function OrderForm(props) {
               isLoading={isLoading}
               selectedValue={shipperSelectValue}
               receiverSelectedValue={receiverSelectValue}
+              rateSheetRef={rateSheetRef}
             />
           </WizardCard>
         </Grid>
@@ -172,6 +175,7 @@ export default function OrderForm(props) {
               isLoading={isLoading}
               selectedValue={receiverSelectValue}
               shipperSelectedValue={shipperSelectValue}
+              rateSheetRef={rateSheetRef}
             />
           </WizardCard>
         </Grid>
@@ -211,6 +215,7 @@ export default function OrderForm(props) {
                   engine={engine}
                   calculationRef={calculationRef}
                   accessorialRef={accessorialRef}
+                  rateSheetRef={rateSheetRef}
                 />
               </WizardCard>
             </Grid>

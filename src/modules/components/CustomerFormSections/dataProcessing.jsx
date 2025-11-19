@@ -1,14 +1,14 @@
 
 const check_keys = (stprop, item, error) => {
-    const rateSheet = Object.keys(item)
+    const rateSheetKeys = Object.keys(item)
     const staticProps = stprop.map((st) => st.name)
     const updatedProps = [...stprop];
     staticProps.forEach(sp => {
-        if (!rateSheet.includes(sp)) {
+        if (!rateSheetKeys.includes(sp)) {
             error[sp] = { 'Prop': `${sp} must be include in the excel` }
         }
     })
-    const brackets = rateSheet.filter(rs => !staticProps.includes(rs))
+    const brackets = rateSheetKeys.filter(rs => !staticProps.includes(rs))
     const bracketsProps = []
     brackets.forEach(bk => {
         bracketsProps.push({ name: bk, field: 'rate_bracket', type: 'string', required: true })
@@ -30,12 +30,21 @@ export default function dataProcessing(stprop, items) {
                 if (!value && prop.required) {
                     processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Required': `${prop.name} (${index + 2}) is a required field` }
                 }
-                if (prop.constrained && prop.constrained.length > 0 && value) {
-                    if (!prop.constrained.includes(value.toLowerCase())) {
+                if (prop.constrained && prop.constrained.length > 0 && value && prop.field === 'external') {
+                    const external = value.toLowerCase() === 'external' || value.toLowerCase() === 'e' ? 'E' : value.toLowerCase() === 'internal' || value.toLowerCase() === 'i' ? 'I' : 'unknown'
+                    if (!prop.constrained.includes(external)) {
                         processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Constrained': `${prop.name} must be ${prop.constrained.join(', ')}` }
                     }
                     else {
-                        value = value.toLowerCase()
+                        value = external
+                    }
+                }
+                if (prop.constrained && prop.constrained.length > 0 && value && prop.field !== 'external') {
+                    if (!prop.constrained.includes(value)) {
+                        processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Constrained': `${prop.name} must be ${prop.constrained.join(', ')}` }
+                    }
+                    else {
+                        value = value
                     }
                 }
                 processedItem[prop.field] = value

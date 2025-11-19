@@ -110,7 +110,6 @@ export default function UploadXlsx(props) {
     const onFileChange = (event) => {
         setLoading(true)
         if (event.target.files.length) {
-            ``
             const f = event.target.files[0]
             event.target.value = ""
             setFileName(f.name)

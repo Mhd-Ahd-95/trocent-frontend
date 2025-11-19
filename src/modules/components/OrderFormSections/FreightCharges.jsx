@@ -6,7 +6,8 @@ import {
   Typography,
   Button,
   InputAdornment,
-  IconButton
+  IconButton,
+  CircularProgress
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import {
@@ -19,6 +20,7 @@ import { useFieldArray, useWatch, Controller, useFormContext } from 'react-hook-
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
 import { unstable_batchedUpdates } from 'react-dom'
+import { useRateSheetsByCustomerAndCities } from '../../hooks/useRateSheets'
 
 const ServiceChargeRow = React.memo(function ServiceChargeRow({
   index,
@@ -157,12 +159,15 @@ function FreightCharges(props) {
     manual_charges: getValues('manual_charges'),
     manual_fuel_surcharges: getValues('manual_fuel_surcharges')
   })
+  const serviceType = useWatch({ control, name: 'service_type' })
+  const [fetchRateSheet, setFetchRateSheet] = React.useState({
+    customer_id: getValues('customer_id'),
+    shipper_city: getValues('shipper_city'),
+    receiver_city: getValues('receiver_city')
+  })
 
   const { fields: customerAccessorials, replace: replaceCustomerAccessorials, update: updateCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
   const { fields: customerVehicleTypes, replace: replaceCustomerVehicleTypes, update: updateCustomerVehicleTypes } = useFieldArray({ control, name: 'customer_vehicle_types' })
-
-  const customerId = useWatch({ control, name: 'customer_id' })
-  const serviceType = useWatch({ control, name: 'service_type' })
 
   const {
     fields: additionalServiceCharges,
@@ -231,7 +236,7 @@ function FreightCharges(props) {
 
   React.useEffect(() => {
     let vehicleTypes = []
-    if (engine.customer && customerId) {
+    if (engine.customer && fetchRateSheet.customer_id) {
       vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
         id: v.id,
         name: v.name,
@@ -240,11 +245,11 @@ function FreightCharges(props) {
       }))
     }
     replaceCustomerVehicleTypes(vehicleTypes)
-  }, [engine.customer?.id, customerId, replaceCustomerVehicleTypes])
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerVehicleTypes])
 
   React.useEffect(() => {
     let accessorials = []
-    if (engine.customer && customerId) {
+    if (engine.customer && fetchRateSheet.customer_id) {
       const isCrossDock = getValues('is_crossdock')
       const isExtraStop = getValues('is_extra_stop')
       accessorials = (engine.customer.accessorials || []).map(a => isCrossDock && a.access_name?.trim().toLowerCase() === 'crossdock' ? ({
@@ -272,7 +277,38 @@ function FreightCharges(props) {
       )
     }
     replaceCustomerAccessorials(accessorials)
-  }, [engine.customer?.id, customerId, replaceCustomerAccessorials])
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
+
+  const {
+    data: rateSheets,
+    isLoading: rateSheetLoading,
+    isFetching: rateSheetFetching
+  } = useRateSheetsByCustomerAndCities(fetchRateSheet.customer_id, fetchRateSheet.shipper_city, fetchRateSheet.receiver_city)
+
+  React.useEffect(() => {
+    if (fetchRateSheet.customer_id && fetchRateSheet.shipper_city && fetchRateSheet.receiver_city && rateSheets?.length > 0) {
+      engine.customerRateSheets = rateSheets
+      props.calculationRef.current?.recalculate()
+    }
+  }, [rateSheets, fetchRateSheet])
+
+  const handleLoadRateSheet = () => {
+    const customer_id = getValues('customer_id')
+    const shipper_city = getValues('shipper_city')
+    const receiver_city = getValues('receiver_city')
+    setFetchRateSheet((prev) => ({ ...prev, customer_id }))
+    if (customer_id && shipper_city && receiver_city) {
+      setFetchRateSheet({ customer_id, shipper_city: shipper_city.trim(), receiver_city: receiver_city.trim(), })
+    }
+    else {
+      engine.customerRateSheets = []
+      props.calculationRef.current?.recalculate()
+    }
+  }
+
+  React.useImperativeHandle(props.rateSheetRef, () => ({
+    loadRateSheet: handleLoadRateSheet
+  }))
 
   return (
     <Grid container spacing={3}>
@@ -484,7 +520,7 @@ function FreightCharges(props) {
             ) : (
               <Grid size={12} sx={{ py: 4, px: 3 }}>
                 <Typography variant='body2' color='textSecondary' textAlign='center'>
-                  {customerId ? 'No Vehicle Types available for this customer' : 'Select a customer to view vehicle types'}
+                  {fetchRateSheet.customer_id ? 'No Vehicle Types available for this customer' : 'Select a customer to view vehicle types'}
                 </Typography>
               </Grid>
             )}
@@ -524,11 +560,18 @@ function FreightCharges(props) {
                         }}
                         slotProps={{
                           input: {
-                            endAdornment: (
-                              <InputAdornment position='start'>
-                                <AttachMoney />
-                              </InputAdornment>
-                            )
+                            endAdornment:
+                              !rateSheetLoading && !rateSheetFetching ? (
+                                <InputAdornment position='start'>
+                                  <AttachMoney />
+                                </InputAdornment>
+                              ) :
+                                (
+                                  <InputAdornment position="end">
+                                    <CircularProgress size={20} />
+                                  </InputAdornment>
+                                )
+
                           }
                         }}
                         sx={{
@@ -564,11 +607,17 @@ function FreightCharges(props) {
                         disabled={!charges.manual_fuel_surcharges}
                         slotProps={{
                           input: {
-                            endAdornment: (
-                              <InputAdornment position='start'>
-                                <AttachMoney />
-                              </InputAdornment>
-                            )
+                            endAdornment:
+                              !rateSheetLoading && !rateSheetFetching ? (
+                                <InputAdornment position='start'>
+                                  <AttachMoney />
+                                </InputAdornment>
+                              ) :
+                                (
+                                  <InputAdornment position="end">
+                                    <CircularProgress size={20} />
+                                  </InputAdornment>
+                                )
                           }
                         }}
                         sx={{
@@ -607,7 +656,7 @@ function FreightCharges(props) {
             <Grid size={12} sx={{ py: 2, px: 3 }}>
               <Grid container spacing={2}>
                 {customerAccessorials.map((access, index) => (
-                  <Grid container spacing={2} key={`${customerId}-${index}`} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1.5, px: 2, borderRadius: 3 }} justifyContent={'center'} alignItems={'center'} width={'100%'}>
+                  <Grid container spacing={2} key={`${fetchRateSheet.customer_id}-${index}`} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1.5, px: 2, borderRadius: 3 }} justifyContent={'center'} alignItems={'center'} width={'100%'}>
                     <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                       <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}>
                         {formatAccessorial(access.charge_name, access.amount)}
@@ -711,7 +760,7 @@ function FreightCharges(props) {
           ) : (
             <Grid size={12} sx={{ py: 4, px: 3 }}>
               <Typography variant='body2' color='textSecondary' textAlign='center'>
-                {customerId ? 'No accessorials available for this customer' : 'Select a customer to view accessorials'}
+                {fetchRateSheet.customer_id ? 'No accessorials available for this customer' : 'Select a customer to view accessorials'}
               </Typography>
             </Grid>
           )}

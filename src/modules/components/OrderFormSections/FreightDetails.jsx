@@ -195,6 +195,22 @@ function FreightDetails(props) {
         }
       })
     }
+    else {
+      requestAnimationFrame(() => {
+        setValue('total_pieces', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_pieces_skid', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_actual_weight', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_volume_weight', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_chargeable_weight', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('total_weight_in_kg', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('freight_rate', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('freight_fuel_surcharge', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('sub_total', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('provincial_tax', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('federal_tax', 0, { shouldValidate: false, shouldDirty: false })
+        setValue('grand_total', 0, { shouldValidate: false, shouldDirty: false })
+      })
+    }
   }, [engine, getValues, setValue])
 
   React.useImperativeHandle(props.calculationRef, () => ({

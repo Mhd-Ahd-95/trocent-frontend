@@ -15,38 +15,14 @@ export function useCustomersRateSheets(cid) {
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,
-        // refetchOnReconnect: false,
-        // refetchOnMount: false,
     });
 }
 
-// export function useRateSheetPagination(paginationMode) {
-//     return useQuery({
-//         queryKey: ['rateSheetsPagination', paginationMode],
-//         queryFn: async () => {
-//             const response = await RateSheetsApi.getRateSheets(paginationMode)
-//             return response.data
-//         },
-//         enabled: !!paginationMode,
-//         staleTime: 5 * 60 * 1000,
-//         gcTime: 60 * 60 * 1000,
-//         refetchOnWindowFocus: false,
-//         retry: 0,
-//         keepPreviousData: true
-//     })
-// }
-
-// const format_rate_sheets_customer = (rsheets) => {
-//     const groupBy = _.groupBy(rsheets, rsheet => rsheet.batch_id)
-//     const csheets = Object.keys(groupBy).map(key => ({ id: key, imported_on: key.split('_')[0], type: groupBy[key][0]['type'], skid_by_weight: groupBy[key][0]['skid_by_weight'] }))
-//     return csheets
-// }
-
-export function useRateSheetsCustomer(cid) {
+export function useBatchCustomerRateSheets(cid) {
     return useQuery({
-        queryKey: ['rateSheetsCustomer', Number(cid)],
+        queryKey: ['batchCustomerRateSheets', Number(cid)],
         queryFn: async () => {
-            const res = await RateSheetsApi.getRateSheetsByCustomer(Number(cid))
+            const res = await RateSheetsApi.getBatchCustomerRateSheet(Number(cid))
             return res.data
         },
         enabled: !!cid,
@@ -59,13 +35,9 @@ export function useRateSheetsCustomer(cid) {
 
 
 export function useRateSheet(iid) {
-    // const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['rateSheet', Number(iid)],
         queryFn: async () => {
-            // const cachedRSheets = queryClient.getQueryData(['customersRateSheets', Number(cid)]) || [];
-            // const cached = cachedRSheets.find(item => Number(item.id) === Number(iid));
-            // if (cached) return cached;
             const res = await RateSheetsApi.getRateSheet(Number(iid));
             return res.data;
         },
@@ -77,33 +49,22 @@ export function useRateSheet(iid) {
     });
 }
 
-export function useRateSheetsByCustomerAndType(cid) {
+export function useRateSheetsByCustomerAndCities(cid, sc, rc) {
+    const trimmedSC = sc?.trim();
+    const trimmedRC = rc?.trim();
     return useQuery({
-        queryKey: ['rateSheetsCustomerAndType', Number(cid)],
+        queryKey: ['rateSheetsByCustomerAndCities', Number(cid), trimmedSC, trimmedRC],
         queryFn: async () => {
-            const res = await RateSheetsApi.loadRateSheetsByCustomerAndType(Number(cid), type);
+            const res = await RateSheetsApi.loadRateSheetsByCustomerAndCities(Number(cid), trimmedSC, trimmedRC);
             return res.data;
         },
-        enabled: !!cid,
+        enabled: !!cid && !!trimmedSC && !!trimmedRC,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,
     });
 }
-
-// const updateCachedList = (cachedList, updated, queryClient) => {
-//     cachedList.forEach((rsp) => {
-//         const data = rsp[1] || {}
-//         const findSheet = data?.data.find(sheet => Number(sheet.id) === Number(updated.id))
-//         if (findSheet) {
-//             const updatedPagination = rsp[0][1]
-//             const updatedData = data?.data.map((rs) => (Number(rs.id) === Number(updated.id) ? updated : rs))
-//             queryClient.setQueryData(['rateSheetsPagination', updatedPagination], { ...data, data: updatedData })
-//         }
-//     })
-// }
-
 export function useRateSheetMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
@@ -123,7 +84,7 @@ export function useRateSheetMutations() {
         },
         onSuccess: (newRateSheets, pload) => {
             const customerId = pload[0]['customer_id']
-            queryClient.setQueryData(['rateSheetsCustomer', Number(customerId)], (old = []) => {
+            queryClient.setQueryData(['batchCustomerRateSheets', Number(customerId)], (old = []) => {
                 return [newRateSheets, ...old];
             });
             queryClient.invalidateQueries({ queryKey: ['customersRateSheets'] });
@@ -163,7 +124,7 @@ export function useRateSheetMutations() {
         onSuccess: (res, params) => {
             const { bid, customer_id } = params
             if (res) {
-                queryClient.setQueryData(['rateSheetsCustomer', Number(customer_id)], (old = []) => {
+                queryClient.setQueryData(['batchCustomerRateSheets', Number(customer_id)], (old = []) => {
                     const filtered = old.filter(rsc => (rsc.id) !== bid)
                     return [...filtered]
                 })
@@ -184,7 +145,7 @@ export function useRateSheetMutations() {
                 queryClient.setQueryData(['customersRateSheets', Number(cid)], (old = []) => {
                     return old.filter((item) => !iids.includes(item.id))
                 })
-                queryClient.invalidateQueries({ queryKey: ['rateSheetsCustomer', Number(cid)] })
+                queryClient.invalidateQueries({ queryKey: ['batchCustomerRateSheets', Number(cid)] })
                 enqueueSnackbar('Selected Rate Sheets have been deleted successfully', { variant: 'success' });
             }
         },
