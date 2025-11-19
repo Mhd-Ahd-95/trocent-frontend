@@ -12,7 +12,6 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
-  // customer: '',
 
   reference_numbers: [],
   caller: '',
@@ -91,9 +90,9 @@ export const defaultOrderValue = {
   service_type: 'Regular',
   freights: [
     {
-      type: 'Skid',
-      description: 'FAK',
-      pieces: 1,
+      type: '',
+      description: '',
+      pieces: '',
       weight: '',
       unit: 'lbs',
       length: '',

@@ -36,7 +36,7 @@ const staticProperties = [
         field: 'external',
         required: false,
         type: 'str',
-        constrained: ['internal', 'external']
+        constrained: ['E', 'I']
     },
     {
         name: 'Min',
@@ -46,7 +46,13 @@ const staticProperties = [
     },
     {
         name: 'LTL',
-        field: 'ltl_rate',
+        field: 'ltl',
+        required: false,
+        type: 'int'
+    },
+    {
+        name: 'FTL',
+        field: 'ftl',
         required: false,
         type: 'int'
     }

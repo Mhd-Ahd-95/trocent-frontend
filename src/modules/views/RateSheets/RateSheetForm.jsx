@@ -24,7 +24,8 @@ export default function RateSheetForm(props) {
             province: '',
             skid_by_weight: false,
             rate_code: '',
-            ltl_code: '',
+            ltl: '',
+            ftl: '',
             min_rate: '',
             priority_sequence: '',
             external: '',
@@ -121,8 +122,8 @@ export default function RateSheetForm(props) {
                                         select
                                     >
                                         <MenuItem value={''}><em>Select an Option</em></MenuItem>
-                                        <MenuItem value='external'>External</MenuItem>
-                                        <MenuItem value='internal'>Internal</MenuItem>
+                                        <MenuItem value='E'>External</MenuItem>
+                                        <MenuItem value='I'>Internal</MenuItem>
                                     </TextInput>
                                 )}
                             />
@@ -142,7 +143,16 @@ export default function RateSheetForm(props) {
                                 fullWidth
                                 type='number'
                                 variant="outlined"
-                                {...register('ltl_rate')}
+                                {...register('ltl')}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <TextInput
+                                label='FTL Rate'
+                                fullWidth
+                                type='number'
+                                variant="outlined"
+                                {...register('ftl')}
                             />
                         </Grid>
                     </Grid>

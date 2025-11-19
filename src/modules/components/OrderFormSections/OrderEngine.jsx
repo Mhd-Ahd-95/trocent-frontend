@@ -1,4 +1,3 @@
-import RateSheetsApi from "../../apis/RateSheets.api"
 import FuelSurchargeAPI from '../../apis/FuelSurcharges.api'
 import moment from "moment"
 
@@ -13,13 +12,16 @@ export default class OrderEngine {
         this.enqueueSnackbar = enqueueSnackbar
         this.request = {}
         this.context = {}
-        this.customerRateSheets = []
+        this.custRateSheet = []
         this.fuelSurchargeByDate = null
         let currentDate = moment(new Date())
         if (!this.fuelSurchargeByDate) {
             this.get_fuel_surcharge_by_date(currentDate.toISOString())
         }
     }
+
+    set customerRateSheets(cr) { this.custRateSheet = cr }
+    get customerRateSheets() { return this.custRateSheet }
 
     get customer() { return this.request['customer'] }
     set customer(cust) { this.request['customer'] = cust }
@@ -254,7 +256,6 @@ export default class OrderEngine {
             this.context['freight_rate'] = this.context['override_freight_rate']
             return
         }
-        
         let hasSkidRateSheet = this.customerRateSheets.some(rs => rs.type === 'skid')
 
         this.context['freight_rate_skid'] = 0
@@ -323,14 +324,13 @@ export default class OrderEngine {
 
         let rate = this.fetchRateFromSheets(type, value, source_city, destination_city, isSkidByWeight)
 
-        // if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city)
+        if (rate === 0) rate = this.fetchRateFromSheets(type, value, destination_city, source_city, isSkidByWeight)
 
         return rate
     }
 
 
     fetchRateFromSheets = (type, value, source_city, destination_city, isSkidByWeight) => {
-
         let sourceSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.skid_by_weight === Number(isSkidByWeight) && rs.destination.toLowerCase().trim() === source_city)
 
         if (sourceSheets.length === 0) return 0
@@ -344,7 +344,6 @@ export default class OrderEngine {
 
         let destSheets = this.customerRateSheets.filter(rs => rs.type === type && rs.skid_by_weight === Number(isSkidByWeight) && rs.destination.toLowerCase().trim() === destination_city && rs.rate_code === firstSheet.rate_code)
 
-
         if (destSheets.length === 0) return 0
 
         let secondSheet
@@ -357,7 +356,7 @@ export default class OrderEngine {
             secondSheet = destSheets.sort((a, b) => (b.external === 'E' ? 1 : 0) - (a.external === 'E' ? 1 : 0))[0]
         }
 
-        if (!secondSheet) return firstRate
+        if (!secondSheet) return 0
 
         const secondRate = this.getRateFromSheet(secondSheet, value, type, isSkidByWeight)
 
@@ -368,12 +367,23 @@ export default class OrderEngine {
     getRateFromSheet = (sheet, value, type, isSkidByWeight) => {
         if (type === 'skid' && !isSkidByWeight) {
             const bracket = sheet.brackets.find(b => String(b.rate_bracket) === String(Math.round(value)))
-            return bracket ? Number(bracket.rate) : 0
+            if (!bracket) {
+                const rates = sheet.brackets.map(b => Number(b.rate_bracket))
+                const max = Math.max(...rates)
+                // const min = Math.min(rates)
+                return value > max ? (Number(sheet.ftl) / value) || 0 : 0
+            }
+            else {
+                return Number(bracket.rate)
+            }
         } else {
             const bracketName = this.getWeightBracket(value, isSkidByWeight)
             let bracket
-            if (bracketName === 'ltl_rate') {
+            if (bracketName === 'ltl') {
                 bracket = { rate: sheet[bracketName] }
+            }
+            else if (bracketName === 'ftl') {
+                return Number(sheet[bracketName])
             }
             else {
                 bracket = sheet.brackets.find(b => b.rate_bracket === bracketName)
@@ -410,11 +420,13 @@ export default class OrderEngine {
                 .sort((a, b) => a - b)
         }
 
-        if (allBrackets.length === 0) return 'ltl_rate'
+        if (allBrackets.length === 0) return 'ltl'
 
-        if (weight < allBrackets[0]) return 'ltl_rate'
+        if (weight < allBrackets[0]) return 'ltl'
 
-        let selectedBracket = 'ltl_rate'
+        if (weight > Math.max(...allBrackets)) return 'ftl'
+
+        let selectedBracket = 'ltl'
         for (const bracket of allBrackets) {
             if (weight >= bracket) {
                 selectedBracket = String(bracket)
@@ -590,16 +602,16 @@ export default class OrderEngine {
         })
     }
 
-    get_customer_rate_sheet = async (cid) => {
-        try {
-            const res = await RateSheetsApi.loadRateSheetsByCustomerAndType(Number(cid))
-            this.customerRateSheets = res.data
-        } catch (error) {
-            console.error('Failed to load rate sheets:', error)
-            this.enqueueSnackbar('Failed to load rate sheets', { variant: 'error' })
-            this.customerRateSheets = []
-        }
-    }
+    // get_customer_rate_sheet = async (cid) => {
+    //     try {
+    //         const res = await RateSheetsApi.loadRateSheetsByCustomerAndType(Number(cid))
+    //         this.customerRateSheets = res.data
+    //     } catch (error) {
+    //         console.error('Failed to load rate sheets:', error)
+    //         this.enqueueSnackbar('Failed to load rate sheets', { variant: 'error' })
+    //         this.customerRateSheets = []
+    //     }
+    // }
 
     get_fuel_surcharge_by_date = async (odate) => {
         try {

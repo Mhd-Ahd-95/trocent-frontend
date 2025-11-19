@@ -9,13 +9,19 @@ import {
 } from '../../components'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { TimePicker } from '@mui/x-date-pickers'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import moment from 'moment'
 import { unstable_batchedUpdates } from 'react-dom'
 
 export default function OrderForm(props) {
-  const { register, control, getValues, setValue } = props
   const theme = useTheme()
+
+  const {
+    control,
+    setValue,
+    getValues,
+    register
+  } = useFormContext()
 
   return (
     <Grid container spacing={3}>

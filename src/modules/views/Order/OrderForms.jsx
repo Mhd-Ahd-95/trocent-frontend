@@ -18,9 +18,10 @@ import {
   TimeAndBilling,
   OrderEngine
 } from '../../components'
-import { useForm } from 'react-hook-form'
+import { useForm, FormProvider } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
 import { useSnackbar } from 'notistack'
+import { useAddressBooks } from '../../hooks/useAddressBooks'
 
 export default function OrderForm(props) {
   const { initialValues, submit, editMode } = props
@@ -29,16 +30,11 @@ export default function OrderForm(props) {
   const engine = React.useRef(new OrderEngine(enqueueSnackbar)).current
   const calculationRef = React.useRef(null)
   const accessorialRef = React.useRef(null)
+  const shipperSelectValue = React.useRef(null)
+  const receiverSelectValue = React.useRef(null)
+  const rateSheetRef = React.useRef(null)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    control,
-    setValue,
-    watch,
-    getValues
-  } = useForm({
+  const methods = useForm({
     defaultValues: {
       ...defaultOrderValue,
       ...initialValues
@@ -46,15 +42,15 @@ export default function OrderForm(props) {
     mode: 'onBlur',
   })
 
-  const customerId = watch('customer_id')
-  const shipperCity = watch('shipper_city')
-  const receiverCity = watch('receiver_city')
+  // const customerId = methods.watch('customer_id')
+  // const shipperCity = methods.watch('shipper_city')
+  // const receiverCity = methods.watch('receiver_city')
 
-  React.useEffect(() => {
-    if (calculationRef.current && engine.customer) {
-      calculationRef.current.recalculate()
-    }
-  }, [customerId, shipperCity, receiverCity, engine])
+  // React.useEffect(() => {
+  //   if (calculationRef.current && engine.customer) {
+  //     calculationRef.current.recalculate()
+  //   }
+  // }, [customerId, shipperCity, receiverCity, engine])
 
   const onSubmit = data => {
     console.log('Form Data:', data)
@@ -71,6 +67,17 @@ export default function OrderForm(props) {
     }
   }
 
+  const { data, isLoading, isError, error } = useAddressBooks()
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message;
+      const status = error.response?.status;
+      const errorMessage = message ? `${message} - ${status}` : error.message;
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    }
+  }, [isError, error])
+
   React.useEffect(() => {
     const timer = setTimeout(() => setShowAll(true), 100)
     return () => clearTimeout(timer)
@@ -79,210 +86,184 @@ export default function OrderForm(props) {
   const memoizedBasicInfo = React.useMemo(
     () => (
       <BasicInfo
-        register={register}
-        control={control}
         enqueueSnackbar={enqueueSnackbar}
         engine={engine}
-        setValue={setValue}
         accessorialRef={accessorialRef}
-        getValues={getValues}
+        data={data}
+        isLoading={isLoading}
+        calculationRef={calculationRef}
+        shipperSelectValue={shipperSelectValue}
+        receiverSelectValue={receiverSelectValue}
       />
     ),
-    [register, control, enqueueSnackbar]
+    [methods.register, methods.control, enqueueSnackbar, data]
   )
 
   const memoizedClientInfo = React.useMemo(
     () => (
       <ClientInfo
-        control={control}
-        setValue={setValue}
         engine={engine}
         editMode={editMode}
+        rateSheetRef={rateSheetRef}
         enqueueSnackbar={enqueueSnackbar}
-        accessorialRef={accessorialRef}
-        getValues={getValues}
       />
     ),
-    [control, setValue, engine]
+    [methods.control, methods.setValue, engine]
   )
 
   const memoizedReferences = React.useMemo(
     () => (
-      <References
-        register={register}
-        setValue={setValue}
-        watch={watch}
-      />
+      <References />
     ),
-    [register, setValue, watch]
+    [methods.register, methods.setValue, methods.watch]
   )
 
   return (
-    <Grid
-      container
-      component={'form'}
-      spacing={3}
-      onSubmit={handleSubmit(onSubmit, onError)}
-    >
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Basic Information'>
-          {memoizedBasicInfo}
-        </WizardCard>
-      </Grid>
+    <FormProvider {...methods}>
+      <Grid
+        container
+        component={'form'}
+        spacing={3}
+        onSubmit={methods.handleSubmit(onSubmit, onError)}
+      >
+        <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+          <WizardCard title='Basic Information'>
+            {memoizedBasicInfo}
+          </WizardCard>
+        </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Client Information'>
-          {memoizedClientInfo}
-        </WizardCard>
-      </Grid>
+        <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+          <WizardCard title='Client Information'>
+            {memoizedClientInfo}
+          </WizardCard>
+        </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='References'>
-          {memoizedReferences}
-        </WizardCard>
-      </Grid>
+        <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+          <WizardCard title='References'>
+            {memoizedReferences}
+          </WizardCard>
+        </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Shipper Details' minHeight={500}>
-          <ShipperDetails
-            control={control}
-            setValue={setValue}
-            engine={engine}
-            calculationRef={calculationRef}
-            enqueueSnackbar={enqueueSnackbar}
-          />
-        </WizardCard>
-      </Grid>
+        <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+          <WizardCard title='Shipper Details' minHeight={500}>
+            <ShipperDetails
+              engine={engine}
+              calculationRef={calculationRef}
+              data={data}
+              isLoading={isLoading}
+              selectedValue={shipperSelectValue}
+              receiverSelectedValue={receiverSelectValue}
+              rateSheetRef={rateSheetRef}
+            />
+          </WizardCard>
+        </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Extra Stop' minHeight={500}>
-          <ExtraStop
-            control={control}
-            setValue={setValue}
-          />
-        </WizardCard>
-      </Grid>
+        <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+          <WizardCard title='Extra Stop' minHeight={500}>
+            <ExtraStop
+              accessorialRef={accessorialRef}
+            />
+          </WizardCard>
+        </Grid>
 
-      <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-        <WizardCard title='Receiver Details' minHeight={500}>
-          <ReceiverDetails
-            control={control}
-            setValue={setValue}
-            engine={engine}
-            calculationRef={calculationRef}
-            enqueueSnackbar={enqueueSnackbar}
-          />
-        </WizardCard>
-      </Grid>
+        <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+          <WizardCard title='Receiver Details' minHeight={500}>
+            <ReceiverDetails
+              engine={engine}
+              calculationRef={calculationRef}
+              data={data}
+              isLoading={isLoading}
+              selectedValue={receiverSelectValue}
+              shipperSelectedValue={shipperSelectValue}
+              rateSheetRef={rateSheetRef}
+            />
+          </WizardCard>
+        </Grid>
 
-      {showAll && (
-        <>
-          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-            <WizardCard title='Pickup Details' minHeight={500}>
-              <PickupDetails
-                register={register}
-                control={control}
-                setValue={setValue}
-              />
-            </WizardCard>
-          </Grid>
+        {showAll && (
+          <>
+            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+              <WizardCard title='Pickup Details' minHeight={500}>
+                <PickupDetails />
+              </WizardCard>
+            </Grid>
 
-          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-            <WizardCard title='Interline Carrier' minHeight={500}>
-              <InterlineCarrier
-                control={control}
-                setValue={setValue}
-              />
-            </WizardCard>
-          </Grid>
+            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+              <WizardCard title='Interline Carrier' minHeight={500}>
+                <InterlineCarrier />
+              </WizardCard>
+            </Grid>
 
-          <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-            <WizardCard title='Delivery Details' minHeight={500}>
-              <DeliveryDetails
-                register={register}
-                control={control}
-                setValue={setValue}
-              />
-            </WizardCard>
-          </Grid>
+            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+              <WizardCard title='Delivery Details' minHeight={500}>
+                <DeliveryDetails />
+              </WizardCard>
+            </Grid>
 
-          <Grid size={12}>
-            <WizardCard minHeight={500} title='Freight Details'>
-              <FreightDetails
-                register={register}
-                control={control}
-                setValue={setValue}
-                getValues={getValues}
-                engine={engine}
-                calculationRef={calculationRef}
-                accessorialRef={accessorialRef}
-              />
-            </WizardCard>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <WizardCard minHeight={500} title='Freight Charges'>
-              <FreightCharges
-                control={control}
-                getValues={getValues}
-                register={register}
-                setValue={setValue}
-                engine={engine}
-                errors={errors}
-                calculationRef={calculationRef}
-                accessorialRef={accessorialRef}
-              />
-            </WizardCard>
-          </Grid>
+            <Grid size={12}>
+              <WizardCard minHeight={500} title='Freight Details'>
+                <FreightDetails
+                  engine={engine}
+                  calculationRef={calculationRef}
+                  accessorialRef={accessorialRef}
+                />
+              </WizardCard>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+              <WizardCard minHeight={500} title='Freight Charges'>
+                <FreightCharges
+                  engine={engine}
+                  calculationRef={calculationRef}
+                  accessorialRef={accessorialRef}
+                  rateSheetRef={rateSheetRef}
+                />
+              </WizardCard>
+            </Grid>
 
-          <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <WizardCard minHeight={500} title='Waiting Time & Billing'>
-              <TimeAndBilling
-                control={control}
-                register={register}
-                errors={errors}
-                setValue={setValue}
-                getValues={getValues}
-              />
-            </WizardCard>
-          </Grid>
-        </>
-      )}
+            <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+              <WizardCard minHeight={500} title='Waiting Time & Billing'>
+                <TimeAndBilling />
+              </WizardCard>
+            </Grid>
+          </>
+        )}
 
-      <Grid size={12}>
-        <Grid container spacing={2} justifyContent={'flex-start'}>
-          <Grid size='auto'>
-            <SubmitButton
-              type='submit'
-              variant='contained'
-              color='primary'
-              size='small'
-              textTransform='capitalize'
-            >
-              Create Order
-            </SubmitButton>
-          </Grid>
-          <Grid size='auto'>
-            <StyledButton
-              variant='outlined'
-              color='secondary'
-              size='small'
-              textTransform='capitalize'
-            >
-              Save As Quote
-            </StyledButton>
-          </Grid>
-          <Grid size='auto'>
-            <StyledButton
-              variant='outlined'
-              color='error'
-              size='small'
-              textTransform='capitalize'
-            >
-              Cancel
-            </StyledButton>
+        <Grid size={12}>
+          <Grid container spacing={2} justifyContent={'flex-start'}>
+            <Grid size='auto'>
+              <SubmitButton
+                type='submit'
+                variant='contained'
+                color='primary'
+                size='small'
+                textTransform='capitalize'
+              >
+                Create Order
+              </SubmitButton>
+            </Grid>
+            <Grid size='auto'>
+              <StyledButton
+                variant='outlined'
+                color='secondary'
+                size='small'
+                textTransform='capitalize'
+              >
+                Save As Quote
+              </StyledButton>
+            </Grid>
+            <Grid size='auto'>
+              <StyledButton
+                variant='outlined'
+                color='error'
+                size='small'
+                textTransform='capitalize'
+              >
+                Cancel
+              </StyledButton>
+            </Grid>
           </Grid>
         </Grid>
       </Grid>
-    </Grid>
+    </FormProvider>
   )
 }

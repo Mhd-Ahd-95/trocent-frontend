@@ -2,7 +2,7 @@ import React from "react";
 import { ConfirmModal, CustomCell, Table, Modal } from '../'
 import { CheckCircleOutline, HighlightOffOutlined } from "@mui/icons-material";
 import moment from "moment";
-import { useRateSheetMutations, useRateSheetsCustomer } from "../../hooks/useRateSheets";
+import { useRateSheetMutations, useBatchCustomerRateSheets } from "../../hooks/useRateSheets";
 import { Box, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ function RateSheetCustomerTable(props) {
 
     const navigate = useNavigate()
     const { setOpenModal, customer_id } = props
-    const { data, isLoading, isError, error, isRefetching } = useRateSheetsCustomer(customer_id)
+    const { data, isLoading, isError, error, isRefetching } = useBatchCustomerRateSheets(customer_id)
     const { enqueueSnackbar } = useSnackbar()
     const [open, setOpen] = React.useState(false)
     const selectedRef = React.useRef(null)
@@ -72,7 +72,7 @@ function RateSheetCustomerTable(props) {
                         flex: 1,
                         renderCell: params => {
                             const imported = params.value.split('_')
-                            return moment(imported).format('MMM DD, YYYY hh:mm:ss')
+                            return moment(imported[0]).format('MMM DD, YYYY hh:mm:ss')
                         }
                     },
                     {

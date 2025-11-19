@@ -2,14 +2,20 @@ import React from 'react'
 import { Grid } from '@mui/material'
 import TextInput from '../CustomComponents/TextInput'
 import InputWrapper from '../CustomComponents/InputWrapper'
+import { useFormContext } from 'react-hook-form'
 
-export default function References (props) {
-  const { register, watch, setValue } = props
+export default function References(props) {
+
+  const {
+    setValue,
+    register,
+    watch
+  } = useFormContext()
 
   return (
     <Grid container spacing={2}>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-        <InputWrapper 
+        <InputWrapper
           setValue={setValue}
           watch={watch}
           data={watch('reference_numbers') || []}

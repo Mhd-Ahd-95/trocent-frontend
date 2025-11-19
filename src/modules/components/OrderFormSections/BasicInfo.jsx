@@ -8,16 +8,112 @@ import {
   CircularProgress
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import moment from 'moment'
 import { AddressBookContext } from '../../contexts'
+import { unstable_batchedUpdates } from 'react-dom'
 
 function BasicInfo(props) {
-  const { register, control, setValue, getValues } = props
+  const { data, isLoading, engine } = props
+
+  const {
+    register,
+    control,
+    setValue,
+    getValues,
+  } = useFormContext()
 
   const { terminals, loading } = React.useContext(AddressBookContext)
+
+  const handleIsCrossdock = (checked) => {
+    requestAnimationFrame(() => {
+      if (checked) {
+        const value = data?.find(ab => ab.name.toLowerCase() === 'messagers')
+        props.shipperSelectValue.current = value ? value : null
+        props.receiverSelectValue.current = value ? value : null
+        if (!value) return
+
+        setValue('shipper_id', value.id || '')
+        setValue('shipper_email', value.email || '')
+        setValue('shipper_contact_name', value.contact_name || '')
+        setValue('shipper_phone_number', value.phone_number || '')
+        setValue('shipper_address', value.address || '')
+        setValue('shipper_suite', value.suite || '')
+        setValue('shipper_city', value.city || '')
+        setValue('shipper_province', value.province || '')
+        setValue('shipper_postal_code', value.postal_code || '')
+        setValue('shipper_special_instructions', value.special_instructions || '')
+        setValue('pickup_time_from', value.op_time_from || null)
+        setValue('pickup_time_to', value.op_time_to || null)
+        setValue('pickup_appointment', value.requires_appointment || false)
+        setValue('shipper_no_waiting_time', value.no_waiting_time || false)
+        engine.shipper_city = value.city || ''
+
+        setValue('receiver_id', value.id || '')
+        setValue('receiver_email', value.email || '')
+        setValue('receiver_contact_name', value.contact_name || '')
+        setValue('receiver_phone_number', value.phone_number || '')
+        setValue('receiver_address', value.address || '')
+        setValue('receiver_suite', value.suite || '')
+        setValue('receiver_city', value.city || '')
+        setValue('receiver_province', value.province || '')
+        setValue('receiver_postal_code', value.postal_code || '')
+        setValue('receiver_special_instructions', value.special_instructions || '')
+        setValue('delivery_time_from', value.op_time_from || null)
+        setValue('delivery_time_to', value.op_time_to || null)
+        setValue('delivery_appointment', value.requires_appointment || false)
+        setValue('receiver_no_waiting_time', value.no_waiting_time || false)
+        engine.receiver_city = value.city || ''
+        engine.receiverProvince = value.province || ''
+
+      } else {
+        props.shipperSelectValue.current = null
+        props.receiverSelectValue.current = null
+        setValue('shipper_id', '')
+        setValue('shipper_email', '')
+        setValue('shipper_contact_name', '')
+        setValue('shipper_phone_number', '')
+        setValue('shipper_address', '')
+        setValue('shipper_suite', '')
+        setValue('shipper_city', '')
+        setValue('shipper_province', '')
+        setValue('shipper_postal_code', '')
+        setValue('shipper_special_instructions', '')
+        setValue('pickup_time_from', '07:00')
+        setValue('pickup_time_to', '07:00')
+        setValue('pickup_appointment', false)
+        setValue('shipper_no_waiting_time', false)
+        engine.shipper_city = ''
+
+        setValue('receiver_id', '')
+        setValue('receiver_email', '')
+        setValue('receiver_contact_name', '')
+        setValue('receiver_phone_number', '')
+        setValue('receiver_address', '')
+        setValue('receiver_suite', '')
+        setValue('receiver_city', '')
+        setValue('receiver_province', '')
+        setValue('receiver_postal_code', '')
+        setValue('receiver_special_instructions', '')
+        setValue('delivery_time_from', '12:00')
+        setValue('delivery_time_to', '12:00')
+        setValue('delivery_appointment', false)
+        setValue('receiver_no_waiting_time', false)
+        engine.receiver_city = ''
+        engine.receiverProvince = ''
+      }
+
+      props.calculationRef?.current?.recalculate()
+    })
+  }
+
+  React.useEffect(() => {
+    if (data && getValues('is_crossdock')) {
+      handleIsCrossdock(getValues('is_crossdock'))
+    }
+  }, [data, isLoading])
 
   return (
     <Grid container spacing={3}>
@@ -168,21 +264,29 @@ function BasicInfo(props) {
                     checked={field.value || false}
                     onChange={e => {
                       const checked = e.target.checked
-                      field.onChange(checked)
-                      const accessorials = getValues('customer_accessorials')
-                      const index = accessorials.findIndex(acc => acc.charge_name.toLowerCase() === 'crossdock')
-                      if (index !== -1) {
-                        props.accessorialRef.current?.change(checked, accessorials[index], index)
-                      }
-                      if (checked) {
-                        setValue('quote', false)
-                        setValue('order_status', 'Approved')
-                        setValue('order_entity', 'Order Billing')
-                      }
-                      else {
-                        setValue('order_status', 'Pending')
-                        setValue('order_entity', 'Order Entry')
-                      }
+                      unstable_batchedUpdates(() => {
+                        field.onChange(checked)
+                        props.accessorialRef.current?.handleChangeNoCharge(checked)
+                        engine.isNoCharge = false
+                        const accessorials = getValues('customer_accessorials')
+                        const index = accessorials.findIndex(acc => acc.charge_name.toLowerCase() === 'crossdock')
+                        if (index !== -1) {
+                          props.accessorialRef.current?.change(checked, accessorials[index], index)
+                        }
+                        else {
+                          props.calculationRef.current?.recalculate()
+                        }
+                        handleIsCrossdock(checked)
+                        if (checked) {
+                          setValue('quote', false)
+                          setValue('order_status', 'Approved')
+                          setValue('order_entity', 'Order Billing')
+                        }
+                        else {
+                          setValue('order_status', 'Pending')
+                          setValue('order_entity', 'Order Entry')
+                        }
+                      })
                     }}
                   />
                 )}

@@ -16,7 +16,12 @@ const globalVariables = {
   },
   methods: {
     formatNumber: nb => (isNaN(nb) ? Number(0).toFixed : Number(nb).toFixed(2)),
-    formatAccessorial: (n, a) => `${n} @ $${globalVariables.methods.formatNumber(a)}`,
+    formatAccessorial: (n, a, at) => {
+      if (at === 'percentage') {
+        return `${n} @ ${a}%`
+      }
+      return `${n} @ $${globalVariables.methods.formatNumber(a)}`
+    },
     capitalize: s => (s && s[0].toUpperCase() + s.slice(1).toLowerCase()) || '',
     capitalizeMany: s =>
       s && s.split(' ').length > 1
