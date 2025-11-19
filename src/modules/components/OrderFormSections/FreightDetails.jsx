@@ -102,9 +102,9 @@ function FreightDetails(props) {
 
   const handleAddFreight = React.useCallback(() => {
     append({
-      type: 'Skid',
-      description: 'FAK',
-      pieces: 1,
+      type: '',
+      description: '',
+      pieces: '',
       weight: '',
       unit: 'lbs',
       length: '',

@@ -659,7 +659,7 @@ function FreightCharges(props) {
                   <Grid container spacing={2} key={`${fetchRateSheet.customer_id}-${index}`} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1.5, px: 2, borderRadius: 3 }} justifyContent={'center'} alignItems={'center'} width={'100%'}>
                     <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                       <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}>
-                        {formatAccessorial(access.charge_name, access.amount)}
+                        {formatAccessorial(access.charge_name, access.amount, access.amount_type)}
                       </Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 1 }}>

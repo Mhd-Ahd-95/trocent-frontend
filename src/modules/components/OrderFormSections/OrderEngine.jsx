@@ -371,7 +371,7 @@ export default class OrderEngine {
                 const rates = sheet.brackets.map(b => Number(b.rate_bracket))
                 const max = Math.max(...rates)
                 // const min = Math.min(rates)
-                return value > max ? Number(sheet.ftl) || 0 : 0
+                return value > max ? (Number(sheet.ftl) / value) || 0 : 0
             }
             else {
                 return Number(bracket.rate)
@@ -383,7 +383,7 @@ export default class OrderEngine {
                 bracket = { rate: sheet[bracketName] }
             }
             else if (bracketName === 'ftl') {
-                bracket = { rate: sheet[bracketName] }
+                return Number(sheet[bracketName])
             }
             else {
                 bracket = sheet.brackets.find(b => b.rate_bracket === bracketName)

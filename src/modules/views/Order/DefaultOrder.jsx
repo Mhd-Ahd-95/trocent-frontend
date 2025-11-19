@@ -90,9 +90,9 @@ export const defaultOrderValue = {
   service_type: 'Regular',
   freights: [
     {
-      type: 'Skid',
-      description: 'FAK',
-      pieces: 1,
+      type: '',
+      description: '',
+      pieces: '',
       weight: '',
       unit: 'lbs',
       length: '',

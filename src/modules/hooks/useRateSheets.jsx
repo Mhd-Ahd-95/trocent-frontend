@@ -88,6 +88,7 @@ export function useRateSheetMutations() {
                 return [newRateSheets, ...old];
             });
             queryClient.invalidateQueries({ queryKey: ['customersRateSheets'] });
+            queryClient.invalidateQueries({ queryKey: ['rateSheetsByCustomerAndCities'] });
             enqueueSnackbar('Rate Sheets has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -110,6 +111,7 @@ export function useRateSheetMutations() {
                     queryClient.invalidateQueries({ queryKey: ['customersRateSheets', Number(cid)] })
                 }
                 queryClient.setQueryData(['rateSheet', Number(updated.id)], updated)
+                queryClient.invalidateQueries({ queryKey: ['rateSheetsByCustomerAndCities'] });
                 enqueueSnackbar('Rate Sheet has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -129,6 +131,7 @@ export function useRateSheetMutations() {
                     return [...filtered]
                 })
                 queryClient.invalidateQueries({ queryKey: ['customersRateSheets', Number(customer_id)] });
+                queryClient.invalidateQueries({ queryKey: ['rateSheetsByCustomerAndCities'] });
                 enqueueSnackbar('Rate Sheets has been deleted successfully', { variant: 'success' });
             }
         },
@@ -146,6 +149,7 @@ export function useRateSheetMutations() {
                     return old.filter((item) => !iids.includes(item.id))
                 })
                 queryClient.invalidateQueries({ queryKey: ['batchCustomerRateSheets', Number(cid)] })
+                queryClient.invalidateQueries({ queryKey: ['rateSheetsByCustomerAndCities'] });
                 enqueueSnackbar('Selected Rate Sheets have been deleted successfully', { variant: 'success' });
             }
         },
