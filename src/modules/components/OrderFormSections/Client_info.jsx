@@ -7,7 +7,7 @@ import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
   const { engine, editMode, enqueueSnackbar } = props
-  const { data, isLoading, isError, error } = useCustomers()
+  const { data, isLoading, isFetching, isError, error } = useCustomers()
 
   const {
     control,
@@ -48,7 +48,7 @@ function ClientInfo(props) {
               <Autocomplete
                 {...field}
                 options={data || []}
-                loading={isLoading}
+                loading={isLoading || isFetching}
                 value={data?.find((c) => c.id === Number(field.value)) || null}
                 onChange={(_, value) => {
                   unstable_batchedUpdates(async () => {
