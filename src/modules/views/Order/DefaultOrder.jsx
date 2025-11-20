@@ -53,8 +53,8 @@ export const defaultOrderValue = {
   receiver_no_waiting_time: false,
 
   pickup_date: new Date(),
-  pickup_time_from: '07:00',
-  pickup_time_to: '07:00',
+  pickup_time_from: '00:00',
+  pickup_time_to: '00:00',
   pickup_driver_assigned: '',
   pickup_terminal: '',
   pickup_appointment: false,
@@ -80,8 +80,8 @@ export const defaultOrderValue = {
   interliner_delivery_invoice: '',
 
   delivery_date: new Date(),
-  delivery_time_from: '12:00',
-  delivery_time_to: '12:00',
+  delivery_time_from: '00:00',
+  delivery_time_to: '00:00',
   delivery_driver_assigned: '',
   delivery_terminal: '',
   delivery_appointment: false,

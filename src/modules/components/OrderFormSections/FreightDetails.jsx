@@ -414,11 +414,26 @@ function FreightDetails(props) {
                       disabled={!mode}
                       type='number'
                       fullWidth
+                      // value={field.value || ''}
+                      onFocus={(e) => {
+                        const value = e.target.value
+                        if (Number(value) === 0 || value === '' || value === '0') {
+                          field.onChange('')
+                        }
+                      }}
                       onChange={(e) => {
-                        const value = Number(e.target.value)
+                        const value = e.target.value
+                        if (field.value === 0 && value === '') {
+                          field.onChange('')
+                          return
+                        }
                         field.onChange(value)
-                        engine.overrideTotalPiecesSkid = value
+                        engine.overrideTotalPiecesSkid = Number(value)
                         triggerRecalculation()
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value
+                        if (value === '') field.onChange(0)
                       }}
                       InputProps={{
                         endAdornment: isCalculating && (

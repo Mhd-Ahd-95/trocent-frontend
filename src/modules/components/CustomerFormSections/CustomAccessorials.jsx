@@ -160,6 +160,22 @@ function CustomAccessorials(props) {
         name: 'accessorials',
         control
     })
+    const fieldIds = useMemo(() => new Set(fields.map(f => f.access_id)), [fields])
+
+    const sortedData = useMemo(() => {
+        if (!data) return null
+
+        return [...data].sort((a, b) => {
+            const aChecked = fieldIds.has(a.id)
+            const bChecked = fieldIds.has(b.id)
+
+            if (aChecked !== bChecked) {
+                return aChecked ? -1 : 1
+            }
+
+            return a.name.localeCompare(b.name)
+        })
+    }, [data])
 
     const handleToggle = useCallback((access) => (e) => {
         const checked = e.target.checked
@@ -186,9 +202,9 @@ function CustomAccessorials(props) {
     }, [fields, append, remove])
 
     const accessorialItems = useMemo(() => {
-        if (!data) return null
+        if (!sortedData) return null
 
-        return data.map((access) => {
+        return sortedData.map((access) => {
             const selectedIndex = fields.findIndex(a => a.access_id === access.id)
             const checked = selectedIndex !== -1
             const basePath = checked ? `accessorials.${selectedIndex}` : ''
@@ -204,7 +220,7 @@ function CustomAccessorials(props) {
                 />
             )
         })
-    }, [data, fields, control, handleToggle])
+    }, [sortedData, fields, control, handleToggle])
 
     return (
         <AccordionComponent

@@ -276,7 +276,7 @@ function FreightCharges(props) {
         })
       )
     }
-    replaceCustomerAccessorials(accessorials)
+    replaceCustomerAccessorials(accessorials.sort((a,b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null))
   }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
 
   const {
@@ -527,115 +527,155 @@ function FreightCharges(props) {
           </Grid>
         </Grid>
       }
-      {!charges.no_charges && (
-        <Grid size={12}>
-          <Grid
-            container
-            sx={{
-              border: `1px solid ${theme.palette.grey[200]}`,
-              borderRadius: 3
-            }}
-          >
-            <Grid size={12}>
-              <Grid container spacing={2} px={3} py={2}>
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <Controller
-                    name={'freight_rate'}
-                    control={control}
-                    render={({ field }) => (
-                      <TextInput
-                        {...field}
-                        label='Freight Rate'
-                        variant='outlined'
-                        fullWidth
-                        type='number'
-                        inputProps={{ step: "any" }}
-                        disabled={!charges.manual_charges}
-                        value={field.value || ''}
-                        onChange={e => {
-                          const value = e.target.value
-                          field.onChange(value)
-                          engine.override_freight_rate = Number(value)
-                          props.calculationRef?.current?.recalculate()
-                        }}
-                        slotProps={{
-                          input: {
-                            endAdornment:
-                              !rateSheetLoading && !rateSheetFetching ? (
-                                <InputAdornment position='start'>
-                                  <AttachMoney />
+      {/* {!charges.no_charges || customerAccessorials.find(ca => ca.is_included && ca.type === 'fuel_based') ? ( */}
+      <Grid size={12}>
+        <Grid
+          container
+          sx={{
+            border: `1px solid ${theme.palette.grey[200]}`,
+            borderRadius: 3
+          }}
+        >
+          <Grid size={12}>
+            <Grid container spacing={2} px={3} py={2}>
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <Controller
+                  name={'freight_rate'}
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Freight Rate'
+                      variant='outlined'
+                      fullWidth
+                      type='number'
+                      inputProps={{ step: "any" }}
+                      disabled={!charges.manual_charges}
+                      // value={field.value || ''}
+                      // onChange={e => {
+                      //   const value = e.target.value
+                      //   field.onChange(value)
+                      //   engine.override_freight_rate = Number(value)
+                      //   props.calculationRef?.current?.recalculate()
+                      // }}
+                      onFocus={(e) => {
+                        const value = e.target.value
+                        if (Number(value) === 0 || value === '' || value === '0') {
+                          field.onChange('')
+                        }
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (field.value === 0 && value === '') {
+                          field.onChange('')
+                          return
+                        }
+                        field.onChange(value)
+                        engine.override_freight_rate = Number(value)
+                        props.calculationRef?.current?.recalculate()
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value
+                        if (value === '') field.onChange(0)
+                      }}
+                      slotProps={{
+                        input: {
+                          endAdornment:
+                            !rateSheetLoading && !rateSheetFetching ? (
+                              <InputAdornment position='start'>
+                                <AttachMoney />
+                              </InputAdornment>
+                            ) :
+                              (
+                                <InputAdornment position="end">
+                                  <CircularProgress size={20} />
                                 </InputAdornment>
-                              ) :
-                                (
-                                  <InputAdornment position="end">
-                                    <CircularProgress size={20} />
-                                  </InputAdornment>
-                                )
+                              )
 
-                          }
-                        }}
-                        sx={{
-                          '& .MuiInputBase-input.Mui-disabled': {
-                            color: 'black',
-                            fontWeight: 600,
-                            WebkitTextFillColor: 'black',
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <Controller
-                    name='freight_fuel_surcharge'
-                    control={control}
-                    render={({ field }) => (
-                      <TextInput
-                        {...field}
-                        label='Fuel Surcharge'
-                        variant='outlined'
-                        fullWidth
-                        type='number'
-                        inputProps={{ step: "any" }}
-                        value={field.value || ''}
-                        onChange={e => {
-                          const value = e.target.value
-                          field.onChange(value)
-                          engine.override_fuel_surcharge = Number(value)
-                          props.calculationRef?.current?.recalculate()
-                        }}
-                        disabled={!charges.manual_fuel_surcharges}
-                        slotProps={{
-                          input: {
-                            endAdornment:
-                              !rateSheetLoading && !rateSheetFetching ? (
-                                <InputAdornment position='start'>
-                                  <AttachMoney />
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          color: 'black',
+                          fontWeight: 600,
+                          WebkitTextFillColor: 'black',
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <Controller
+                  name='freight_fuel_surcharge'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      label='Fuel Surcharge'
+                      variant='outlined'
+                      fullWidth
+                      type='number'
+                      inputProps={{ step: "any" }}
+                      // value={field.value || ''}
+                      // onChange={e => {
+                      //   const value = e.target.value
+                      //   field.onChange(value)
+                      //   engine.override_fuel_surcharge = Number(value)
+                      //   props.calculationRef?.current?.recalculate()
+                      // }}
+                      onFocus={(e) => {
+                        const value = e.target.value
+                        if (Number(value) === 0 || value === '' || value === '0') {
+                          field.onChange('')
+                        }
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (field.value === 0 && value === '') {
+                          field.onChange('')
+                          return
+                        }
+                        field.onChange(value)
+                        engine.override_fuel_surcharge = Number(value)
+                        props.calculationRef?.current?.recalculate()
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value
+                        if (value === '') field.onChange(0)
+                      }}
+                      disabled={!charges.manual_fuel_surcharges}
+                      slotProps={{
+                        input: {
+                          endAdornment:
+                            !rateSheetLoading && !rateSheetFetching ? (
+                              <InputAdornment position='start'>
+                                <AttachMoney />
+                              </InputAdornment>
+                            ) :
+                              (
+                                <InputAdornment position="end">
+                                  <CircularProgress size={20} />
                                 </InputAdornment>
-                              ) :
-                                (
-                                  <InputAdornment position="end">
-                                    <CircularProgress size={20} />
-                                  </InputAdornment>
-                                )
-                          }
-                        }}
-                        sx={{
-                          '& .MuiInputBase-input.Mui-disabled': {
-                            color: 'black',
-                            fontWeight: 600,
-                            WebkitTextFillColor: 'black',
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
+                              )
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          color: 'black',
+                          fontWeight: 600,
+                          WebkitTextFillColor: 'black',
+                        },
+                      }}
+                    />
+                  )}
+                />
               </Grid>
             </Grid>
           </Grid>
         </Grid>
-      )}
+      </Grid>
+      {/* ) : null} */}
       <Grid size={12}>
         <Grid
           container
