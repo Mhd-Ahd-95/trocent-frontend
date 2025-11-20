@@ -93,10 +93,27 @@ function CustomVehicleTypes(props) {
         }
     }, [fields, append, remove])
 
+    const fieldIds = useMemo(() => new Set(fields.map(f => f.vehicle_id)), [fields])
+
+    const sortedData = useMemo(() => {
+            if (!data) return null
+    
+            return [...data].sort((a, b) => {
+                const aChecked = fieldIds.has(a.id)
+                const bChecked = fieldIds.has(b.id)
+    
+                if (aChecked !== bChecked) {
+                    return aChecked ? -1 : 1
+                }
+    
+                return a.name.localeCompare(b.name)
+            })
+        }, [data])
+
     const vehicleTypeItems = useMemo(() => {
         if (!data) return null
 
-        return data.map((vtype) => {
+        return sortedData.map((vtype) => {
             const selectedIndex = fields.findIndex((vt) => vt.vehicle_id === vtype.id)
             const checked = selectedIndex !== -1
             const basePath = checked ? `vehicle_types.${selectedIndex}` : ''
@@ -112,7 +129,7 @@ function CustomVehicleTypes(props) {
                 />
             )
         })
-    }, [data, fields, control, handleToggle])
+    }, [sortedData, fields, control, handleToggle])
 
     return (
         <AccordionComponent

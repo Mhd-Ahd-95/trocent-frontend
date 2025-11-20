@@ -440,7 +440,9 @@ export default class OrderEngine {
 
     calculateFuelSurcharge = () => {
 
-        if (this.context['no_charge']) return
+        const checkFuelBased = this.context['customer_accessorials_charges'].find(ca => ca.is_included && ca.type === 'fuel_based')
+
+        if (this.context['no_charge'] && !checkFuelBased) return
 
         let fuel_rules = this.context['customer_fuel_rules']
         let weight = this.context['total_chargeable_weight']
@@ -652,7 +654,7 @@ export default class OrderEngine {
                 break
             case 'fuel_based':
                 if (amountType === 'percentage') calculated_amount = (amount / 100) * frate
-                else calculated_amount = amount * frate
+                else calculated_amount = amount
                 break
             case 'time_based':
                 let free_time_minute = timeUnit === 'minute' ? freeTime : freeTime * 60
