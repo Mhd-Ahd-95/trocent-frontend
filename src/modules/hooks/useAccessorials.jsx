@@ -78,6 +78,7 @@ export function useAccessorialMutations() {
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
                 queryClient.setQueryData(['accessorial', Number(updated.id)], updated)
+                queryClient.invalidateQueries({ queryKey: ['customers'] });
                 enqueueSnackbar('Accessorial has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
