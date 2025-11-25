@@ -6,6 +6,7 @@ import global from '../../global'
 import { Controller, useWatch, useFormContext } from 'react-hook-form'
 import SearchableInput from '../CustomComponents/SearchableInput'
 import { useAddressBooks, useAddressBookMutations } from '../../hooks/useAddressBooks'
+import SearchableAndCreateInput from '../CustomComponents/SearchableAndCreateInput'
 
 function ExtraStop(props) {
 
@@ -13,10 +14,10 @@ function ExtraStop(props) {
   const selectedValue = React.useRef({})
 
   const {
-      control,
-      setValue,
-      getValues,
-    } = useFormContext()
+    control,
+    setValue,
+    getValues,
+  } = useFormContext()
 
   const isExtraStop = useWatch({
     control,
@@ -24,16 +25,11 @@ function ExtraStop(props) {
     defaultValue: false
   })
 
-  const extraStopSelected = useWatch({
-    control,
-    name: 'extra_stop_id'
-  })
-
   const handleChange = checked => {
     const address_book = data?.find(ab => ab.name.toLowerCase() === 'messagers')
     if (checked) {
       selectedValue.current = address_book
-      setValue('extra_stop_id', address_book.id || '')
+      setValue('extra_stop_name', address_book.name || '')
       setValue('extra_stop_email', address_book.email || '')
       setValue('extra_stop_contact_name', address_book.contact_name || '')
       setValue('extra_stop_phone_number', address_book.phone_number || '')
@@ -45,7 +41,7 @@ function ExtraStop(props) {
       setValue('extra_stop_special_instructions', address_book.special_instructions || '')
     } else {
       selectedValue.current = {}
-      setValue('extra_stop_id', '')
+      setValue('extra_stop_name', '')
       setValue('extra_stop_email', '')
       setValue('extra_stop_contact_name', '')
       setValue('extra_stop_phone_number', '')
@@ -57,8 +53,6 @@ function ExtraStop(props) {
       setValue('extra_stop_address', '')
     }
   }
-
-  const { create, patch } = useAddressBookMutations()
 
   return (
     <Grid container spacing={3}>
@@ -94,12 +88,13 @@ function ExtraStop(props) {
       {isExtraStop && (
         <>
           <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-            <SearchableInput
-              name='extra_stop_id'
+            <SearchableAndCreateInput
+              name='extra_stop_name'
               control={control}
               options={data || []}
               above
               fieldProp='name'
+              noID
               onSelect={value => {
                 selectedValue.current = value
                 setValue('extra_stop_email', value?.email || '')
@@ -113,7 +108,6 @@ function ExtraStop(props) {
                 setValue('extra_stop_special_instructions', value?.special_instructions || '')
               }}
               label='Crossdock'
-              onBlur={async (value) => await create.mutateAsync({ name: value })}
               rules={isExtraStop ? { required: 'Crossdock is a required field' } : {}}
               placeholder='Type name...'
             />
@@ -126,15 +120,7 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Email'
-                  disabled={!extraStopSelected}
                   id='email'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.email)
-                    }
-                  }}
                   variant='outlined'
                   fullWidth
                 />
@@ -149,15 +135,7 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Contact Name'
-                  disabled={!extraStopSelected}
                   id='contact_name'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.contact_name)
-                    }
-                  }}
                   variant='outlined'
                   fullWidth
                 />
@@ -172,15 +150,7 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Phone Number'
-                  disabled={!extraStopSelected}
                   id='phone_number'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.phone_number)
-                    }
-                  }}
                   variant='outlined'
                   fullWidth
                 />
@@ -197,15 +167,7 @@ function ExtraStop(props) {
                   {...field}
                   label='Address*'
                   variant='outlined'
-                  disabled={!extraStopSelected}
                   id='address'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.address)
-                    }
-                  }}
                   fullWidth
                   error={!!fieldState?.error}
                   helperText={fieldState.error?.message}
@@ -221,15 +183,7 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Suite'
-                  disabled={!extraStopSelected}
                   id='suite'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.suite)
-                    }
-                  }}
                   variant='outlined'
                   fullWidth
                 />
@@ -245,15 +199,7 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='City*'
-                  disabled={!extraStopSelected}
                   id='city'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.city)
-                    }
-                  }}
                   variant='outlined'
                   fullWidth
                   error={!!fieldState?.error}
@@ -271,15 +217,7 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Province*'
-                  disabled={!extraStopSelected}
                   id='province'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.province)
-                    }
-                  }}
                   variant='outlined'
                   fullWidth
                   error={!!fieldState?.error}
@@ -297,16 +235,8 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Postal Code*'
-                  disabled={!extraStopSelected}
                   variant='outlined'
                   id='postal_code'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.postal_code)
-                    }
-                  }}
                   fullWidth
                   error={!!fieldState?.error}
                   helperText={fieldState.error?.message}
@@ -323,16 +253,8 @@ function ExtraStop(props) {
                   {...field}
                   label='Special Instructions'
                   variant='outlined'
-                  disabled={!extraStopSelected}
                   multiline
                   id='special_instructions'
-                  onBlur={async (e) => {
-                    const { id: key, value } = e.target
-                    if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-                      const nAB = await patch.mutateAsync({ id: extraStopSelected, payload: { [key]: value } })
-                      field.onChange(nAB.special_instructions)
-                    }
-                  }}
                   minRows={2}
                   maxRows={2}
                   fullWidth
