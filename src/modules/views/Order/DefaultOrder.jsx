@@ -29,7 +29,7 @@ export const defaultOrderValue = {
   shipper_no_waiting_time: false,
 
   is_extra_stop: false,
-  extra_stop_id: '',
+  extra_stop_name: '',
   extra_stop_email: '',
   extra_stop_contact_name: '',
   extra_stop_phone_number: '',
@@ -126,7 +126,7 @@ export const defaultOrderValue = {
   sub_total: 0,
   provincial_tax: 0,
   federal_tax: 0,
-  grand_tax: 0,
+  grand_total: 0,
 
   pickup_in: null,
   pickup_out: null,

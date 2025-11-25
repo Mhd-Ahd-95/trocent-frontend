@@ -239,6 +239,7 @@ function FreightCharges(props) {
     if (engine.customer && fetchRateSheet.customer_id) {
       vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
         id: v.id,
+        vehicle_id: v.vehicle_id,
         name: v.name,
         amount: v.rate,
         is_included: false,

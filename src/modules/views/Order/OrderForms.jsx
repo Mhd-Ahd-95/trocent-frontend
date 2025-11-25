@@ -22,9 +22,13 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
 import { useSnackbar } from 'notistack'
 import { useAddressBooks } from '../../hooks/useAddressBooks'
+import { useNavigate } from 'react-router-dom'
 
 export default function OrderForm(props) {
+
+  const navigate = useNavigate()
   const { initialValues, submit, editMode } = props
+  const [loading, setLoading] = React.useState(false)
   const [showAll, setShowAll] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
   const engine = React.useRef(new OrderEngine(enqueueSnackbar)).current
@@ -52,8 +56,21 @@ export default function OrderForm(props) {
   //   }
   // }, [customerId, shipperCity, receiverCity, engine])
 
-  const onSubmit = data => {
-    console.log('Form Data:', data)
+  const onSubmit = async (data, e) => {
+    e.preventDefault()
+    setLoading(true)
+    const payload = OrderEngine.format_request(data)
+    console.log(payload);
+    try {
+      await submit(payload)
+      navigate('/orders')
+    }
+    catch (err) {
+      //
+    }
+    finally {
+      setLoading(false)
+    }
   }
 
   const onError = errors => {
@@ -236,29 +253,33 @@ export default function OrderForm(props) {
                 variant='contained'
                 color='primary'
                 size='small'
+                isLoading={loading}
+                disabled={loading}
                 textTransform='capitalize'
               >
                 Create Order
               </SubmitButton>
             </Grid>
-            <Grid size='auto'>
+            {/* <Grid size='auto'>
               <StyledButton
                 variant='outlined'
                 color='secondary'
                 size='small'
                 textTransform='capitalize'
+                disabled={loading}
               >
                 Save As Quote
               </StyledButton>
-            </Grid>
+            </Grid> */}
             <Grid size='auto'>
               <StyledButton
                 variant='outlined'
                 color='error'
                 size='small'
+                disabled={loading}
                 textTransform='capitalize'
               >
-                Cancel
+                Reset
               </StyledButton>
             </Grid>
           </Grid>

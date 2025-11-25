@@ -24,11 +24,6 @@ function PickupDetails(props) {
     name: 'pickup_appointment',
   })
 
-  const appointment_numbers = useWatch({
-    control: control,
-    name: 'pickup_appointment_numbers',
-  })
-
   return (
     <Grid container spacing={4}>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
@@ -171,14 +166,30 @@ function PickupDetails(props) {
       </Grid>
       {isAppointment && (
         <Grid size={12}>
-          <InputWrapper
+          <Controller
+            name='pickup_appointment_numbers'
+            control={control}
+            render={({ field }) => (
+              <InputWrapper
+                noSpace
+                shrinkOut='true'
+                setValue={setValue}
+                data={field.value || []}
+                field='pickup_appointment_numbers'
+                placeholder='Type and Press Comma'
+                textHelper='Add multiple appointment numbers separated by commas'
+                label='Appointment Numbers'
+              />
+            )}
+          />
+          {/* <InputWrapper
             placeholder='Appointment Numbers'
             textHelper='Add multiple appointment numbers separated by commas'
             noSpace
             setValue={setValue}
             field='pickup_appointment_numbers'
             data={appointment_numbers}
-          />
+          /> */}
         </Grid>
       )}
     </Grid>
