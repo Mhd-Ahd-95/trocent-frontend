@@ -21,7 +21,6 @@ export function useOrders() {
 
 
 export function useOrder(oid) {
-    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['order', Number(oid)],
         queryFn: async () => {

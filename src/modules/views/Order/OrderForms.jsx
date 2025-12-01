@@ -227,6 +227,20 @@ export default function OrderForm(props) {
     open: () => setOpenDrawer(true)
   }))
 
+  const OrderUpdates = React.useMemo(() => {
+    return <DrawerForm title='Order Updates' setOpen={setOpenDrawer} open={openDrawer}>
+      <div style={{
+        margin: 15,
+        background: colors.grey[200],
+        fontSize: 14,
+        fontWeight: 600,
+        paddingBlock: 7,
+        paddingInline: 10,
+        borderRadius: 5,
+      }}>Order created with status Entered</div>
+    </DrawerForm>
+  }, [editMode, openDrawer])
+
   return (
     <FormProvider {...methods}>
       <Grid
@@ -407,17 +421,7 @@ export default function OrderForm(props) {
         </Grid>
       </Grid>
       {editMode && openDrawer &&
-        <DrawerForm title='Order Updates' setOpen={setOpenDrawer} open={openDrawer}>
-          <div style={{
-            margin: 15,
-            background: colors.grey[200],
-            fontSize: 14,
-            fontWeight: 600, 
-            paddingBlock: 7,
-            paddingInline: 10,
-            borderRadius: 5,
-          }}>Order created with status Entered</div>
-        </DrawerForm>
+        OrderUpdates
       }
     </FormProvider>
   )
