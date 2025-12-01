@@ -145,38 +145,18 @@ function FreightCharges(props) {
 
   const { engine } = props
 
-  const {
-    control,
-    setValue,
-    getValues,
-  } = useFormContext()
-
+  const { control, setValue, getValues, } = useFormContext()
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
-  const [charges, setCharges] = React.useState({
-    no_charges: getValues('no_charges'),
-    manual_charges: getValues('manual_charges'),
-    manual_fuel_surcharges: getValues('manual_fuel_surcharges')
-  })
+  const [charges, setCharges] = React.useState({ no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges') })
   const serviceType = useWatch({ control, name: 'service_type' })
-  const [fetchRateSheet, setFetchRateSheet] = React.useState({
-    customer_id: getValues('customer_id'),
-    shipper_city: getValues('shipper_city'),
-    receiver_city: getValues('receiver_city')
-  })
+  const [fetchRateSheet, setFetchRateSheet] = React.useState({ customer_id: getValues('customer_id'), shipper_city: getValues('shipper_city'), receiver_city: getValues('receiver_city') })
 
-  const { fields: customerAccessorials, replace: replaceCustomerAccessorials, update: updateCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
-  const { fields: customerVehicleTypes, replace: replaceCustomerVehicleTypes, update: updateCustomerVehicleTypes } = useFieldArray({ control, name: 'customer_vehicle_types' })
-
-  const {
-    fields: additionalServiceCharges,
-    append: appendServiceCharge,
-    remove: removeServiceCharge
-  } = useFieldArray({
-    control,
-    name: 'additional_service_charges'
-  })
+  const { fields: customerAccessorials, replace: replaceCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
+  const { fields: customerVehicleTypes, replace: replaceCustomerVehicleTypes } = useFieldArray({ control, name: 'customer_vehicle_types' })
+  const { fields: additionalServiceCharges, append: appendServiceCharge, remove: removeServiceCharge } = useFieldArray({ control, name: 'additional_service_charges' })
+  const { data: rateSheets, isLoading: rateSheetLoading, isFetching: rateSheetFetching } = useRateSheetsByCustomerAndCities(fetchRateSheet.customer_id, fetchRateSheet.shipper_city, fetchRateSheet.receiver_city)
 
   const handleChange = (checked, access, index) => {
     requestAnimationFrame(() => {
@@ -215,9 +195,10 @@ function FreightCharges(props) {
       unstable_batchedUpdates(() => {
         setValue(`customer_accessorials.${idx}.charge_quantity`, qty);
         setValue(`customer_accessorials.${idx}.charge_amount`, (Math.round(amount * 100) / 100))
-        props.calculationRef.current?.recalculate()
       })
     }
+    engine.accessorialsCharge = getValues('customer_accessorials')
+    props.calculationRef.current?.recalculate()
   }
 
   const handleChangeNoCharge = (checked) => {
@@ -228,62 +209,63 @@ function FreightCharges(props) {
     })
   }
 
-  React.useImperativeHandle(props.accessorialRef, () => ({
-    change: handleChange,
-    recalculateAccessorials: triggerCalculateAccessorials,
-    handleChangeNoCharge: handleChangeNoCharge
-  }))
-
   React.useEffect(() => {
     let vehicleTypes = []
     if (engine.customer && fetchRateSheet.customer_id) {
-      vehicleTypes = (engine.customer.vehicle_types || []).map(v => ({
-        id: v.id,
-        name: v.name,
-        amount: v.rate,
-        is_included: false,
-      }))
+
+      const savedCustomerVehicleType = getValues('vehicle_types_customer') ?? []
+      const cVType = (engine.customer.vehicle_types) || []
+      const customerId = getValues('customer_id')
+
+      vehicleTypes = cVType.map(vt => {
+        const vtfound = savedCustomerVehicleType?.length > 0 ? savedCustomerVehicleType.find(svt => svt?.vehicle_type_id === vt.vehicle_id && customerId === svt?.customer_id) : null
+        if (vtfound) {
+          return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: true })
+        }
+        else {
+          return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: false })
+        }
+      })
+
+      if (props.editMode) {
+        engine.customer_vehicle_types = vehicleTypes
+        // props.calculationRef.current?.recalculate()
+      }
     }
     replaceCustomerVehicleTypes(vehicleTypes)
   }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerVehicleTypes])
 
+
   React.useEffect(() => {
     let accessorials = []
     if (engine.customer && fetchRateSheet.customer_id) {
+
       const isCrossDock = getValues('is_crossdock')
       const isExtraStop = getValues('is_extra_stop')
-      accessorials = (engine.customer.accessorials || []).map(a => isCrossDock && a.access_name?.trim().toLowerCase() === 'crossdock' ? ({
-        ...a,
-        charge_name: a.access_name,
-        charge_amount: a.amount,
-        charge_quantity: 1,
-        is_included: true,
-      }) : isExtraStop && a.access_name?.trim().toLowerCase() === 'extra stop' ?
-        ({
-          ...a,
-          charge_name: a.access_name,
-          charge_amount: a.amount,
-          charge_quantity: 1,
-          is_included: true,
-        })
-        :
-        ({
-          ...a,
-          charge_name: a.access_name,
-          charge_amount: 0,
-          charge_quantity: 0,
-          is_included: false,
-        })
-      )
-    }
-    replaceCustomerAccessorials(accessorials.sort((a,b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null))
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
+      const savedCustomerAccessorials = getValues('accessorials_customer') ?? []
+      const cAccess = engine.customer.accessorials || []
+      const customerId = getValues('customer_id')
 
-  const {
-    data: rateSheets,
-    isLoading: rateSheetLoading,
-    isFetching: rateSheetFetching
-  } = useRateSheetsByCustomerAndCities(fetchRateSheet.customer_id, fetchRateSheet.shipper_city, fetchRateSheet.receiver_city)
+      accessorials = cAccess.map((acc) => {
+        const accFound = savedCustomerAccessorials?.length > 0 ? savedCustomerAccessorials.find(sca => sca?.accessorial_id === acc.access_id && sca.customer_id === customerId) : null
+        if (accFound) {
+          return ({ ...acc, charge_name: acc.access_name, charge_amount: accFound.charge_amount, charge_quantity: accFound.charge_quantity, is_included: true, })
+        }
+        else {
+          return isCrossDock && acc.access_name?.trim().toLowerCase() === 'crossdock'
+            ? ({ ...acc, charge_name: acc.access_name, charge_amount: acc.amount, charge_quantity: 1, is_included: true, })
+            : isExtraStop && acc.access_name?.trim().toLowerCase() === 'extra stop'
+              ? ({ ...acc, charge_name: acc.access_name, charge_amount: acc.amount, charge_quantity: 1, is_included: true, })
+              : ({ ...acc, charge_name: acc.access_name, charge_amount: 0, charge_quantity: 0, is_included: false, })
+        }
+      })
+      if (props.editMode) {
+        engine.accessorialsCharge = accessorials
+        // props.calculationRef.current?.recalculate()
+      }
+    }
+    replaceCustomerAccessorials(accessorials.sort((a, b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null))
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
 
   React.useEffect(() => {
     if (fetchRateSheet.customer_id && fetchRateSheet.shipper_city && fetchRateSheet.receiver_city && rateSheets?.length > 0) {
@@ -306,9 +288,12 @@ function FreightCharges(props) {
     }
   }
 
-  React.useImperativeHandle(props.rateSheetRef, () => ({
+  React.useImperativeHandle(props.accessorialRef, () => ({
+    change: handleChange,
+    recalculateAccessorials: triggerCalculateAccessorials,
+    handleChangeNoCharge: handleChangeNoCharge,
     loadRateSheet: handleLoadRateSheet
-  }))
+  }), [handleChange, triggerCalculateAccessorials, handleChangeNoCharge, handleLoadRateSheet])
 
   return (
     <Grid container spacing={3}>
@@ -742,19 +727,21 @@ function FreightCharges(props) {
                             inputProps={{ step: 'any' }}
                             value={field.value || ''}
                             onChange={e => {
-                              const value = e.target.value
-                              if (Number(value) >= 0) {
-                                if (Number(value) === 0) {
-                                  setValue(`customer_accessorials.${index}.is_included`, false);
+                              unstable_batchedUpdates(() => {
+                                const value = e.target.value
+                                if (Number(value) >= 0) {
+                                  if (Number(value) === 0) {
+                                    setValue(`customer_accessorials.${index}.is_included`, false);
+                                  }
+                                  const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                                  const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+                                  const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value), pdtimes, waiting_time)
+                                  setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
+                                  setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+                                  engine.accessorialsCharge = getValues('customer_accessorials')
+                                  props.calculationRef.current?.recalculate()
                                 }
-                                const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
-                                const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
-                                const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value), pdtimes, waiting_time)
-                                setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
-                                setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
-                                engine.accessorialsCharge = getValues('customer_accessorials')
-                                props.calculationRef.current?.recalculate()
-                              }
+                              })
                             }}
                             size='small'
                           />
@@ -806,16 +793,17 @@ function FreightCharges(props) {
           )}
           <Grid size={12} sx={{ py: 2, px: 3 }}>
             <AccordionComponent
-              defaultExpanded
+              defaultExpanded={additionalServiceCharges.length === 0}
               title='Additional Service Charges'
               subtitle='Add Custom charges not covered by standard accessorials'
               content={
                 <Grid container spacing={2} justifyContent={'center'}>
                   {additionalServiceCharges.map((serviceCharge, index) => (
                     <ServiceChargeRow
-                      key={serviceCharge.id}
-                      id={serviceCharge.id}
+                      key={`${serviceCharge?.charge_name}_${index}`}
+                      id={index + 1}
                       index={index}
+                      serviceCharge={serviceCharge}
                       control={control}
                       getValues={getValues}
                       setValue={setValue}

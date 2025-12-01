@@ -6,6 +6,7 @@ import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { useNavigate } from 'react-router-dom'
 import { useCustomerMutation, useCustomers } from '../../hooks/useCustomers'
 import { CheckCircleOutline, DeleteForever, HighlightOffOutlined } from '@mui/icons-material'
+import { useSnackbar } from 'notistack'
 
 export default function CustomerView() {
 
@@ -15,6 +16,7 @@ export default function CustomerView() {
   const selectedRef = React.useRef()
   const [selectedCustomers, setSelectedCustomers] = React.useState([])
   const [openModal, setOpenModal] = React.useState(false)
+  const {enqueueSnackbar} = useSnackbar()
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',

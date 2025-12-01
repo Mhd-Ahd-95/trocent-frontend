@@ -11,11 +11,12 @@ function ClientInfo(props) {
 
   const {
     control,
+    getValues
   } = useFormContext()
 
   const [selectedCustomer, setSelectedCustomer] = React.useState(null)
-  const [customerId, setCustomerId] = React.useState('')
-  const isInitialLoad = React.useRef(true)
+  const [customerId, setCustomerId] = React.useState(getValues('customer_id'))
+  // const isInitialLoad = React.useRef(true)
 
   React.useEffect(() => {
     if (isError && error) {
@@ -56,7 +57,7 @@ function ClientInfo(props) {
                     setCustomerId(value?.id || '')
                     setSelectedCustomer(value)
                     engine.customer = value
-                    props.rateSheetRef.current?.loadRateSheet()
+                    props.accessorialRef.current?.loadRateSheet()
                   })
                 }}
                 getOptionLabel={option =>

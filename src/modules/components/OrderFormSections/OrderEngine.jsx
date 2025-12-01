@@ -8,16 +8,14 @@ export default class OrderEngine {
     static LBS_TO_KG = 0.45359237
     static KG_TO_LBS = 2.20462
 
-    constructor(enqueueSnackbar) {
+    constructor(enqueueSnackbar, orderDate = new Date()) {
         this.enqueueSnackbar = enqueueSnackbar
         this.request = {}
         this.context = {}
         this.custRateSheet = []
         this.fuelSurchargeByDate = null
-        let currentDate = moment(new Date())
-        if (!this.fuelSurchargeByDate) {
-            this.get_fuel_surcharge_by_date(currentDate.toISOString())
-        }
+        this.fuelSurchargePromise = null
+        this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).toISOString())
     }
 
     set customerRateSheets(cr) { this.custRateSheet = cr }
@@ -517,6 +515,7 @@ export default class OrderEngine {
     applyAccessorialsCharge = () => {
         const accessorials = this.context['customer_accessorials_charges']
         const accessorialsIncluded = accessorials.filter(acc => acc.is_included)
+
         if (accessorialsIncluded.length === 0) return
 
         for (let access of accessorialsIncluded) {
@@ -618,12 +617,16 @@ export default class OrderEngine {
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
-            if (res.data.data) this.fuelSurchargeByDate = res.data.data
-        }
-        catch {
+
+            if (res.data.data) {
+                this.fuelSurchargeByDate = res.data.data
+            }
+            return this.fuelSurchargeByDate
+        } catch (error) {
             console.error('Failed to load fuel surcharge:', error)
             this.enqueueSnackbar('Failed to load fuel surcharge', { variant: 'error' })
             this.fuelSurchargeByDate = null
+            return null
         }
     }
 
@@ -746,4 +749,156 @@ export default class OrderEngine {
 
         return { total_delivery, total_pickup, total_time }
     }
+
+
+    static format_request = (data) => {
+        let request =
+        {
+            // 100
+            user_id: data.user_id,
+            order_number: data.order_number,
+            create_date: data.create_date,
+            terminal: data.terminal,
+            quote: data.quote,
+            is_crossdock: data.is_crossdock,
+            order_entity: data.order_entity,
+            order_status: data.order_status,
+            internal_note: data.internal_note,
+
+            customer_id: data.customer_id,
+
+            reference_numbers: data.reference_numbers,
+            caller: data.caller,
+
+            shipper_id: data.shipper_id,
+            shipper_email: data.shipper_email,
+            shipper_suite: data.shipper_suite,
+            shipper_contact_name: data.shipper_contact_name,
+            shipper_phone_number: data.shipper_phone_number,
+            shipper_special_instructions: data.shipper_special_instructions,
+
+            // is_extra_stop: data.is_extra_stop,
+            extra_stop_name: data.extra_stop_name,
+            extra_stop_email: data.extra_stop_email,
+            extra_stop_contact_name: data.extra_stop_contact_name,
+            extra_stop_phone_number: data.extra_stop_phone_number,
+            extra_stop_address: data.extra_stop_address,
+            extra_stop_suite: data.extra_stop_suite,
+            extra_stop_city: data.extra_stop_city,
+            extra_stop_province: data.extra_stop_province,
+            extra_stop_postal_code: data.extra_stop_postal_code,
+            extra_stop_special_instructions: data.extra_stop_special_instructions,
+
+            receiver_id: data.receiver_id,
+            receiver_email: data.receiver_email,
+            receiver_contact_name: data.receiver_contact_name,
+            receiver_phone_number: data.receiver_phone_number,
+            receiver_suite: data.receiver_suite,
+            receiver_special_instructions: data.receiver_special_instructions,
+
+            pickup_date: data.pickup_date,
+            pickup_time_from: data.pickup_time_from,
+            pickup_time_to: data.pickup_time_to,
+            pickup_driver_assigned: data.pickup_driver_assigned,
+            pickup_terminal: data.pickup_terminal,
+            pickup_appointment: data.pickup_appointment,
+            pickup_appointment_numbers: data.pickup_appointment_numbers,
+
+            // is_pickup: data.is_pickup,
+            // is_delivery: data.is_delivery,
+            // is_same_carrier: data.is_same_carrier, special_instructions
+
+            interliner_id: data.interliner_id,
+            interliner_special_instructions: data.interliner_special_instructions,
+            interliner_charge_amount: data.interliner_charge_amount,
+            interliner_invoice: data.interliner_invoice,
+
+            interliner_pickup_id: data.interliner_pickup_id,
+            interliner_pickup_special_instructions: data.interliner_pickup_special_instructions,
+            interliner_pickup_charge_amount: data.interliner_pickup_charge_amount,
+            interliner_pickup_invoice: data.interliner_pickup_invoice,
+
+            interliner_delivery_id: data.interliner_delivery_id,
+            interliner_delivery_special_instructions: data.interliner_delivery_special_instructions,
+            interliner_delivery_charge_amount: data.interliner_delivery_charge_amount,
+            interliner_delivery_invoice: data.interliner_delivery_invoice,
+
+            delivery_date: data.delivery_date,
+            delivery_time_from: data.delivery_time_from,
+            delivery_time_to: data.delivery_time_to,
+            delivery_driver_assigned: data.delivery_driver_assigned,
+            delivery_terminal: data.delivery_terminal,
+            delivery_appointment: data.delivery_appointment,
+            delivery_appointment_numbers: data.delivery_appointment_numbers,
+
+            service_type: data.service_type,
+            freights: data.freights,
+
+            is_manual_skid: data.is_manual_skid,
+            total_pieces: data.total_pieces,
+            total_pieces_skid: data.total_pieces_skid,
+            total_actual_weight: data.total_actual_weight,
+            total_volume_weight: data.total_volume_weight,
+            total_chargeable_weight: data.total_chargeable_weight,
+            total_weight_in_kg: data.total_weight_in_kg,
+
+            no_charges: data.no_charges,
+            manual_charges: data.manual_charges,
+            manual_fuel_surcharges: data.manual_fuel_surcharges,
+            freight_rate: data.freight_rate,
+            freight_fuel_surcharge: data.freight_fuel_surcharge,
+
+            direct_km: data.direct_km,
+            customer_vehicle_types: OrderEngine.format_vehicle_types(data),
+            customer_accessorials: OrderEngine.format_accessorials(data),
+            additional_service_charges: data.additional_service_charges || [],
+            sub_total: data.sub_total,
+            provincial_tax: data.provincial_tax,
+            federal_tax: data.federal_tax,
+            grand_total: data.grand_total,
+
+            pickup_in: data.pickup_in,
+            pickup_out: data.pickup_out,
+            pickup_at: data.pickup_at,
+            delivery_in: data.delivery_in,
+            delivery_out: data.delivery_out,
+            delivery_at: data.delivery_at,
+            pickup_signee: data.pickup_signee,
+            delivery_signee: data.delivery_signee,
+            billing_invoice_date: data.billing_invoice_date,
+            billing_invoice: data.billing_invoice,
+            billing_invoiced: data.billing_invoiced,
+            total_pickup: data.total_pickup,
+            total_delivery: data.total_delivery,
+            total_time: data.total_time
+        }
+        Object.entries(request).forEach(([key, val]) => {
+            if (val === '') request[key] = null
+        })
+        return request
+    }
+
+    static format_accessorials = (data) => {
+        if (!data['customer_accessorials'] || data['customer_accessorials'].length === 0) return []
+        const access = data.customer_accessorials.filter((a) => a.is_included).map((acc) => {
+            return ({
+                accessorial_id: acc.access_id,
+                charge_amount: acc.charge_amount,
+                charge_quantity: acc.charge_quantity
+            })
+        })
+        return access
+    }
+
+    static format_vehicle_types = (data) => {
+        if (!data['customer_vehicle_types'] || data['customer_vehicle_types'].length === 0) return []
+        const vtypes = data.customer_vehicle_types.filter((v) => v.is_included).map((vt) => {
+            return ({
+                vehicle_type_id: vt.vehicle_id,
+                amount: vt.amount
+            })
+        })
+        return vtypes
+    }
+
 }

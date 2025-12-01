@@ -90,15 +90,15 @@ function FreightDetails(props) {
     name: 'freights'
   })
 
-  const isCalculating = useFreightCalculations(
-    getValues('freights'),
-    engine.customer,
-    setValue,
-    fields.length,
-    engine,
-    getValues('freight_rate'),
-    props.accessorialRef
-  )
+  // const isCalculating = useFreightCalculations(
+  //   getValues('freights'),
+  //   engine.customer,
+  //   setValue,
+  //   fields.length,
+  //   engine,
+  //   getValues('freight_rate'),
+  //   props.accessorialRef
+  // )
 
   const handleAddFreight = React.useCallback(() => {
     append({
@@ -385,11 +385,11 @@ function FreightDetails(props) {
                       disabled
                       fullWidth
                       InputProps={{
-                        endAdornment: isCalculating && (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        )
+                        // endAdornment: isCalculating && (
+                        //   <InputAdornment position="end">
+                        //     <CircularProgress size={20} />
+                        //   </InputAdornment>
+                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
@@ -436,11 +436,11 @@ function FreightDetails(props) {
                         if (value === '') field.onChange(0)
                       }}
                       InputProps={{
-                        endAdornment: isCalculating && (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        )
+                        // endAdornment: isCalculating && (
+                        //   <InputAdornment position="end">
+                        //     <CircularProgress size={20} />
+                        //   </InputAdornment>
+                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
@@ -465,11 +465,11 @@ function FreightDetails(props) {
                       disabled
                       fullWidth
                       InputProps={{
-                        endAdornment: isCalculating && (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        )
+                        // endAdornment: isCalculating && (
+                        //   <InputAdornment position="end">
+                        //     <CircularProgress size={20} />
+                        //   </InputAdornment>
+                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
@@ -494,11 +494,11 @@ function FreightDetails(props) {
                       disabled
                       fullWidth
                       InputProps={{
-                        endAdornment: isCalculating && (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        )
+                        // endAdornment: isCalculating && (
+                        //   <InputAdornment position="end">
+                        //     <CircularProgress size={20} />
+                        //   </InputAdornment>
+                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
@@ -523,11 +523,11 @@ function FreightDetails(props) {
                       disabled
                       fullWidth
                       InputProps={{
-                        endAdornment: isCalculating && (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        )
+                        // endAdornment: isCalculating && (
+                        //   <InputAdornment position="end">
+                        //     <CircularProgress size={20} />
+                        //   </InputAdornment>
+                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
@@ -552,11 +552,11 @@ function FreightDetails(props) {
                       disabled
                       fullWidth
                       InputProps={{
-                        endAdornment: isCalculating && (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        )
+                        // endAdornment: isCalculating && (
+                        //   <InputAdornment position="end">
+                        //     <CircularProgress size={20} />
+                        //   </InputAdornment>
+                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {

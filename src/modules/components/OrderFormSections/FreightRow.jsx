@@ -173,8 +173,8 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
               fullWidth
               value={getCurrentValue('pieces') || ''}
               onChange={(e) => {
-                field.onChange(e.target.value)
-                handleFieldChange('pieces', e.target.value)
+                field.onChange(Number(e.target.value))
+                handleFieldChange('pieces', Number(e.target.value))
                 calculationRef?.current?.recalculate()
               }}
             />
@@ -195,8 +195,8 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
               fullWidth
               value={getCurrentValue('weight') || ''}
               onChange={(e) => {
-                field.onChange(e.target.value)
-                handleFieldChange('weight', e.target.value)
+                field.onChange(Number(e.target.value))
+                handleFieldChange('weight', Number(e.target.value))
                 calculationRef?.current?.recalculate()
               }}
               helperText={volumeWeight ? `vol: ${Math.round(volumeWeight * 100) / 100} ${unit}` : `Vol: 0.00 ${unit}`}
@@ -289,8 +289,8 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
               fullWidth
               value={getCurrentValue('length') || ''}
               onChange={(e) => {
-                field.onChange(e.target.value)
-                handleFieldChange('length', e.target.value)
+                field.onChange(Number(e.target.value))
+                handleFieldChange('length', Number(e.target.value))
                 calculationRef?.current?.recalculate()
               }}
             />
@@ -311,8 +311,8 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
               fullWidth
               value={getCurrentValue('width') || ''}
               onChange={(e) => {
-                field.onChange(e.target.value)
-                handleFieldChange('width', e.target.value)
+                field.onChange(Number(e.target.value))
+                handleFieldChange('width', Number(e.target.value))
                 calculationRef?.current?.recalculate()
               }}
             />
@@ -333,8 +333,8 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
               fullWidth
               value={getCurrentValue('height') || ''}
               onChange={(e) => {
-                field.onChange(e.target.value)
-                handleFieldChange('height', e.target.value)
+                field.onChange(Number(e.target.value))
+                handleFieldChange('height', Number(e.target.value))
                 calculationRef?.current?.recalculate()
               }}
             />

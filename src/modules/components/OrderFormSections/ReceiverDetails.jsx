@@ -41,7 +41,7 @@ function ReceiverDetails(props) {
       setValue('receiver_no_waiting_time', value?.no_waiting_time || false)
       engine.receiver_city = value?.city || ''
       engine.receiverProvince = value?.province || ''
-      props.rateSheetRef.current?.loadRateSheet()
+      props.accessorialRef.current?.loadRateSheet()
     })
   }
 
@@ -84,7 +84,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -114,7 +114,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -144,7 +144,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -176,7 +176,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               fullWidth
@@ -207,7 +207,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               variant='outlined'
@@ -245,7 +245,7 @@ function ReceiverDetails(props) {
                   selectedValue.current[key] = value
                   patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
-                props.rateSheetRef.current?.loadRateSheet()
+                props.accessorialRef.current?.loadRateSheet()
               }}
               variant='outlined'
               fullWidth
@@ -290,7 +290,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
                 props.calculationRef.current?.recalculate()
               }}
@@ -334,7 +334,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               fullWidth
@@ -367,7 +367,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: shipperSelected, payload: { [key]: value } })
+                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
                 }
               }}
               minRows={2}

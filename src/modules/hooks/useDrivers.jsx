@@ -26,7 +26,7 @@ export function useDriver(cid) {
         queryKey: ['driver', Number(cid)],
         queryFn: async () => {
 
-            const cachedDrivers = queryClient.getQueryData(['driver']) || [];
+            const cachedDrivers = queryClient.getQueryData(['drivers']) || [];
             const cached = cachedDrivers.find(item => Number(item.id) === Number(cid));
             if (cached) return cached;
 
