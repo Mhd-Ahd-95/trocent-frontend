@@ -366,11 +366,13 @@ export default function OrderForm(props) {
                 />
               </WizardCard>
             </Grid>
-            <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-              <WizardCard minHeight={200} title='Straight Bill of Lading Consignment'>
-                <Consignment />
-              </WizardCard>
-            </Grid>
+            {editMode &&
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <WizardCard minHeight={200} title='Straight Bill of Lading Consignment'>
+                  <Consignment />
+                </WizardCard>
+              </Grid>
+            }
           </>
         )}
 
