@@ -40,7 +40,7 @@ function ShipperDetails(props) {
       setValue('pickup_appointment', value?.requires_appointment || false)
       setValue('shipper_no_waiting_time', value?.no_waiting_time || false)
       engine.shipper_city = value?.city || ''
-      props.rateSheetRef.current?.loadRateSheet()
+      props.accessorialRef.current?.loadRateSheet()
     })
   }
 
@@ -244,7 +244,7 @@ function ShipperDetails(props) {
                   selectedValue.current[key] = value
                   patch.mutate({ id: shipperSelected, payload: { [key]: value } })
                 }
-                props.rateSheetRef.current?.loadRateSheet()
+                props.accessorialRef.current?.loadRateSheet()
               }}
               variant='outlined'
               fullWidth

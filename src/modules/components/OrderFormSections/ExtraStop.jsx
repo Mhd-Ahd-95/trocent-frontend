@@ -22,7 +22,6 @@ function ExtraStop(props) {
   const isExtraStop = useWatch({
     control,
     name: 'is_extra_stop',
-    defaultValue: false
   })
 
   const handleChange = checked => {
@@ -121,6 +120,8 @@ function ExtraStop(props) {
                   {...field}
                   label='Email'
                   id='email'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   variant='outlined'
                   fullWidth
                 />
@@ -136,6 +137,8 @@ function ExtraStop(props) {
                   {...field}
                   label='Contact Name'
                   id='contact_name'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   variant='outlined'
                   fullWidth
                 />
@@ -152,6 +155,8 @@ function ExtraStop(props) {
                   label='Phone Number'
                   id='phone_number'
                   variant='outlined'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   fullWidth
                 />
               )}
@@ -168,6 +173,8 @@ function ExtraStop(props) {
                   label='Address*'
                   variant='outlined'
                   id='address'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   fullWidth
                   error={!!fieldState?.error}
                   helperText={fieldState.error?.message}
@@ -183,6 +190,8 @@ function ExtraStop(props) {
                 <TextInput
                   {...field}
                   label='Suite'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   id='suite'
                   variant='outlined'
                   fullWidth
@@ -201,6 +210,8 @@ function ExtraStop(props) {
                   label='City*'
                   id='city'
                   variant='outlined'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   fullWidth
                   error={!!fieldState?.error}
                   helperText={fieldState.error?.message}
@@ -219,6 +230,8 @@ function ExtraStop(props) {
                   label='Province*'
                   id='province'
                   variant='outlined'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   fullWidth
                   error={!!fieldState?.error}
                   helperText={fieldState.error?.message}
@@ -237,6 +250,8 @@ function ExtraStop(props) {
                   label='Postal Code*'
                   variant='outlined'
                   id='postal_code'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   fullWidth
                   error={!!fieldState?.error}
                   helperText={fieldState.error?.message}
@@ -255,6 +270,8 @@ function ExtraStop(props) {
                   variant='outlined'
                   multiline
                   id='special_instructions'
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                   minRows={2}
                   maxRows={2}
                   fullWidth

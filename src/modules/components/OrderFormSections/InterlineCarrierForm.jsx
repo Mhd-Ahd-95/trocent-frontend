@@ -17,6 +17,7 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Box from '@mui/material/Box'
 import { Controller, useWatch } from 'react-hook-form'
+import { AttachMoney } from '@mui/icons-material'
 
 const Appbar = styled(AppBar)(({ theme }) => ({
   borderRadius: 10,
@@ -176,6 +177,7 @@ export function InterlineCarrierForm(props) {
               label='Special Instructions'
               variant='outlined'
               multiline
+              value={field.value || ''}
               minRows={2}
               maxRows={2}
               fullWidth
@@ -195,7 +197,7 @@ export function InterlineCarrierForm(props) {
           </legend>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-              <FormControl
+              {/* <FormControl
                 variant='outlined'
                 fullWidth
                 sx={{
@@ -203,13 +205,13 @@ export function InterlineCarrierForm(props) {
                     height: 45
                   },
                   '& .MuiOutlinedInput-input': {
-                    fontSize: '12px'
+                    fontSize: '14px'
                   },
                   '& .MuiInputLabel-root': {
-                    fontSize: '12px'
+                    fontSize: '14px'
                   },
                   '& .MuiInputLabel-shrink': {
-                    fontSize: '12px'
+                    fontSize: '14px'
                   },
                   '& .MuiInputAdornment-root': {
                     marginLeft: -1
@@ -235,7 +237,31 @@ export function InterlineCarrierForm(props) {
                     />
                   )}
                 />
-              </FormControl>
+              </FormControl> */}
+              <Controller
+                name={inputName('charge_amount')}
+                control={control}
+                render={({ field }) => (
+                  <TextInput
+                    label='Total Charge Amount'
+                    fullWidth
+                    type='number'
+                    variant='outlined'
+                    inputProps={{ step: 'any' }}
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    slotProps={{
+                      input: {
+                        endAdornment:
+                          <InputAdornment position='end'>
+                            <AttachMoney />
+                          </InputAdornment>
+
+                      }
+                    }}
+                  />
+                )}
+              />
             </Grid>
             <Grid size={{ xs: 12, sm: 12, md: 6 }}>
               <Controller
