@@ -32,11 +32,11 @@ import {
   EditDriver,
   CreateCustomer,
   EditCustomer,
-  EditRateSheet
+  EditRateSheet,
+  EditOrder
 } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
-import { CssBaseline } from '@mui/material'
 
 function App() {
   const authContext = React.useContext(AuthContext)
@@ -54,7 +54,8 @@ function App() {
         <Route element={<ProtectRoute />}>
           <Route path='/' index Component={Dashboard} />
           <Route path='/orders' Component={Orders} />
-          <Route path='/new-order' Component={NewOrder} />
+          <Route path='/orders/create' Component={NewOrder} />
+          <Route path='/orders/edit/:id' Component={EditOrder} />
           <Route path='/customers' Component={Customers} />
           <Route path='/customer/create' Component={CreateCustomer} />
           <Route path='/customer/edit/:id' Component={EditCustomer} />

@@ -8,16 +8,14 @@ export default class OrderEngine {
     static LBS_TO_KG = 0.45359237
     static KG_TO_LBS = 2.20462
 
-    constructor(enqueueSnackbar) {
+    constructor(enqueueSnackbar, orderDate = new Date()) {
         this.enqueueSnackbar = enqueueSnackbar
         this.request = {}
         this.context = {}
         this.custRateSheet = []
         this.fuelSurchargeByDate = null
-        let currentDate = moment(new Date())
-        if (!this.fuelSurchargeByDate) {
-            this.get_fuel_surcharge_by_date(currentDate.toISOString())
-        }
+        this.fuelSurchargePromise = null
+        this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).toISOString())
     }
 
     set customerRateSheets(cr) { this.custRateSheet = cr }
@@ -517,6 +515,7 @@ export default class OrderEngine {
     applyAccessorialsCharge = () => {
         const accessorials = this.context['customer_accessorials_charges']
         const accessorialsIncluded = accessorials.filter(acc => acc.is_included)
+
         if (accessorialsIncluded.length === 0) return
 
         for (let access of accessorialsIncluded) {
@@ -618,12 +617,16 @@ export default class OrderEngine {
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
-            if (res.data.data) this.fuelSurchargeByDate = res.data.data
-        }
-        catch {
+
+            if (res.data.data) {
+                this.fuelSurchargeByDate = res.data.data
+            }
+            return this.fuelSurchargeByDate
+        } catch (error) {
             console.error('Failed to load fuel surcharge:', error)
             this.enqueueSnackbar('Failed to load fuel surcharge', { variant: 'error' })
             this.fuelSurchargeByDate = null
+            return null
         }
     }
 
@@ -803,7 +806,7 @@ export default class OrderEngine {
 
             // is_pickup: data.is_pickup,
             // is_delivery: data.is_delivery,
-            // is_same_carrier: data.is_same_carrier,
+            // is_same_carrier: data.is_same_carrier, special_instructions
 
             interliner_id: data.interliner_id,
             interliner_special_instructions: data.interliner_special_instructions,
@@ -876,7 +879,6 @@ export default class OrderEngine {
     }
 
     static format_accessorials = (data) => {
-        console.log(data['customer_accessorials']);
         if (!data['customer_accessorials'] || data['customer_accessorials'].length === 0) return []
         const access = data.customer_accessorials.filter((a) => a.is_included).map((acc) => {
             return ({

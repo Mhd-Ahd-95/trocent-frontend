@@ -4,10 +4,7 @@ const getOrders = () => CustomAxios.get('/api/orders')
 
 const getOrderById = (oid) => CustomAxios.get(`/api/orders/${oid}`)
 
-const createOrder = (payload) => {
-    console.log('object: ', payload);
-    return CustomAxios.post('/api/orders', payload)
-}
+const createOrder = (payload) => CustomAxios.post('/api/orders', payload)
 
 export default {
     getOrders,

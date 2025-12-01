@@ -68,6 +68,8 @@ function BasicInfo(props) {
         engine.receiver_city = value.city || ''
         engine.receiverProvince = value.province || ''
 
+        // props.accessorialRef.current?.loadRateSheet()
+
       } else {
         props.shipperSelectValue.current = null
         props.receiverSelectValue.current = null
@@ -81,8 +83,8 @@ function BasicInfo(props) {
         setValue('shipper_province', '')
         setValue('shipper_postal_code', '')
         setValue('shipper_special_instructions', '')
-        setValue('pickup_time_from', '07:00')
-        setValue('pickup_time_to', '07:00')
+        setValue('pickup_time_from', '00:00')
+        setValue('pickup_time_to', '00:00')
         setValue('pickup_appointment', false)
         setValue('shipper_no_waiting_time', false)
         engine.shipper_city = ''
@@ -97,8 +99,8 @@ function BasicInfo(props) {
         setValue('receiver_province', '')
         setValue('receiver_postal_code', '')
         setValue('receiver_special_instructions', '')
-        setValue('delivery_time_from', '12:00')
-        setValue('delivery_time_to', '12:00')
+        setValue('delivery_time_from', '00:00')
+        setValue('delivery_time_to', '00:00')
         setValue('delivery_appointment', false)
         setValue('receiver_no_waiting_time', false)
         engine.receiver_city = ''
@@ -155,10 +157,11 @@ function BasicInfo(props) {
               label='Create Date*'
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
-              onChange={date => {
+              onChange={async (date) => {
                 if (date) {
                   field.onChange(date.toISOString())
-                  props.engine.get_fuel_surcharge_by_date(date.toISOString())
+                  await props.engine.get_fuel_surcharge_by_date(date.toISOString())
+                  props.calculationRef.current?.recalculate()
                 }
               }}
               slotProps={{
@@ -267,7 +270,7 @@ function BasicInfo(props) {
                       unstable_batchedUpdates(() => {
                         field.onChange(checked)
                         props.accessorialRef.current?.handleChangeNoCharge(checked)
-                        engine.isNoCharge = false
+                        // engine.isNoCharge = false
                         const accessorials = getValues('customer_accessorials')
                         const index = accessorials.findIndex(acc => acc.charge_name.toLowerCase() === 'crossdock')
                         if (index !== -1) {

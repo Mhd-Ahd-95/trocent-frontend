@@ -22,7 +22,7 @@ export default function OrdersView() {
       }
       grid
       button
-      btnProps={{ label: 'New Order', onClick: () => navigate('/new-order') }}
+      btnProps={{ label: 'New Order', onClick: () => navigate('/orders/create') }}
     >
       <Grid container spacing={2}>
         <Grid size={12}>
@@ -34,6 +34,7 @@ export default function OrdersView() {
               filtering: true,
               search: true
             }}
+            onRowClick={(rowData) => navigate(`/orders/edit/${rowData.row.id}`)}
             columns={[
               {
                 headerName: 'Order #',
@@ -107,7 +108,7 @@ export default function OrdersView() {
                 valueFormatter: val => moment(val).format('MMM DD, YYYY')
               }
             ]}
-            data={data || []}
+            data={data ?? []}
           />
         </Grid>
       </Grid>

@@ -26,12 +26,12 @@ export function useOrder(oid) {
         queryKey: ['order', Number(oid)],
         queryFn: async () => {
 
-            const cachedOrders = queryClient.getQueryData(['orders']) || [];
-            const cached = cachedOrders.find(item => Number(item.id) === Number(oid));
-            if (cached) return cached;
+            // const cachedOrders = queryClient.getQueryData(['orders']) || [];
+            // const cached = cachedOrders.find(item => Number(item.id) === Number(oid));
+            // if (cached) return cached;
 
             const res = await OrderApi.getOrderById(oid)
-            return res.data.data;
+            return res.data;
         },
         enabled: !!oid,
         staleTime: 5 * 60 * 1000,
@@ -60,7 +60,6 @@ export function useOrderMutations() {
             return res.data.data;
         },
         onSuccess: (newOrder) => {
-            console.log(newOrder);
             if (hasCachedList) {
                 queryClient.setQueryData(['orders'], (old = []) => {
                     return [newOrder, ...old]

@@ -28,7 +28,7 @@ export default function NewOrder() {
                 <Grid size={12}>
                     <React.Suspense fallback={<Grid container justifyContent={'center'} py={15} sx={{ width: '100%' }}><CircularProgress /></Grid>}>
                         <OrderForm
-                            initialValues={{ username: authedUser?.username, user_id: authedUser?.id }}
+                            initialValues={{ username: authedUser?.username, user_id: authedUser?.id, create_date: new Date(), }}
                             submit={async (payload) => await create.mutateAsync(payload)}
                             isGenerating
                         />

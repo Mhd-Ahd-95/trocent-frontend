@@ -13,8 +13,9 @@ import { Controller, useFormContext } from 'react-hook-form'
 import moment from 'moment'
 import { unstable_batchedUpdates } from 'react-dom'
 
-export default function OrderForm(props) {
+export default function TimeAndBilling(props) {
   const theme = useTheme()
+  const isCalculatedRef = React.useRef(false)
 
   const {
     control,
@@ -22,6 +23,17 @@ export default function OrderForm(props) {
     getValues,
     register
   } = useFormContext()
+
+  React.useEffect(() => {
+    if (props.editMode && !isCalculatedRef.current) {
+      isCalculatedRef.current = true
+      const time = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+      const { total_pickup, total_delivery, total_time } = OrderEngine.calculatePDTotalTimes(time[0], time[1], time[2], time[3])
+      setValue('total_pickup', total_pickup)
+      setValue('total_delivery', total_delivery)
+      setValue('total_time', total_time)
+    }
+  }, [props.editMode])
 
   return (
     <Grid container spacing={3}>
@@ -373,9 +385,18 @@ export default function OrderForm(props) {
                 <FormControl>
                   <CustomFormControlLabel
                     control={
-                      <Switch
-                        {...register('billing_invoiced')}
+                      <Controller
+                        name='billing_invoiced'
+                        control={control}
+                        render={({ field }) => (
+                          <Switch
+                            {...field}
+                            checked={field.value || false}
+                            onChange={(e) => field.onChange(e.target.checked)}
+                          />
+                        )}
                       />
+
                     }
                     label='Invoiced'
                   />
