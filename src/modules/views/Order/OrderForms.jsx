@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid } from '@mui/material'
+import { colors, Grid } from '@mui/material'
 import {
   StyledButton,
   SubmitButton,
@@ -16,7 +16,9 @@ import {
   FreightDetails,
   FreightCharges,
   TimeAndBilling,
-  OrderEngine
+  OrderEngine,
+  Consignment,
+  DrawerForm
 } from '../../components'
 import { useForm, FormProvider } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
@@ -78,6 +80,7 @@ export default function OrderForm(props) {
   const shipperSelectValue = React.useRef(null)
   const receiverSelectValue = React.useRef(null)
   const isInitialized = React.useRef(false)
+  const [openDrawer, setOpenDrawer] = React.useState(false)
 
   const transformedInitialValues = React.useMemo(() => {
     return editMode ? { ...defaultOrderValue, ...transformLoadedData(initialValues) } : { ...defaultOrderValue, ...initialValues }
@@ -220,38 +223,9 @@ export default function OrderForm(props) {
     return () => clearTimeout(timer)
   }, [])
 
-  const memoizedBasicInfo = React.useMemo(
-    () => (
-      <BasicInfo
-        enqueueSnackbar={enqueueSnackbar}
-        engine={engine}
-        accessorialRef={accessorialRef}
-        data={addressBooks}
-        isLoading={addressBooksLoading}
-        calculationRef={calculationRef}
-        shipperSelectValue={shipperSelectValue}
-        receiverSelectValue={receiverSelectValue}
-      />
-    ),
-    [enqueueSnackbar, engine, addressBooks, addressBooksLoading]
-  )
-
-  const memoizedClientInfo = React.useMemo(
-    () => (
-      <ClientInfo
-        engine={engine}
-        editMode={editMode}
-        accessorialRef={accessorialRef}
-        enqueueSnackbar={enqueueSnackbar}
-      />
-    ),
-    [engine, editMode, enqueueSnackbar]
-  )
-
-  const memoizedReferences = React.useMemo(
-    () => <References />,
-    []
-  )
+  React.useImperativeHandle(props.orderUpdatesRef, () => ({
+    open: () => setOpenDrawer(true)
+  }))
 
   return (
     <FormProvider {...methods}>
@@ -263,19 +237,33 @@ export default function OrderForm(props) {
       >
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <WizardCard title='Basic Information'>
-            {memoizedBasicInfo}
+            <BasicInfo
+              enqueueSnackbar={enqueueSnackbar}
+              engine={engine}
+              accessorialRef={accessorialRef}
+              data={addressBooks}
+              isLoading={addressBooksLoading}
+              calculationRef={calculationRef}
+              shipperSelectValue={shipperSelectValue}
+              receiverSelectValue={receiverSelectValue}
+            />
           </WizardCard>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <WizardCard title='Client Information'>
-            {memoizedClientInfo}
+            <ClientInfo
+              engine={engine}
+              editMode={editMode}
+              accessorialRef={accessorialRef}
+              enqueueSnackbar={enqueueSnackbar}
+            />
           </WizardCard>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <WizardCard title='References'>
-            {memoizedReferences}
+            <References />
           </WizardCard>
         </Grid>
 
@@ -317,7 +305,9 @@ export default function OrderForm(props) {
           <>
             <Grid size={{ xs: 12, sm: 12, md: 4 }}>
               <WizardCard title='Pickup Details' minHeight={500}>
-                <PickupDetails />
+                <PickupDetails
+                  editMode={editMode}
+                />
               </WizardCard>
             </Grid>
 
@@ -329,7 +319,9 @@ export default function OrderForm(props) {
 
             <Grid size={{ xs: 12, sm: 12, md: 4 }}>
               <WizardCard title='Delivery Details' minHeight={500}>
-                <DeliveryDetails />
+                <DeliveryDetails
+                  editMode={editMode}
+                />
               </WizardCard>
             </Grid>
 
@@ -360,6 +352,11 @@ export default function OrderForm(props) {
                 />
               </WizardCard>
             </Grid>
+            <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+              <WizardCard minHeight={200} title='Straight Bill of Lading Consignment'>
+                <Consignment />
+              </WizardCard>
+            </Grid>
           </>
         )}
 
@@ -370,6 +367,7 @@ export default function OrderForm(props) {
                 type='submit'
                 variant='contained'
                 color='primary'
+                id='submit-order-action'
                 size='small'
                 isLoading={methods.formState?.isSubmitting}
                 disabled={methods.formState?.isSubmitting}
@@ -378,6 +376,21 @@ export default function OrderForm(props) {
                 {editMode ? 'Update Order' : 'Create Order'}
               </SubmitButton>
             </Grid>
+            {!editMode && (
+              <Grid size='auto'>
+                <SubmitButton
+                  type='submit'
+                  variant='outlined'
+                  color='secondary'
+                  size='small'
+                  textTransform='capitalize'
+                  id='save-order-action'
+                  isLoading={methods.formState?.isSubmitting}
+                >
+                  Save & Create Another
+                </SubmitButton>
+              </Grid>
+            )}
             <Grid size='auto'>
               <StyledButton
                 variant='outlined'
@@ -393,6 +406,19 @@ export default function OrderForm(props) {
           </Grid>
         </Grid>
       </Grid>
+      {editMode && openDrawer &&
+        <DrawerForm title='Order Updates' setOpen={setOpenDrawer} open={openDrawer}>
+          <div style={{
+            margin: 15,
+            background: colors.grey[200],
+            fontSize: 14,
+            fontWeight: 600, 
+            paddingBlock: 7,
+            paddingInline: 10,
+            borderRadius: 5,
+          }}>Order created with status Entered</div>
+        </DrawerForm>
+      }
     </FormProvider>
   )
 }
