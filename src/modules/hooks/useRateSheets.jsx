@@ -35,7 +35,6 @@ export function useBatchCustomerRateSheets(cid) {
 
 
 export function useRateSheet(iid) {
-    console.log('object');
     return useQuery({
         queryKey: ['rateSheet', Number(iid)],
         queryFn: async () => {

@@ -106,7 +106,7 @@ function MainLayout(props) {
                     {props.button && (
                       <Grid>
                         <StyledButton
-                          color="primary"
+                          color={props.btnProps?.color || 'primary'}
                           py={1}
                           variant="contained"
                           textTransform="capitalize"

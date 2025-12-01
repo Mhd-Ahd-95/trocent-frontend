@@ -118,11 +118,19 @@ function DeliveryDetails(props) {
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-        <TextInput
-          label='Driver Assigned'
-          variant='outlined'
-          fullWidth
-          {...register('delivery_driver_assigned')}
+        <Controller
+          name='delivery_driver_assigned'
+          control={control}
+          render={({ field }) => (
+            <TextInput
+              {...field}
+              value={field.value || ''}
+              label='Driver Assigned'
+              variant='outlined'
+              fullWidth
+              helperText={props.editMode ? 'Dispatch/Driver Notes' : null}
+            />
+          )}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>

@@ -24,6 +24,8 @@ export default function EditOrder() {
         }
     }, [isError, error])
 
+    const orderUpdatesRef = React.useRef(null)
+
     // console.log(data);
 
     return (
@@ -35,11 +37,14 @@ export default function EditOrder() {
                     items={[{ text: 'Orders', url: '/orders' }, { text: 'Edit' }]}
                 />
             }
+            button
+            btnProps={{ label: 'Order Updates', onClick: () => orderUpdatesRef.current?.open(), color: 'warning' }}
         >
             <Grid container>
                 {!isLoading && !isRefetching ?
                     <Grid size={12}>
                         <OrderForm
+                        orderUpdatesRef={orderUpdatesRef}
                             initialValues={{ ...data }}
                             editMode
                             order_id={id}
