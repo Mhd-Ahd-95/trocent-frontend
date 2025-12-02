@@ -18,7 +18,7 @@ import {
   TimeAndBilling,
   OrderEngine,
   Consignment,
-  DrawerForm
+  HeaderForm,
 } from '../../components'
 import { useForm, FormProvider } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
@@ -69,7 +69,7 @@ const transformLoadedData = (data) => {
   }
 }
 
-export default function OrderForm(props) {
+function OrderForm(props) {
   const navigate = useNavigate()
   const { initialValues, submit, editMode } = props
   const [showAll, setShowAll] = React.useState(false)
@@ -80,7 +80,6 @@ export default function OrderForm(props) {
   const shipperSelectValue = React.useRef(null)
   const receiverSelectValue = React.useRef(null)
   const isInitialized = React.useRef(false)
-  const [openDrawer, setOpenDrawer] = React.useState(false)
 
   const transformedInitialValues = React.useMemo(() => {
     return editMode ? { ...defaultOrderValue, ...transformLoadedData(initialValues) } : { ...defaultOrderValue, ...initialValues }
@@ -101,12 +100,6 @@ export default function OrderForm(props) {
       enqueueSnackbar(errorMessage, { variant: 'error' })
     }
   }, [isError, error, enqueueSnackbar])
-
-
-
-
-
-
 
   React.useEffect(() => {
     if (!editMode || !initialValues || !addressBooks || isInitialized.current) {
@@ -190,7 +183,6 @@ export default function OrderForm(props) {
         }
       })
     }
-
     setupEditMode()
   }, [editMode, initialValues, addressBooks, engine, methods])
 
@@ -223,24 +215,6 @@ export default function OrderForm(props) {
     return () => clearTimeout(timer)
   }, [])
 
-  React.useImperativeHandle(props.orderUpdatesRef, () => ({
-    open: () => setOpenDrawer(true)
-  }))
-
-  const OrderUpdates = React.useMemo(() => {
-    return <DrawerForm title='Order Updates' setOpen={setOpenDrawer} open={openDrawer}>
-      <div style={{
-        margin: 15,
-        background: colors.grey[200],
-        fontSize: 14,
-        fontWeight: 600,
-        paddingBlock: 7,
-        paddingInline: 10,
-        borderRadius: 5,
-      }}>Order created with status Entered</div>
-    </DrawerForm>
-  }, [editMode, openDrawer])
-
   return (
     <FormProvider {...methods}>
       <Grid
@@ -248,7 +222,14 @@ export default function OrderForm(props) {
         component={'form'}
         spacing={3}
         onSubmit={methods.handleSubmit(onSubmit, onError)}
+        position={'relative'}
       >
+        {editMode &&
+          <Grid size={12}>
+            <HeaderForm
+            />
+          </Grid>
+        }
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <WizardCard title='Basic Information'>
             <BasicInfo
@@ -422,9 +403,8 @@ export default function OrderForm(props) {
           </Grid>
         </Grid>
       </Grid>
-      {editMode && openDrawer &&
-        OrderUpdates
-      }
     </FormProvider>
   )
 }
+
+export default React.memo(OrderForm)

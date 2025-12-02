@@ -1,5 +1,5 @@
 import React from 'react'
-import { CircularProgress, Grid, Box, Button } from '@mui/material'
+import { CircularProgress, Grid, Box } from '@mui/material'
 import { MainLayout } from '../../layouts'
 import { Breadcrumbs } from '../../components'
 import { useParams } from 'react-router-dom'
@@ -12,7 +12,6 @@ export default function EditOrder() {
 
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
-    // const { update } = useOrderMutations()
     const { data, isLoading, isRefetching, error, isError } = useOrder(id)
 
     React.useEffect(() => {
@@ -24,10 +23,6 @@ export default function EditOrder() {
         }
     }, [isError, error])
 
-    const orderUpdatesRef = React.useRef(null)
-
-    // console.log(data);
-
     return (
         <MainLayout
             title='Edit Order'
@@ -38,31 +33,15 @@ export default function EditOrder() {
                 />
             }
         >
-            <Grid container >
+            <Grid container mt={-4}>
                 {!isLoading && !isRefetching ?
-                    <>
-                        <Grid size={12} mt={-8}>
-                            <Grid container justifyContent={'flex-end'}>
-                                <Button
-                                    variant='outlined'
-                                    onClick={() => orderUpdatesRef.current?.open()}
-                                    color='primary'
-                                    sx={{ textTransform: 'capitalize' }}
-                                >
-                                    Order Updates
-                                </Button>
-                            </Grid>
-                        </Grid>
-                        <Grid size={12}>
-                            <OrderForm
-                                orderUpdatesRef={orderUpdatesRef}
-                                initialValues={{ ...data }}
-                                editMode
-                                order_id={id}
-                            // submit={async (payload) => await update.mutateAsync({ id, payload })} 
-                            />
-                        </Grid>
-                    </>
+                    <Grid size={12}>
+                        <OrderForm
+                            initialValues={{ ...data }}
+                            editMode
+                            order_id={id}
+                        />
+                    </Grid>
                     :
                     <Grid size={12} container component={Box} py={15} justifyContent='center' alignItems='center'>
                         <CircularProgress />

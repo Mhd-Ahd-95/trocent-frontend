@@ -11,7 +11,8 @@ function ClientInfo(props) {
 
   const {
     control,
-    getValues
+    getValues,
+    setValue
   } = useFormContext()
 
   const [selectedCustomer, setSelectedCustomer] = React.useState(null)
@@ -33,6 +34,7 @@ function ClientInfo(props) {
       if (customer) {
         setSelectedCustomer(customer)
         engine.customer = customer
+        setValue('customer_number', customer.account_number)
       }
     }
   }, [data, customerId, engine])
