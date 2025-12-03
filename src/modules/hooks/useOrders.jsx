@@ -72,6 +72,36 @@ export function useOrderMutations() {
         onError: handleError,
     });
 
+    const uploadFile = useMutation({
+        mutationFn: async (payload) => {
+            const res = await OrderApi.uploadFile(payload)
+            return res.data
+        },
+        onSuccess: (newFiles, payload) => {
+            const order_id = payload.get('order_id')
+            queryClient.setQueryData(['order', Number(order_id)], (old = {}) => {
+                return ({ ...old, files: newFiles })
+            })
+            enqueueSnackbar('File has been successully uploaded', { variant: 'success' });
+        },
+        onError: handleError,
+    })
+
+    const deleteFile = useMutation({
+        mutationFn: async ({fid, oid}) => {
+            const res = await OrderApi.deleteFile(Number(fid));
+            return res.data
+        },
+        onSuccess: (newFiles, payload) => {
+            const order_id = payload.oid
+            queryClient.setQueryData(['order', Number(order_id)], (old = {}) => {
+                return ({ ...old, files: newFiles })
+            })
+            enqueueSnackbar('File has been successully deleted', { variant: 'success' });
+        },
+        onError: handleError,
+    })
+
     // const update = useMutation(
     //     {
     //         mutationFn: async ({ id, payload }) => {
@@ -126,6 +156,6 @@ export function useOrderMutations() {
     //     onError: handleError,
     // });
 
-    return { create };
+    return { create, uploadFile, deleteFile };
 
 }

@@ -25,47 +25,42 @@ import { defaultOrderValue } from './DefaultOrder'
 import { useSnackbar } from 'notistack'
 import { useAddressBooks } from '../../hooks/useAddressBooks'
 import { useNavigate } from 'react-router-dom'
-import moment from 'moment'
 import { unstable_batchedUpdates } from 'react-dom'
 
-const transformLoadedData = (data) => {
-  if (!data) return {}
+const setEngineProps = (engine, initialValues) => {
+  if (initialValues.freights) {
+    engine.freights = initialValues.freights
+  }
 
-  return {
-    ...data,
-    create_date: data.create_date ? new Date(data.create_date) : new Date(),
-    pickup_date: data.pickup_date ? new Date(data.pickup_date) : new Date(),
-    delivery_date: data.delivery_date ? new Date(data.delivery_date) : new Date(),
-    pickup_at: data.pickup_at ? new Date(data.pickup_at) : null,
-    delivery_at: data.delivery_at ? new Date(data.delivery_at) : null,
-    billing_invoice_date: data.billing_invoice_date ? new Date(data.billing_invoice_date) : new Date(),
+  if (initialValues.is_manual_skid) {
+    engine.isManualSkid = initialValues.is_manual_skid
+    engine.overrideTotalPiecesSkid = initialValues.total_pieces_skid || 0
+  }
 
-    pickup_in: data.pickup_in ? data.pickup_in : null,
-    pickup_out: data.pickup_out ? (data.pickup_out.includes('T') ? moment(data.pickup_out).format('HH:mm') : data.pickup_out) : null,
-    delivery_in: data.delivery_in ? (data.delivery_in.includes('T') ? moment(data.delivery_in).format('HH:mm') : data.delivery_in) : null,
-    delivery_out: data.delivery_out ? (data.delivery_out.includes('T') ? moment(data.delivery_out).format('HH:mm') : data.delivery_out) : null,
+  if (initialValues.manual_charges) {
+    engine.isManualFreightRate = initialValues.manual_charges
+    engine.override_freight_rate = initialValues.freight_rate || 0
+  }
 
-    reference_numbers: data.reference_numbers || [],
-    pickup_appointment_numbers: data.pickup_appointment_numbers || [],
-    delivery_appointment_numbers: data.delivery_appointment_numbers || [],
-    freights: data.freights && data.freights.length > 0 ? data.freights : defaultOrderValue.freights,
-    accessorials_customer: data.accessorials_customer || [],
-    vehicle_types_customer: data.customer_vehicle_types || [],
-    additional_service_charges: data.additional_service_charges || [],
+  if (initialValues.manual_fuel_surcharges) {
+    engine.isManualFuelSurcharge = initialValues.manual_fuel_surcharges
+    engine.override_fuel_surcharge = initialValues.freight_fuel_surcharge || 0
+  }
 
-    quote: Boolean(data.quote),
-    is_crossdock: Boolean(data.is_crossdock),
-    is_extra_stop: Boolean(data.is_extra_stop),
-    pickup_appointment: Boolean(data.pickup_appointment),
-    delivery_appointment: Boolean(data.delivery_appointment),
-    is_pickup: Boolean(data.is_pickup),
-    is_delivery: Boolean(data.is_delivery),
-    is_same_carrier: Boolean(data.is_same_carrier),
-    is_manual_skid: Boolean(data.is_manual_skid),
-    no_charges: Boolean(data.no_charges),
-    manual_charges: Boolean(data.manual_charges),
-    manual_fuel_surcharges: Boolean(data.manual_fuel_surcharges),
-    billing_invoiced: Boolean(data.billing_invoiced)
+  if (initialValues.no_charges) {
+    engine.isNoCharge = initialValues.no_charges
+  }
+
+  if (initialValues.service_type) {
+    engine.service_type = initialValues.service_type
+  }
+
+  if (initialValues.direct_km) {
+    engine.directKM = initialValues.direct_km
+  }
+
+  if (initialValues.additional_service_charges) {
+    engine.otherAccessorialsCharges = initialValues.additional_service_charges
   }
 }
 
@@ -80,9 +75,10 @@ function OrderForm(props) {
   const shipperSelectValue = React.useRef(null)
   const receiverSelectValue = React.useRef(null)
   const isInitialized = React.useRef(false)
+  const customerRef = React.useRef(null)
 
   const transformedInitialValues = React.useMemo(() => {
-    return editMode ? { ...defaultOrderValue, ...transformLoadedData(initialValues) } : { ...defaultOrderValue, ...initialValues }
+    return editMode ? { ...defaultOrderValue, ...OrderEngine.transformLoadedData(initialValues) } : { ...defaultOrderValue, ...initialValues }
   }, [initialValues, editMode])
 
   const methods = useForm({
@@ -101,87 +97,63 @@ function OrderForm(props) {
     }
   }, [isError, error, enqueueSnackbar])
 
+  const setupEditMode = async () => {
+    isInitialized.current = true
+
+    if (engine.fuelSurchargePromise) {
+      await engine.fuelSurchargePromise
+    }
+    engine.freights = initialValues.freights
+    engine.isManualSkid = initialValues.is_manual_skid || false
+    engine.overrideTotalPiecesSkid = initialValues.is_manual_skid ? initialValues.total_pieces_skid : 0
+    engine.isManualFreightRate = initialValues.manual_charges
+    engine.override_freight_rate = initialValues.manual_charges ? initialValues.freight_rate || 0 : 0
+    engine.isManualFuelSurcharge = initialValues.manual_fuel_surcharges
+    engine.override_fuel_surcharge = initialValues.manual_fuel_surcharges ? initialValues.freight_fuel_surcharge || 0 : 0
+    engine.isNoCharge = initialValues.no_charges || false
+    engine.service_type = initialValues.service_type
+    engine.directKM = initialValues.direct_km
+    engine.otherAccessorialsCharges = initialValues.additional_service_charges
+
+    if (initialValues.shipper_id) {
+      const shipper = addressBooks.find(ab => ab.id === Number(initialValues.shipper_id))
+      if (shipper) {
+        shipperSelectValue.current = shipper
+        engine.shipper_city = initialValues.shipper_city
+        unstable_batchedUpdates(() => {
+          methods.setValue('shipper_address', shipper.address)
+          methods.setValue('shipper_province', shipper.province)
+          methods.setValue('shipper_postal_code', shipper.postal_code)
+          methods.setValue('shipper_no_waiting_time', shipper.no_waiting_time)
+        })
+      }
+    }
+
+    if (initialValues.receiver_id) {
+      const receiver = addressBooks.find(ab => ab.id === Number(initialValues.receiver_id))
+      if (receiver) {
+        receiverSelectValue.current = receiver
+        engine.receiver_city = receiver.city
+        engine.receiverProvince = receiver.province
+        unstable_batchedUpdates(() => {
+          methods.setValue('receiver_address', receiver.address)
+          methods.setValue('receiver_province', receiver.province)
+          methods.setValue('receiver_postal_code', receiver.postal_code)
+          methods.setValue('receiver_no_waiting_time', receiver.no_waiting_time)
+        })
+      }
+    }
+
+    requestAnimationFrame(() => {
+      if (calculationRef.current) {
+        calculationRef.current.recalculate()
+      }
+    })
+  }
+
   React.useEffect(() => {
     if (!editMode || !initialValues || !addressBooks || isInitialized.current) {
       return
-    }
-
-    const setupEditMode = async () => {
-      isInitialized.current = true
-
-      if (engine.fuelSurchargePromise) {
-        await engine.fuelSurchargePromise
-      }
-
-      if (initialValues.freights) {
-        engine.freights = initialValues.freights
-      }
-
-      if (initialValues.is_manual_skid) {
-        engine.isManualSkid = initialValues.is_manual_skid
-        engine.overrideTotalPiecesSkid = initialValues.total_pieces_skid || 0
-      }
-
-      if (initialValues.manual_charges) {
-        engine.isManualFreightRate = initialValues.manual_charges
-        engine.override_freight_rate = initialValues.freight_rate || 0
-      }
-
-      if (initialValues.manual_fuel_surcharges) {
-        engine.isManualFuelSurcharge = initialValues.manual_fuel_surcharges
-        engine.override_fuel_surcharge = initialValues.freight_fuel_surcharge || 0
-      }
-
-      if (initialValues.no_charges) {
-        engine.isNoCharge = initialValues.no_charges
-      }
-
-      if (initialValues.service_type) {
-        engine.service_type = initialValues.service_type
-      }
-
-      if (initialValues.direct_km) {
-        engine.directKM = initialValues.direct_km
-      }
-
-      if (initialValues.additional_service_charges) {
-        engine.otherAccessorialsCharges = initialValues.additional_service_charges
-      }
-
-      if (initialValues.shipper_id) {
-        const shipper = addressBooks.find(ab => ab.id === Number(initialValues.shipper_id))
-        if (shipper) {
-          shipperSelectValue.current = shipper
-          engine.shipper_city = initialValues.shipper_city
-          unstable_batchedUpdates(() => {
-            methods.setValue('shipper_address', shipper.address)
-            methods.setValue('shipper_province', shipper.province)
-            methods.setValue('shipper_postal_code', shipper.postal_code)
-            methods.setValue('shipper_no_waiting_time', shipper.no_waiting_time)
-          })
-        }
-      }
-
-      if (initialValues.receiver_id) {
-        const receiver = addressBooks.find(ab => ab.id === Number(initialValues.receiver_id))
-        if (receiver) {
-          receiverSelectValue.current = receiver
-          engine.receiver_city = receiver.city
-          engine.receiverProvince = receiver.province
-          unstable_batchedUpdates(() => {
-            methods.setValue('receiver_address', receiver.address)
-            methods.setValue('receiver_province', receiver.province)
-            methods.setValue('receiver_postal_code', receiver.postal_code)
-            methods.setValue('receiver_no_waiting_time', receiver.no_waiting_time)
-          })
-        }
-      }
-
-      requestAnimationFrame(() => {
-        if (calculationRef.current) {
-          calculationRef.current.recalculate()
-        }
-      })
     }
     setupEditMode()
   }, [editMode, initialValues, addressBooks, engine, methods])
@@ -214,6 +186,56 @@ function OrderForm(props) {
     const timer = setTimeout(() => setShowAll(true), 100)
     return () => clearTimeout(timer)
   }, [])
+
+  const handleReset = React.useCallback(() => {
+
+    if (editMode) {
+      const resetValues = OrderEngine.transformLoadedData(initialValues)
+      methods.reset({ ...defaultOrderValue, ...resetValues })
+      setTimeout(async () => {
+        await setupEditMode()
+        requestAnimationFrame(() => {
+          if (customerRef.current) customerRef.current.resetCustomer()
+          if (accessorialRef.current) accessorialRef.current.loadRateSheet(); accessorialRef.current.resetFreightCharges()
+          if (calculationRef.current) calculationRef.current.recalculate()
+        })
+      }, 100)
+
+    } else {
+      methods.reset(defaultOrderValue)
+
+      engine.freights = defaultOrderValue.freights
+      engine.isManualSkid = false
+      engine.overrideTotalPiecesSkid = 0
+      engine.isManualFreightRate = false
+      engine.override_freight_rate = 0
+      engine.isManualFuelSurcharge = false
+      engine.override_fuel_surcharge = 0
+      engine.isNoCharge = false
+      engine.service_type = 'Regular'
+      engine.directKM = 0
+      engine.otherAccessorialsCharges = []
+      engine.shipper_city = ''
+      engine.receiver_city = ''
+      engine.receiverProvince = ''
+      engine.customerRateSheets = []
+      engine.accessorialsCharge = []
+      engine.customer_vehicle_types = []
+      engine.customer = null
+
+      shipperSelectValue.current = null
+      receiverSelectValue.current = null
+
+      requestAnimationFrame(() => {
+        if (calculationRef.current) {
+          calculationRef.current.recalculate()
+        }
+      })
+    }
+  }, [editMode, initialValues, methods, engine, addressBooks, calculationRef, accessorialRef])
+
+  console.log(engine.customer);
+
 
   return (
     <FormProvider {...methods}>
@@ -251,6 +273,7 @@ function OrderForm(props) {
               engine={engine}
               editMode={editMode}
               accessorialRef={accessorialRef}
+              customerRef={customerRef}
               enqueueSnackbar={enqueueSnackbar}
             />
           </WizardCard>
@@ -350,7 +373,9 @@ function OrderForm(props) {
             {editMode &&
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <WizardCard minHeight={200} title='Straight Bill of Lading Consignment'>
-                  <Consignment />
+                  <Consignment
+                    order_id={props.order_id}
+                  />
                 </WizardCard>
               </Grid>
             }
@@ -384,7 +409,7 @@ function OrderForm(props) {
                   id='save-order-action'
                   isLoading={methods.formState?.isSubmitting}
                 >
-                  Save & Create Another
+                  Save & Exist
                 </SubmitButton>
               </Grid>
             )}
@@ -395,7 +420,7 @@ function OrderForm(props) {
                 size='small'
                 disabled={methods.formState?.isSubmitting}
                 textTransform='capitalize'
-                onClick={() => methods.reset()}
+                onClick={handleReset}
               >
                 Reset
               </StyledButton>
@@ -407,4 +432,4 @@ function OrderForm(props) {
   )
 }
 
-export default React.memo(OrderForm)
+export default OrderForm

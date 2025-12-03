@@ -37,7 +37,6 @@ export default class OrderEngine {
     get overrideTotalPiecesSkid() { return this.request['override_total_skid_pieces'] }
 
     set override_fuel_surcharge(fs) { this.request['override_fuel_surcharge'] = fs }
-    set freight_rate(fr) { this.request['freight_rate'] = fr }
     set override_freight_rate(ofr) { this.request['override_freight_rate'] = ofr }
     set isManualFreightRate(fr) { this.request['manual_freight_rate'] = fr }
     set isManualFuelSurcharge(fr) { this.request['manual_fuel_surcharge'] = fr }
@@ -899,6 +898,48 @@ export default class OrderEngine {
             })
         })
         return vtypes
+    }
+
+    static transformLoadedData = (data) => {
+      if (!data) return {}
+    
+      return {
+        ...data,
+        create_date: data.create_date ? new Date(data.create_date) : new Date(),
+        pickup_date: data.pickup_date ? new Date(data.pickup_date) : new Date(),
+        delivery_date: data.delivery_date ? new Date(data.delivery_date) : new Date(),
+        pickup_at: data.pickup_at ? new Date(data.pickup_at) : null,
+        delivery_at: data.delivery_at ? new Date(data.delivery_at) : null,
+        billing_invoice_date: data.billing_invoice_date ? new Date(data.billing_invoice_date) : new Date(),
+    
+        pickup_in: data.pickup_in ? data.pickup_in : null,
+        pickup_out: data.pickup_out ? (data.pickup_out.includes('T') ? moment(data.pickup_out).format('HH:mm') : data.pickup_out) : null,
+        delivery_in: data.delivery_in ? (data.delivery_in.includes('T') ? moment(data.delivery_in).format('HH:mm') : data.delivery_in) : null,
+        delivery_out: data.delivery_out ? (data.delivery_out.includes('T') ? moment(data.delivery_out).format('HH:mm') : data.delivery_out) : null,
+    
+        reference_numbers: data.reference_numbers || [],
+        pickup_appointment_numbers: data.pickup_appointment_numbers || [],
+        delivery_appointment_numbers: data.delivery_appointment_numbers || [],
+        freights: data.freights && data.freights.length > 0 ? data.freights : defaultOrderValue.freights,
+        accessorials_customer: data.accessorials_customer || [],
+        vehicle_types_customer: data.customer_vehicle_types || [],
+        additional_service_charges: data.additional_service_charges || [],
+    
+        quote: Boolean(data.quote),
+        is_crossdock: Boolean(data.is_crossdock),
+        is_extra_stop: Boolean(data.is_extra_stop),
+        pickup_appointment: Boolean(data.pickup_appointment),
+        delivery_appointment: Boolean(data.delivery_appointment),
+        is_pickup: Boolean(data.is_pickup),
+        is_delivery: Boolean(data.is_delivery),
+        is_same_carrier: Boolean(data.is_same_carrier),
+        is_manual_skid: Boolean(data.is_manual_skid),
+        no_charges: Boolean(data.no_charges),
+        manual_charges: Boolean(data.manual_charges),
+        manual_fuel_surcharges: Boolean(data.manual_fuel_surcharges),
+        billing_invoiced: Boolean(data.billing_invoiced),
+        files: data.files || []
+      }
     }
 
 }
