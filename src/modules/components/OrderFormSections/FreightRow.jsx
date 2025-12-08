@@ -147,14 +147,11 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
           control={control}
           render={({ field }) => (
             <TextInput
+              {...field}
+              value={field.value || ''}
               label='Description'
               variant='outlined'
               fullWidth
-              value={getCurrentValue('description') || ''}
-              onChange={(e) => {
-                field.onChange(e.target.value)
-                handleFieldChange('description', e.target.value)
-              }}
             />
           )}
         />

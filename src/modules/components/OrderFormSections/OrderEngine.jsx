@@ -1,5 +1,6 @@
 import FuelSurchargeAPI from '../../apis/FuelSurcharges.api'
 import moment from "moment"
+import { orderFields } from './OrderFields'
 
 export default class OrderEngine {
 
@@ -37,7 +38,6 @@ export default class OrderEngine {
     get overrideTotalPiecesSkid() { return this.request['override_total_skid_pieces'] }
 
     set override_fuel_surcharge(fs) { this.request['override_fuel_surcharge'] = fs }
-    set freight_rate(fr) { this.request['freight_rate'] = fr }
     set override_freight_rate(ofr) { this.request['override_freight_rate'] = ofr }
     set isManualFreightRate(fr) { this.request['manual_freight_rate'] = fr }
     set isManualFuelSurcharge(fr) { this.request['manual_fuel_surcharge'] = fr }
@@ -754,7 +754,6 @@ export default class OrderEngine {
     static format_request = (data) => {
         let request =
         {
-            // 100
             user_id: data.user_id,
             order_number: data.order_number,
             create_date: data.create_date,
@@ -777,7 +776,6 @@ export default class OrderEngine {
             shipper_phone_number: data.shipper_phone_number,
             shipper_special_instructions: data.shipper_special_instructions,
 
-            // is_extra_stop: data.is_extra_stop,
             extra_stop_name: data.extra_stop_name,
             extra_stop_email: data.extra_stop_email,
             extra_stop_contact_name: data.extra_stop_contact_name,
@@ -803,10 +801,6 @@ export default class OrderEngine {
             pickup_terminal: data.pickup_terminal,
             pickup_appointment: data.pickup_appointment,
             pickup_appointment_numbers: data.pickup_appointment_numbers,
-
-            // is_pickup: data.is_pickup,
-            // is_delivery: data.is_delivery,
-            // is_same_carrier: data.is_same_carrier, special_instructions
 
             interliner_id: data.interliner_id,
             interliner_special_instructions: data.interliner_special_instructions,
@@ -901,4 +895,83 @@ export default class OrderEngine {
         return vtypes
     }
 
+    static transformLoadedData = (data) => {
+        if (!data) return {}
+
+        return {
+            ...data,
+            create_date: data.create_date ? moment(data.create_date).toISOString() : moment(new Date()).toISOString(),
+            pickup_date: data.pickup_date ? moment(data.pickup_date).toISOString() : moment(new Date()).toISOString(),
+            delivery_date: data.delivery_date ? moment(data.delivery_date).toISOString() : moment(new Date()).toISOString(),
+            pickup_at: data.pickup_at ? moment(data.pickup_at).toISOString() : null,
+            delivery_at: data.delivery_at ? moment(data.delivery_at).toISOString() : null,
+            billing_invoice_date: data.billing_invoice_date ? moment(data.billing_invoice_date).toISOString() : moment(new Date()).toISOString(),
+
+            pickup_in: data.pickup_in ? data.pickup_in : null,
+            pickup_out: data.pickup_out ? (data.pickup_out.includes('T') ? moment(data.pickup_out).format('HH:mm') : data.pickup_out) : null,
+            delivery_in: data.delivery_in ? (data.delivery_in.includes('T') ? moment(data.delivery_in).format('HH:mm') : data.delivery_in) : null,
+            delivery_out: data.delivery_out ? (data.delivery_out.includes('T') ? moment(data.delivery_out).format('HH:mm') : data.delivery_out) : null,
+
+            reference_numbers: data.reference_numbers || [],
+            pickup_appointment_numbers: data.pickup_appointment_numbers || [],
+            delivery_appointment_numbers: data.delivery_appointment_numbers || [],
+            freights: data.freights && data.freights.length > 0 ? data.freights : defaultOrderValue.freights,
+            accessorials_customer: data.accessorials_customer || [],
+            vehicle_types_customer: data.customer_vehicle_types || [],
+            additional_service_charges: data.additional_service_charges || [],
+
+            quote: Boolean(data.quote),
+            is_crossdock: Boolean(data.is_crossdock),
+            is_extra_stop: Boolean(data.is_extra_stop),
+            pickup_appointment: Boolean(data.pickup_appointment),
+            delivery_appointment: Boolean(data.delivery_appointment),
+            is_pickup: Boolean(data.is_pickup),
+            is_delivery: Boolean(data.is_delivery),
+            is_same_carrier: Boolean(data.is_same_carrier),
+            is_manual_skid: Boolean(data.is_manual_skid),
+            no_charges: Boolean(data.no_charges),
+            manual_charges: Boolean(data.manual_charges),
+            manual_fuel_surcharges: Boolean(data.manual_fuel_surcharges),
+            billing_invoiced: Boolean(data.billing_invoiced),
+            files: data.files || []
+        }
+    }
+
+    static getOrderUpdates = (touchedFields, oldData, newData) => {
+        const section_fields = {
+            freights: ['total_pieces', 'total_actual_weight', 'total_pieces_skid', 'total_chargeable_weight', 'total_weight_in_kg', 'service_type', 'is_manual_skid'],
+            freight_charges: ['sub_total', 'provincial_tax', 'federal_tax', 'grand_total', 'no_charges', 'manual_charges', 'manual_fuel_surcharges'],
+        }
+
+        let sections_changed = new Set()
+        const fieldsTouched = Object.keys(touchedFields).filter(tf => tf !== 'freights' || tf !== 'customer_accessorials' || tf !== 'customer_vehicle_types' || tf !== 'additional_service_charges' || tf !== 'freight_rate' || tf !== 'freight_fuel_surcharge')
+
+        for (let field of fieldsTouched) {
+            if (!sections_changed.has(orderFields[field])) {
+                let oldValue = oldData[field]
+                let newValue = newData[field]
+                if (typeof oldValue === 'object' || typeof newValue === 'object') {
+                    oldValue = JSON.stringify(oldValue)
+                    newValue = JSON.stringify(newValue)
+                }
+                if (oldValue !== newValue) {
+                    if (orderFields[field]) sections_changed.add(orderFields[field])
+                }
+            }
+        }
+        for (let [section, fields] of Object.entries(section_fields)) {
+            if (!sections_changed.has(section)) {
+                for (let sfield of fields) {
+                    let oldValue = oldData[sfield]
+                    let newValue = newData[sfield]
+                    if (oldValue !== newValue) {
+                        sections_changed.add(section)
+                        break
+                    }
+                }
+            }
+        }
+        return Array.from(sections_changed)
+    }
 }
+

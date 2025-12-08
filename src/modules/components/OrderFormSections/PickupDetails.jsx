@@ -14,7 +14,6 @@ function PickupDetails(props) {
   const {
     control,
     setValue,
-    register
   } = useFormContext()
 
   const { data } = useTerminals()

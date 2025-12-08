@@ -11,12 +11,11 @@ function ClientInfo(props) {
 
   const {
     control,
-    getValues
+    getValues,
+    setValue
   } = useFormContext()
 
   const [selectedCustomer, setSelectedCustomer] = React.useState(null)
-  const [customerId, setCustomerId] = React.useState(getValues('customer_id'))
-  // const isInitialLoad = React.useRef(true)
 
   React.useEffect(() => {
     if (isError && error) {
@@ -27,15 +26,25 @@ function ClientInfo(props) {
     }
   }, [isError, error])
 
-  React.useEffect(() => {
+  const handleCustomer = React.useCallback(() => {
+    const customerId = getValues('customer_id')
     if (data && customerId) {
       const customer = data.find(c => c.id === Number(customerId))
       if (customer) {
         setSelectedCustomer(customer)
         engine.customer = customer
+        setValue('customer_number', customer.account_number)
       }
     }
-  }, [data, customerId, engine])
+  }, [data, engine])
+
+  React.useEffect(() => {
+    handleCustomer()
+  }, [data, engine])
+
+  React.useImperativeHandle(props.customerRef, () => ({
+    resetCustomer: handleCustomer
+  }), [handleCustomer])
 
   return (
     <Grid container spacing={3}>
@@ -54,7 +63,7 @@ function ClientInfo(props) {
                 onChange={(_, value) => {
                   unstable_batchedUpdates(async () => {
                     field.onChange(value?.id || '')
-                    setCustomerId(value?.id || '')
+                    setValue('customer_language', value.language)
                     setSelectedCustomer(value)
                     engine.customer = value
                     props.accessorialRef.current?.loadRateSheet()

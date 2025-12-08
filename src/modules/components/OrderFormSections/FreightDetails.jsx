@@ -79,7 +79,6 @@ function FreightDetails(props) {
     control,
     setValue,
     getValues,
-    register
   } = useFormContext()
 
   const theme = useTheme()
@@ -275,7 +274,6 @@ function FreightDetails(props) {
                 key={item.id}
                 remove={handleRemoveFreight}
                 control={control}
-                register={register}
                 index={index}
                 fields={fields}
                 setValue={setValue}

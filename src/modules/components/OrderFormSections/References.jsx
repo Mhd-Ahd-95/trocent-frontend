@@ -40,11 +40,18 @@ export default function References(props) {
         /> */}
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-        <TextInput
-          label='Caller'
-          variant='outlined'
-          fullWidth
-          {...register('caller')}
+        <Controller
+          name='caller'
+          control={control}
+          render={({ field }) => (
+            <TextInput
+              {...field}
+              value={field.value || ''}
+              label='Caller'
+              variant='outlined'
+              fullWidth
+            />
+          )}
         />
       </Grid>
     </Grid>

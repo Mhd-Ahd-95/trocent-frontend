@@ -12,7 +12,6 @@ import { useTerminals } from '../../hooks/useTerminals'
 function DeliveryDetails(props) {
 
   const {
-    register,
     control,
     setValue,
   } = useFormContext()

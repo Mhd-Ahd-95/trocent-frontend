@@ -209,7 +209,8 @@ function FreightCharges(props) {
     })
   }
 
-  React.useEffect(() => {
+  // #######################################################################
+  const handleVehicleTypes = React.useCallback(() => {
     let vehicleTypes = []
     if (engine.customer && fetchRateSheet.customer_id) {
 
@@ -219,24 +220,17 @@ function FreightCharges(props) {
 
       vehicleTypes = cVType.map(vt => {
         const vtfound = savedCustomerVehicleType?.length > 0 ? savedCustomerVehicleType.find(svt => svt?.vehicle_type_id === vt.vehicle_id && customerId === svt?.customer_id) : null
-        if (vtfound) {
-          return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: true })
-        }
-        else {
-          return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: false })
-        }
+        if (vtfound) return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: true })
+        else return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: false })
       })
 
-      if (props.editMode) {
-        engine.customer_vehicle_types = vehicleTypes
-        // props.calculationRef.current?.recalculate()
-      }
+      if (props.editMode) engine.customer_vehicle_types = vehicleTypes
     }
     replaceCustomerVehicleTypes(vehicleTypes)
   }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerVehicleTypes])
 
-
-  React.useEffect(() => {
+// #######################################################################
+  const handleAccessorials = React.useCallback(() => {
     let accessorials = []
     if (engine.customer && fetchRateSheet.customer_id) {
 
@@ -259,12 +253,21 @@ function FreightCharges(props) {
               : ({ ...acc, charge_name: acc.access_name, charge_amount: 0, charge_quantity: 0, is_included: false, })
         }
       })
-      if (props.editMode) {
-        engine.accessorialsCharge = accessorials
-        // props.calculationRef.current?.recalculate()
-      }
+      if (props.editMode) engine.accessorialsCharge = accessorials
     }
     replaceCustomerAccessorials(accessorials.sort((a, b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null))
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
+
+
+  const resetAccessorialsAndVehicleTypes = () => {
+    requestAnimationFrame(() => {
+      handleAccessorials()
+      handleVehicleTypes()
+    })
+  }
+
+  React.useEffect(() => {
+    resetAccessorialsAndVehicleTypes()
   }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
 
   React.useEffect(() => {
@@ -292,8 +295,9 @@ function FreightCharges(props) {
     change: handleChange,
     recalculateAccessorials: triggerCalculateAccessorials,
     handleChangeNoCharge: handleChangeNoCharge,
-    loadRateSheet: handleLoadRateSheet
-  }), [handleChange, triggerCalculateAccessorials, handleChangeNoCharge, handleLoadRateSheet])
+    loadRateSheet: handleLoadRateSheet,
+    resetFreightCharges: resetAccessorialsAndVehicleTypes
+  }), [handleChange, triggerCalculateAccessorials, handleChangeNoCharge, handleLoadRateSheet, resetAccessorialsAndVehicleTypes])
 
   return (
     <Grid container spacing={3}>
