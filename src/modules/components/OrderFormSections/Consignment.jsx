@@ -121,8 +121,9 @@ function Consignment(props) {
 
     const downloadBillAsPDF = async () => {
         const currentData = getValues();
+        const language = getValues('customer_language') ?? 'en'
         try {
-            const pdf = await generateBillOfLadingPDF(currentData);
+            const pdf = await generateBillOfLadingPDF(currentData, language);
             pdf.save(`connaissement-${currentData.order_number || 'bill'}.pdf`);
         } catch (error) {
             console.error("PDF generation error:", error);

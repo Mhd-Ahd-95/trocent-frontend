@@ -365,18 +365,25 @@ function BasicInfo(props) {
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-        <TextField
-          label='Internal Note'
-          variant='outlined'
-          {...register('internal_note')}
-          multiline
-          minRows={2}
-          maxRows={2}
-          fullWidth
-          sx={{
-            '& .MuiInputLabel-root': {
-              fontSize: '13px'
-            }
+        <Controller
+          name='internal_note'
+          control={control}
+          render={({ field }) => {
+            return <TextField
+              {...field}
+              value={field.value || ''}
+              label='Internal Note'
+              variant='outlined'
+              multiline
+              minRows={2}
+              maxRows={2}
+              fullWidth
+              sx={{
+                '& .MuiInputLabel-root': {
+                  fontSize: '13px'
+                }
+              }}
+            />
           }}
         />
       </Grid>

@@ -13,6 +13,7 @@ export default function EditOrder() {
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
     const { data, isLoading, isRefetching, error, isError } = useOrder(id)
+    const { update } = useOrderMutations()
 
     React.useEffect(() => {
         if (isError && error) {
@@ -39,6 +40,7 @@ export default function EditOrder() {
                         <OrderForm
                             initialValues={{ ...data }}
                             editMode
+                            submit={async (payload) => await update.mutateAsync({ id, payload })}
                             order_id={id}
                         />
                     </Grid>

@@ -60,7 +60,7 @@ export default function OrdersView() {
                 field: 'order_status',
                 flex: 1,
                 minWidth: 90,
-                renderCell: params => params.value ? <CustomCell>{params.value}</CustomCell> : ''
+                renderCell: params => params.value ? <CustomCell color={params.value === 'Canceled' ? 'red' : params.value === 'Entered' ? 'blue' : params.value === 'Dispatched' ? 'green' : null}>{params.value}</CustomCell> : ''
               },
               {
                 headerName: 'Shipper Name',
@@ -102,7 +102,7 @@ export default function OrdersView() {
               },
               {
                 headerName: 'Created At',
-                field: 'created_at',
+                field: 'create_date',
                 flex: 1,
                 minWidth: 160,
                 valueFormatter: val => moment(val).format('MMM DD, YYYY')

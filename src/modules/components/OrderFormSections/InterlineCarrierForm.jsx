@@ -270,6 +270,7 @@ export function InterlineCarrierForm(props) {
                 render={({ field, fieldState }) => (
                   <TextInput
                     {...field}
+                    value={field.value || ''}
                     label='Reference/Invoice #'
                     variant='outlined'
                     fullWidth

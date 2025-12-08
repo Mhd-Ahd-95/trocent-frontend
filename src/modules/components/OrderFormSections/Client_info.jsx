@@ -63,6 +63,7 @@ function ClientInfo(props) {
                 onChange={(_, value) => {
                   unstable_batchedUpdates(async () => {
                     field.onChange(value?.id || '')
+                    setValue('customer_language', value.language)
                     setSelectedCustomer(value)
                     engine.customer = value
                     props.accessorialRef.current?.loadRateSheet()

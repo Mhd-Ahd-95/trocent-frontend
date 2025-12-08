@@ -25,46 +25,9 @@ import { defaultOrderValue } from './DefaultOrder'
 import { useSnackbar } from 'notistack'
 import { useAddressBooks } from '../../hooks/useAddressBooks'
 import { useNavigate } from 'react-router-dom'
-import { unstable_batchedUpdates } from 'react-dom'
-
-const setEngineProps = (engine, initialValues) => {
-  if (initialValues.freights) {
-    engine.freights = initialValues.freights
-  }
-
-  if (initialValues.is_manual_skid) {
-    engine.isManualSkid = initialValues.is_manual_skid
-    engine.overrideTotalPiecesSkid = initialValues.total_pieces_skid || 0
-  }
-
-  if (initialValues.manual_charges) {
-    engine.isManualFreightRate = initialValues.manual_charges
-    engine.override_freight_rate = initialValues.freight_rate || 0
-  }
-
-  if (initialValues.manual_fuel_surcharges) {
-    engine.isManualFuelSurcharge = initialValues.manual_fuel_surcharges
-    engine.override_fuel_surcharge = initialValues.freight_fuel_surcharge || 0
-  }
-
-  if (initialValues.no_charges) {
-    engine.isNoCharge = initialValues.no_charges
-  }
-
-  if (initialValues.service_type) {
-    engine.service_type = initialValues.service_type
-  }
-
-  if (initialValues.direct_km) {
-    engine.directKM = initialValues.direct_km
-  }
-
-  if (initialValues.additional_service_charges) {
-    engine.otherAccessorialsCharges = initialValues.additional_service_charges
-  }
-}
 
 function OrderForm(props) {
+
   const navigate = useNavigate()
   const { initialValues, submit, editMode } = props
   const [showAll, setShowAll] = React.useState(false)
@@ -76,6 +39,7 @@ function OrderForm(props) {
   const receiverSelectValue = React.useRef(null)
   const isInitialized = React.useRef(false)
   const customerRef = React.useRef(null)
+  const [orderStatus, setOrderStatus] = React.useState(initialValues?.order_status === 'Canceled' ? true : false)
 
   const transformedInitialValues = React.useMemo(() => {
     return editMode ? { ...defaultOrderValue, ...OrderEngine.transformLoadedData(initialValues) } : { ...defaultOrderValue, ...initialValues }
@@ -98,6 +62,7 @@ function OrderForm(props) {
   }, [isError, error, enqueueSnackbar])
 
   const setupEditMode = async () => {
+
     isInitialized.current = true
 
     if (engine.fuelSurchargePromise) {
@@ -114,34 +79,36 @@ function OrderForm(props) {
     engine.service_type = initialValues.service_type
     engine.directKM = initialValues.direct_km
     engine.otherAccessorialsCharges = initialValues.additional_service_charges
+    engine.shipper_city = initialValues.shipper_city
+    engine.receiver_city = initialValues.receiver_city
+    engine.receiverProvince = initialValues.receiver_province
 
-    if (initialValues.shipper_id) {
-      const shipper = addressBooks.find(ab => ab.id === Number(initialValues.shipper_id))
-      if (shipper) {
-        shipperSelectValue.current = shipper
-        engine.shipper_city = initialValues.shipper_city
-        unstable_batchedUpdates(() => {
-          methods.setValue('shipper_address', shipper.address)
-          methods.setValue('shipper_province', shipper.province)
-          methods.setValue('shipper_postal_code', shipper.postal_code)
-          methods.setValue('shipper_no_waiting_time', shipper.no_waiting_time)
-        })
-      }
+    shipperSelectValue.current = {
+      id: initialValues.shipper_id,
+      city: initialValues.shipper_city,
+      address: initialValues.shipper_address,
+      province: initialValues.shipper_province,
+      postal_code: initialValues.shipper_postal_code,
+      no_waiting_time: initialValues.shipper_no_waiting_time,
+      email: initialValues.shipper_email,
+      contact_name: initialValues.shipper_contact_name,
+      suite: initialValues.shipper_suite,
+      phone_number: initialValues.shipper_phone_number,
+      special_instructions: initialValues.shipper_special_instructions
     }
 
-    if (initialValues.receiver_id) {
-      const receiver = addressBooks.find(ab => ab.id === Number(initialValues.receiver_id))
-      if (receiver) {
-        receiverSelectValue.current = receiver
-        engine.receiver_city = receiver.city
-        engine.receiverProvince = receiver.province
-        unstable_batchedUpdates(() => {
-          methods.setValue('receiver_address', receiver.address)
-          methods.setValue('receiver_province', receiver.province)
-          methods.setValue('receiver_postal_code', receiver.postal_code)
-          methods.setValue('receiver_no_waiting_time', receiver.no_waiting_time)
-        })
-      }
+    receiverSelectValue.current = {
+      id: initialValues.receiver_id,
+      city: initialValues.receiver_city,
+      address: initialValues.receiver_address,
+      province: initialValues.receiver_province,
+      postal_code: initialValues.receiver_postal_code,
+      no_waiting_time: initialValues.receiver_no_waiting_time,
+      email: initialValues.receiver_email,
+      contact_name: initialValues.receiver_contact_name,
+      suite: initialValues.receiver_suite,
+      phone_number: initialValues.receiver_phone_number,
+      special_instructions: initialValues.receiver_special_instructions
     }
 
     requestAnimationFrame(() => {
@@ -157,30 +124,6 @@ function OrderForm(props) {
     }
     setupEditMode()
   }, [editMode, initialValues, addressBooks, engine, methods])
-
-  const onSubmit = async (data, e) => {
-    e.preventDefault()
-    const payload = OrderEngine.format_request(data)
-    console.log(payload);
-    try {
-      await submit(payload)
-      navigate('/orders')
-    } catch (err) {
-      console.error('Submit error:', err)
-      enqueueSnackbar(err.message || 'Failed to submit order', { variant: 'error' })
-    }
-  }
-
-  const onError = errors => {
-    const firstErrorField = Object.keys(errors)[0]
-    if (firstErrorField) {
-      const field = document.querySelector(`[name="${firstErrorField}"]`)
-      if (field) {
-        field.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        field.focus({ preventScroll: true })
-      }
-    }
-  }
 
   React.useEffect(() => {
     const timer = setTimeout(() => setShowAll(true), 100)
@@ -234,8 +177,40 @@ function OrderForm(props) {
     }
   }, [editMode, initialValues, methods, engine, addressBooks, calculationRef, accessorialRef])
 
-  console.log(engine.customer);
+  const onSubmit = async (data, e) => {
+    e.preventDefault()
+    let payload = OrderEngine.format_request(data)
+    const action = e?.nativeEvent?.submitter?.id;
+    if (editMode) {
+      const touched = methods.formState.touchedFields
+      const orderUpdates = OrderEngine.getOrderUpdates(touched, initialValues, data)
+      payload['order_updates'] = orderUpdates
+    }
+    // console.log(payload);
+    try {
+      await submit(payload)
+      if (action === 'save-order-action' && !editMode) {
+        handleReset()
+      }
+      else {
+        navigate('/orders')
+      }
+    } catch (err) {
+      console.error('Submit error:', err)
+      enqueueSnackbar(err.message || 'Failed to submit order', { variant: 'error' })
+    }
+  }
 
+  const onError = errors => {
+    const firstErrorField = Object.keys(errors)[0]
+    if (firstErrorField) {
+      const field = document.querySelector(`[name="${firstErrorField}"]`)
+      if (field) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        field.focus({ preventScroll: true })
+      }
+    }
+  }
 
   return (
     <FormProvider {...methods}>
@@ -249,6 +224,9 @@ function OrderForm(props) {
         {editMode &&
           <Grid size={12}>
             <HeaderForm
+              order_id={props.order_id}
+              orderStatus={orderStatus}
+              setOrderStatus={setOrderStatus}
             />
           </Grid>
         }
@@ -389,10 +367,10 @@ function OrderForm(props) {
                 type='submit'
                 variant='contained'
                 color='primary'
-                id='submit-order-action'
+                id='save-order-action'
                 size='small'
                 isLoading={methods.formState?.isSubmitting}
-                disabled={methods.formState?.isSubmitting}
+                disabled={methods.formState?.isSubmitting || orderStatus}
                 textTransform='capitalize'
               >
                 {editMode ? 'Update Order' : 'Create Order'}
@@ -406,7 +384,7 @@ function OrderForm(props) {
                   color='secondary'
                   size='small'
                   textTransform='capitalize'
-                  id='save-order-action'
+                  id='submit-order-action'
                   isLoading={methods.formState?.isSubmitting}
                 >
                   Save & Exist

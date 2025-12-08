@@ -374,11 +374,18 @@ export default function TimeAndBilling(props) {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-                <TextInput
-                  label='Invoice #'
-                  fullWidth
-                  variant='outlined'
-                  {...register('billing_invoice')}
+                <Controller
+                  name='billing_invoice'
+                  control={control}
+                  render={({ field }) => (
+                    <TextInput
+                      {...field}
+                      value={field.value || ''}
+                      label='Invoice #'
+                      fullWidth
+                      variant='outlined'
+                    />
+                  )}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 4 }}>
