@@ -36,9 +36,12 @@ function PickupDetails(props) {
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
               onChange={date => field.onChange(date ? date.toISOString() : null)}
+              onClose={() => field.onBlur()}
+              name='pickup_date'
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
@@ -65,10 +68,12 @@ function PickupDetails(props) {
               label='Time From'
               value={field.value ? moment(field.value, 'HH:mm') : null}
               onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
@@ -96,9 +101,11 @@ function PickupDetails(props) {
               value={field.value ? moment(field.value, 'HH:mm') : null}
               onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
               ampm={false}
+              onClose={() => field.onBlur()}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {

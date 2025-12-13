@@ -19,18 +19,20 @@ function HeaderForm(props) {
     const navigate = useNavigate()
     const [openDrawer, setOpenDrawer] = React.useState(false)
     const [updating, setUpdating] = React.useState({ action: '', loading: false })
+    const authedUser = global.auth.user
+    const [orderUpdates, setOrderUpdates] = React.useState(getValues('order_updates'))
 
     const { patchStatus, duplicateOrder } = useOrderMutations()
 
     const handleStatusChange = async (sts) => {
         try {
             setUpdating({ action: sts, loading: true })
-            const updated = await patchStatus.mutateAsync({ id: order_id, sts: sts })
+            const updated = await patchStatus.mutateAsync({ id: order_id, uid: authedUser.id, sts: sts })
             requestAnimationFrame(() => {
-                const status = updated ? sts : null
-                if (status) {
+                if (updated && updated.length > 0) {
                     setOrderStatus(sts === 'Canceled')
                     setValue('order_status', sts)
+                    setOrderUpdates(updated)
                 }
             })
         } catch (error) {
@@ -41,7 +43,6 @@ function HeaderForm(props) {
     }
 
     const duplicate = async () => {
-        const authedUser = global.auth.user
         try {
             setUpdating({ action: 'duplicate', loading: true })
             await duplicateOrder.mutateAsync({
@@ -98,7 +99,6 @@ function HeaderForm(props) {
         }
     }
 
-    const orderUpdates = getValues('order_updates')
     const theme = useTheme()
 
     return (
@@ -184,7 +184,7 @@ function HeaderForm(props) {
                                         {format_order_updates(ou)}
                                     </div>
                                     <div style={{ fontSize: 12, color: colors.grey[600] }}>
-                                        By <b>{ou.uername}</b> — {new Date(ou.created_at).toLocaleString()}
+                                        By <b>{ou.username}</b> — {new Date(ou.created_at).toLocaleString()}
                                     </div>
                                 </div>
                             </div>

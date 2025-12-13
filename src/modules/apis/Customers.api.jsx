@@ -22,6 +22,8 @@ const downloadFile = id => CustomAxios.get(`/api/customers/download-file/${id}`,
 
 const getCustomersNames = () => CustomAxios.get('/api/customers/names')
 
+const customerSearch = (search) => CustomAxios.get(`/api/customers/search/${search}`)
+
 export default {
     getCustomer,
     getCustomers,
@@ -30,5 +32,6 @@ export default {
     deleteCustomer,
     deleteCustomers,
     downloadFile,
-    getCustomersNames
+    getCustomersNames,
+    customerSearch
 }

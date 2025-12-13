@@ -4,22 +4,23 @@ import { Controller } from 'react-hook-form'
 import TextInput from './TextInput'
 
 export default function SearchableInput(props) {
+
   const { label, onSelect, name, control, fieldProp, options: propsOptions, onBlur: propsOnBlur, } = props
   const [options, setOptions] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [selectedValue, setSelectedValue] = useState(null)
 
-  // const fetchSuggestions = query => {
-  //   if (query.length < 2) {
-  //     setOptions([])
-  //     return
-  //   }
-  //   const searching =
-  //     props.options?.filter(opt =>
-  //       opt[fieldProp].toLowerCase().includes(query.toLowerCase())
-  //     ) || []
-  //   setOptions(searching)
-  // }
+  const fetchSuggestions = query => {
+    if (query.length < 2) {
+      setOptions([])
+      return
+    }
+    const searching =
+      props.options?.filter(opt =>
+        opt[fieldProp].toLowerCase().includes(query.toLowerCase())
+      ) || []
+    setOptions(searching)
+  }
 
   return (
     <Controller

@@ -43,6 +43,7 @@ export default function TimeAndBilling(props) {
           control={control}
           render={({ field }) => (
             <TimePicker
+              {...field}
               label='Pickup In'
               value={field.value ? moment(field.value, 'HH:mm') : null}
               onChange={date => {
@@ -53,12 +54,19 @@ export default function TimeAndBilling(props) {
                   setValue('total_pickup', total_pickup)
                   setValue('total_delivery', total_delivery)
                   setValue('total_time', total_time)
+                  const customerAccessorials = getValues('customer_accessorials') || []
+                  const accessTimeBasedIndex = customerAccessorials.findIndex(ca => ca.type === 'time_based' && ca.is_included)
+                  if (accessTimeBasedIndex !== -1) {
+                    props.accessorialRef.current?.change(true, customerAccessorials[accessTimeBasedIndex], accessTimeBasedIndex)
+                  }
                 })
               }}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -80,6 +88,7 @@ export default function TimeAndBilling(props) {
           control={control}
           render={({ field }) => (
             <TimePicker
+              {...field}
               label='Pickup Out'
               value={field.value ? moment(field.value, 'HH:mm') : null}
               onChange={date => {
@@ -90,12 +99,19 @@ export default function TimeAndBilling(props) {
                   setValue('total_pickup', total_pickup)
                   setValue('total_delivery', total_delivery)
                   setValue('total_time', total_time)
+                  const customerAccessorials = getValues('customer_accessorials') || []
+                  const accessTimeBasedIndex = customerAccessorials.findIndex(ca => ca.type === 'time_based' && ca.is_included)
+                  if (accessTimeBasedIndex !== -1) {
+                    props.accessorialRef.current?.change(true, customerAccessorials[accessTimeBasedIndex], accessTimeBasedIndex)
+                  }
                 })
               }}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -117,13 +133,16 @@ export default function TimeAndBilling(props) {
           control={control}
           render={({ field }) => (
             <DatePicker
+              {...field}
               label='Pickup At'
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
               onChange={date => field.onChange(date ? date.toISOString() : null)}
+              onClose={() => field.onBlur()}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -155,12 +174,19 @@ export default function TimeAndBilling(props) {
                   setValue('total_pickup', total_pickup)
                   setValue('total_delivery', total_delivery)
                   setValue('total_time', total_time)
+                  const customerAccessorials = getValues('customer_accessorials') || []
+                  const accessTimeBasedIndex = customerAccessorials.findIndex(ca => ca.type === 'time_based' && ca.is_included)
+                  if (accessTimeBasedIndex !== -1) {
+                    props.accessorialRef.current?.change(true, customerAccessorials[accessTimeBasedIndex], accessTimeBasedIndex)
+                  }
                 })
               }}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -192,12 +218,19 @@ export default function TimeAndBilling(props) {
                   setValue('total_pickup', total_pickup)
                   setValue('total_delivery', total_delivery)
                   setValue('total_time', total_time)
+                  const customerAccessorials = getValues('customer_accessorials') || []
+                  const accessTimeBasedIndex = customerAccessorials.findIndex(ca => ca.type === 'time_based' && ca.is_included)
+                  if (accessTimeBasedIndex !== -1) {
+                    props.accessorialRef.current?.change(true, customerAccessorials[accessTimeBasedIndex], accessTimeBasedIndex)
+                  }
                 })
               }}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -223,9 +256,11 @@ export default function TimeAndBilling(props) {
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
               onChange={date => field.onChange(date ? date.toISOString() : null)}
+              onClose={() => field.onBlur()}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   sx: {
                     '& .MuiPickersOutlinedInput-root': { height: 45 },
                     '& .MuiOutlinedInput-input': {
@@ -351,9 +386,11 @@ export default function TimeAndBilling(props) {
                       views={['year', 'month', 'day']}
                       value={field.value ? moment(field.value) : null}
                       onChange={date => field.onChange(date ? date.toISOString() : null)}
+                      onClose={() => field.onBlur()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
+                          onBlur: field.onBlur,
                           sx: {
                             '& .MuiPickersOutlinedInput-root': {
                               height: 45

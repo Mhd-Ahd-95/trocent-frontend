@@ -210,7 +210,7 @@ function FreightCharges(props) {
   }
 
   // #######################################################################
-  const handleVehicleTypes = React.useCallback(() => {
+  const handleVehicleTypes = () => {
     let vehicleTypes = []
     if (engine.customer && fetchRateSheet.customer_id) {
 
@@ -227,10 +227,10 @@ function FreightCharges(props) {
       if (props.editMode) engine.customer_vehicle_types = vehicleTypes
     }
     replaceCustomerVehicleTypes(vehicleTypes)
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerVehicleTypes])
+  }
 
-// #######################################################################
-  const handleAccessorials = React.useCallback(() => {
+  // #######################################################################
+  const handleAccessorials = () => {
     let accessorials = []
     if (engine.customer && fetchRateSheet.customer_id) {
 
@@ -256,19 +256,19 @@ function FreightCharges(props) {
       if (props.editMode) engine.accessorialsCharge = accessorials
     }
     replaceCustomerAccessorials(accessorials.sort((a, b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null))
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
+  }
 
 
-  const resetAccessorialsAndVehicleTypes = () => {
+  const resetAccessorialsAndVehicleTypes = React.useCallback(() => {
     requestAnimationFrame(() => {
       handleAccessorials()
       handleVehicleTypes()
     })
-  }
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials, replaceCustomerVehicleTypes])
 
   React.useEffect(() => {
     resetAccessorialsAndVehicleTypes()
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials, replaceCustomerVehicleTypes])
 
   React.useEffect(() => {
     if (fetchRateSheet.customer_id && fetchRateSheet.shipper_city && fetchRateSheet.receiver_city && rateSheets?.length > 0) {
@@ -291,13 +291,21 @@ function FreightCharges(props) {
     }
   }
 
+  const handleResetStates = () => {
+    unstable_batchedUpdates(() => {
+      setCharges({ no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges') })
+      setFetchRateSheet({ customer_id: getValues('customer_id'), shipper_city: getValues('shipper_city'), receiver_city: getValues('receiver_city') })
+    })
+  }
+
   React.useImperativeHandle(props.accessorialRef, () => ({
     change: handleChange,
     recalculateAccessorials: triggerCalculateAccessorials,
     handleChangeNoCharge: handleChangeNoCharge,
     loadRateSheet: handleLoadRateSheet,
-    resetFreightCharges: resetAccessorialsAndVehicleTypes
-  }), [handleChange, triggerCalculateAccessorials, handleChangeNoCharge, handleLoadRateSheet, resetAccessorialsAndVehicleTypes])
+    resetFreightCharges: resetAccessorialsAndVehicleTypes,
+    resetStates: handleResetStates
+  }), [handleChange, triggerCalculateAccessorials, handleChangeNoCharge, handleLoadRateSheet, resetAccessorialsAndVehicleTypes, handleResetStates])
 
   return (
     <Grid container spacing={3}>

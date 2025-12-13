@@ -2,9 +2,6 @@ import React from 'react'
 import {
   Grid,
   TextField,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
   InputAdornment,
   CircularProgress,
   Autocomplete
@@ -16,8 +13,11 @@ import AppBar from '@mui/material/AppBar'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Box from '@mui/material/Box'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 import { AttachMoney } from '@mui/icons-material'
+import { useSnackbar } from 'notistack'
+import { useInterlinerSearch } from '../../hooks/useInterliners'
+import { unstable_batchedUpdates } from 'react-dom'
 
 const Appbar = styled(AppBar)(({ theme }) => ({
   borderRadius: 10,
@@ -43,12 +43,47 @@ const Fieldset = styled('fieldset')(({ theme }) => ({
 }))
 
 export function InterlineCarrierForm(props) {
-  const { interline_type, label, control, data, loading } = props
 
+  const { interline_type, label, control, editMode, getValues } = props
+  const { enqueueSnackbar } = useSnackbar()
+  
   const inputName = nm => interline_type ? `interliner_${interline_type}_${nm}` : `interliner_${nm}`
+  const [search, setSearch] = React.useState('')
+  const [inputValue, setInputValue] = React.useState('')
+  const [selectedInterliner, setSelectedInterliner] = React.useState(null)
 
-  const interlinerId = useWatch({ control, name: inputName('id') })
-  const selectedInterliner = data?.find(c => c.id === Number(interlinerId))
+  const { data, isLoading: isSearching, isFetching, isError, error } = useInterlinerSearch(search)
+
+  React.useEffect(() => {
+    if (isError && error) {
+      const message = error.response?.data?.message
+      const status = error.response?.status
+      const errorMessage = message ? `${message} - ${status}` : error.message
+      enqueueSnackbar(errorMessage, { variant: 'error' })
+    }
+  }, [isError, error, enqueueSnackbar])
+
+   const handleInterliner = React.useCallback(() => {
+      const interlinerId = getValues(inputName('id'))
+      if (editMode && interlinerId) {
+        const interliner = getValues(interline_type ? `interliner_${interline_type}` : 'interliner')
+        if (interliner) {
+          setSelectedInterliner(interliner)
+        }
+      }
+    }, [getValues])
+
+    React.useEffect(() => {
+      if (editMode){
+        handleInterliner()
+      }
+    }, [editMode, handleInterliner])
+
+  const isLoading = isSearching || isFetching
+
+  React.useImperativeHandle(props.interlinerRef, () => ({
+      resetInterliner: handleInterliner
+    }), [handleInterliner])
 
   return (
     <Grid container spacing={2} mt={2}>
@@ -60,19 +95,41 @@ export function InterlineCarrierForm(props) {
           render={({ field, fieldState }) => {
             return (
               <Autocomplete
-                {...field}
                 options={data || []}
-                loading={loading}
-                value={data?.find((c) => c.id === Number(field.value)) || ''}
-                onChange={(_, value) => { field.onChange(value?.id) }}
-                getOptionLabel={option =>
-                  option ? `${option.name}` : ''
+                loading={isLoading}
+                value={selectedInterliner}
+                inputValue={inputValue || ''}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === 'input') {
+                    setInputValue(newInputValue)
+                    setSearch(newInputValue)
+                  } else if (reason === 'reset') {
+                    setInputValue(newInputValue)
+                  }
+                }}
+                onChange={(_, value) => {
+                  unstable_batchedUpdates(() => {
+                    field.onChange(value?.id || '')
+                    setSelectedInterliner(value)
+                    if (value) {
+                      setInputValue(`${value.name}`)
+                    }
+                  })
+                }}
+                getOptionLabel={option => option ? `${option.name}` : ''}
+                isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                filterOptions={(x) => x}
+                noOptionsText={
+                  search && search.length < 2
+                    ? 'Type...'
+                    : 'No Interliners found'
                 }
                 renderInput={params => (
                   <TextInput
                     {...params}
                     label={label ? `${label}*` : 'Interliner*'}
                     fullWidth
+                    name={inputName('id')}
                     error={!!fieldState?.error}
                     helperText={fieldState?.error?.message}
                     slotProps={{
@@ -80,7 +137,7 @@ export function InterlineCarrierForm(props) {
                         ...params.InputProps,
                         endAdornment: (
                           <>
-                            {loading ? (
+                            {(isLoading || isFetching) ? (
                               <CircularProgress color="inherit" size={20} />
                             ) : null}
                             {params.InputProps.endAdornment}
@@ -197,47 +254,6 @@ export function InterlineCarrierForm(props) {
           </legend>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-              {/* <FormControl
-                variant='outlined'
-                fullWidth
-                sx={{
-                  '& .MuiInputBase-root': {
-                    height: 45
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    fontSize: '14px'
-                  },
-                  '& .MuiInputLabel-root': {
-                    fontSize: '14px'
-                  },
-                  '& .MuiInputLabel-shrink': {
-                    fontSize: '14px'
-                  },
-                  '& .MuiInputAdornment-root': {
-                    marginLeft: -1
-                  }
-                }}
-              >
-                <InputLabel htmlFor='outlined-adornment-charge'>
-                  Total Charge Amount
-                </InputLabel>
-                <Controller
-                  control={control}
-                  name={inputName('charge_amount')}
-                  render={({ field, fieldState }) => (
-                    <OutlinedInput
-                      {...field}
-                      fullWidth
-                      type='number'
-                      id='outlined-adornment-charge'
-                      endAdornment={
-                        <InputAdornment position='start'>$</InputAdornment>
-                      }
-                      label='Password'
-                    />
-                  )}
-                />
-              </FormControl> */}
               <Controller
                 name={inputName('charge_amount')}
                 control={control}

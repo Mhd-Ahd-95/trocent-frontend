@@ -13,11 +13,14 @@ const deleteInterliner = iid => CustomAxios.delete(`/api/interliners/${iid}`)
 
 const deleteInterliners = ids => CustomAxios.delete('/api/interliners', { data: { ids } })
 
+const searchInterliners = (search) => CustomAxios.get(`/api/interliners/search/${search}`)
+
 export default {
     getInterliner,
     getInterliners,
     createInterliner,
     updateInterliner,
     deleteInterliner,
-    deleteInterliners
+    deleteInterliners,
+    searchInterliners
 }

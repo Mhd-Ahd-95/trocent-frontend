@@ -131,6 +131,7 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
                   {...params}
                   label='Type*'
                   fullWidth
+                  name={`freights.${index}.type`}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                 />

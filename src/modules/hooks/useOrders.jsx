@@ -128,30 +128,32 @@ export function useOrderMutations() {
                 return res.data;
             },
             onSuccess: (updated) => {
-                const orderUpdated = updateOrders(updated)
-                if (hasCachedList) {
-                    queryClient.setQueryData(['orders'], (old = []) => {
-                        old.map((item) => item.id === Number(updated.id) ? orderUpdated : item)
-                    });
+                if (updated) {
+                    const orderUpdated = updateOrders(updated)
+                    if (hasCachedList) {
+                        queryClient.setQueryData(['orders'], (old = []) => {
+                            old.map((item) => item.id === Number(updated.id) ? orderUpdated : item)
+                        });
+                    }
+                    else {
+                        queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
+                    }
+                    queryClient.setQueryData(['order', Number(updated.id)], updated)
+                    enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
-                else {
-                    queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
-                }
-                queryClient.setQueryData(['order', Number(updated.id)], updated)
-                enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
         }
     );
 
     const patchStatus = useMutation({
-        mutationFn: async ({ id, sts }) => {
-            const res = await OrderApi.cancelOrder(id, sts)
+        mutationFn: async ({ id, uid, sts }) => {
+            const res = await OrderApi.cancelOrder(id, uid, sts)
             return res.data
         },
         onSuccess: (updated, payload) => {
             const { id, sts } = payload
-            if (updated) {
+            if (updated && updated.length > 0) {
                 if (hasCachedList) {
                     queryClient.setQueryData(['orders'], (old = []) => {
                         return old.map((item) => item.id === Number(id) ? { ...item, order_status: sts } : item)
@@ -161,7 +163,7 @@ export function useOrderMutations() {
                     queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
                 }
                 queryClient.setQueryData(['order', Number(id)], (old = {}) => {
-                    return ({ ...old, order_status: sts })
+                    return ({ ...old, order_status: sts, orderUpdates: updated })
                 })
                 enqueueSnackbar(`Order has been ${sts} successfully`, { variant: 'success' });
             }
@@ -174,7 +176,8 @@ export function useOrderMutations() {
             const res = await OrderApi.duplicateOrder(id, user_id)
             return res.data.data;
         },
-        onSuccess: (newOrder) => {
+        onSuccess: (newOrder, payload) => {
+            const { id } = payload
             if (hasCachedList) {
                 queryClient.setQueryData(['orders'], (old = []) => {
                     return [newOrder, ...old]
@@ -183,6 +186,7 @@ export function useOrderMutations() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
             }
+            queryClient.invalidateQueries({ queryKey: ['order', Number(id)], exact: true })
             enqueueSnackbar('Order has been duplicated successfully', { variant: 'success' });
         },
         onError: handleError,

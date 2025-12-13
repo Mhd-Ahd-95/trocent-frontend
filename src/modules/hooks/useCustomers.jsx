@@ -61,6 +61,22 @@ export const useCustomersNames = () => {
     });
 }
 
+export const useCustomerSearch = (search) => {
+    const srch = String(search).toLowerCase().trim()
+    return useQuery({
+        queryKey: ['customerSearch', srch],
+        queryFn: async () => {
+            const res = await CustomersApi.customerSearch(srch)
+            return res.data || []
+        },
+        enabled: srch.length >= 2,
+        staleTime: 3 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    })
+}
+
 
 export function useCustomerMutation() {
     const queryClient = useQueryClient()
@@ -95,6 +111,7 @@ export function useCustomerMutation() {
                     return [{ id: newCust.id, name: newCust.name, account_number: newCust.account_number }, ...old]
                 })
             }
+            queryClient.invalidateQueries({queryKey: ['customerSearch'], exact: false})
             enqueueSnackbar('Customer has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -120,6 +137,7 @@ export function useCustomerMutation() {
                         return old.map(item => item.id === Number(updated.id) ? { id: updated.id, name: updated.name, account_number: updated.account_number } : item)
                     })
                 }
+                queryClient.invalidateQueries({queryKey: ['customerSearch'], exact: false})
                 queryClient.setQueryData(['customer', Number(updated.id)], updated)
                 enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },
@@ -142,6 +160,7 @@ export function useCustomerMutation() {
                         old.filter((item) => item.id !== iid)
                     }])
                 }
+                queryClient.invalidateQueries({queryKey: ['customerSearch'], exact: false})
                 queryClient.invalidateQueries({ queryKey: ['customersRateSheets', Number(iid)] })
                 enqueueSnackbar('Customer has been deleted successfully', { variant: 'success' });
             }
@@ -169,6 +188,7 @@ export function useCustomerMutation() {
                     queryClient.removeQueries({ queryKey: ['customersRateSheets', Number(cid)] });
                     queryClient.removeQueries({ queryKey: ['rateSheetsCustomer', Number(cid)] });
                 }
+                queryClient.invalidateQueries({queryKey: ['customerSearch'], exact: false})
                 enqueueSnackbar('Selected Customers been deleted successfully', { variant: 'success' });
             }
         },

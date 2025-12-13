@@ -38,6 +38,9 @@ function OrderForm(props) {
   const shipperSelectValue = React.useRef(null)
   const receiverSelectValue = React.useRef(null)
   const isInitialized = React.useRef(false)
+  const crossdockReceiverRef = React.useRef()
+  const crossdockShipperRef = React.useRef()
+  const interlinerRef = React.useRef()
   const customerRef = React.useRef(null)
   const [orderStatus, setOrderStatus] = React.useState(initialValues?.order_status === 'Canceled' ? true : false)
 
@@ -49,6 +52,8 @@ function OrderForm(props) {
     defaultValues: transformedInitialValues,
     mode: 'onBlur',
   })
+
+  console.log(transformedInitialValues);
 
   const { data: addressBooks, isLoading: addressBooksLoading, isError, error } = useAddressBooks()
 
@@ -139,8 +144,11 @@ function OrderForm(props) {
         await setupEditMode()
         requestAnimationFrame(() => {
           if (customerRef.current) customerRef.current.resetCustomer()
-          if (accessorialRef.current) accessorialRef.current.loadRateSheet(); accessorialRef.current.resetFreightCharges()
-          if (calculationRef.current) calculationRef.current.recalculate()
+          if (crossdockReceiverRef.current) crossdockReceiverRef.current.resetReceiver()
+          if (crossdockShipperRef.current) crossdockShipperRef.current.resetShipper()
+          if (interlinerRef.current) interlinerRef.current.resetInterliner()
+          if (accessorialRef.current) accessorialRef.current.loadRateSheet(); accessorialRef.current.resetFreightCharges(); accessorialRef.current.resetStates()
+          if (calculationRef.current) calculationRef.current.resetState(); calculationRef.current.recalculate()
         })
       }, 100)
 
@@ -186,7 +194,14 @@ function OrderForm(props) {
       const orderUpdates = OrderEngine.getOrderUpdates(touched, initialValues, data)
       payload['order_updates'] = orderUpdates
     }
-    // console.log(payload);
+    console.log(payload);
+    if (payload['order_status'] === 'Billed') {
+      enqueueSnackbar('Order is Billed unable to update', { variant: 'warning' })
+      return
+    }
+    if (payload['order_status'] === 'Pending') {
+      payload['order_status'] = 'Entered'
+    }
     try {
       await submit(payload)
       if (action === 'save-order-action' && !editMode) {
@@ -202,9 +217,20 @@ function OrderForm(props) {
   }
 
   const onError = errors => {
-    const firstErrorField = Object.keys(errors)[0]
+    console.log(errors);
+    let firstErrorField = Object.keys(errors)[0]
+    console.log(firstErrorField);
     if (firstErrorField) {
+      if (firstErrorField === 'freights') {
+        for (let f of errors['freights']) {
+          if (f) {
+            firstErrorField = f?.type?.ref?.name
+            break
+          }
+        }
+      }
       const field = document.querySelector(`[name="${firstErrorField}"]`)
+      console.log(field);
       if (field) {
         field.scrollIntoView({ behavior: 'smooth', block: 'center' })
         field.focus({ preventScroll: true })
@@ -237,10 +263,13 @@ function OrderForm(props) {
               engine={engine}
               accessorialRef={accessorialRef}
               data={addressBooks}
+              editMode={editMode}
               isLoading={addressBooksLoading}
               calculationRef={calculationRef}
               shipperSelectValue={shipperSelectValue}
               receiverSelectValue={receiverSelectValue}
+              crossdockReceiverRef={crossdockReceiverRef}
+              crossdockShipperRef={crossdockShipperRef}
             />
           </WizardCard>
         </Grid>
@@ -269,17 +298,22 @@ function OrderForm(props) {
               engine={engine}
               calculationRef={calculationRef}
               data={addressBooks}
+              enqueueSnackbar={enqueueSnackbar}
               isLoading={addressBooksLoading}
               selectedValue={shipperSelectValue}
               receiverSelectedValue={receiverSelectValue}
               accessorialRef={accessorialRef}
+              crossdockShipperRef={crossdockShipperRef}
             />
           </WizardCard>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 12, md: 4 }}>
           <WizardCard title='Extra Stop' minHeight={500}>
-            <ExtraStop accessorialRef={accessorialRef} />
+            <ExtraStop
+              accessorialRef={accessorialRef}
+              enqueueSnackbar={enqueueSnackbar}
+            />
           </WizardCard>
         </Grid>
 
@@ -287,12 +321,15 @@ function OrderForm(props) {
           <WizardCard title='Receiver Details' minHeight={500}>
             <ReceiverDetails
               engine={engine}
+              editMode={editMode}
               calculationRef={calculationRef}
               data={addressBooks}
               isLoading={addressBooksLoading}
               selectedValue={receiverSelectValue}
               shipperSelectedValue={shipperSelectValue}
+              enqueueSnackbar={enqueueSnackbar}
               accessorialRef={accessorialRef}
+              crossdockReceiverRef={crossdockReceiverRef}
             />
           </WizardCard>
         </Grid>
@@ -309,7 +346,10 @@ function OrderForm(props) {
 
             <Grid size={{ xs: 12, sm: 12, md: 4 }}>
               <WizardCard title='Interline Carrier' minHeight={500}>
-                <InterlineCarrier />
+                <InterlineCarrier
+                  editMode={editMode}
+                  interlinerRef={interlinerRef}
+                />
               </WizardCard>
             </Grid>
 
@@ -345,6 +385,7 @@ function OrderForm(props) {
               <WizardCard minHeight={500} title='Waiting Time & Billing'>
                 <TimeAndBilling
                   editMode={editMode}
+                  accessorialRef={accessorialRef}
                 />
               </WizardCard>
             </Grid>
@@ -387,7 +428,7 @@ function OrderForm(props) {
                   id='submit-order-action'
                   isLoading={methods.formState?.isSubmitting}
                 >
-                  Save & Exist
+                  Save & Exit
                 </SubmitButton>
               </Grid>
             )}
