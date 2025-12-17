@@ -115,16 +115,8 @@ function BasicInfo(props) {
         engine.receiver_city = ''
         engine.receiverProvince = ''
       }
-
-      props.calculationRef?.current?.recalculate()
     })
   }
-
-  // React.useEffect(() => {
-  //   if (data) {
-  //     handleIsCrossdock(getValues('is_crossdock'))
-  //   }
-  // }, [data, isLoading])
 
   return (
     <Grid container spacing={3}>
@@ -280,17 +272,10 @@ function BasicInfo(props) {
                       const checked = e.target.checked
                       unstable_batchedUpdates(() => {
                         field.onChange(checked)
-                        props.accessorialRef.current?.handleChangeNoCharge(checked)
-                        // engine.isNoCharge = false
+                        handleIsCrossdock(checked)
                         const accessorials = getValues('customer_accessorials')
                         const index = accessorials.findIndex(acc => acc.charge_name.toLowerCase() === 'crossdock')
-                        if (index !== -1) {
-                          props.accessorialRef.current?.change(checked, accessorials[index], index)
-                        }
-                        else {
-                          props.calculationRef.current?.recalculate()
-                        }
-                        handleIsCrossdock(checked)
+                        props.accessorialRef.current?.change(checked, accessorials[index], index, true)
                         if (checked) {
                           setValue('quote', false)
                           setValue('order_status', 'Approved')
@@ -317,7 +302,7 @@ function BasicInfo(props) {
           render={({ field }) => (
             <Autocomplete
               {...field}
-              options={['Order Entity', 'Order Billing']}
+              options={['Order Entry', 'Order Billing']}
               getOptionLabel={option => option}
               onChange={(_, value) => {
                 field.onChange(value)

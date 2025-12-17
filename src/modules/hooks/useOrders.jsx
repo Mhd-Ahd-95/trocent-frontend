@@ -3,22 +3,34 @@ import OrderApi from "../apis/Order.api";
 import { useSnackbar } from "notistack";
 
 
-export function useOrders() {
+// export function useOrders() {
+//     return useQuery({
+//         queryKey: ['orders'],
+//         queryFn: async () => {
+//             const response = await OrderApi.getOrders()
+//             return response.data.data;
+//         },
+//         staleTime: 5 * 60 * 1000,
+//         gcTime: 60 * 60 * 1000,
+//         refetchOnWindowFocus: false,
+//         retry: 0,
+//         // refetchOnReconnect: false,
+//         // refetchOnMount: false,
+//     });
+// }
+
+export function useOrderPagination(page = 1, pageSize = 10) {
     return useQuery({
-        queryKey: ['orders'],
+        queryKey: ['orders', page, pageSize],
         queryFn: async () => {
-            const response = await OrderApi.getOrders()
-            return response.data.data;
+            const res = await OrderApi.getOrders({ page, pageSize });
+            return res.data;
         },
+        keepPreviousData: true,
         staleTime: 5 * 60 * 1000,
-        gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-        retry: 0,
-        // refetchOnReconnect: false,
-        // refetchOnMount: false,
     });
 }
-
 
 export function useOrder(oid) {
     return useQuery({
@@ -45,7 +57,7 @@ const updateOrders = (updated) => {
         id: updated.id,
         order_number: updated.order_number,
         order_status: updated.order_status,
-        customer_name: updated.customer_name,
+        customer_name: updated.customer.account_number + ' ' + updated.customer.name,
         shipper_address: updated.shipper_address,
         shipper_city: updated.shipper_city,
         shipper_contact_name: updated.shipper_contact_name,
@@ -63,7 +75,7 @@ const updateOrders = (updated) => {
 export function useOrderMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
-    const hasCachedList = queryClient.getQueryData(['orders'])
+    const hasCachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -78,9 +90,13 @@ export function useOrderMutations() {
             return res.data.data;
         },
         onSuccess: (newOrder) => {
-            if (hasCachedList) {
-                queryClient.setQueryData(['orders'], (old = []) => {
-                    return [newOrder, ...old]
+            if (hasCachedList.length > 0) {
+                hasCachedList.forEach(([key, old]) => {
+                    queryClient.setQueryData(key, (prev = {}) => ({
+                        ...prev,
+                        data: [newOrder, ...(prev.data || [])],
+                        meta: { ...prev.meta, total: (prev.meta?.total || 0) + 1 },
+                    }));
                 });
             }
             else {
@@ -130,9 +146,12 @@ export function useOrderMutations() {
             onSuccess: (updated) => {
                 if (updated) {
                     const orderUpdated = updateOrders(updated)
-                    if (hasCachedList) {
-                        queryClient.setQueryData(['orders'], (old = []) => {
-                            old.map((item) => item.id === Number(updated.id) ? orderUpdated : item)
+                    if (hasCachedList.length > 0) {
+                        hasCachedList.forEach(([key, old]) => {
+                            queryClient.setQueryData(key, (prev = {}) => ({
+                                ...prev,
+                                data: (prev.data || []).map(item => item.id === Number(updated.id) ? orderUpdated : item)
+                            }));
                         });
                     }
                     else {
@@ -153,18 +172,27 @@ export function useOrderMutations() {
         },
         onSuccess: (updated, payload) => {
             const { id, sts } = payload
+            const hasCachedOrderId = queryClient.getQueryData(['order', Number(id)])
             if (updated && updated.length > 0) {
                 if (hasCachedList) {
-                    queryClient.setQueryData(['orders'], (old = []) => {
-                        return old.map((item) => item.id === Number(id) ? { ...item, order_status: sts } : item)
+                    hasCachedList.forEach(([key, old]) => {
+                        queryClient.setQueryData(key, (prev = {}) => ({
+                            ...prev,
+                            data: (prev.data || []).map(item => item.id === Number(id) ? { ...item, order_status: sts } : item)
+                        }));
                     });
                 }
                 else {
                     queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
                 }
-                queryClient.setQueryData(['order', Number(id)], (old = {}) => {
-                    return ({ ...old, order_status: sts, orderUpdates: updated })
-                })
+                if (hasCachedOrderId) {
+                    queryClient.setQueryData(['order', Number(id)], (old = {}) => {
+                        return ({ ...old, order_status: sts, order_updates: updated })
+                    })
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['order', Number(id)], exact: true })
+                }
                 enqueueSnackbar(`Order has been ${sts} successfully`, { variant: 'success' });
             }
         },
@@ -179,8 +207,12 @@ export function useOrderMutations() {
         onSuccess: (newOrder, payload) => {
             const { id } = payload
             if (hasCachedList) {
-                queryClient.setQueryData(['orders'], (old = []) => {
-                    return [newOrder, ...old]
+                hasCachedList.forEach(([key, old]) => {
+                    queryClient.setQueryData(key, (prev = {}) => ({
+                        ...prev,
+                        data: [newOrder, ...(prev.data || [])],
+                        meta: { ...prev.meta, total: (prev.meta?.total || 0) + 1 },
+                    }));
                 });
             }
             else {

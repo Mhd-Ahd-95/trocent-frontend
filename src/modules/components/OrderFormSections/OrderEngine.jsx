@@ -895,7 +895,7 @@ export default class OrderEngine {
         return vtypes
     }
 
-    static transformLoadedData = (data) => {
+    static transformLoadedData = (data, defaultOrderValue) => {
         if (!data) return {}
 
         return {
@@ -917,7 +917,7 @@ export default class OrderEngine {
             delivery_appointment_numbers: data.delivery_appointment_numbers || [],
             freights: data.freights && data.freights.length > 0 ? data.freights : defaultOrderValue.freights,
             accessorials_customer: data.accessorials_customer || [],
-            vehicle_types_customer: data.customer_vehicle_types || [],
+            vehicle_types_customer: data.vehicle_types_customer || [],
             additional_service_charges: data.additional_service_charges || [],
 
             quote: Boolean(data.quote),

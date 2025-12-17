@@ -87,11 +87,21 @@ export default function UploadLogo(props) {
         const maxSize = 5 * MB
         return file.size <= maxSize
     }
+
+    function isValidImageType(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+        return validTypes.includes(file.type)
+    }
+
     const handleChange = async (e) => {
         if (e.target.files.length) {
             setLoading(true)
             const file = e.target.files[0]
             e.target.value = "";
+            if (!isValidImageType(file)) {
+                enqueueSnackbar(`Please upload only image files (JPEG, PNG, GIF, WebP, SVG).`, { variant: 'warning' })
+                return
+            }
             setValue(`filename`, file.name)
             // if (!isValidFile(file)) {
             //     enqueueSnackbar(`File ${file.name} cannot be more than 5 MB.`, { variant: 'warning' })
@@ -116,6 +126,8 @@ export default function UploadLogo(props) {
         }
     }
 
+    const [image, setImage] = React.useState(null)
+
     const handleDownload = (e) => {
         e.preventDefault()
         setDownloading(true)
@@ -139,6 +151,7 @@ export default function UploadLogo(props) {
                 type='file'
                 id={`contained-button-file-${index}`}
                 style={{ display: 'none' }}
+                accept="image/*"
                 onChange={handleChange}
             />
             <label htmlFor={`contained-button-file-${index}`}>
@@ -146,7 +159,7 @@ export default function UploadLogo(props) {
                     focusRipple
                     component="span"
                 >
-                    Drag & Drop Logo or {' '} <span> Browser</span>
+                    Drag & Drop Logo or {' '} <span> Browse</span>
                 </UploadButton>
             </label>
             {logoFile?.filename &&

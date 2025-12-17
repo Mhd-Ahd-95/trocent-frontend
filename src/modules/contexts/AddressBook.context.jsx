@@ -23,6 +23,9 @@ const AddressBookContextProvider = props => {
                 return res.data.data;
             },
             staleTime: 60 * 60 * 1000,
+            gcTime: 60 * 60 * 1000,
+            refetchOnWindowFocus: false,
+            retry: 0,
         });
     }, [queryClient]);
 

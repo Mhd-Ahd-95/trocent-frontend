@@ -1,7 +1,7 @@
 import globalVariables from '../global'
 import CustomAxios from './customAxios'
 
-const getOrders = () => CustomAxios.get('/api/orders')
+const getOrders = (payload) => CustomAxios.get('/api/orders', { data: { ...payload } })
 
 const getOrderById = (oid) => CustomAxios.get(`/api/orders/${oid}`)
 

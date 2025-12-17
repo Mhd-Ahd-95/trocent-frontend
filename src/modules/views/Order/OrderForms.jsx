@@ -45,26 +45,13 @@ function OrderForm(props) {
   const [orderStatus, setOrderStatus] = React.useState(initialValues?.order_status === 'Canceled' ? true : false)
 
   const transformedInitialValues = React.useMemo(() => {
-    return editMode ? { ...defaultOrderValue, ...OrderEngine.transformLoadedData(initialValues) } : { ...defaultOrderValue, ...initialValues }
+    return editMode ? { ...defaultOrderValue, ...OrderEngine.transformLoadedData(initialValues, defaultOrderValue) } : { ...defaultOrderValue, ...initialValues }
   }, [initialValues, editMode])
 
   const methods = useForm({
     defaultValues: transformedInitialValues,
     mode: 'onBlur',
   })
-
-  console.log(transformedInitialValues);
-
-  const { data: addressBooks, isLoading: addressBooksLoading, isError, error } = useAddressBooks()
-
-  React.useEffect(() => {
-    if (isError && error) {
-      const message = error.response?.data?.message
-      const status = error.response?.status
-      const errorMessage = message ? `${message} - ${status}` : error.message
-      enqueueSnackbar(errorMessage, { variant: 'error' })
-    }
-  }, [isError, error, enqueueSnackbar])
 
   const setupEditMode = async () => {
 
@@ -124,11 +111,11 @@ function OrderForm(props) {
   }
 
   React.useEffect(() => {
-    if (!editMode || !initialValues || !addressBooks || isInitialized.current) {
+    if (!editMode || !initialValues || isInitialized.current) {
       return
     }
     setupEditMode()
-  }, [editMode, initialValues, addressBooks, engine, methods])
+  }, [editMode, initialValues, engine, methods])
 
   React.useEffect(() => {
     const timer = setTimeout(() => setShowAll(true), 100)
@@ -183,7 +170,7 @@ function OrderForm(props) {
         }
       })
     }
-  }, [editMode, initialValues, methods, engine, addressBooks, calculationRef, accessorialRef])
+  }, [editMode, initialValues, methods, engine, calculationRef, accessorialRef])
 
   const onSubmit = async (data, e) => {
     e.preventDefault()
@@ -194,7 +181,6 @@ function OrderForm(props) {
       const orderUpdates = OrderEngine.getOrderUpdates(touched, initialValues, data)
       payload['order_updates'] = orderUpdates
     }
-    console.log(payload);
     if (payload['order_status'] === 'Billed') {
       enqueueSnackbar('Order is Billed unable to update', { variant: 'warning' })
       return
@@ -217,9 +203,7 @@ function OrderForm(props) {
   }
 
   const onError = errors => {
-    console.log(errors);
     let firstErrorField = Object.keys(errors)[0]
-    console.log(firstErrorField);
     if (firstErrorField) {
       if (firstErrorField === 'freights') {
         for (let f of errors['freights']) {
@@ -230,7 +214,6 @@ function OrderForm(props) {
         }
       }
       const field = document.querySelector(`[name="${firstErrorField}"]`)
-      console.log(field);
       if (field) {
         field.scrollIntoView({ behavior: 'smooth', block: 'center' })
         field.focus({ preventScroll: true })
@@ -262,9 +245,7 @@ function OrderForm(props) {
               enqueueSnackbar={enqueueSnackbar}
               engine={engine}
               accessorialRef={accessorialRef}
-              data={addressBooks}
               editMode={editMode}
-              isLoading={addressBooksLoading}
               calculationRef={calculationRef}
               shipperSelectValue={shipperSelectValue}
               receiverSelectValue={receiverSelectValue}
@@ -297,9 +278,7 @@ function OrderForm(props) {
             <ShipperDetails
               engine={engine}
               calculationRef={calculationRef}
-              data={addressBooks}
               enqueueSnackbar={enqueueSnackbar}
-              isLoading={addressBooksLoading}
               selectedValue={shipperSelectValue}
               receiverSelectedValue={receiverSelectValue}
               accessorialRef={accessorialRef}
@@ -323,8 +302,6 @@ function OrderForm(props) {
               engine={engine}
               editMode={editMode}
               calculationRef={calculationRef}
-              data={addressBooks}
-              isLoading={addressBooksLoading}
               selectedValue={receiverSelectValue}
               shipperSelectedValue={shipperSelectValue}
               enqueueSnackbar={enqueueSnackbar}

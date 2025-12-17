@@ -9,6 +9,7 @@ import OrderApi from '../../apis/Order.api'
 import { saveAs } from 'file-saver'
 import { useOrderMutations } from '../../hooks/useOrders'
 import { useSnackbar } from 'notistack'
+import { useQueryClient } from '@tanstack/react-query'
 
 function CardFile(props) {
 
@@ -116,18 +117,26 @@ function Consignment(props) {
         setValue
     } = useFormContext()
 
+    const [downloading, setDownloading] = React.useState(false)
     const [openModal, setOpenModal] = React.useState(false)
     const { enqueueSnackbar } = useSnackbar()
+    const queryClient = useQueryClient()
 
     const downloadBillAsPDF = async () => {
+        setDownloading(true)
         const currentData = getValues();
         const language = getValues('customer_language') ?? 'en'
         try {
+            const messagers = queryClient.getQueryData(['addressBookByName', 'messagers'])
+            currentData['messagers'] = messagers
             const pdf = await generateBillOfLadingPDF(currentData, language);
-            pdf.save(`connaissement-${currentData.order_number || 'bill'}.pdf`);
+            pdf.save(`${language === 'en' ? 'BOL' : 'Connaissement'}_${currentData.order_number}.pdf`);
         } catch (error) {
             console.error("PDF generation error:", error);
             enqueueSnackbar('PDF generation error', { variant: 'error' })
+        }
+        finally {
+            setDownloading(false)
         }
     };
 
@@ -153,7 +162,9 @@ function Consignment(props) {
                             onClick={downloadBillAsPDF}
                             sx={{ textTransform: 'capitalize' }}
                             startIcon={<Download />}
+                            disabled={downloading}
                         >
+                            {downloading && <CircularProgress style={{ marginRight: "10px" }} size={20} />}
                             Download
                         </Button>
                     </Grid>
