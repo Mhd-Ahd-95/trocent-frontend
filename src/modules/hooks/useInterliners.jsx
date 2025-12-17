@@ -39,6 +39,30 @@ export function useInterliner(iid) {
         retry: 0,
     });
 }
+
+export const useInterlinerSearch = (search) => {
+    const srch = String(search).toLowerCase().trim()
+    const queryClient = useQueryClient();
+    return useQuery({
+        queryKey: ['interlinerSearch', srch],
+        queryFn: async () => {
+            const cachedInterliners = queryClient.getQueryData(['interliners']) || [];
+            if (cachedInterliners.length > 0) {
+                const cached = cachedInterliners.filter(ab => ab.name.toLowerCase().includes(srch))
+                if (cached.length > 0) return cached
+            }
+            const res = await InterlinersApi.searchInterliners(srch)
+            return res.data.data || []
+        },
+        enabled: srch.length >= 2,
+        staleTime: 3 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+        placeholderData: (previousData) => previousData,
+    })
+}
+
 export function useInterlinerMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
@@ -65,6 +89,7 @@ export function useInterlinerMutations() {
             else {
                 queryClient.invalidateQueries({ queryKey: 'interliners', exact: true })
             }
+            queryClient.invalidateQueries({ queryKey: ['interlinerSearch'], exact: false })
             enqueueSnackbar('Interliner has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -85,6 +110,7 @@ export function useInterlinerMutations() {
                 else {
                     queryClient.invalidateQueries({ queryKey: 'interliners', exact: true })
                 }
+                queryClient.invalidateQueries({ queryKey: ['interlinerSearch'], exact: false })
                 queryClient.setQueryData(['interliner', Number(updated.id)], updated);
                 enqueueSnackbar('Interliner has been updated successfully', { variant: 'success' });
             },
@@ -104,6 +130,7 @@ export function useInterlinerMutations() {
                 );
                 enqueueSnackbar('Interliner has been deleted successfully', { variant: 'success' });
             }
+            queryClient.invalidateQueries({ queryKey: ['interlinerSearch'], exact: false })
         },
         onError: handleError,
     });
@@ -120,6 +147,7 @@ export function useInterlinerMutations() {
                 );
                 enqueueSnackbar('Selected interliners have been deleted successfully', { variant: 'success' });
             }
+            queryClient.invalidateQueries({ queryKey: ['interlinerSearch'], exact: false })
         },
         onError: handleError,
     });

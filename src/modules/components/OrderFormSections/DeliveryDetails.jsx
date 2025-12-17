@@ -36,9 +36,11 @@ function DeliveryDetails(props) {
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
               onChange={date => field.onChange(date ? date.toISOString() : null)}
+              onClose={() => field.onBlur()}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
@@ -65,10 +67,12 @@ function DeliveryDetails(props) {
               label='Time From'
               value={field.value ? moment(field.value, 'HH:mm') : null}
               onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
@@ -95,10 +99,12 @@ function DeliveryDetails(props) {
               label='Time To'
               value={field.value ? moment(field.value, 'HH:mm') : null}
               onChange={date => field.onChange(date ? moment(date).format('HH:mm') : null)}
+              onClose={() => field.onBlur()}
               ampm={false}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {

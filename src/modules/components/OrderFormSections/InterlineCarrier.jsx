@@ -10,16 +10,13 @@ import {
 import { InterlineCarrierForm, TabInterlineForm } from './InterlineCarrierForm'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
-import { useInterliners } from '../../hooks/useInterliners'
-import { useSnackbar } from 'notistack'
 
 function InterlineCarrier(props) {
-
-  const { enqueueSnackbar } = useSnackbar()
-
+  
   const {
     control,
     setValue,
+    getValues,
   } = useFormContext()
 
   const isPickup = useWatch({
@@ -36,18 +33,6 @@ function InterlineCarrier(props) {
     control: control,
     name: 'is_same_carrier',
   })
-
-  const shouldFetchInterliners = isPickup || isDelivery || isSameCarrierForBoth
-  const { data, isLoading, isError, error } = useInterliners(shouldFetchInterliners)
-
-  React.useEffect(() => {
-    if (isError && error) {
-      const message = error.response?.data?.message;
-      const status = error.response?.status;
-      const errorMessage = message ? `${message} - ${status}` : error.message;
-      enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-  }, [isError, error])
 
   const theme = useTheme()
 
@@ -188,25 +173,28 @@ function InterlineCarrier(props) {
         )}
         {isPickup && !isDelivery && !isSameCarrierForBoth && (
           <InterlineCarrierForm
-            data={data}
-            loading={isLoading}
+            editMode={props.editMode}
+            interlinerRef={props.interlinerRef}
             control={control}
+            getValues={getValues}
             interline_type='pickup'
           />
         )}
         {!isPickup && isDelivery && !isSameCarrierForBoth && (
           <InterlineCarrierForm
+            editMode={props.editMode}
+            interlinerRef={props.interlinerRef}
             control={control}
-            data={data}
-            loading={isLoading}
+            getValues={getValues}
             interline_type='delivery'
           />
         )}
         {isPickup && isDelivery && isSameCarrierForBoth && (
           <InterlineCarrierForm
-            data={data}
-            loading={isLoading}
+            editMode={props.editMode}
+            interlinerRef={props.interlinerRef}
             control={control}
+            getValues={getValues}
           />
         )}
         {isPickup && isDelivery && !isSameCarrierForBoth && (
@@ -214,17 +202,19 @@ function InterlineCarrier(props) {
             labels={['Pickup Carrier', 'Delivery Carrier']}
             contents={[
               <InterlineCarrierForm
-                data={data}
-                loading={isLoading}
+                editMode={props.editMode}
+                interlinerRef={props.interlinerRef}
                 control={control}
                 label='Pickup'
+                getValues={getValues}
                 interline_type='pickup'
               />,
               <InterlineCarrierForm
-                data={data}
-                loading={isLoading}
+                editMode={props.editMode}
+                interlinerRef={props.interlinerRef}
                 control={control}
                 label='Delivery'
+                getValues={getValues}
                 interline_type='delivery'
               />
             ]}

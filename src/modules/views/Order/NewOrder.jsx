@@ -10,7 +10,7 @@ const OrderForm = React.lazy(() => import('./OrderForms'))
 export default function NewOrder() {
 
     const authedUser = global.auth.user
-
+    
     const { create } = useOrderMutations()
 
     return (

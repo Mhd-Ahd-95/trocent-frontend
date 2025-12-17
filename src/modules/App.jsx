@@ -33,7 +33,8 @@ import {
   CreateCustomer,
   EditCustomer,
   EditRateSheet,
-  EditOrder
+  EditOrder,
+  DispatchView
 } from './views'
 import { ScrollToTop } from './components'
 import { AuthContext } from './contexts'
@@ -54,6 +55,7 @@ function App() {
         <Route element={<ProtectRoute />}>
           <Route path='/' index Component={Dashboard} />
           <Route path='/orders' Component={Orders} />
+          <Route path='/dispatch' Component={DispatchView} />
           <Route path='/orders/create' Component={NewOrder} />
           <Route path='/orders/edit/:id' Component={EditOrder} />
           <Route path='/customers' Component={Customers} />

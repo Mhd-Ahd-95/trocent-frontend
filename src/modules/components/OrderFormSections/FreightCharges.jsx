@@ -145,7 +145,7 @@ function FreightCharges(props) {
 
   const { engine } = props
 
-  const { control, setValue, getValues, } = useFormContext()
+  const { control, setValue, getValues, resetField } = useFormContext()
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
@@ -153,26 +153,33 @@ function FreightCharges(props) {
   const serviceType = useWatch({ control, name: 'service_type' })
   const [fetchRateSheet, setFetchRateSheet] = React.useState({ customer_id: getValues('customer_id'), shipper_city: getValues('shipper_city'), receiver_city: getValues('receiver_city') })
 
-  const { fields: customerAccessorials, replace: replaceCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
+  const { fields: customerAccessorials, replace: replaceCustomerAccessorials, update: updateCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
   const { fields: customerVehicleTypes, replace: replaceCustomerVehicleTypes } = useFieldArray({ control, name: 'customer_vehicle_types' })
   const { fields: additionalServiceCharges, append: appendServiceCharge, remove: removeServiceCharge } = useFieldArray({ control, name: 'additional_service_charges' })
   const { data: rateSheets, isLoading: rateSheetLoading, isFetching: rateSheetFetching } = useRateSheetsByCustomerAndCities(fetchRateSheet.customer_id, fetchRateSheet.shipper_city, fetchRateSheet.receiver_city)
 
-  const handleChange = (checked, access, index) => {
+  const handleChange = (checked, access, index, isFromBasicInfo = false) => {
     requestAnimationFrame(() => {
-      setValue(`customer_accessorials.${index}.is_included`, checked);
-      if (checked) {
-        const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
-        const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
-        const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1, pdtimes, waiting_time)
-        setValue(`customer_accessorials.${index}.charge_quantity`, 1);
-        setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+      if (isFromBasicInfo) {
+        setValue('no_charges', checked)
+        setCharges((prev) => ({ ...prev, no_charges: checked }))
+        engine.isNoCharge = checked
       }
-      else {
-        setValue(`customer_accessorials.${index}.charge_quantity`, 0);
-        setValue(`customer_accessorials.${index}.charge_amount`, 0)
+      if (index !== -1) {
+        setValue(`customer_accessorials.${index}.is_included`, checked);
+        if (checked) {
+          const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+          const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+          const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), 1, pdtimes, waiting_time)
+          setValue(`customer_accessorials.${index}.charge_quantity`, 1);
+          setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+        }
+        else {
+          setValue(`customer_accessorials.${index}.charge_quantity`, 0);
+          setValue(`customer_accessorials.${index}.charge_amount`, 0)
+        }
+        engine.accessorialsCharge = getValues('customer_accessorials')
       }
-      engine.accessorialsCharge = getValues('customer_accessorials')
       props.calculationRef.current?.recalculate()
     })
   }
@@ -201,16 +208,8 @@ function FreightCharges(props) {
     props.calculationRef.current?.recalculate()
   }
 
-  const handleChangeNoCharge = (checked) => {
-    unstable_batchedUpdates(() => {
-      setValue('no_charges', checked)
-      setCharges((prev) => ({ ...prev, no_charges: checked }))
-      engine.isNoCharge = checked
-    })
-  }
-
   // #######################################################################
-  const handleVehicleTypes = React.useCallback(() => {
+  const handleVehicleTypes = () => {
     let vehicleTypes = []
     if (engine.customer && fetchRateSheet.customer_id) {
 
@@ -224,16 +223,15 @@ function FreightCharges(props) {
         else return ({ id: vt.id, vehicle_id: vt.vehicle_id, name: vt.name, amount: vt.rate, is_included: false })
       })
 
-      if (props.editMode) engine.customer_vehicle_types = vehicleTypes
+      engine.customer_vehicle_types = vehicleTypes
     }
     replaceCustomerVehicleTypes(vehicleTypes)
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerVehicleTypes])
+  }
 
-// #######################################################################
-  const handleAccessorials = React.useCallback(() => {
+  // #######################################################################
+  const handleAccessorials = () => {
     let accessorials = []
     if (engine.customer && fetchRateSheet.customer_id) {
-
       const isCrossDock = getValues('is_crossdock')
       const isExtraStop = getValues('is_extra_stop')
       const savedCustomerAccessorials = getValues('accessorials_customer') ?? []
@@ -243,32 +241,35 @@ function FreightCharges(props) {
       accessorials = cAccess.map((acc) => {
         const accFound = savedCustomerAccessorials?.length > 0 ? savedCustomerAccessorials.find(sca => sca?.accessorial_id === acc.access_id && sca.customer_id === customerId) : null
         if (accFound) {
-          return ({ ...acc, charge_name: acc.access_name, charge_amount: accFound.charge_amount, charge_quantity: accFound.charge_quantity, is_included: true, })
+          return ({ ...acc, charge_name: acc.access_name, charge_amount: accFound.charge_amount, charge_quantity: accFound.charge_quantity, is_included: accFound.is_included, })
         }
         else {
           return isCrossDock && acc.access_name?.trim().toLowerCase() === 'crossdock'
             ? ({ ...acc, charge_name: acc.access_name, charge_amount: acc.amount, charge_quantity: 1, is_included: true, })
             : isExtraStop && acc.access_name?.trim().toLowerCase() === 'extra stop'
               ? ({ ...acc, charge_name: acc.access_name, charge_amount: acc.amount, charge_quantity: 1, is_included: true, })
-              : ({ ...acc, charge_name: acc.access_name, charge_amount: 0, charge_quantity: 0, is_included: false, })
+              : serviceType === 'Rush' && acc.access_name?.trim().toLowerCase() === 'rush service'
+                ? ({ ...acc, charge_name: acc.access_name, charge_amount: acc.amount, charge_quantity: 1, is_included: true, })
+                : ({ ...acc, charge_name: acc.access_name, charge_amount: 0, charge_quantity: 0, is_included: false, })
         }
       })
-      if (props.editMode) engine.accessorialsCharge = accessorials
+      engine.accessorialsCharge = accessorials
+      props.calculationRef.current?.recalculate()
     }
-    replaceCustomerAccessorials(accessorials.sort((a, b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null))
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
-
-
-  const resetAccessorialsAndVehicleTypes = () => {
-    requestAnimationFrame(() => {
-      handleAccessorials()
-      handleVehicleTypes()
-    })
+    const sortedAccessorials = accessorials.sort((a, b) => a.charge_name && b.charge_name ? a.charge_name.localeCompare(b.charge_name) : null)
+    replaceCustomerAccessorials(sortedAccessorials)
   }
+
+  const resetAccessorialsAndVehicleTypes = React.useCallback(() => {
+    requestAnimationFrame(() => {
+      handleVehicleTypes()
+      handleAccessorials()
+    })
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials, replaceCustomerVehicleTypes])
 
   React.useEffect(() => {
     resetAccessorialsAndVehicleTypes()
-  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials])
+  }, [engine.customer?.id, fetchRateSheet.customer_id, replaceCustomerAccessorials, replaceCustomerVehicleTypes])
 
   React.useEffect(() => {
     if (fetchRateSheet.customer_id && fetchRateSheet.shipper_city && fetchRateSheet.receiver_city && rateSheets?.length > 0) {
@@ -291,13 +292,20 @@ function FreightCharges(props) {
     }
   }
 
+  const handleResetStates = () => {
+    unstable_batchedUpdates(() => {
+      setCharges({ no_charges: getValues('no_charges'), manual_charges: getValues('manual_charges'), manual_fuel_surcharges: getValues('manual_fuel_surcharges') })
+      setFetchRateSheet({ customer_id: getValues('customer_id'), shipper_city: getValues('shipper_city'), receiver_city: getValues('receiver_city') })
+    })
+  }
+
   React.useImperativeHandle(props.accessorialRef, () => ({
     change: handleChange,
     recalculateAccessorials: triggerCalculateAccessorials,
-    handleChangeNoCharge: handleChangeNoCharge,
     loadRateSheet: handleLoadRateSheet,
-    resetFreightCharges: resetAccessorialsAndVehicleTypes
-  }), [handleChange, triggerCalculateAccessorials, handleChangeNoCharge, handleLoadRateSheet, resetAccessorialsAndVehicleTypes])
+    resetFreightCharges: resetAccessorialsAndVehicleTypes,
+    resetStates: handleResetStates
+  }), [handleChange, triggerCalculateAccessorials, handleLoadRateSheet, resetAccessorialsAndVehicleTypes, handleResetStates])
 
   return (
     <Grid container spacing={3}>
@@ -426,7 +434,7 @@ function FreightCharges(props) {
                     <Grid
                       container
                       spacing={2}
-                      key={`${vtype.name}-${index}`}
+                      key={vtype.id}
                       sx={{
                         border: `1px solid ${theme.palette.grey[200]}`,
                         py: 1,
@@ -684,108 +692,111 @@ function FreightCharges(props) {
           {customerAccessorials.length > 0 ? (
             <Grid size={12} sx={{ py: 2, px: 3 }}>
               <Grid container spacing={2}>
-                {customerAccessorials.map((access, index) => (
-                  <Grid container spacing={2} key={`${fetchRateSheet.customer_id}-${index}`} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1.5, px: 2, borderRadius: 3 }} justifyContent={'center'} alignItems={'center'} width={'100%'}>
-                    <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                      <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}>
-                        {formatAccessorial(access.charge_name, access.amount, access.amount_type)}
-                      </Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 1 }}>
-                      <FormControl>
-                        <CustomFormControlLabel
-                          control={
-                            <Controller
-                              name={`customer_accessorials.${index}.is_included`}
-                              control={control}
-                              render={({ field }) => {
-                                return (
-                                  <Switch
-                                    {...field}
-                                    checked={field.value || false}
-                                    onChange={e => {
-                                      const checked = e.target.checked
-                                      handleChange(checked, access, index)
-                                    }}
-                                  />
-                                )
+                {customerAccessorials.map((access, index) => {
+                  return (
+                    <Grid container spacing={2} key={access.id} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1.5, px: 2, borderRadius: 3 }} justifyContent={'center'} alignItems={'center'} width={'100%'}>
+                      <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                        <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}>
+                          {formatAccessorial(access.charge_name, access.amount, access.amount_type)}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 1 }}>
+                        <FormControl>
+                          <CustomFormControlLabel
+                            control={
+                              <Controller
+                                name={`customer_accessorials.${index}.is_included`}
+                                control={control}
+                                render={({ field }) => {
+                                  return (
+                                    <Switch
+                                      {...field}
+                                      checked={field.value || false}
+                                      onChange={e => {
+                                        const checked = e.target.checked
+                                        handleChange(checked, access, index)
+                                      }}
+                                    />
+                                  )
+                                }}
+                              />
+                            }
+                            label=''
+                          />
+                        </FormControl>
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 2 }} pl={2}>
+                        <Controller
+                          name={`customer_accessorials.${index}.charge_quantity`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextInput
+                              {...field}
+                              label='Qty'
+                              variant='outlined'
+                              fullWidth
+                              disabled={!getValues(`customer_accessorials.${index}.is_included`)}
+                              type='number'
+                              inputProps={{ step: 'any' }}
+                              value={field.value || ''}
+                              onChange={e => {
+                                unstable_batchedUpdates(() => {
+                                  const value = e.target.value
+                                  if (Number(value) >= 0) {
+                                    if (Number(value) === 0) {
+                                      setValue(`customer_accessorials.${index}.is_included`, false);
+                                    }
+                                    const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
+                                    const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
+                                    const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value), pdtimes, waiting_time)
+                                    setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
+                                    setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
+                                    engine.accessorialsCharge = getValues('customer_accessorials')
+                                    props.calculationRef.current?.recalculate()
+                                  }
+                                })
+                              }}
+                              size='small'
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <Controller
+                          name={`customer_accessorials.${index}.charge_amount`}
+                          control={control}
+                          render={({ field }) => (
+                            <TextInput
+                              {...field}
+                              label='Amount'
+                              variant='outlined'
+                              fullWidth
+                              disabled
+                              size='small'
+                              sx={{
+                                '& .MuiInputBase-input.Mui-disabled': {
+                                  color: 'black',
+                                  fontWeight: 600,
+                                  WebkitTextFillColor: 'black',
+                                },
+                              }}
+                              slotProps={{
+                                input: {
+                                  endAdornment: (
+                                    <InputAdornment position='end'>
+                                      <AttachMoney />
+                                    </InputAdornment>
+                                  )
+                                }
                               }}
                             />
-                          }
-                          label=''
+                          )}
                         />
-                      </FormControl>
+                      </Grid>
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 2 }} pl={2}>
-                      <Controller
-                        name={`customer_accessorials.${index}.charge_quantity`}
-                        control={control}
-                        render={({ field }) => (
-                          <TextInput
-                            {...field}
-                            label='Qty'
-                            variant='outlined'
-                            fullWidth
-                            disabled={!getValues(`customer_accessorials.${index}.is_included`)}
-                            type='number'
-                            inputProps={{ step: 'any' }}
-                            value={field.value || ''}
-                            onChange={e => {
-                              unstable_batchedUpdates(() => {
-                                const value = e.target.value
-                                if (Number(value) >= 0) {
-                                  if (Number(value) === 0) {
-                                    setValue(`customer_accessorials.${index}.is_included`, false);
-                                  }
-                                  const pdtimes = getValues(['pickup_in', 'pickup_out', 'delivery_in', 'delivery_out'])
-                                  const waiting_time = getValues(['shipper_no_waiting_time', 'receiver_no_waiting_time'])
-                                  const amount = OrderEngine.accessorials_types(access.type, access, getValues('freight_rate'), Number(value), pdtimes, waiting_time)
-                                  setValue(`customer_accessorials.${index}.charge_quantity`, Number(value));
-                                  setValue(`customer_accessorials.${index}.charge_amount`, (Math.round(amount * 100) / 100))
-                                  engine.accessorialsCharge = getValues('customer_accessorials')
-                                  props.calculationRef.current?.recalculate()
-                                }
-                              })
-                            }}
-                            size='small'
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <Controller
-                        name={`customer_accessorials.${index}.charge_amount`}
-                        control={control}
-                        render={({ field }) => (
-                          <TextInput
-                            {...field}
-                            label='Amount'
-                            variant='outlined'
-                            fullWidth
-                            disabled
-                            size='small'
-                            sx={{
-                              '& .MuiInputBase-input.Mui-disabled': {
-                                color: 'black',
-                                fontWeight: 600,
-                                WebkitTextFillColor: 'black',
-                              },
-                            }}
-                            slotProps={{
-                              input: {
-                                endAdornment: (
-                                  <InputAdornment position='end'>
-                                    <AttachMoney />
-                                  </InputAdornment>
-                                )
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                ))}
+                  )
+                }
+                )}
               </Grid>
             </Grid>
           ) : (

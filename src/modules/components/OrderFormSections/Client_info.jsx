@@ -2,18 +2,20 @@ import React from 'react'
 import { Grid, Autocomplete, CircularProgress } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
-import { useCustomers } from '../../hooks/useCustomers'
+import { useCustomerSearch } from '../../hooks/useCustomers'
 import { unstable_batchedUpdates } from 'react-dom'
 
 function ClientInfo(props) {
-  const { engine, editMode, enqueueSnackbar } = props
-  const { data, isLoading, isFetching, isError, error } = useCustomers()
 
+  const { engine, enqueueSnackbar } = props
   const {
     control,
     getValues,
     setValue
   } = useFormContext()
+  const [search, setSearch] = React.useState('')
+  const [inputValue, setInputValue] = React.useState('')
+  const { data, isLoading, isFetching, isError, error } = useCustomerSearch(search)
 
   const [selectedCustomer, setSelectedCustomer] = React.useState(null)
 
@@ -24,23 +26,24 @@ function ClientInfo(props) {
       const errorMessage = message ? `${message} - ${status}` : error.message
       enqueueSnackbar(errorMessage, { variant: 'error' })
     }
-  }, [isError, error])
+  }, [isError, error, enqueueSnackbar])
 
   const handleCustomer = React.useCallback(() => {
     const customerId = getValues('customer_id')
-    if (data && customerId) {
-      const customer = data.find(c => c.id === Number(customerId))
+    if (props.editMode && customerId) {
+      const customer = getValues('customer')
       if (customer) {
         setSelectedCustomer(customer)
         engine.customer = customer
         setValue('customer_number', customer.account_number)
+        setValue('customer_language', customer.language || '')
       }
     }
-  }, [data, engine])
+  }, [engine, getValues])
 
   React.useEffect(() => {
-    handleCustomer()
-  }, [data, engine])
+    if (props.editMode) handleCustomer()
+  }, [props.editMode, handleCustomer])
 
   React.useImperativeHandle(props.customerRef, () => ({
     resetCustomer: handleCustomer
@@ -56,27 +59,43 @@ function ClientInfo(props) {
           render={({ field, fieldState }) => {
             return (
               <Autocomplete
-                {...field}
                 options={data || []}
                 loading={isLoading || isFetching}
-                value={data?.find((c) => c.id === Number(field.value)) || null}
+                value={selectedCustomer}
+                inputValue={inputValue || ''}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === 'input') {
+                    setInputValue(newInputValue)
+                    setSearch(newInputValue)
+                  } else if (reason === 'reset') {
+                    setInputValue(newInputValue)
+                  }
+                }}
                 onChange={(_, value) => {
-                  unstable_batchedUpdates(async () => {
+                  unstable_batchedUpdates(() => {
                     field.onChange(value?.id || '')
-                    setValue('customer_language', value.language)
+                    setValue('customer_language', value?.language || '')
                     setSelectedCustomer(value)
                     engine.customer = value
+                    if (value) {
+                      setInputValue(`${value.account_number} - ${value.name}`)
+                    }
                     props.accessorialRef.current?.loadRateSheet()
                   })
                 }}
-                getOptionLabel={option =>
-                  option ? `${option.account_number} - ${option.name}` : ''
-                }
+                getOptionLabel={option => option ? `${option.account_number} - ${option.name}` : ''}
                 isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                filterOptions={(x) => x}
+                noOptionsText={
+                  search && search.length < 2
+                    ? 'Type at least 2 characters to search'
+                    : 'No customers found'
+                }
                 renderInput={params => (
                   <TextInput
                     {...params}
                     label='Customer*'
+                    name='customer_id'
                     fullWidth
                     error={!!fieldState?.error}
                     helperText={fieldState?.error?.message}
@@ -85,7 +104,7 @@ function ClientInfo(props) {
                         ...params.InputProps,
                         endAdornment: (
                           <>
-                            {isLoading ? (
+                            {(isLoading || isFetching) ? (
                               <CircularProgress color="inherit" size={20} />
                             ) : null}
                             {params.InputProps.endAdornment}

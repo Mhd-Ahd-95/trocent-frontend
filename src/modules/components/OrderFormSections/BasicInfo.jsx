@@ -14,9 +14,10 @@ import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import moment from 'moment'
 import { AddressBookContext } from '../../contexts'
 import { unstable_batchedUpdates } from 'react-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 function BasicInfo(props) {
-  const { data, isLoading, engine } = props
+  const { engine } = props
 
   const {
     register,
@@ -26,14 +27,20 @@ function BasicInfo(props) {
   } = useFormContext()
 
   const { terminals, loading } = React.useContext(AddressBookContext)
+  const queryClient = useQueryClient();
 
   const handleIsCrossdock = (checked) => {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(async () => {
       if (checked) {
-        const value = data?.find(ab => ab.name.toLowerCase() === 'messagers')
+        const value = queryClient.getQueryData(['addressBookByName', 'messagers'])
+
         props.shipperSelectValue.current = value ? value : null
         props.receiverSelectValue.current = value ? value : null
+
         if (!value) return
+
+        props.crossdockReceiverRef.current?.loadReceiver(value)
+        props.crossdockShipperRef.current?.loadShipper(value)
 
         setValue('shipper_id', value.id || '')
         setValue('shipper_email', value.email || '')
@@ -68,11 +75,13 @@ function BasicInfo(props) {
         engine.receiver_city = value.city || ''
         engine.receiverProvince = value.province || ''
 
-        // props.accessorialRef.current?.loadRateSheet()
+        props.accessorialRef.current?.loadRateSheet()
 
       } else {
         props.shipperSelectValue.current = null
         props.receiverSelectValue.current = null
+        props.crossdockReceiverRef.current?.loadReceiver(null)
+        props.crossdockShipperRef.current?.loadShipper(null)
         setValue('shipper_id', '')
         setValue('shipper_email', '')
         setValue('shipper_contact_name', '')
@@ -106,16 +115,8 @@ function BasicInfo(props) {
         engine.receiver_city = ''
         engine.receiverProvince = ''
       }
-
-      props.calculationRef?.current?.recalculate()
     })
   }
-
-  React.useEffect(() => {
-    if (data && getValues('is_crossdock')) {
-      handleIsCrossdock(getValues('is_crossdock'))
-    }
-  }, [data, isLoading])
 
   return (
     <Grid container spacing={3}>
@@ -164,9 +165,11 @@ function BasicInfo(props) {
                   props.calculationRef.current?.recalculate()
                 }
               }}
+              onClose={() => field.onBlur()}
               slotProps={{
                 textField: {
                   fullWidth: true,
+                  onBlur: field.onBlur,
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
@@ -269,17 +272,10 @@ function BasicInfo(props) {
                       const checked = e.target.checked
                       unstable_batchedUpdates(() => {
                         field.onChange(checked)
-                        props.accessorialRef.current?.handleChangeNoCharge(checked)
-                        // engine.isNoCharge = false
+                        handleIsCrossdock(checked)
                         const accessorials = getValues('customer_accessorials')
                         const index = accessorials.findIndex(acc => acc.charge_name.toLowerCase() === 'crossdock')
-                        if (index !== -1) {
-                          props.accessorialRef.current?.change(checked, accessorials[index], index)
-                        }
-                        else {
-                          props.calculationRef.current?.recalculate()
-                        }
-                        handleIsCrossdock(checked)
+                        props.accessorialRef.current?.change(checked, accessorials[index], index, true)
                         if (checked) {
                           setValue('quote', false)
                           setValue('order_status', 'Approved')
@@ -306,7 +302,7 @@ function BasicInfo(props) {
           render={({ field }) => (
             <Autocomplete
               {...field}
-              options={['Order Entity', 'Order Billing']}
+              options={['Order Entry', 'Order Billing']}
               getOptionLabel={option => option}
               onChange={(_, value) => {
                 field.onChange(value)
@@ -337,20 +333,20 @@ function BasicInfo(props) {
               {...field}
               options={[
                 'Pending',
-                'Billing',
                 'Quote',
                 'Entered',
                 'Dispatched',
                 'On Dock',
-                'Arrrived Shipper',
+                'Arrived Shipper',
                 'Picked Up',
-                'Arrived Receiver',
+                'Arrived Consignee',
                 'Delivered',
                 'Approved',
                 'Billed',
                 'Canceled'
               ]}
               onChange={(_, value) => field.onChange(value)}
+              disabled={!props.editMode}
               renderInput={params => (
                 <TextInput
                   {...params}

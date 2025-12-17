@@ -41,6 +41,28 @@ export function useAddressBook(cid) {
     });
 }
 
+export const useAddressBookSearch = (search) => {
+    const srch = String(search).toLowerCase().trim()
+    const queryClient = useQueryClient();
+    return useQuery({
+        queryKey: ['addressBookSearch', srch],
+        queryFn: async () => {
+            const cachedBooks = queryClient.getQueryData(['addressBooks']) || [];
+            if (cachedBooks.length > 0) {
+                const cached = cachedBooks.filter(ab => ab.name.toLowerCase().includes(srch))
+                if (cached.length > 0) return cached
+            }
+            const res = await AddressBooksApi.searchAddressBooks(srch)
+            return res.data.data || []
+        },
+        enabled: srch.length >= 2,
+        staleTime: 3 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    })
+}
+
 
 export function useAddressBookMutations() {
     const queryClient = useQueryClient()
@@ -62,6 +84,8 @@ export function useAddressBookMutations() {
             queryClient.setQueryData(['addressBooks'], (old = []) => {
                 return [newDriver, ...old]
             });
+            queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
+            queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
             enqueueSnackbar('Address Book has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -78,6 +102,8 @@ export function useAddressBookMutations() {
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
                 queryClient.setQueryData(['addressBook', Number(updated.id)], updated)
+                queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
                 enqueueSnackbar('Address Book has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -95,6 +121,8 @@ export function useAddressBookMutations() {
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
                 queryClient.setQueryData(['addressBook', Number(updated.id)], updated)
+                queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
                 // enqueueSnackbar(`${updated.name} updated`, { variant: 'success' });
             },
             onError: handleError,
@@ -114,6 +142,8 @@ export function useAddressBookMutations() {
                 );
                 enqueueSnackbar('Address Book has been deleted successfully', { variant: 'success' });
             }
+            queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
+            queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
         },
         onError: handleError,
     });
@@ -129,6 +159,8 @@ export function useAddressBookMutations() {
                     old.filter((item) => !iids.includes(item.id))
                 );
                 enqueueSnackbar('Selected Address Books been deleted successfully', { variant: 'success' });
+                queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
             }
         },
         onError: handleError,

@@ -7,7 +7,8 @@ import {
   GroupsOutlined as Customer,
   SettingsOutlined as Setting,
   GppGoodOutlined as Access,
-  ExpandMore
+  ExpandMore,
+  ReceiptLongOutlined
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
@@ -147,7 +148,8 @@ function SideMenu(props) {
 
   const itemsLinks = [
     { text: 'Dashboard', icon: <Dashboard />, url: '/' },
-    { text: 'Orders', icon: <Order />, url: '/orders' },
+    { text: 'Orders', icon: <ReceiptLongOutlined />, url: '/orders' },
+    { text: 'Dispatch', icon: <Order />, url: '/dispatch' },
     {
       text: 'Customers',
       icon: <Customer />,

@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import moment from 'moment';
+import CustomersApi from '../../apis/Customers.api';
 
-// Translations object
 const translations = {
     en: {
         title: 'STRAIGHT BILL OF LADING',
@@ -10,7 +10,7 @@ const translations = {
         client: 'CLIENT:',
         reference: 'REFERENCE:',
         shipper: 'SHIPPER',
-        receiver: 'RECEIVER:',
+        receiver: 'RECEIVER',
         specialInstructions: 'SPECIAL INSTRUCTIONS',
         freightType: 'FREIGHT TYPE',
         description: 'DESCRIPTION',
@@ -26,8 +26,9 @@ const translations = {
         timeOut: 'TIME OUT:',
         shippedBy: 'SHIPPED IN GOOD ORDER BY:',
         receivedBy: 'RECEIVED IN GOOD ORDER BY:',
-        signature: 'Signature',
-        liabilityNotice: 'MAXIMUM LIABILITY OF $2.00/LB OR $4.40/KG UNLESS DECLARED VALUE STATES OTHERWISE NOTICE OF CLAIM MUST BE SUBMITTED IN WRITING WITHIN 24 HOURS OF DELIVERY.',
+        signature: '',
+        liabilityNotice: 'MAXIMUM LIABILITY OF $2.00/LB OR $4.40/KG UNLESS DECLARED VALUE STATES OTHERWISE.',
+        liabilityNotice2: 'NOTICE OF CLAIM MUST BE SUBMITTED IN WRITING WITHIN 24 HOURS OF DELIVERY.',
         poweredBy: 'POWERED BY '
     },
     fr: {
@@ -53,14 +54,16 @@ const translations = {
         timeOut: 'HEURE DE SORTIE:',
         shippedBy: 'EXPÉDIÉ EN BON ÉTAT PAR:',
         receivedBy: 'REÇU EN BON ÉTAT PAR:',
-        signature: 'Signature',
-        liabilityNotice: 'RESPONSABILITÉ MAXIMALE DE 2,00 $/LB OU 4,40 $/KG SAUF INDICATION CONTRAIRE DE LA VALEUR DÉCLARÉE. L\'AVIS DE RÉCLAMATION DOIT ÊTRE SOUMIS PAR ÉCRIT DANS LES 24 HEURES SUIVANT LA LIVRAISON.',
+        signature: '',
+        liabilityNotice: 'RESPONSABILITÉ MAXIMALE DE 2,00 $/LB OU 4,40 $/KG SAUF INDICATION CONTRAIRE DE LA VALEUR DÉCLARÉE.',
+        liabilityNotice2: 'L\'AVIS DE RÉCLAMATION DOIT ÊTRE SOUMIS PAR ÉCRIT DANS LES 24 HEURES SUIVANT LA LIVRAISON.',
         poweredBy: 'PROPULSÉ PAR '
     }
 };
 
 export const generateBillOfLadingPDF = async (data, language = 'en') => {
     const t = translations[language] || translations.en;
+    const { messagers } = data
 
     const pdf = new jsPDF({
         orientation: 'portrait',
@@ -75,16 +78,13 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     const maxContentHeight = pageHeight - margin - footerHeight;
     let yPos = margin;
 
-    // Function to add footer to current page
     const addFooter = () => {
         const footerY = pageHeight - footerHeight;
 
-        // Draw separator line
         pdf.setDrawColor(204, 204, 204);
         pdf.setLineWidth(0.1);
         pdf.line(margin, footerY, pageWidth - margin, footerY);
 
-        // Add "Powered by" text centered
         const poweredY = footerY + 5;
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(7);
@@ -104,7 +104,6 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
         pdf.setTextColor(0, 0, 0);
     };
 
-    // Function to check if new page is needed
     const checkAddPage = (requiredHeight) => {
         if (yPos + requiredHeight > maxContentHeight) {
             addFooter();
@@ -127,15 +126,26 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     let headerYPos = yPos;
 
-    // Add logo
     try {
         const img = new Image();
-        img.src = '/assets/logo-messagers.png';
+        let src = '/assets/logo-messagers.png';
+        if (data.customer_id) {
+            const logo = await CustomersApi.getLogo(data.customer_id)
+            if (logo.data) {
+                const blob = new Blob([logo.data])
+                const url = URL.createObjectURL(blob)
+                src = url
+            }
+        }
+        img.src = src
         await new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = reject;
         });
         pdf.addImage(img, 'PNG', margin, headerYPos, 70, 10);
+        if (src !== '/assets/logo-messagers.png') {
+            URL.revokeObjectURL(src);
+        }
     } catch (error) {
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
@@ -150,21 +160,29 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     pdf.setFontSize(7);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(data?.receiver_address || '', margin, headerYPos);
+    pdf.text(messagers?.address || '', margin, headerYPos);
     headerYPos += 4;
-    pdf.text(`${data?.receiver_city || ''}, ${data?.receiver_province || ''}, ${data?.receiver_postal_code || ''}`, margin, headerYPos);
+    pdf.text(`${messagers?.city || ''}, ${messagers?.province || ''}, ${messagers?.postal_code || ''}`, margin, headerYPos);
     headerYPos += 4;
-    pdf.text(`TEL. ${data?.receiver_phone_number || ''}`, margin, headerYPos);
+    pdf.text(`TEL. ${messagers?.phone_number || ''}`, margin, headerYPos);
 
     let rightYPos = yPos + 12;
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(t.orderNumber, pageWidth - margin, rightYPos, { align: 'right' });
+    const orderNumberLabelText = t.orderNumber + ' '
+    const orderNumberLabelWidth = pdf.getTextWidth(orderNumberLabelText)
+    const orderNumberValue = String(data?.order_number)
+    const orderNumberValueWidth = pdf.getTextWidth(orderNumberValue)
+    const totalOrderNumberWidth = orderNumberLabelWidth + orderNumberValueWidth
+    const orderNumberStartX = pageWidth - margin - totalOrderNumberWidth
+    pdf.text(orderNumberLabelText, orderNumberStartX, rightYPos);
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(orderNumberValue, orderNumberStartX + orderNumberLabelWidth, rightYPos)
 
-    rightYPos += 5;
-    pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(String(data?.order_number || ''), pageWidth - margin, rightYPos, { align: 'right' });
+    // rightYPos += 5;
+    // pdf.setFontSize(8);
+    // pdf.setFont('helvetica', 'normal');
+    // pdf.text(String(data?.order_number || ''), pageWidth - margin, rightYPos, { align: 'right' });
 
     rightYPos += 5;
 
@@ -200,7 +218,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFont('helvetica', 'bold');
     pdf.text(t.reference, pageWidth / 2 + 10, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(data?.references && data.references.length > 0 ? data.references[0] : 'N/A', pageWidth / 2 + 32, yPos);
+    pdf.text(data?.reference_numbers && data.reference_numbers.length > 0 ? data.reference_numbers[0] : 'N/A', pageWidth / 2 + 32, yPos);
 
     yPos += 10;
 
@@ -349,6 +367,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFillColor(245, 245, 245);
     pdf.rect(tableStartX, yPos, totalTableWidth, 5, 'FD');
 
+    const unit = data.freights?.length > 0 ? data.freights[0].unit : ''
     xPos = tableStartX;
     pdf.setFont('helvetica', 'bold');
     pdf.text(t.totals, xPos + 1, yPos + 3.5);
@@ -357,32 +376,42 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.text(String(data.total_pieces || 0), xPos + colWidths[2] / 2, yPos + 3.5, { align: 'center' });
     xPos += colWidths[2];
     pdf.line(xPos, yPos, xPos, yPos + 5);
-    pdf.text(String(data.total_actual_weight || 0), xPos + colWidths[3] / 2, yPos + 3.5, { align: 'center' });
+    pdf.text(`${String(data.total_actual_weight || 0)} ${unit}`, xPos + colWidths[3] / 2, yPos + 3.5, { align: 'center' });
     xPos += colWidths[3];
     pdf.line(xPos, yPos, xPos, yPos + 5);
-    pdf.text(String(data.total_volume_weight || 0), xPos + colWidths[4] / 2, yPos + 3.5, { align: 'center' });
+    pdf.text(`${String(data.total_volume_weight || 0)} ${unit}`, xPos + colWidths[4] / 2, yPos + 3.5, { align: 'center' });
     xPos += colWidths[4];
     pdf.line(xPos, yPos, xPos, yPos + 5);
 
     yPos += 8;
 
-    const accessorialHeight = 16;
+    const accessorials = (data.customer_accessorials || []).filter(acc => acc.is_included).concat(data.additional_service_charges || []);
+    const lineHeight = 3.5;
+    const headerHeight = 4;
+    const padding = 3;
+    const accessorialContentHeight = accessorials.length > 0 ? (accessorials.length * lineHeight) : lineHeight;
+    const accessorialHeight = headerHeight + accessorialContentHeight + padding;
+
     checkAddPage(accessorialHeight + 5);
 
-    drawBox(margin, yPos, pageWidth - 2 * margin, accessorialHeight);
-    drawBox(margin, yPos, pageWidth - 2 * margin, 4, true);
+    const accessorialBoxStartY = yPos;
+    drawBox(margin, accessorialBoxStartY, pageWidth - 2 * margin, accessorialHeight);
+    drawBox(margin, accessorialBoxStartY, pageWidth - 2 * margin, headerHeight, true);
+
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(8);
-    pdf.text(t.accessorials, margin + 1, yPos + 3);
+    pdf.text(t.accessorials, margin + 1, accessorialBoxStartY + 3);
 
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(8);
-    let accY = yPos + 7;
-    const accessorials = (data.customer_accessorials || []).filter(acc => acc.is_included).concat(data.additional_service_charges || []);
-    accessorials.forEach((a) => {
-        pdf.text(`${a.charge_amount || ''} X ${a.charge_name || ''}`, margin + 1, accY);
-        accY += 3.5;
-    });
+    let accY = accessorialBoxStartY + headerHeight + 3;
+
+    if (accessorials.length > 0) {
+        accessorials.forEach((a) => {
+            pdf.text(`${a.charge_amount || ''} X ${a.charge_name || ''}`, margin + 1, accY);
+            accY += lineHeight;
+        });
+    }
 
     yPos += accessorialHeight + 5;
 
@@ -396,7 +425,31 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFont('helvetica', 'normal');
     pdf.text(data.pickup_date ? moment(data.pickup_date).format('YYYY-MM-DD') : 'N/A', margin + 1, yPos + 8);
     pdf.setFontSize(7);
-    pdf.text(`${t.timeIn} ${data.pickup_in || '00:00'} ${t.timeOut} ${data.pickup_out || '00:00'}`, margin + 1, yPos + 11);
+    const timeInPLabel = t.timeIn + ' '
+    const timeInPWidth = pdf.getTextWidth(timeInPLabel)
+    const timeInPValue = data.delivery_in || '00:00'
+
+    const timeOutPLabel = ' ' + t.timeOut + ' '
+    const timeOutPValue = data.delivery_out || '00:00'
+
+    let currentPX = margin + 1
+    const yPPos2 = yPos + 11
+
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(timeInPLabel, currentPX, yPPos2)
+    currentPX += pdf.getTextWidth(timeInPLabel)
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(timeInPValue, currentPX, yPPos2)
+    currentPX += pdf.getTextWidth(timeInPValue)
+
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(timeOutPLabel, currentPX, yPPos2)
+    currentPX += pdf.getTextWidth(timeOutPLabel)
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(timeOutPValue, currentPX, yPPos2)
+    // pdf.text(`${t.timeIn} ${data.pickup_in || '00:00'} ${t.timeOut} ${data.pickup_out || '00:00'}`, margin + 1, yPos + 11);
 
     drawBox(receiverX, yPos, boxWidth, dateBoxHeight);
     pdf.setFont('helvetica', 'bold');
@@ -405,7 +458,30 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFont('helvetica', 'normal');
     pdf.text(data.delivery_date ? moment(data.delivery_date).format('YYYY-MM-DD') : 'N/A', receiverX + 1, yPos + 8);
     pdf.setFontSize(7);
-    pdf.text(`${t.timeIn} ${data.delivery_in || '00:00'} ${t.timeOut} ${data.delivery_out || '00:00'}`, receiverX + 1, yPos + 11);
+    const timeInLabel = t.timeIn + ' '
+    const timeInWidth = pdf.getTextWidth(timeInLabel)
+    const timeInValue = data.pickup_in || '00:00'
+
+    const timeOutLabel = ' ' + t.timeOut + ' '
+    const timeOutValue = data.pickup_out || '00:00'
+
+    let currentX = receiverX + 1
+    const yPos2 = yPos + 11
+
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(timeInLabel, currentX, yPos2)
+    currentX += pdf.getTextWidth(timeInLabel)
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(timeInValue, currentX, yPos2)
+    currentX += pdf.getTextWidth(timeInValue)
+
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(timeOutLabel, currentX, yPos2)
+    currentX += pdf.getTextWidth(timeOutLabel)
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.text(timeOutValue, currentX, yPos2)
 
     yPos += dateBoxHeight + 5;
 
@@ -427,19 +503,17 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     yPos += signatureHeight + 5;
 
-    // Add liability notice (not in footer, in content area)
     checkAddPage(12);
 
     pdf.setFontSize(7);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(0, 0, 0);
-    const notice = pdf.splitTextToSize(
-        t.liabilityNotice,
-        pageWidth - 2 * margin
-    );
+    const notice = pdf.splitTextToSize(t.liabilityNotice, pageWidth - 2 * margin);
     pdf.text(notice, margin, yPos);
+    yPos += 4
+    const notice2 = pdf.splitTextToSize(t.liabilityNotice2, pageWidth - 2 * margin);
+    pdf.text(notice2, margin, yPos);
 
-    // Add footer to the last page
     addFooter();
 
     return pdf;

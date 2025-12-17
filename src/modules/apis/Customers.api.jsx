@@ -4,7 +4,10 @@ const getCustomers = () => CustomAxios.get('/api/customers')
 
 const getCustomer = rid => CustomAxios.get(`/api/customers/${rid}`)
 
-const updateCustomer = (rid, ab) => CustomAxios.put(`/api/customers/${rid}`, ab)
+const updateCustomer = (rid, ab) => {
+    ab.append('_method', 'PUT');
+    return CustomAxios.post(`/api/customers/${rid}`, ab, { headers: { "Content-Type": "multipart/form-data", } })
+}
 
 const createCustomer = ab => CustomAxios.post('/api/customers', ab,
     {
@@ -22,6 +25,10 @@ const downloadFile = id => CustomAxios.get(`/api/customers/download-file/${id}`,
 
 const getCustomersNames = () => CustomAxios.get('/api/customers/names')
 
+const customerSearch = (search) => CustomAxios.get(`/api/customers/search/${search}`)
+
+const getLogo = (cid) => CustomAxios.get(`/api/customers/logo/${cid}`, { responseType: 'blob' })
+
 export default {
     getCustomer,
     getCustomers,
@@ -30,5 +37,7 @@ export default {
     deleteCustomer,
     deleteCustomers,
     downloadFile,
-    getCustomersNames
+    getCustomersNames,
+    customerSearch,
+    getLogo
 }
