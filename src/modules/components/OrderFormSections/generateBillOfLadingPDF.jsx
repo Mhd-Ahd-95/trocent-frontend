@@ -131,8 +131,9 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
         let src = '/assets/logo-messagers.png';
         if (data.customer_id) {
             const logo = await CustomersApi.getLogo(data.customer_id)
-            if (logo.data) {
-                const blob = new Blob([logo.data])
+            const contentType = logo.headers['content-type'];
+            if (contentType && contentType.startsWith('image/')) {
+                const blob = new Blob([logo.data], { type: contentType })
                 const url = URL.createObjectURL(blob)
                 src = url
             }
