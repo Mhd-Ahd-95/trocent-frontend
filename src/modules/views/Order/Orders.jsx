@@ -92,152 +92,149 @@ export default function OrdersView() {
   }, [selectedRowRef.current, handleClose])
 
 
-  const columns = React.useMemo(() => [
-    {
-      headerName: 'Order #',
-      field: 'order_number',
-      flex: 1,
-      minWidth: 60
-    },
-    {
-      headerName: 'Customer',
-      field: 'customer_name',
-      flex: 1,
-      minWidth: 200
-    },
-    {
-      headerName: 'References',
-      field: 'reference_numbers',
-      flex: 1,
-      minWidth: 100,
-      renderCell: params => params.value && params.value.length > 0 ? params.value[0] : ''
-    },
-    {
-      headerName: 'Status',
-      field: 'order_status',
-      flex: 1,
-      minWidth: 90,
-      renderCell: params => params.value ? (
-        <CustomCell
-          color={
-            params.value === 'Canceled' ? 'red' :
-              params.value === 'Entered' ? 'blue' :
-                params.value === 'Dispatched' ? 'green' :
-                  null
-          }
-        >
-          {params.value}
-        </CustomCell>
-      ) : ''
-    },
-    {
-      headerName: 'Shipper Name',
-      field: 'shipper_name',
-      flex: 1,
-      minWidth: 150
-    },
-    {
-      headerName: 'Shipper Address',
-      field: 'shipper_address',
-      flex: 1,
-      minWidth: 230,
-      description: 'Shipper: Address, City, Province, Postal Code',
-      display: 'flex',
-      renderCell: params => {
-        const fullAddress = (
-          <div style={{ whiteSpace: 'pre-line' }}>
-            {params.row.shipper_address || ''}<br></br>
-            {params.row.shipper_city || '-'}<br></br>
-            {params.row.shipper_province || '-'}<br></br>
-            {params.row.shipper_postal_code || '-'}
-          </div>
-        )
-        return <Tooltip placement='auto-end' title={fullAddress} arrow ><Box style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <Typography variant='caption'>{params.row.shipper_address ? params.row.shipper_address : '-'}</Typography>
-          <Typography variant='caption'>{params.row.shipper_city ? params.row.shipper_city : '-'} | {params.row.shipper_province ? params.row.shipper_province : '-'} | {params.row.shipper_postal_code ? params.row.shipper_postal_code : '-'}</Typography>
-          {/* <Typography variant='caption'>{params.row.shipper_province ? params.row.shipper_province : ''}</Typography>
-          <Typography variant='caption'>{params.row.shipper_postal_code ? params.row.shipper_postal_code : ''}</Typography> */}
-        </Box>
-        </Tooltip>
-      }
-    },
-    {
-      headerName: 'Receiver Name',
-      field: 'receiver_name',
-      flex: 1,
-      minWidth: 150
-    },
-    {
-      headerName: 'Receiver Address',
-      field: 'receiver_address',
-      flex: 1,
-      minWidth: 230,
-      description: 'Receiver: Address, City, Province, Postal Code',
-      display: 'flex',
-      renderCell: params => {
-        const fullAddress = (
-          <div style={{ whiteSpace: 'pre-line' }}>
-            {params.row.receiver_address || ''}<br></br>
-            {params.row.receiver_city || '-'}<br></br>
-            {params.row.receiver_province || '-'}<br></br>
-            {params.row.receiver_postal_code || '-'}
-          </div>
-        )
-        return <Tooltip placement='auto-end' title={fullAddress} arrow ><Box style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <Typography variant='caption'>{params.row.receiver_address ? params.row.receiver_address : '-'}</Typography>
-          <Typography variant='caption'>{params.row.receiver_city ? params.row.receiver_city : '-'} | {params.row.receiver_province ? params.row.receiver_province : '-'} | {params.row.receiver_postal_code ? params.row.receiver_postal_code : '-'}</Typography>
-          {/* <Typography variant='caption'>{params.row.shipper_province ? params.row.shipper_province : ''}</Typography>
-          <Typography variant='caption'>{params.row.shipper_postal_code ? params.row.shipper_postal_code : ''}</Typography> */}
-        </Box>
-        </Tooltip>
-      }
-    },
-    {
-      headerName: 'PickUp',
-      field: 'pickup_date',
-      flex: 1,
-      minWidth: 160,
-      valueFormatter: val => moment(val).format('MMM DD, YYYY')
-    },
-    {
-      headerName: 'Delivery',
-      field: 'delivery_date',
-      flex: 1,
-      minWidth: 160,
-      valueFormatter: val => moment(val).format('MMM DD, YYYY')
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      sortable: false,
-      flex: 1,
-      headerAlign: 'center',
-      minWidth: 80,
-      disableColumnMenu: true,
-      filterable: false,
-      editable: false,
-      renderCell: params => (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <Tooltip title='Actions'>
-            <span>
-              <IconButton
-                onClick={(e) => handleClick(e, params.row)}
-              // size="small"
-              >
-                <MoreHoriz />
-              </IconButton>
-            </span>
+  const columns = React.useMemo(() =>
+    [
+      {
+        headerName: 'Order #',
+        field: 'order_number',
+        flex: 1,
+        minWidth: 60
+      },
+      {
+        headerName: 'Customer',
+        field: 'customer_name',
+        flex: 1,
+        minWidth: 200
+      },
+      {
+        headerName: 'References',
+        field: 'reference_numbers',
+        flex: 1,
+        minWidth: 100,
+        renderCell: params => params.value && params.value.length > 0 ? params.value[0] : ''
+      },
+      {
+        headerName: 'Status',
+        field: 'order_status',
+        flex: 1,
+        minWidth: 90,
+        renderCell: params => params.value ? (
+          <CustomCell
+            color={
+              params.value === 'Canceled' ? 'red' :
+                params.value === 'Entered' ? 'blue' :
+                  params.value === 'Dispatched' ? 'green' :
+                    null
+            }
+          >
+            {params.value}
+          </CustomCell>
+        ) : ''
+      },
+      {
+        headerName: 'Shipper Name',
+        field: 'shipper_name',
+        flex: 1,
+        minWidth: 150
+      },
+      {
+        headerName: 'Shipper Address',
+        field: 'shipper_address',
+        flex: 1,
+        minWidth: 230,
+        description: 'Shipper: Address, City, Province, Postal Code',
+        display: 'flex',
+        renderCell: params => {
+          const fullAddress = (
+            <div style={{ whiteSpace: 'pre-line' }}>
+              {params.row.shipper_address || ''}<br></br>
+              {params.row.shipper_city || '-'}<br></br>
+              {params.row.shipper_province || '-'}<br></br>
+              {params.row.shipper_postal_code || '-'}
+            </div>
+          )
+          return <Tooltip placement='auto-end' title={fullAddress} arrow ><Box style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <Typography variant='caption'>{params.row.shipper_address || '-'}</Typography>
+            <Typography variant='caption'>{params.row.shipper_city || '-'} | {params.row.shipper_province || '-'} | {params.row.shipper_postal_code || '-'}</Typography>
+          </Box>
           </Tooltip>
-        </Box>
-      )
-    }
-  ], [handleClick])
+        }
+      },
+      {
+        headerName: 'Receiver Name',
+        field: 'receiver_name',
+        flex: 1,
+        minWidth: 150
+      },
+      {
+        headerName: 'Receiver Address',
+        field: 'receiver_address',
+        flex: 1,
+        minWidth: 230,
+        description: 'Receiver: Address, City, Province, Postal Code',
+        display: 'flex',
+        renderCell: params => {
+          const fullAddress = (
+            <div style={{ whiteSpace: 'pre-line' }}>
+              {params.row.receiver_address || ''}<br></br>
+              {params.row.receiver_city || '-'}<br></br>
+              {params.row.receiver_province || '-'}<br></br>
+              {params.row.receiver_postal_code || '-'}
+            </div>
+          )
+          return <Tooltip placement='auto-end' title={fullAddress} arrow ><Box style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <Typography variant='caption'>{params.row.receiver_address ? params.row.receiver_address : '-'}</Typography>
+            <Typography variant='caption'>{params.row.receiver_city || '-'} | {params.row.receiver_province || '-'} | {params.row.receiver_postal_code || '-'}</Typography>
+          </Box>
+          </Tooltip>
+        }
+      },
+      {
+        headerName: 'PickUp',
+        field: 'pickup_date',
+        flex: 1,
+        minWidth: 160,
+        valueFormatter: val => moment(val).format('MMM DD, YYYY')
+      },
+      {
+        headerName: 'Delivery',
+        field: 'delivery_date',
+        flex: 1,
+        minWidth: 160,
+        valueFormatter: val => moment(val).format('MMM DD, YYYY')
+      },
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        sortable: false,
+        flex: 1,
+        headerAlign: 'center',
+        minWidth: 80,
+        disableColumnMenu: true,
+        filterable: false,
+        editable: false,
+        renderCell: params => (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Tooltip title='Actions'>
+              <span>
+                <IconButton
+                  onClick={(e) => handleClick(e, params.row)}
+                // size="small"
+                >
+                  <MoreHoriz />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        )
+      }
+    ], [handleClick])
 
   return (
     <MainLayout

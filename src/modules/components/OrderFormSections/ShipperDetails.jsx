@@ -140,7 +140,6 @@ function ShipperDetails(props) {
                 }}
                 onBlur={async () => {
                   if (inputValue && !selectedShipper) {
-                    console.log(inputValue);
                     try {
                       const existingShipper = data?.find(c => c.name?.trim().toLowerCase() === inputValue.trim().toLowerCase())
                       if (existingShipper) {
@@ -315,7 +314,6 @@ function ShipperDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  console.log('object');
                   patch.mutate({ id: selectedShipper?.id, payload: { [key]: value } })
                 }
               }}

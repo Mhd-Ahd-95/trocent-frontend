@@ -89,7 +89,6 @@ export function useCustomerMutation() {
     const create = useMutation({
         mutationFn: async (payload) => {
             const res = await CustomersApi.createCustomer(payload);
-            console.log(res);
             return res.data;
         },
         onSuccess: (newCust) => {
@@ -116,7 +115,6 @@ export function useCustomerMutation() {
         {
             mutationFn: async ({ id, payload }) => {
                 const res = await CustomersApi.updateCustomer(Number(id), payload);
-                console.log(res);
                 return res.data;
             },
             onSuccess: (updated) => {
