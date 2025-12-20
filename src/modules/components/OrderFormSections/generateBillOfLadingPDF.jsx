@@ -32,7 +32,7 @@ const translations = {
         poweredBy: 'POWERED BY '
     },
     fr: {
-        title: 'CONNAISSEMENT DIRECT',
+        title: 'CONNAISSEMENT',
         orderNumber: 'NUMÉRO DE COMMANDE:',
         date: 'DATE:',
         client: 'CLIENT:',
@@ -81,8 +81,14 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     const addFooter = () => {
         const footerY = pageHeight - footerHeight;
 
-        pdf.setDrawColor(204, 204, 204);
-        pdf.setLineWidth(0.1);
+        //     pdf.setDrawColor(221, 145, 0);
+        // pdf.setLineWidth(0.8);
+        // pdf.line(margin, yPos, pageWidth - margin, yPos);
+        // pdf.setDrawColor(204, 204, 204);
+        // pdf.setLineWidth(0.1);
+
+        pdf.setDrawColor(221, 145, 0);
+        pdf.setLineWidth(0.8);
         pdf.line(margin, footerY, pageWidth - margin, footerY);
 
         const poweredY = footerY + 5;
@@ -131,11 +137,8 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
         let src = '/assets/logo-messagers.png';
         if (data.customer_id) {
             const logo = await CustomersApi.getLogo(data.customer_id)
-            const contentType = logo.headers['content-type'];
-            if (contentType && contentType.startsWith('image/')) {
-                const blob = new Blob([logo.data], { type: contentType })
-                const url = URL.createObjectURL(blob)
-                src = url
+            if (logo.data && logo.data?.startsWith('data:image')) {
+                src = logo.data
             }
         }
         img.src = src
@@ -144,10 +147,8 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
             img.onerror = reject;
         });
         pdf.addImage(img, 'PNG', margin, headerYPos, 70, 10);
-        if (src !== '/assets/logo-messagers.png') {
-            URL.revokeObjectURL(src);
-        }
     } catch (error) {
+        console.log(error);
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.text('MESSAGERS', margin, headerYPos + 5);
@@ -179,11 +180,6 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.text(orderNumberLabelText, orderNumberStartX, rightYPos);
     pdf.setFont('helvetica', 'normal')
     pdf.text(orderNumberValue, orderNumberStartX + orderNumberLabelWidth, rightYPos)
-
-    // rightYPos += 5;
-    // pdf.setFontSize(8);
-    // pdf.setFont('helvetica', 'normal');
-    // pdf.text(String(data?.order_number || ''), pageWidth - margin, rightYPos, { align: 'right' });
 
     rightYPos += 5;
 
@@ -341,8 +337,8 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
                 item.description || '',
                 String(item.pieces || 0),
                 `${item.weight || 0} ${item.unit || ''}`,
-                `${item.volume_weight || 0} ${item.unit || ''}`,
-                `${item.length || 0} X ${item.width || 0} X ${item.height || 0}`
+                `${Math.round(item.volume_weight * 100) / 100 || 0} ${item.unit || ''}`,
+                `${item.length || 0} X ${item.width || 0} X ${item.height || 0} ${item.dim_unit === 'cm' ? 'CM' : 'IN'}`
             ];
 
             rowData.forEach((text, i) => {
@@ -368,7 +364,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFillColor(245, 245, 245);
     pdf.rect(tableStartX, yPos, totalTableWidth, 5, 'FD');
 
-    const unit = data.freights?.length > 0 ? data.freights[0].unit : ''
+    const unit = data.freights?.length > 0 ? data.freights[0].unit : 'lbs'
     xPos = tableStartX;
     pdf.setFont('helvetica', 'bold');
     pdf.text(t.totals, xPos + 1, yPos + 3.5);
@@ -405,33 +401,38 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(8);
+    pdf.setCharSpace(0.2);
     let accY = accessorialBoxStartY + headerHeight + 3;
 
     if (accessorials.length > 0) {
         accessorials.forEach((a) => {
-            pdf.text(`${a.charge_amount || ''} X ${a.charge_name || ''}`, margin + 1, accY);
+            pdf.text(`${a.charge_quantity || ''}  X  ${a.charge_name || ''}`, margin + 1, accY);
             accY += lineHeight;
         });
     }
 
+    pdf.setCharSpace(0);
+
     yPos += accessorialHeight + 5;
 
     const dateBoxHeight = 13;
+    const dateHeaderHeight = 4;
     checkAddPage(dateBoxHeight + 5);
 
     drawBox(margin, yPos, boxWidth, dateBoxHeight);
+    drawBox(margin, yPos, boxWidth, dateHeaderHeight, true);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(8);
-    pdf.text(t.pickupDate, margin + 1, yPos + 4);
+    pdf.text(t.pickupDate, margin + 1, yPos + 3);
+
     pdf.setFont('helvetica', 'normal');
     pdf.text(data.pickup_date ? moment(data.pickup_date).format('YYYY-MM-DD') : 'N/A', margin + 1, yPos + 8);
     pdf.setFontSize(7);
     const timeInPLabel = t.timeIn + ' '
-    const timeInPWidth = pdf.getTextWidth(timeInPLabel)
-    const timeInPValue = data.delivery_in || '00:00'
+    const timeInPValue = data.pickup_in || '00:00'
 
     const timeOutPLabel = ' ' + t.timeOut + ' '
-    const timeOutPValue = data.delivery_out || '00:00'
+    const timeOutPValue = data.pickup_out || '00:00'
 
     let currentPX = margin + 1
     const yPPos2 = yPos + 11
@@ -450,21 +451,21 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     pdf.setFont('helvetica', 'normal')
     pdf.text(timeOutPValue, currentPX, yPPos2)
-    // pdf.text(`${t.timeIn} ${data.pickup_in || '00:00'} ${t.timeOut} ${data.pickup_out || '00:00'}`, margin + 1, yPos + 11);
 
     drawBox(receiverX, yPos, boxWidth, dateBoxHeight);
+    drawBox(receiverX, yPos, boxWidth, dateHeaderHeight, true);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(8);
-    pdf.text(t.deliveryDate, receiverX + 1, yPos + 4);
+    pdf.text(t.deliveryDate, receiverX + 1, yPos + 3);
+
     pdf.setFont('helvetica', 'normal');
     pdf.text(data.delivery_date ? moment(data.delivery_date).format('YYYY-MM-DD') : 'N/A', receiverX + 1, yPos + 8);
     pdf.setFontSize(7);
     const timeInLabel = t.timeIn + ' '
-    const timeInWidth = pdf.getTextWidth(timeInLabel)
-    const timeInValue = data.pickup_in || '00:00'
+    const timeInValue = data.delivery_in || '00:00'
 
     const timeOutLabel = ' ' + t.timeOut + ' '
-    const timeOutValue = data.pickup_out || '00:00'
+    const timeOutValue = data.delivery_out || '00:00'
 
     let currentX = receiverX + 1
     const yPos2 = yPos + 11
@@ -494,13 +495,13 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFontSize(7);
     pdf.text(t.shippedBy, margin + 1, yPos + 4);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(t.signature, margin + 1, yPos + 10);
+    pdf.text(data.pickup_signee || '', margin + 1, yPos + 10);
 
     drawBox(receiverX, yPos, boxWidth, signatureHeight);
     pdf.setFont('helvetica', 'bold');
     pdf.text(t.receivedBy, receiverX + 1, yPos + 4);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(t.signature, receiverX + 1, yPos + 10);
+    pdf.text(data.delivery_signee || '', receiverX + 1, yPos + 10);
 
     yPos += signatureHeight + 5;
 

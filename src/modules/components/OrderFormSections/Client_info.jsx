@@ -39,6 +39,9 @@ function ClientInfo(props) {
         setValue('customer_language', customer.language || '')
       }
     }
+    else {
+      setSelectedCustomer(null)
+    }
   }, [engine, getValues])
 
   React.useEffect(() => {

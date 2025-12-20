@@ -3,28 +3,30 @@ import { colors, Grid, Typography } from '@mui/material'
 import { StyledButton, SubmitButton } from '../../components'
 import { DeleteForeverOutlined } from '@mui/icons-material'
 
-export default function ConfirmModal (props) {
+export default function ConfirmModal(props) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const handleSubmitStatus = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
     await props.handleSubmit()
-    // props.handleClose()
+    props.handleClose()
   }
   return (
     <Grid container spacing={2} alignItems='center' justifyContent={'center'}>
-      <Grid size={'auto'}>
-        <DeleteForeverOutlined
-          fontSize='large'
-          color='error'
-          sx={{
-            backgroundColor: colors.red[100],
-            padding: 1,
-            borderRadius: '50%'
-          }}
-        />
-      </Grid>
+      {!props.noIcon &&
+        <Grid size={'auto'}>
+          <DeleteForeverOutlined
+            fontSize='large'
+            color='error'
+            sx={{
+              backgroundColor: colors.red[100],
+              padding: 1,
+              borderRadius: '50%'
+            }}
+          />
+        </Grid>
+      }
       <Grid size={12}>
         <Typography variant='body2' color='textPrimary' align='center' fontWeight={600}>
           {props.title}
@@ -63,12 +65,12 @@ export default function ConfirmModal (props) {
             <SubmitButton
               type='submit'
               variant='contained'
-              color='error'
+              color={props.noIcon ? 'primary' : 'error'}
               isLoading={isSubmitting}
               fullWidth
               textTransform='capitalize'
             >
-              Delete
+              {props.noIcon ? 'Confirm' : 'Delete'}
             </SubmitButton>
           </Grid>
           <Grid size='auto'>

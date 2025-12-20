@@ -937,10 +937,16 @@ export default class OrderEngine {
         }
     }
 
+    static arraysEqual = (a, b) => {
+        if (a.length !== b.length) return false;
+        return a.every((val, index) => val === b[index]);
+    }
+
     static getOrderUpdates = (touchedFields, oldData, newData) => {
         const section_fields = {
             freights: ['total_pieces', 'total_actual_weight', 'total_pieces_skid', 'total_chargeable_weight', 'total_weight_in_kg', 'service_type', 'is_manual_skid'],
             freight_charges: ['sub_total', 'provincial_tax', 'federal_tax', 'grand_total', 'no_charges', 'manual_charges', 'manual_fuel_surcharges'],
+            references: ['reference_numbers']
         }
 
         let sections_changed = new Set()
@@ -964,6 +970,13 @@ export default class OrderEngine {
                 for (let sfield of fields) {
                     let oldValue = oldData[sfield]
                     let newValue = newData[sfield]
+                    if (sfield === 'reference_numbers') {
+                        const isEqual = OrderEngine.arraysEqual(oldValue, newValue)
+                        if (!isEqual) {
+                            sections_changed.add(section)
+                        }
+                        break
+                    }
                     if (oldValue !== newValue) {
                         sections_changed.add(section)
                         break

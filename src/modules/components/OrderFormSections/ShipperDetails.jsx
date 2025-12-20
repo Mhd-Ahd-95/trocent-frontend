@@ -75,17 +75,17 @@ function ShipperDetails(props) {
     loadShipper: handleSelectedShipper,
     resetShipper: () => {
       setSelectedShipper({
-        id: getValues('shipper_id'),
-        name: getValues('shipper_name'),
-        email: getValues('shipper_email'),
-        contact_name: getValues('shipper_contact_name'),
-        phone_number: getValues('shipper_phone_number'),
-        address: getValues('shipper_address'),
-        suite: getValues('shipper_suite'),
-        city: getValues('shipper_city'),
-        province: getValues('shipper_province'),
-        postal_code: getValues('shipper_postal_code'),
-        special_instructions: getValues('shipper_special_instructions'),
+        id: getValues('shipper_id') || '',
+        name: getValues('shipper_name') || '',
+        email: getValues('shipper_email') || '',
+        contact_name: getValues('shipper_contact_name') || '',
+        phone_number: getValues('shipper_phone_number') || '',
+        address: getValues('shipper_address') || '',
+        suite: getValues('shipper_suite') || '',
+        city: getValues('shipper_city') || '',
+        province: getValues('shipper_province') || '',
+        postal_code: getValues('shipper_postal_code') || '',
+        special_instructions: getValues('shipper_special_instructions') || '',
       })
     }
   }))
@@ -107,7 +107,11 @@ function ShipperDetails(props) {
                 inputValue={inputValue || ''}
                 onInputChange={(event, newInputValue, reason) => {
                   if (reason === 'reset') {
-                    setInputValue(newInputValue)
+                    if (!newInputValue || newInputValue === 'undefined' || newInputValue === 'null') {
+                      setInputValue('')
+                    } else {
+                      setInputValue(newInputValue)
+                    }
                     return
                   }
                   else if (reason === 'input') {
@@ -136,6 +140,7 @@ function ShipperDetails(props) {
                 }}
                 onBlur={async () => {
                   if (inputValue && !selectedShipper) {
+                    console.log(inputValue);
                     try {
                       const existingShipper = data?.find(c => c.name?.trim().toLowerCase() === inputValue.trim().toLowerCase())
                       if (existingShipper) {
@@ -146,7 +151,7 @@ function ShipperDetails(props) {
                           handleSelect(existingShipper)
                         })
                       } else {
-                        const newShipper = await create.mutateAsync({ name: value })
+                        const newShipper = await create.mutateAsync({ name: inputValue })
                         if (newShipper && newShipper.id) {
                           unstable_batchedUpdates(() => {
                             field.onChange(newShipper.id)
@@ -298,8 +303,7 @@ function ShipperDetails(props) {
               label='Address*'
               variant='outlined'
               disabled={!selectedShipper?.id}
-              id='shipper_address'
-              name='shipper_address'
+              id='address'
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
@@ -311,6 +315,7 @@ function ShipperDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
+                  console.log('object');
                   patch.mutate({ id: selectedShipper?.id, payload: { [key]: value } })
                 }
               }}
@@ -330,7 +335,7 @@ function ShipperDetails(props) {
               {...field}
               label='Suite'
               disabled={!selectedShipper?.id}
-              id='shipper_suite'
+              id='suite'
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
@@ -361,8 +366,7 @@ function ShipperDetails(props) {
               {...field}
               label='City*'
               disabled={!selectedShipper?.id}
-              id='shipper_city'
-              name='shipper_city'
+              id='city'
               value={field.value || ''}
               onChange={(e) => {
                 const value = e.target.value
@@ -411,8 +415,7 @@ function ShipperDetails(props) {
               {...field}
               label='Province*'
               disabled={!selectedShipper?.id}
-              id='shipper_province'
-              name='shipper_province'
+              id='province'
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
@@ -446,7 +449,7 @@ function ShipperDetails(props) {
               label='Postal Code*'
               disabled={!selectedShipper?.id}
               variant='outlined'
-              name='shipper_postal_code'
+              id='postal_code'
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {

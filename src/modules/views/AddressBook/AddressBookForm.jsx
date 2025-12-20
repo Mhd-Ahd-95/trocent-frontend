@@ -265,7 +265,6 @@ export default function AddressBookForm(props) {
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Switch
-                                                            {...field}
                                                             checked={field.value || false}
                                                             onChange={e => {
                                                                 const checked = e.target.checked
@@ -289,7 +288,6 @@ export default function AddressBookForm(props) {
                                                     control={control}
                                                     render={({ field }) => (
                                                         <Switch
-                                                            {...field}
                                                             checked={field.value || false}
                                                             onChange={e => {
                                                                 const checked = e.target.checked
