@@ -19,6 +19,7 @@ import {
   OrderEngine,
   Consignment,
   HeaderForm,
+  ScrollToTop,
 } from '../../components'
 import { useForm, FormProvider } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
@@ -141,7 +142,12 @@ function OrderForm(props) {
 
     } else {
       methods.reset(defaultOrderValue)
-
+      if (customerRef.current) customerRef.current.resetCustomer()
+      if (crossdockReceiverRef.current) crossdockReceiverRef.current.resetReceiver()
+      if (crossdockShipperRef.current) crossdockShipperRef.current.resetShipper()
+      if (interlinerRef.current) interlinerRef.current.resetInterliner()
+      if (accessorialRef.current) accessorialRef.current.loadRateSheet(); accessorialRef.current.resetFreightCharges(); accessorialRef.current.resetStates()
+      if (calculationRef.current) calculationRef.current.resetState();
       engine.freights = defaultOrderValue.freights
       engine.isManualSkid = false
       engine.overrideTotalPiecesSkid = 0
@@ -192,6 +198,7 @@ function OrderForm(props) {
       await submit(payload)
       if (action === 'save-order-action' && !editMode) {
         handleReset()
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
       }
       else {
         navigate('/orders')
@@ -233,6 +240,7 @@ function OrderForm(props) {
         {editMode &&
           <Grid size={12}>
             <HeaderForm
+              editMode={editMode}
               order_id={props.order_id}
               orderStatus={orderStatus}
               setOrderStatus={setOrderStatus}
@@ -282,6 +290,7 @@ function OrderForm(props) {
               selectedValue={shipperSelectValue}
               receiverSelectedValue={receiverSelectValue}
               accessorialRef={accessorialRef}
+              editMode={editMode}
               crossdockShipperRef={crossdockShipperRef}
             />
           </WizardCard>

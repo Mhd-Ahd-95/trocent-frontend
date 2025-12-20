@@ -1,6 +1,6 @@
 import React from 'react'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, CustomCell, Table } from '../../components'
+import { Breadcrumbs, CustomCell, Table, Modal, Confirmation } from '../../components'
 import { Grid, Box, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip, CircularProgress, Typography } from '@mui/material'
 import moment from 'moment/moment'
 import { useNavigate } from 'react-router-dom'
@@ -24,6 +24,7 @@ export default function OrdersView() {
   const [downloading, setDownloading] = React.useState(false)
   const [page, setPage] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(50);
+  const [openModal, setOpenModal] = React.useState(false)
 
   const { data, isLoading, isFetching } = useOrderPagination(page + 1, pageSize);
 
@@ -38,8 +39,7 @@ export default function OrdersView() {
     selectedRowRef.current = null
   }, [])
 
-  const handleCancel = React.useCallback(async (e, sts) => {
-    e.preventDefault()
+  const handleCancel = React.useCallback(async (sts) => {
     setActionLoading(true)
     try {
       await patchStatus.mutateAsync({ id: selectedRowRef.current.id, uid: authedUser.id, sts: sts })
@@ -132,7 +132,7 @@ export default function OrdersView() {
     },
     {
       headerName: 'Shipper Name',
-      field: 'shipper_contact_name',
+      field: 'shipper_name',
       flex: 1,
       minWidth: 150
     },
@@ -163,7 +163,7 @@ export default function OrdersView() {
     },
     {
       headerName: 'Receiver Name',
-      field: 'receiver_contact_name',
+      field: 'receiver_name',
       flex: 1,
       minWidth: 150
     },
@@ -286,7 +286,7 @@ export default function OrdersView() {
             }}
           >
             {selectedRowRef.current?.order_status === 'Canceled' ?
-              <MenuItem onClick={(e) => handleCancel(e, 'Entered')} disabled={actionLoading || downloading}>
+              <MenuItem onClick={(e) => setOpenModal(1)} disabled={actionLoading || downloading}>
                 <ListItemIcon>
                   {actionLoading ? (
                     <CircularProgress size={20} />
@@ -297,7 +297,7 @@ export default function OrdersView() {
                 <ListItemText primary="Restore" />
               </MenuItem>
               :
-              <MenuItem onClick={(e) => handleCancel(e, 'Canceled')} disabled={actionLoading || downloading}>
+              <MenuItem onClick={(e) => setOpenModal(2)} disabled={actionLoading || downloading}>
                 <ListItemIcon>
                   {actionLoading ? (
                     <CircularProgress size={20} />
@@ -316,11 +316,30 @@ export default function OrdersView() {
                   <Download fontSize="small" />
                 )}
               </ListItemIcon>
-              <ListItemText primary="Download Invoice" />
+              <ListItemText primary="Download BOL" />
             </MenuItem>
           </Menu>
         </Grid>
       </Grid>
+      <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
+        <Confirmation
+          noIcon
+          title='Cancel Order Confirmation'
+          subtitle='Please confirm if you want to cancel this order.'
+          handleSubmit={() => handleCancel('Canceled')}
+          handleClose={() => setOpenModal(false)}
+        />
+      </Modal>
+
+      <Modal open={openModal === 1} handleClose={() => setOpenModal(false)}>
+        <Confirmation
+          noIcon
+          title='Restore Order Confirmation'
+          subtitle='Please confirm if you want to restore this order.'
+          handleSubmit={() => handleCancel('Entered')}
+          handleClose={() => setOpenModal(false)}
+        />
+      </Modal>
     </MainLayout>
   )
 }

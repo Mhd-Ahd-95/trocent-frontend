@@ -27,6 +27,7 @@ export default function References(props) {
               placeholder='Type and Press Comma or space'
               textHelper={'Add multiple reference numbers (use comma, or space)'}
               label='Reference Numbers'
+              isTapped
             />
           )}
         />

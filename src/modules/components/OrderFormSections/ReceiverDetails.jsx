@@ -108,7 +108,11 @@ function ReceiverDetails(props) {
                 inputValue={inputValue || ''}
                 onInputChange={(event, newInputValue, reason) => {
                   if (reason === 'reset') {
-                    setInputValue(newInputValue)
+                    if (!newInputValue || newInputValue === 'undefined' || newInputValue === 'null') {
+                      setInputValue('')
+                    } else {
+                      setInputValue(newInputValue)
+                    }
                     return
                   }
                   else if (reason === 'input') {
@@ -147,7 +151,7 @@ function ReceiverDetails(props) {
                           handleSelect(existingReceiver)
                         })
                       } else {
-                        const newReceiver = await create.mutateAsync({ name: value })
+                        const newReceiver = await create.mutateAsync({ name: inputValue })
                         if (newReceiver && newReceiver.id) {
                           unstable_batchedUpdates(() => {
                             field.onChange(newReceiver.id)
@@ -299,7 +303,7 @@ function ReceiverDetails(props) {
               label='Address*'
               variant='outlined'
               disabled={!selectedReceiver?.id}
-              name='receiver_address'
+              id='address'
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
@@ -331,6 +335,7 @@ function ReceiverDetails(props) {
               label='Suite'
               disabled={!selectedReceiver?.id}
               value={field.value || ''}
+              id='suite'
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
                 const { id: key, value } = e.target
@@ -360,7 +365,7 @@ function ReceiverDetails(props) {
               {...field}
               label='City*'
               disabled={!selectedReceiver?.id}
-              name='receiver_city'
+              id='city'
               value={field.value || ''}
               onChange={(e) => {
                 const value = e.target.value
@@ -409,7 +414,7 @@ function ReceiverDetails(props) {
               {...field}
               label='Province*'
               disabled={!selectedReceiver?.id}
-              name='receiver_province'
+              id='province'
               value={field.value || ''}
               onChange={(e) => {
                 field.onChange(e.target.value)
@@ -428,15 +433,6 @@ function ReceiverDetails(props) {
                 }
                 props.calculationRef.current?.recalculate()
               }}
-              // onBlur={async (e) => {
-              //   const { id: key, value } = e.target
-              //   if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
-              //     const nAB = await patch.mutateAsync({ id: selectedReceiver?.id, payload: { [key]: value } })
-              //     field.onChange(nAB.province)
-              //     engine.receiverProvince = nAB.province
-              //     props.calculationRef.current?.recalculate()
-              //   }
-              // }}
               variant='outlined'
               fullWidth
               error={!!fieldState?.error}
@@ -456,7 +452,7 @@ function ReceiverDetails(props) {
               label='Postal Code*'
               disabled={!selectedReceiver?.id}
               variant='outlined'
-              name='receiver_postal_code'
+              id='postal_code'
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {

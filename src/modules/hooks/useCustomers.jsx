@@ -8,7 +8,7 @@ export function useCustomers() {
         queryKey: ['customers'],
         queryFn: async () => {
             const response = await CustomersApi.getCustomers();
-            return response.data.data;
+            return response.data;
         },
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
@@ -25,11 +25,6 @@ export function useCustomer(cid) {
     return useQuery({
         queryKey: ['customer', Number(cid)],
         queryFn: async () => {
-
-            const cachedCust = queryClient.getQueryData(['customers']) || [];
-            const cached = cachedCust.find(item => item.id === Number(cid));
-            if (cached) return cached;
-
             const res = await CustomersApi.getCustomer(cid);
             return res.data.data;
         },
@@ -94,14 +89,14 @@ export function useCustomerMutation() {
     const create = useMutation({
         mutationFn: async (payload) => {
             const res = await CustomersApi.createCustomer(payload);
-            return res.data.data;
+            console.log(res);
+            return res.data;
         },
         onSuccess: (newCust) => {
             if (hasCachedList) {
                 queryClient.setQueryData(['customers'], (old = []) => {
                     return [newCust, ...old]
                 });
-
             }
             else {
                 queryClient.invalidateQueries({ queryKey: ['customers'], exact: true })
@@ -121,7 +116,8 @@ export function useCustomerMutation() {
         {
             mutationFn: async ({ id, payload }) => {
                 const res = await CustomersApi.updateCustomer(Number(id), payload);
-                return res.data.data;
+                console.log(res);
+                return res.data;
             },
             onSuccess: (updated) => {
                 if (hasCachedList) {
@@ -138,7 +134,7 @@ export function useCustomerMutation() {
                     })
                 }
                 queryClient.invalidateQueries({ queryKey: ['customerSearch'], exact: false })
-                queryClient.setQueryData(['customer', Number(updated.id)], updated)
+                queryClient.invalidateQueries({ queryKey: ['customer', Number(updated.id)] })
                 queryClient.invalidateQueries({ queryKey: ['orders'] })
                 enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },

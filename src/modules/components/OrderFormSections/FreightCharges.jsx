@@ -241,7 +241,7 @@ function FreightCharges(props) {
       accessorials = cAccess.map((acc) => {
         const accFound = savedCustomerAccessorials?.length > 0 ? savedCustomerAccessorials.find(sca => sca?.accessorial_id === acc.access_id && sca.customer_id === customerId) : null
         if (accFound) {
-          return ({ ...acc, charge_name: acc.access_name, charge_amount: accFound.charge_amount, charge_quantity: accFound.charge_quantity, is_included: accFound.is_included, })
+          return ({ ...acc, charge_name: acc.access_name, charge_amount: accFound.charge_amount, charge_quantity: accFound.charge_quantity, is_included: true })
         }
         else {
           return isCrossDock && acc.access_name?.trim().toLowerCase() === 'crossdock'

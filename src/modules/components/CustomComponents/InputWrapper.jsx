@@ -75,7 +75,7 @@ function InputWrapper(props) {
         setInputValue('')
         return
       }
-      setValue(field, [...data, trimValue])
+      setValue(field, [trimValue, ...data])
       setInputValue('')
       return
     }
@@ -85,13 +85,25 @@ function InputWrapper(props) {
         setInputValue('')
         return
       }
-      setValue(field, [...data, trimValue])
+      setValue(field, [trimValue, ...data])
       setInputValue('')
     }
   }, [data, field, isEmail, noSpace, setValue, validatedEmail])
 
   const handleFocus = useCallback(() => setFocus(true), [])
   const handleBlur = useCallback(() => setFocus(false), [])
+
+  const handleKeyDown = React.useCallback((e) => {
+    if (e.key === 'Tab' && inputValue.trim() && props.isTapped) {
+      e.preventDefault()
+      if (data.includes(inputValue.trim())) {
+        setInputValue('')
+        return
+      }
+      setValue(field, [inputValue.trim(), ...data])
+      setInputValue('')
+    }
+  }, [inputValue])
 
   return (
     <Grid container>
@@ -118,6 +130,10 @@ function InputWrapper(props) {
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            onMouseEnter={(e) => {
+
+            }}
             sx={{
               '& .MuiOutlinedInput-root': {
                 zIndex: 1,

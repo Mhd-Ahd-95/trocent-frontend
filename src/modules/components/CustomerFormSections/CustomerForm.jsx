@@ -70,9 +70,7 @@ export default function CustomerForm(props) {
             fuel_ftl_other_value: '',
             vehicle_types: [],
             accessorials: [],
-            file: '',
-            filename: '',
-            filesize: '',
+            logo: '',
             ...initialValues
         }
     })
@@ -81,45 +79,9 @@ export default function CustomerForm(props) {
         e.preventDefault()
         setLoading(true)
         const action = e?.nativeEvent?.submitter?.id;
-        const formData = new FormData()
-
-        const appendArrayToFormData = (key, array) => {
-            if (array && array.length > 0) {
-                array.forEach((item, index) => {
-                    Object.entries(item).forEach(([field, value]) => {
-                        formData.append(`${key}[${index}][${field}]`, value ?? '')
-                    })
-                })
-            }
-        }
-
-        const appendSimpleArray = (key, array) => {
-            if (array?.length > 0) {
-                array.forEach((value, idx) => {
-                    formData.append(`${key}[${idx}]`, value)
-                })
-            } else {
-                formData.append(key, '')
-            }
-        }
-
-        const emailFields = ['billing_emails', 'pod_emails', 'status_update_emails', 'notification_preferences']
-        const complexArrays = ['accessorials', 'vehicle_types']
-
-        appendArrayToFormData('accessorials', data.accessorials)
-        appendArrayToFormData('vehicle_types', data.vehicle_types)
-
-        Object.entries(data).forEach(([key, value]) => {
-            if (complexArrays.includes(key)) return
-            if (emailFields.includes(key)) {
-                appendSimpleArray(key, value)
-            } else {
-                formData.append(key, value ?? '')
-            }
-        })
 
         try {
-            await submit(formData);
+            await submit(data);
             if (action === 'apply-customer-action') {
                 navigate('/customers', { state: { fromEditOrCreate: true } });
             } else {
@@ -190,10 +152,8 @@ export default function CustomerForm(props) {
 
                     <Grid size={{ xs: 12, sm: 12, md: 8 }}>
                         <Others
-                            register={register}
-                            errors={errors}
-                            setValue={setValue}
-                            watch={watch}
+                            getValues={getValues}
+                            customerId={props.customer_id}
                             control={control}
                             editMode={editMode}
                         />

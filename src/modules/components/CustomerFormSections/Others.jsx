@@ -1,12 +1,12 @@
 import React from "react";
-import { FormControl, FormLabel, Grid, Radio, RadioGroup } from '@mui/material'
+import { Box, FormControl, FormLabel, Grid, Radio, RadioGroup } from '@mui/material'
 import { AccordionComponent, CustomFormControlLabel, UploadLogo } from '../../components'
 import { Controller } from "react-hook-form";
 
 
 function Others(props) {
 
-    const { watch, control, setValue } = props
+    const { control, customerId, getValues } = props
 
     return <AccordionComponent
         title='Other'
@@ -77,18 +77,23 @@ function Others(props) {
                     </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <Controller
-                        name={`file`}
-                        control={control}
-                        render={({ field }) => (
-                            <UploadLogo
-                                editMode={props.editMode}
-                                field={field}
-                                logoFile={{ filename: watch('filename'), filesize: watch('filesize'), logo_path: watch('logo_path'), id: watch('id') }}
-                                setValue={setValue}
+                    <Grid container spacing={2}>
+                        <Grid size={12}>
+                            <Controller
+                                name={`logo`}
+                                control={control}
+                                render={({ field }) => (
+                                    <UploadLogo
+                                        editMode={props.editMode}
+                                        field={field}
+                                        control={control}
+                                        logo_path={getValues('logo_path')}
+                                        customerId={customerId}
+                                    />
+                                )}
                             />
-                        )}
-                    />
+                        </Grid>
+                    </Grid>
                 </Grid>
             </Grid>
         }
