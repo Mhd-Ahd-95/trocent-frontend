@@ -35,7 +35,6 @@ const UploadButton = styled(Button)(({ theme, iserror }) => ({
 function UploadLogo(props) {
 
     const { field, control, logo_path } = props
-    console.log(logo_path);
     const image = useWatch({ name: 'logo', control })
     const { enqueueSnackbar } = useSnackbar()
     const [downloading, setDownloading] = React.useState(false)
