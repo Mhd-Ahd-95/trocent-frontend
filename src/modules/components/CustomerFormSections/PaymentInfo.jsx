@@ -5,11 +5,11 @@ import {
 import { TextInput } from '../../components'
 import moment from 'moment'
 import { DatePicker } from '@mui/x-date-pickers'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
 function PaymentInfo(props) {
 
-    const { register, control } = props
+    const { register, control } = useFormContext()
 
     return (
         <Grid container spacing={3} pt={3}>

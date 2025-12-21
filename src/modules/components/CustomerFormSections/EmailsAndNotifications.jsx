@@ -4,11 +4,14 @@ import {
     Autocomplete,
     TextField
 } from '@mui/material'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { InputWrapper } from '../../components'
 
 function EmailsAndNotifications(props) {
-    const { setValue, control } = props
+
+    const { setValue, control } = useFormContext()
+
+    // improve InputWrapper
 
     const options = ['Arrived at Pickup', 'Pickedup', 'Departed Pickup', 'Arrived at Delivery', 'Delivered', 'Departed from Delivery']
 

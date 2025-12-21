@@ -102,7 +102,7 @@ export default function UploadPDF(props) {
                     focusRipple
                     component="span"
                 >
-                    Drag & Drop file or {' '} <span> Browser</span>
+                    Drag & Drop file or {' '} <span> Browse</span>
                 </UploadButton>
             </label>
             {value?.fname &&

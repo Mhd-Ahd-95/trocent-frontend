@@ -3,7 +3,7 @@ import { CircularProgress, Grid, Box, Switch, Typography } from '@mui/material'
 import { TextInput, AccordionComponent } from '../'
 import { useAccessorials } from '../../hooks/useAccessorials'
 import { styled } from '@mui/material/styles'
-import { Controller, useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 
 const CustomGrid = styled(Grid)(({ theme }) => ({
     boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
@@ -153,13 +153,11 @@ const AccessorialItem = React.memo(({ access, control, basePath, checked, onTogg
 AccessorialItem.displayName = 'AccessorialItem'
 
 function CustomAccessorials(props) {
-    const { control } = props
+
+    const { control } = useFormContext()
     const { data, isLoading } = useAccessorials()
 
-    const { fields, append, remove } = useFieldArray({
-        name: 'accessorials',
-        control
-    })
+    const { fields, append, remove } = useFieldArray({ name: 'accessorials', control })
     const fieldIds = useMemo(() => new Set(fields.map(f => f.access_id)), [fields])
 
     const sortedData = useMemo(() => {

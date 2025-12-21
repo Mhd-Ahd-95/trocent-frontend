@@ -1,8 +1,10 @@
 import React from 'react'
-import { Grid } from '@mui/material'
+import { CircularProgress, Grid } from '@mui/material'
 import { MainLayout } from '../../layouts'
-import { Breadcrumbs, CustomerForm } from '../../components'
+import { Breadcrumbs } from '../../components'
 import { useCustomerMutation } from '../../hooks/useCustomers'
+
+const CustomerForm = React.lazy(() => import('../../components/CustomerFormSections/CustomerForm'))
 
 export default function createCustomer() {
 
@@ -12,6 +14,7 @@ export default function createCustomer() {
         <MainLayout
             title='Create Customer'
             activeDrawer={{ active: 'Customers' }}
+            grid
             breadcrumbs={
                 <Breadcrumbs
                     items={[{ text: 'Customers', url: '/customers' }, { text: 'Create' }]}
@@ -20,10 +23,12 @@ export default function createCustomer() {
         >
             <Grid container>
                 <Grid size={12}>
-                    <CustomerForm
-                        initialValues={{}}
-                        submit={async (payload) => await create.mutateAsync(payload)}
-                    />
+                    <React.Suspense fallback={<Grid container justifyContent={'center'} py={15} sx={{ width: '100%' }}><CircularProgress /></Grid>}>
+                        <CustomerForm
+                            initialValues={{}}
+                            submit={async (payload) => await create.mutateAsync(payload)}
+                        />
+                    </React.Suspense>
                 </Grid>
             </Grid>
         </MainLayout>

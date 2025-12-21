@@ -4,12 +4,12 @@ import {
     Grid,
     Switch
 } from '@mui/material'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { CustomFormControlLabel } from '../../components'
 
 function Flags(props) {
 
-    const { control } = props
+    const { control } = useFormContext()
 
     return (
         <Grid container spacing={2}>
@@ -82,29 +82,6 @@ function Flags(props) {
                     />
                 </FormControl>
             </Grid>
-            {/* <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-                <FormControl>
-                    <CustomFormControlLabel
-                        control={
-                            <Controller
-                                name='no_tax'
-                                control={control}
-                                render={({ field }) => (
-                                    <Switch
-                                        {...field}
-                                        checked={field.value || false}
-                                        onChange={e => {
-                                            const checked = e.target.checked
-                                            field.onChange(checked)
-                                        }}
-                                    />
-                                )}
-                            />
-                        }
-                        label='No Tax'
-                    />
-                </FormControl>
-            </Grid> */}
             <Grid size={{ xs: 12, sm: 12, md: 12 }}>
                 <FormControl>
                     <CustomFormControlLabel

@@ -187,7 +187,7 @@ export default function UploadXlsx(props) {
                     disabled={fileName.length > 0}
                 >
                     {fileName.length === 0 && <>
-                        Drag & Drop Logo or {' '} <span> Browser</span>
+                        Drag & Drop Logo or {' '} <span> Browse</span>
                     </>}
                 </UploadButton>
             </label>

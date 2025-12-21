@@ -3,11 +3,11 @@ import {
     Grid,
 } from '@mui/material'
 import { TextInput } from '../../components'
-import { Controller } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 
 function CustomerBasicInfo(props) {
 
-    const { register, control } = props
+    const { register, control } = useFormContext()
 
     return (
         <Grid container spacing={3}>

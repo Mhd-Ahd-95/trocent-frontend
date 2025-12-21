@@ -16,7 +16,7 @@ export default function CustomerView() {
   const selectedRef = React.useRef()
   const [selectedCustomers, setSelectedCustomers] = React.useState([])
   const [openModal, setOpenModal] = React.useState(false)
-  const {enqueueSnackbar} = useSnackbar()
+  const { enqueueSnackbar } = useSnackbar()
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
