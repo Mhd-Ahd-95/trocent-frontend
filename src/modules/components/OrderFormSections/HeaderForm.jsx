@@ -46,11 +46,11 @@ function HeaderForm(props) {
     const duplicate = async () => {
         try {
             setUpdating({ action: 'duplicate', loading: true })
-            await duplicateOrder.mutateAsync({
+            const norder = await duplicateOrder.mutateAsync({
                 id: order_id,
                 user_id: authedUser.id
             })
-            navigate('/orders')
+            navigate(`/orders/edit/${norder.id}`)
         } catch (err) {
             //
         } finally {
@@ -85,7 +85,7 @@ function HeaderForm(props) {
                 return 'Section updated: Pickup Details'
             case 'interliner_carrier':
                 return 'Section updated: Interliner Carrier'
-            case 'deliver_details':
+            case 'delivery_details':
                 return 'Section updated: Delivery Details'
             case 'freights':
                 return 'Section updated: Freights'
