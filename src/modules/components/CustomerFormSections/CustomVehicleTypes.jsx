@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { Grid, Box, Typography, Switch, CircularProgress } from '@mui/material'
-import { Controller, useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { TextInput, AccordionComponent } from '../'
 import { useVehicleTypes } from '../../hooks/useVehicleType'
 import { styled } from '@mui/material/styles'
@@ -65,13 +65,11 @@ const VehicleTypeItem = React.memo(({ vtype, control, basePath, checked, onToggl
 VehicleTypeItem.displayName = 'VehicleTypeItem'
 
 function CustomVehicleTypes(props) {
-    const { control } = props
+
+    const { control } = useFormContext()
     const { data, isLoading } = useVehicleTypes()
 
-    const { fields, append, remove } = useFieldArray({
-        name: 'vehicle_types',
-        control
-    })
+    const { fields, append, remove } = useFieldArray({ name: 'vehicle_types', control })
 
     const handleToggle = useCallback((vtype) => (e) => {
         const checked = e.target.checked
@@ -96,19 +94,19 @@ function CustomVehicleTypes(props) {
     const fieldIds = useMemo(() => new Set(fields.map(f => f.vehicle_id)), [fields])
 
     const sortedData = useMemo(() => {
-            if (!data) return null
-    
-            return [...data].sort((a, b) => {
-                const aChecked = fieldIds.has(a.id)
-                const bChecked = fieldIds.has(b.id)
-    
-                if (aChecked !== bChecked) {
-                    return aChecked ? -1 : 1
-                }
-    
-                return a.name.localeCompare(b.name)
-            })
-        }, [data])
+        if (!data) return null
+
+        return [...data].sort((a, b) => {
+            const aChecked = fieldIds.has(a.id)
+            const bChecked = fieldIds.has(b.id)
+
+            if (aChecked !== bChecked) {
+                return aChecked ? -1 : 1
+            }
+
+            return a.name.localeCompare(b.name)
+        })
+    }, [data])
 
     const vehicleTypeItems = useMemo(() => {
         if (!data) return null

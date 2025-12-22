@@ -85,12 +85,17 @@ export default function Accessorials() {
               filtering: false,
               search: true
             }}
+            onRowClick={(params) => {
+              setAccessorial(params.row)
+              setOpenDrawer(2)
+            }}
             columns={[
               {
                 headerName: 'Name',
                 field: 'name',
-                minWidth: 250,
-                flex: 1
+                minWidth: 400,
+                flex: 1,
+                sortable: true
               },
               {
                 headerName: 'Type',
@@ -119,7 +124,7 @@ export default function Accessorials() {
                 headerName: 'Actions',
                 sortable: false,
                 flex: 1,
-                minWidth: 200,
+                minWidth: 100,
                 renderCell: params => (
                   <Box
                     sx={{
@@ -149,7 +154,7 @@ export default function Accessorials() {
                     >
                       Delete
                     </Button>
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -167,7 +172,7 @@ export default function Accessorials() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                   </Box>
                 )
               }

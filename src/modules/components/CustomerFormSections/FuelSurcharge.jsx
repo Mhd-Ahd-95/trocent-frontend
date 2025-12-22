@@ -8,21 +8,14 @@ import {
     Radio,
 } from '@mui/material'
 import { TextInput, CustomFormControlLabel } from '../../components'
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
 
 function FuelSurcharge(props) {
 
-    const { control } = props
+    const { control } = useFormContext()
 
-    const watch_ltl = useWatch({
-        control,
-        name: 'fuel_ltl_other'
-    })
-
-    const watch_ftl = useWatch({
-        control,
-        name: 'fuel_ftl_other'
-    })
+    const watch_ltl = useWatch({ control, name: 'fuel_ltl_other' })
+    const watch_ftl = useWatch({ control, name: 'fuel_ftl_other' })
 
     return (
         <Grid container spacing={3}>

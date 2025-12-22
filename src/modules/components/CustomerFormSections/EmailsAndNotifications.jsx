@@ -4,13 +4,16 @@ import {
     Autocomplete,
     TextField
 } from '@mui/material'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { InputWrapper } from '../../components'
 
 function EmailsAndNotifications(props) {
-    const { setValue, control } = props
 
-    const options = ['Arrived at Pickup', 'Pickedup', 'Departed Pickup', 'Arrived at Delivery', 'Delivered', 'Departed from Delivery']
+    const { setValue, control } = useFormContext()
+
+    // improve InputWrapper
+
+    const options = ['Arrived at Pickup', 'Picked up', 'Departed Pickup', 'Arrived at Delivery', 'Delivered', 'Departed from Delivery']
 
     return (
         <Grid container spacing={1}>
@@ -28,6 +31,7 @@ function EmailsAndNotifications(props) {
                             field='billing_emails'
                             placeholder='Type and Press Comma'
                             label='Billing Emails'
+                            isTapped
                         />
                     )}
                 />
@@ -46,6 +50,7 @@ function EmailsAndNotifications(props) {
                             field='pod_emails'
                             placeholder='Type and Press Comma'
                             label='POD Emails'
+                            isTapped
                         />
                     )}
                 />
@@ -64,6 +69,7 @@ function EmailsAndNotifications(props) {
                             field='status_update_emails'
                             placeholder='Type and Press Comma'
                             label='Status Update Emails'
+                            isTapped
                         />
                     )}
                 />

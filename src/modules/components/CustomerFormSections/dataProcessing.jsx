@@ -31,7 +31,7 @@ export default function dataProcessing(stprop, items) {
                     processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Required': `${prop.name} (${index + 2}) is a required field` }
                 }
                 if (prop.constrained && prop.constrained.length > 0 && value && prop.field === 'external') {
-                    const external = value.toLowerCase() === 'external' || value.toLowerCase() === 'e' ? 'E' : value.toLowerCase() === 'internal' || value.toLowerCase() === 'i' ? 'I' : 'unknown'
+                    const external = value.toLowerCase() === 'external' || value.toLowerCase() === 'exterior' || value.toLowerCase() === 'e' ? 'E' : value.toLowerCase() === 'internal' || value.toLowerCase() === 'interior' || value.toLowerCase() === 'i' ? 'I' : 'unknown'
                     if (!prop.constrained.includes(external)) {
                         processedItemsError[prop.name] = { ...processedItemsError[prop.name], 'Constrained': `${prop.name} must be ${prop.constrained.join(', ')}` }
                     }

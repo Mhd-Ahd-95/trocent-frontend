@@ -8,7 +8,7 @@ import { useCompanies, useCompanyMutation } from '../../hooks/useComapnies'
 import { useSnackbar } from 'notistack'
 
 export default function Companies() {
-  
+
   const navigate = useNavigate()
   const { data, isLoading, error, isError } = useCompanies()
   const { removeMany } = useCompanyMutation()
@@ -74,16 +74,19 @@ export default function Companies() {
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
             loading={isLoading}
+            onRowClick={(params) => navigate(`/company/edit/${params.row.id}`)}
             options={{
               filtering: false,
               search: true
             }}
+            field='operating_name'
             columns={[
               {
                 headerName: 'Operating Name',
                 field: 'operating_name',
                 flex: 1,
-                minWidth: 150
+                minWidth: 150,
+                sortable: true
               },
               {
                 headerName: 'Legal Name',
@@ -108,7 +111,7 @@ export default function Companies() {
                 headerName: 'Actions',
                 sortable: false,
                 flex: 1,
-                minWidth: 150,
+                minWidth: 100,
                 renderCell: params => (
                   <Box
                     sx={{
@@ -118,7 +121,7 @@ export default function Companies() {
                       marginTop: 1
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquare />}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -135,7 +138,7 @@ export default function Companies() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={(e) => {

@@ -21,7 +21,6 @@ export function useCustomers() {
 
 
 export function useCustomer(cid) {
-    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['customer', Number(cid)],
         queryFn: async () => {

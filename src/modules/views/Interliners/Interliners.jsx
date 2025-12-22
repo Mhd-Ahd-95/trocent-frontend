@@ -79,15 +79,17 @@ export default function Interliners() {
             rowSelectionModel={rowSelectionModel}
             options={{
               filtering: false,
-              search: true
+              search: true,
             }}
+            onRowClick={(params) => navigate(`/interliner/edit/${params.row.id}`)}
             loading={isLoading || isFetching}
             columns={[
               {
                 headerName: 'Company Name',
                 field: 'name',
                 minWidth: 220,
-                flex: 1
+                flex: 1,
+                sortable: true
               },
               {
                 headerName: 'Contact Name',
@@ -128,7 +130,7 @@ export default function Interliners() {
                       marginTop: 1
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -145,7 +147,7 @@ export default function Interliners() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={(e) => {

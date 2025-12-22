@@ -98,7 +98,7 @@ export default function OrdersView() {
         headerName: 'Order #',
         field: 'order_number',
         flex: 1,
-        minWidth: 60
+        minWidth: 80
       },
       {
         headerName: 'Customer',
@@ -193,14 +193,14 @@ export default function OrdersView() {
         headerName: 'PickUp',
         field: 'pickup_date',
         flex: 1,
-        minWidth: 160,
+        minWidth: 130,
         valueFormatter: val => moment(val).format('MMM DD, YYYY')
       },
       {
         headerName: 'Delivery',
         field: 'delivery_date',
         flex: 1,
-        minWidth: 160,
+        minWidth: 130,
         valueFormatter: val => moment(val).format('MMM DD, YYYY')
       },
       {

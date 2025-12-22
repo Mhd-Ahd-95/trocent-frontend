@@ -62,6 +62,7 @@ export function useAccessorialMutations() {
             queryClient.setQueryData(['accessorials'], (old = []) => {
                 return [newDriver, ...old]
             });
+            queryClient.invalidateQueries({ queryKey: ['customer'] });
             enqueueSnackbar('Accessorial has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -78,7 +79,7 @@ export function useAccessorialMutations() {
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
                 queryClient.setQueryData(['accessorial', Number(updated.id)], updated)
-                queryClient.invalidateQueries({ queryKey: ['customers'] });
+                queryClient.invalidateQueries({ queryKey: ['customer'] });
                 enqueueSnackbar('Accessorial has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -92,9 +93,7 @@ export function useAccessorialMutations() {
         },
         onSuccess: (res, iid) => {
             if (res) {
-                queryClient.setQueryData(['accessorials'], (old = []) =>
-                    old.filter((item) => item.id !== iid)
-                );
+                queryClient.setQueryData(['accessorials'], (old = []) => old.filter((item) => item.id !== iid));
                 enqueueSnackbar('Accessorial has been deleted successfully', { variant: 'success' });
             }
         },
@@ -108,9 +107,7 @@ export function useAccessorialMutations() {
         },
         onSuccess: (res, iids) => {
             if (res) {
-                queryClient.setQueryData(['accessorials'], (old = []) =>
-                    old.filter((item) => !iids.includes(item.id))
-                );
+                queryClient.setQueryData(['accessorials'], (old = []) => old.filter((item) => !iids.includes(item.id)));
                 enqueueSnackbar('Selected accessorials been deleted successfully', { variant: 'success' });
             }
         },

@@ -29,7 +29,7 @@ const inputs = {
         { label: 'TDG Certified', field: 'tdg', type: 'switch', md: 4 },
         { label: 'TDG Expiry', field: 'tdg_expiry', required: false, type: 'date', md: 4 },
         { label: 'Criminal check Expiry', field: 'criminal_expiry', required: false, type: 'date', md: 4 },
-        { label: 'Criminal Note', field: 'criminal_note', required: false, multiline: true, md: 4 },
+        { label: 'Criminal check Note', field: 'criminal_note', required: false, multiline: true, md: 4 },
     ],
     additional_info: [
         { label: 'Contract Type', field: 'contract_type', required: false, selected: true, options: ['full_time', 'part_time', 'contractor'], md: 6 },

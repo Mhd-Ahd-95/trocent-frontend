@@ -46,11 +46,11 @@ function HeaderForm(props) {
     const duplicate = async () => {
         try {
             setUpdating({ action: 'duplicate', loading: true })
-            await duplicateOrder.mutateAsync({
+            const norder = await duplicateOrder.mutateAsync({
                 id: order_id,
                 user_id: authedUser.id
             })
-            navigate('/orders')
+            navigate(`/orders/edit/${norder.id}`)
         } catch (err) {
             //
         } finally {
@@ -85,7 +85,7 @@ function HeaderForm(props) {
                 return 'Section updated: Pickup Details'
             case 'interliner_carrier':
                 return 'Section updated: Interliner Carrier'
-            case 'deliver_details':
+            case 'delivery_details':
                 return 'Section updated: Delivery Details'
             case 'freights':
                 return 'Section updated: Freights'
@@ -105,21 +105,6 @@ function HeaderForm(props) {
     return (
         <>
             <Grid container spacing={2} justifyContent={'flex-end'}>
-                {props.editMode &&
-                    <Grid size='auto'>
-                        <Button
-                            type='submit'
-                            variant='outlined'
-                            color='primary'
-                            id='save-order-action'
-                            disabled={formState?.isSubmitting || orderStatus}
-                            sx={{ textTransform: 'capitalize' }}
-                        >
-                            {formState?.isSubmitting && updating.action === '' && <CircularProgress style={{ marginRight: "10px" }} size={20} />}
-                            Update Order
-                        </Button>
-                    </Grid>
-                }
                 <Grid size='auto'>
                     <Button
                         variant='outlined'
@@ -179,6 +164,21 @@ function HeaderForm(props) {
                         </Grid>
                     </>
                 )}
+                {props.editMode &&
+                    <Grid size='auto'>
+                        <Button
+                            type='submit'
+                            variant='outlined'
+                            color='primary'
+                            id='save-order-action'
+                            disabled={formState?.isSubmitting || orderStatus}
+                            sx={{ textTransform: 'capitalize' }}
+                        >
+                            {formState?.isSubmitting && updating.action === '' && <CircularProgress style={{ marginRight: "10px" }} size={20} />}
+                            Update Order
+                        </Button>
+                    </Grid>
+                }
                 {openDrawer && (
                     <DrawerForm title='Order Updates' setOpen={setOpenDrawer} open={openDrawer}>
                         <div style={{ flexGrow: 1, overflow: 'auto', padding: 15 }}>

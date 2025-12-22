@@ -69,7 +69,7 @@ export default function Login() {
       >
         <Grid size={12}>
           <TextField
-            label='Username or Email'
+            label='Username'
             variant='outlined'
             required
             fullWidth

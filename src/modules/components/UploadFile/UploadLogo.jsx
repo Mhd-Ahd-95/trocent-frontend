@@ -11,13 +11,14 @@ import CustomersApi from '../../apis/Customers.api'
 import { useSnackbar } from 'notistack'
 import { styled } from '@mui/material/styles'
 import { CloudUpload, Delete } from '@mui/icons-material'
+import { useDropzone } from 'react-dropzone'
 
-const UploadButton = styled(Button)(({ theme, iserror }) => ({
+const UploadButton = styled(Button)(({ theme, isdragactive }) => ({
     width: '100%',
     height: '90px',
     backgroundColor: theme.palette.background.paper,
     boxShadow: 'none',
-    border: iserror === 'true' ? '1px solid ' + theme.palette.error.main : '1px solid ' + colors.grey[400],
+    border: isdragactive === 'true' ? '1px dashed ' + colors.grey[600] : '1px solid ' + colors.grey[400],
     fontSize: 14,
     color: colors.grey[500],
     borderRadius: 5,
@@ -69,8 +70,22 @@ function UploadLogo(props) {
             .finally(() => setDownloading(false))
     }
 
+    const onDrop = (files) => {
+        if (files.length) {
+            const f = files[0]
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                field.onChange(reader.result)
+            };
+            reader.readAsDataURL(f)
+        }
+    }
 
-    return <Grid position={'relative'} container justifyContent='center' alignContent='center' alignItems='center'>
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, noClick: true, noKeyboard: true })
+
+
+    return <Grid position={'relative'} container justifyContent='center' alignContent='center' alignItems='center' {...getRootProps()}>
+        <input {...getInputProps()} style={{ display: 'none' }} />
         <Grid size={12} >
             {image
                 ? <>
@@ -127,6 +142,7 @@ function UploadLogo(props) {
                         <UploadButton
                             focusRipple
                             component="span"
+                            isdragactive={isDragActive ? 'true' : 'false'}
                         >
                             Drag & Drop Logo or {' '} <span> Browse</span>
                         </UploadButton>

@@ -16,7 +16,7 @@ export default function CustomerView() {
   const selectedRef = React.useRef()
   const [selectedCustomers, setSelectedCustomers] = React.useState([])
   const [openModal, setOpenModal] = React.useState(false)
-  const {enqueueSnackbar} = useSnackbar()
+  const { enqueueSnackbar } = useSnackbar()
 
   const [rowSelectionModel, setRowSelectionModel] = React.useState({
     type: 'include',
@@ -71,7 +71,8 @@ export default function CustomerView() {
             pageSize={10}
             options={{
               filtering: true,
-              search: true
+              search: true,
+              sortable: true
             }}
             disableRowSelectionOnClick
             deleteSelected={selectedCustomers.length > 0}
@@ -79,15 +80,17 @@ export default function CustomerView() {
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
+            onRowClick={(rowData) => navigate(`/customer/edit/${rowData.row.id}`)}
             columns={[
               {
                 headerName: 'Name',
                 field: 'name',
                 flex: 1,
+                sort: 'asc',
                 minWidth: 120
               },
               {
-                headerName: 'Account#',
+                headerName: 'Account #',
                 field: 'account_number',
                 flex: 1,
                 minWidth: 150
@@ -124,7 +127,7 @@ export default function CustomerView() {
                 headerName: 'Actions',
                 sortable: false,
                 flex: 1,
-                minWidth: 120,
+                minWidth: 100,
                 renderCell: params => (
                   <Box
                     sx={{
@@ -134,7 +137,7 @@ export default function CustomerView() {
                       marginTop: 1
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -151,7 +154,7 @@ export default function CustomerView() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={(e) => {

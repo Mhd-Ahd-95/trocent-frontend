@@ -1,12 +1,13 @@
 import React from "react";
 import { Box, FormControl, FormLabel, Grid, Radio, RadioGroup } from '@mui/material'
 import { AccordionComponent, CustomFormControlLabel, UploadLogo } from '../../components'
-import { Controller } from "react-hook-form";
-
+import { Controller, useFormContext } from "react-hook-form";
 
 function Others(props) {
 
-    const { control, customerId, getValues } = props
+    const { customerId } = props
+
+    const { control, getValues } = useFormContext()
 
     return <AccordionComponent
         title='Other'

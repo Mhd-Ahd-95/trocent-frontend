@@ -120,6 +120,9 @@ export default function Table(props) {
         }
         initialState={{
           ...data.initialState,
+          sorting: {
+            sortModel: [{ field: props.field || 'name', sort: 'asc' }],
+          },
           pagination: { paginationModel: { pageSize: props.pageSize } }
         }}
       />

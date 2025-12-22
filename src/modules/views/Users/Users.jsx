@@ -29,29 +29,34 @@ function UsersTable(props) {
         search: true,
         columns: false
       }}
+      onRowClick={(params) => {
+        props.setSelected(params.row)
+        props.setOpenDrawer(2)
+      }}
       columns={[
         {
           headerName: 'Name',
           field: 'name',
-          minWidth: 150,
-          flex: 1
+          minWidth: 200,
+          flex: 1,
+          sortable: true
         },
         {
           headerName: 'Username',
           field: 'username',
-          minWidth: 200,
+          minWidth: 220,
           flex: 1
         },
         {
           headerName: 'Email',
           field: 'email',
-          minWidth: 200,
+          minWidth: 220,
           flex: 1
         },
         {
           headerName: 'Type',
           field: 'type',
-          minWidth: 100,
+          minWidth: 120,
           flex: 1,
           renderCell: params => <CustomCell>{params.value}</CustomCell>
         },
@@ -59,7 +64,7 @@ function UsersTable(props) {
           field: 'actions',
           headerName: 'Actions',
           sortable: false,
-          minWidth: 200,
+          minWidth: 100,
           renderCell: params => {
             return (
               <Box
@@ -94,7 +99,7 @@ function UsersTable(props) {
                 >
                   Delete
                 </Button>
-                <Button
+                {/* <Button
                   startIcon={<EditSquareIcon />}
                   onClick={e => {
                     e.stopPropagation()
@@ -114,7 +119,7 @@ function UsersTable(props) {
                   }}
                 >
                   Edit
-                </Button>
+                </Button> */}
               </Box>
             )
           }

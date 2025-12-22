@@ -79,6 +79,10 @@ export default function FuelSurcharges() {
             handleDeleteSelected={() => setOpenModal(2)}
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
+            onRowClick={(rowData) => {
+              setFuelSurcharge(rowData.row)
+              setOpenDrawer(2)
+            }}
             options={{
               filtering: false,
               search: true,
@@ -91,7 +95,7 @@ export default function FuelSurcharges() {
                 minWidth: 100,
               },
               {
-                headerName: "FTL %#",
+                headerName: "FTL %",
                 field: "ftl_surcharge",
                 flex: 1,
                 minWidth: 100,
@@ -118,7 +122,7 @@ export default function FuelSurcharges() {
                 headerName: "Actions",
                 sortable: false,
                 flex: 1,
-                minWidth: 150,
+                minWidth: 100,
                 renderCell: (params) => (
                   <Box
                     sx={{
@@ -128,7 +132,7 @@ export default function FuelSurcharges() {
                       marginTop: 1,
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -146,7 +150,7 @@ export default function FuelSurcharges() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={(e) => {

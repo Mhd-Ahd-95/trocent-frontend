@@ -4,11 +4,12 @@ import { Controller, useWatch } from "react-hook-form";
 import { Grid, MenuItem } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import moment from "moment";
+import globalVariables from "../../global";
 
 function DriverDocument(props) {
 
     const { setValue, remove, control, index } = props
-
+    const { _spacing } = globalVariables.methods
     const driverDocument = useWatch({
         control,
         name: `driver_documents.${index}`
@@ -17,11 +18,19 @@ function DriverDocument(props) {
 
     const handleRemove = React.useCallback(() => remove(index), [index, remove])
 
+    const formatTitle = {
+        license: 'License',
+        tdg: 'TDG Certificate',
+        record: 'Driver Record',
+        background: 'Background Check',
+        residence_history: 'Work & Residence History'
+    }
+
     return (
         <AccordionComponent
             handleDelete={handleRemove}
             key={index}
-            title={driverDocument?.type || ''}
+            title={formatTitle[driverDocument?.type] || ''}
             content={
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>

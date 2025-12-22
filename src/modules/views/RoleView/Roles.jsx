@@ -89,17 +89,19 @@ export default function Roles() {
             handleDeleteSelected={() => setOpenModal(2)}
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
+            onRowClick={(params) => navigate(`/roles/edit/${params.row.id}`)}
             columns={[
               {
                 headerName: 'Name',
                 field: 'name',
-                minWidth: 200,
-                flex: 1
+                minWidth: 220,
+                flex: 1,
+                sortable: true
               },
               {
                 headerName: 'Permissions',
                 field: 'permissions',
-                minWidth: 200,
+                minWidth: 220,
                 renderCell: params => (
                   <CustomCell color='green'>
                     {params.value?.length ?? 0}
@@ -110,7 +112,7 @@ export default function Roles() {
               {
                 headerName: 'Updated At',
                 field: 'updated_at',
-                minWidth: 200,
+                minWidth: 220,
                 flex: 1,
                 valueFormatter: rowData =>
                   moment(rowData).format('MMM DD, YYYY hh:mm:ss')
@@ -119,7 +121,7 @@ export default function Roles() {
                 field: 'actions',
                 headerName: 'Actions',
                 sortable: false,
-                minWidth: 200,
+                minWidth: 100,
                 renderCell: params => (
                   <Box
                     sx={{
@@ -129,7 +131,7 @@ export default function Roles() {
                       marginTop: 1
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={e => {
                         e.stopPropagation()
@@ -146,7 +148,7 @@ export default function Roles() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={e => {
