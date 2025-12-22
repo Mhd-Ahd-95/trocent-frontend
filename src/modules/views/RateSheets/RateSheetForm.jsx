@@ -114,7 +114,7 @@ export default function RateSheetForm(props) {
                                 render={({ field }) => (
                                     <TextInput
                                         {...field}
-                                        label='External'
+                                        label='Zone'
                                         fullWidth
                                         variant="outlined"
                                         value={field.value || ''}
@@ -122,8 +122,8 @@ export default function RateSheetForm(props) {
                                         select
                                     >
                                         <MenuItem value={''}><em>Select an Option</em></MenuItem>
-                                        <MenuItem value='E'>External</MenuItem>
-                                        <MenuItem value='I'>Internal</MenuItem>
+                                        <MenuItem value='E'>Exterior</MenuItem>
+                                        <MenuItem value='I'>Interior</MenuItem>
                                     </TextInput>
                                 )}
                             />

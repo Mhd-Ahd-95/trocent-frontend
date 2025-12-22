@@ -78,6 +78,7 @@ function CustomerBasicInfo(props) {
                     variant='outlined'
                     fullWidth
                     {...register('province')}
+                    inputProps={{ maxLength: 2 }}
                 />
             </Grid>
             <Grid size={{ xs: 12, sm: 12, md: 4 }}>
@@ -102,14 +103,6 @@ function CustomerBasicInfo(props) {
                     variant='outlined'
                     fullWidth
                     {...register('phone_number')}
-                />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-                <TextInput
-                    label='Fax Number'
-                    variant='outlined'
-                    fullWidth
-                    {...register('fax_number')}
                 />
             </Grid>
         </Grid>

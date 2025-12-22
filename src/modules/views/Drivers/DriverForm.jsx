@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Add } from '@mui/icons-material'
 import DriverDocument from './DriverDocument'
 import { useNavigate } from 'react-router-dom'
+import moment from 'moment'
 
 export default function DriverForm(props) {
 
@@ -184,7 +185,7 @@ export default function DriverForm(props) {
                                                                                 // onClose={() => setOpenAutoComplete(false)}
                                                                                 options={data || []}
                                                                                 loading={isLoading}
-                                                                                getOptionLabel={(option) => option.legal_name || ""}
+                                                                                getOptionLabel={(option) => option.operating_name || ""}
                                                                                 isOptionEqualToValue={(option, value) => option.id === value}
                                                                                 value={data?.find((c) => c.id === Number(controllerField.value)) || ''}
                                                                                 onChange={(e, newValue) => {

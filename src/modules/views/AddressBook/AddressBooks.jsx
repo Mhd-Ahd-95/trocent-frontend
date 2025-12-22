@@ -87,13 +87,18 @@ export default function AddressBook() {
               search: true,
               columns: true
             }}
+            onRowClick={params => {
+              setAddressBook(params.row)
+              setOpenDrawer(2)
+            }}
             columns={[
               {
                 headerName: 'Company/Location',
                 field: 'name',
-                minWidth: 150,
+                minWidth: 170,
                 flex: 1,
-                renderCell: rowData => <strong style={{ fontWeight: 600 }}>{rowData.value}</strong>
+                renderCell: rowData => <strong style={{ fontWeight: 600 }}>{rowData.value}</strong>,
+                sortable: true
               },
               {
                 headerName: 'Contact',
@@ -104,7 +109,7 @@ export default function AddressBook() {
               {
                 headerName: 'Address',
                 field: 'address',
-                minWidth: 200,
+                minWidth: 240,
                 flex: 1
               },
               {
@@ -116,7 +121,7 @@ export default function AddressBook() {
               {
                 headerName: 'Province',
                 field: 'province',
-                minWidth: 100,
+                minWidth: 50,
                 flex: 1
               },
               {
@@ -143,7 +148,7 @@ export default function AddressBook() {
                 field: 'actions',
                 headerName: 'Actions',
                 sortable: false,
-                minWidth: 150,
+                minWidth: 100,
                 flex: 1,
                 renderCell: params => (
                   <Box
@@ -154,7 +159,7 @@ export default function AddressBook() {
                       marginTop: 1
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -172,7 +177,7 @@ export default function AddressBook() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={(e) => {

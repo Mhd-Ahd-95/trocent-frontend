@@ -76,8 +76,8 @@ export default function RateSheetModal(props) {
                             }}
                         >
                             <MenuItem value=''><em>Select an Option</em></MenuItem>
-                            <MenuItem value='skid'>Skid Base</MenuItem>
-                            <MenuItem value='weight'>Weight Base</MenuItem>
+                            <MenuItem value='skid'>Skid Based</MenuItem>
+                            <MenuItem value='weight'>Weight Based</MenuItem>
                         </TextInput>
                     ))}
                 />

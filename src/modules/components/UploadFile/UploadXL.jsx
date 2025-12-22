@@ -5,13 +5,14 @@ import { styled } from '@mui/material/styles'
 import { Close } from '@mui/icons-material'
 import dataProcessing from '../CustomerFormSections/dataProcessing'
 import staticProperties from '../CustomerFormSections/StaticProperties'
+import { useDropzone } from 'react-dropzone'
 
-const UploadButton = styled(Button)(({ theme, iserror }) => ({
+const UploadButton = styled(Button)(({ theme, iserror, isdragactive }) => ({
     width: '100%',
     height: '80px',
     backgroundColor: theme.palette.background.paper,
     boxShadow: 'none',
-    border: iserror === 'true' ? '1px solid ' + theme.palette.error.main : '1px solid ' + colors.grey[400],
+    border: iserror === 'true' ? '1px solid ' + theme.palette.error.main : isdragactive === 'true' ? '1px dashed ' + colors.grey[600] : '1px solid ' + colors.grey[400],
     fontSize: 14,
     color: colors.grey[500],
     borderRadius: 5,
@@ -107,6 +108,47 @@ export default function UploadXlsx(props) {
         return (sizeInBytes / KB).toFixed(2) + " KB"
     }
 
+    const load_XLX = (e) => {
+        var data = e.target.result;
+        import('xlsx')
+            .then(XLSX => {
+                let excelData = XLSX.read(data, { type: 'binary' });
+                const sheetname = excelData.SheetNames[0]
+                const sheet = excelData.Sheets[sheetname]
+                if (!sheet) enqueueSnackbar(`"Rates" sheet not found`, { variant: 'warning' })
+                else {
+                    const dataProcessed = dataProcessing(staticProperties, [...loadSheetData(sheet, XLSX)])
+                    const dataSuccessed = dataProcessed[0]
+                    const dataErrored = dataProcessed[1]
+                    if (Object.keys(dataErrored).length === 0) {
+                        field.onChange(dataSuccessed)
+                    }
+                    else {
+                        let message = ''
+                        if (Object.entries(dataErrored).length > 0) {
+                            setError(true)
+                            Object.entries(dataErrored).forEach(([key, value]) => {
+                                message += `<strong>${key}:</strong><br />`
+                                Object.entries(value).forEach(([k, v]) => {
+                                    message += `&nbsp;&nbsp;- ${v}<br />`
+                                })
+                                message += `<br />`
+                            })
+                            props.setError('items', {
+                                type: 'manual',
+                                message: message
+                            })
+                        }
+                    }
+                }
+            })
+            .catch(err => enqueueSnackbar(`Failed to load excel file`, { variant: 'error', }))
+            .finally(async () => {
+                await sleep(500)
+                setLoading(false)
+            })
+    }
+
     const onFileChange = (event) => {
         setLoading(true)
         if (event.target.files.length) {
@@ -116,45 +158,8 @@ export default function UploadXlsx(props) {
             setFileSize(formatFileSize(f.size))
             var reader = new FileReader();
             reader.onload = function (e) {
-                var data = e.target.result;
-                import('xlsx')
-                    .then(XLSX => {
-                        let excelData = XLSX.read(data, { type: 'binary' });
-                        const sheetname = excelData.SheetNames[0]
-                        const sheet = excelData.Sheets[sheetname]
-                        if (!sheet) enqueueSnackbar(`"Rates" sheet not found`, { variant: 'warning' })
-                        else {
-                            const dataProcessed = dataProcessing(staticProperties, [...loadSheetData(sheet, XLSX)])
-                            const dataSuccessed = dataProcessed[0]
-                            const dataErrored = dataProcessed[1]
-                            if (Object.keys(dataErrored).length === 0) {
-                                field.onChange(dataSuccessed)
-                            }
-                            else {
-                                let message = ''
-                                if (Object.entries(dataErrored).length > 0) {
-                                    setError(true)
-                                    Object.entries(dataErrored).forEach(([key, value]) => {
-                                        message += `<strong>${key}:</strong><br />`
-                                        Object.entries(value).forEach(([k, v]) => {
-                                            message += `&nbsp;&nbsp;- ${v}<br />`
-                                        })
-                                        message += `<br />`
-                                    })
-                                    props.setError('items', {
-                                        type: 'manual',
-                                        message: message
-                                    })
-                                }
-                            }
-                        }
-                    })
-                    .catch(err => enqueueSnackbar(`Failed to load excel file`, { variant: 'error', }))
-                    .finally(async () => {
-                        await sleep(500)
-                        setLoading(false)
-                    })
-            };
+                load_XLX(e)
+            }
             reader.readAsBinaryString(f)
         }
     }
@@ -168,8 +173,25 @@ export default function UploadXlsx(props) {
         setError(false)
     }
 
+    const onDrop = (files) => {
+        setLoading(true)
+        if (files.length) {
+            const f = files[0]
+            setFileName(f.name)
+            setFileSize(formatFileSize(f.size))
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                load_XLX(e)
+            }
+            reader.readAsBinaryString(f)
+        }
+    }
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, noClick: true, noKeyboard: true })
+
     return (
-        <Box style={{ position: 'relative' }}>
+        <Box style={{ position: 'relative' }} {...getRootProps()}>
+            <input {...getInputProps()} style={{ display: 'none' }} />
             <input
                 accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 id="contained-button-file-bulk-excel"
@@ -184,10 +206,11 @@ export default function UploadXlsx(props) {
                 <UploadButton
                     focusRipple
                     component="span"
+                    isdragactive={isDragActive ? 'true' : 'false'}
                     disabled={fileName.length > 0}
                 >
                     {fileName.length === 0 && <>
-                        Drag & Drop Logo or {' '} <span> Browse</span>
+                        Drag & Drop Excel or {' '} <span> Browse</span>
                     </>}
                 </UploadButton>
             </label>

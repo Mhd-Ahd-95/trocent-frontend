@@ -3,7 +3,6 @@ import { Box, FormControl, FormLabel, Grid, Radio, RadioGroup } from '@mui/mater
 import { AccordionComponent, CustomFormControlLabel, UploadLogo } from '../../components'
 import { Controller, useFormContext } from "react-hook-form";
 
-
 function Others(props) {
 
     const { customerId } = props

@@ -93,12 +93,17 @@ export default function VehicleTypes() {
               filtering: false,
               search: true
             }}
+            onRowClick={(params) => {
+              setVehicleType(params.row)
+              setOpenDrawer(2)
+            }}
             columns={[
               {
                 headerName: 'Name',
                 field: 'name',
                 flex: 1,
-                minWidth: 200
+                minWidth: 200,
+                sortable: true
               },
               {
                 headerName: 'Rate',
@@ -141,7 +146,7 @@ export default function VehicleTypes() {
                     >
                       Delete
                     </Button>
-                    <Button
+                    {/* <Button
                       startIcon={<EditSquareIcon />}
                       onClick={e => {
                         e.stopPropagation()
@@ -159,7 +164,7 @@ export default function VehicleTypes() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                   </Box>
                 )
               }

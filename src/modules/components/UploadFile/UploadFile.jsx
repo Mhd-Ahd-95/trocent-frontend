@@ -5,13 +5,14 @@ import { Close, Download } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
 import DriversApi from '../../apis/Drivers.api'
 import { saveAs } from 'file-saver'
+import { useDropzone } from 'react-dropzone'
 
-const UploadButton = styled(Button)(({ theme, iserror }) => ({
+const UploadButton = styled(Button)(({ theme, iserror, isdragactive }) => ({
     width: '100%',
     height: '80px',
     backgroundColor: theme.palette.background.paper,
     boxShadow: 'none',
-    border: iserror === 'true' ? '1px solid ' + theme.palette.error.main : '1px solid ' + colors.grey[400],
+    border: iserror === 'true' ? '1px solid ' + theme.palette.error.main : isdragactive === 'true' ? '1px dashed ' + colors.grey[600] : '1px solid ' + colors.grey[400],
     fontSize: 14,
     color: colors.grey[500],
     borderRadius: 5,
@@ -82,23 +83,18 @@ export default function UploadFile(props) {
         return (sizeInBytes / KB).toFixed(2) + " KB"
     }
 
-    function isValidFile(file) {
-        const MB = 1024 * 1024
-        const maxSize = 5 * MB
-        return file.size <= maxSize
-    }
+    // function isValidFile(file) {
+    //     const MB = 1024 * 1024
+    //     const maxSize = 5 * MB
+    //     return file.size <= maxSize
+    // }
+
     const handleChange = async (e) => {
         if (e.target.files.length) {
             setLoading(true)
             const file = e.target.files[0]
             e.target.value = "";
             setValue(`driver_documents.${index}.fname`, file.name)
-            // if (!isValidFile(file)) {
-            //     enqueueSnackbar(`File ${file.name} cannot be more than 5 MB.`, { variant: 'warning' })
-            //     await sleep(300)
-            //     setLoading(false)
-            //     return
-            // }
             setValue(`driver_documents.${index}.fsize`, file.size)
             await sleep(300)
             field.onChange(file)
@@ -134,8 +130,23 @@ export default function UploadFile(props) {
             .finally(() => setDownloading(false))
     }
 
+    const onDrop = async (files) => {
+        if (files.length) {
+            setLoading(true)
+            const file = files[0]
+            setValue(`driver_documents.${index}.fname`, file.name)
+            setValue(`driver_documents.${index}.fsize`, file.size)
+            await sleep(300)
+            field.onChange(file)
+            setLoading(false)
+        }
+    }
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, noClick: true, noKeyboard: true })
+
     return (
-        <Box style={{ position: 'relative' }}>
+        <Box style={{ position: 'relative' }} {...getRootProps()}>
+            <input {...getInputProps()} style={{ display: 'none' }} />
             <input
                 type='file'
                 id={`contained-button-file-${index}`}
@@ -146,6 +157,7 @@ export default function UploadFile(props) {
                 <UploadButton
                     iserror={fieldState.error ? 'true' : 'false'}
                     focusRipple
+                    isdragactive={isDragActive ? 'true' : 'false'}
                     component="span"
                 >
                     Drag & Drop file or {' '} <span> Browse</span>
@@ -168,12 +180,12 @@ export default function UploadFile(props) {
                                     <Download />
                                 </IconButton>
                             </Tooltip>
-                            : downloading ? 
-                            <CircularProgress size={'20px'} style={{ color: '#fff' }} /> : null
+                            : downloading ?
+                                <CircularProgress size={'20px'} style={{ color: '#fff' }} /> : null
                         }
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Tooltip title={driverDocument.fname}>
-                                <Typography component='p' className='fname' noWrap style={{maxWidth: 180}}>{driverDocument.fname}</Typography>
+                                <Typography component='p' className='fname' noWrap style={{ maxWidth: 180 }}>{driverDocument.fname}</Typography>
                             </Tooltip>
                             <Typography component='p' className='fsize'>{driverDocument.fsize ? formatFileSize(driverDocument.fsize) : 'File more than 5 MB.'}</Typography>
                         </div>

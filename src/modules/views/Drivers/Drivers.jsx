@@ -77,16 +77,19 @@ export default function Drivers() {
             onRowSelectionModelChange={handleSelectionChange}
             rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
+            onRowClick={(params) => navigate(`/driver/edit/${params.row.id}`)}
             options={{
               filtering: true,
-              search: true
+              search: true,
             }}
+            field='driver_number'
             columns={[
               {
                 headerName: 'Driver Number',
                 field: 'driver_number',
                 flex: 1,
-                minWidth: 150
+                minWidth: 150,
+                sortable: true
               },
               {
                 headerName: 'First Name',
@@ -107,8 +110,8 @@ export default function Drivers() {
                 minWidth: 150
               },
               {
-                headerName: 'Login Email',
-                field: 'email',
+                headerName: 'Username',
+                field: 'login_username',
                 flex: 1,
                 minWidth: 180
               },
@@ -123,7 +126,7 @@ export default function Drivers() {
                 field: 'actions',
                 headerName: 'Actions',
                 sortable: false,
-                minWidth: 180,
+                minWidth: 100,
                 flex: 1,
                 renderCell: params => (
                   <Box
@@ -138,7 +141,7 @@ export default function Drivers() {
                       }
                     }}
                   >
-                    <Button
+                    {/* <Button
                       startIcon={
                         <EditSquareIcon sx={{ fontSize: '10px', padding: 0 }} />
                       }
@@ -157,7 +160,7 @@ export default function Drivers() {
                       }}
                     >
                       Edit
-                    </Button>
+                    </Button> */}
                     <Button
                       startIcon={<LockPersonOutlinedIcon />}
                       onClick={(e) => {
@@ -215,7 +218,7 @@ export default function Drivers() {
 
       {openDrawer && (
         <DrawerForm
-          title='Create Login'
+          title='Edit Login'
           open={openDrawer === 2}
           setOpen={setOpenDrawer}
         >
