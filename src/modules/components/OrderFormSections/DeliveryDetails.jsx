@@ -35,7 +35,7 @@ function DeliveryDetails(props) {
               label='Delivery Date*'
               views={['year', 'month', 'day']}
               value={field.value ? moment(field.value) : null}
-              onChange={date => field.onChange(date ? date.toISOString() : null)}
+              onChange={date => field.onChange(date ? moment(date).format('YYYY-MM-DD') : null)}
               onClose={() => field.onBlur()}
               slotProps={{
                 textField: {

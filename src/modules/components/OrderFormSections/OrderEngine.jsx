@@ -16,7 +16,7 @@ export default class OrderEngine {
         this.custRateSheet = []
         this.fuelSurchargeByDate = null
         this.fuelSurchargePromise = null
-        this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).toISOString())
+        this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).format('YYYY-MM-DD'))
     }
 
     set customerRateSheets(cr) { this.custRateSheet = cr }
@@ -900,12 +900,12 @@ export default class OrderEngine {
 
         return {
             ...data,
-            create_date: data.create_date ? moment(data.create_date).toISOString() : moment(new Date()).toISOString(),
-            pickup_date: data.pickup_date ? moment(data.pickup_date).toISOString() : moment(new Date()).toISOString(),
-            delivery_date: data.delivery_date ? moment(data.delivery_date).toISOString() : moment(new Date()).toISOString(),
-            pickup_at: data.pickup_at ? moment(data.pickup_at).toISOString() : null,
-            delivery_at: data.delivery_at ? moment(data.delivery_at).toISOString() : null,
-            billing_invoice_date: data.billing_invoice_date ? moment(data.billing_invoice_date).toISOString() : moment(new Date()).toISOString(),
+            create_date: data.create_date ? moment(data.create_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
+            pickup_date: data.pickup_date ? moment(data.pickup_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
+            delivery_date: data.delivery_date ? moment(data.delivery_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
+            pickup_at: data.pickup_at ? moment(data.pickup_at).format('YYYY-MM-DD') : null,
+            delivery_at: data.delivery_at ? moment(data.delivery_at).format('YYYY-MM-DD') : null,
+            billing_invoice_date: data.billing_invoice_date ? moment(data.billing_invoice_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
 
             pickup_in: data.pickup_in ? data.pickup_in : null,
             pickup_out: data.pickup_out ? (data.pickup_out.includes('T') ? moment(data.pickup_out).format('HH:mm') : data.pickup_out) : null,

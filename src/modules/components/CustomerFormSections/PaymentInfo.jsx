@@ -50,7 +50,7 @@ function PaymentInfo(props) {
                             label={'Account Opening Date'}
                             views={['year', 'month', 'day']}
                             value={field.value ? moment(field.value) : null}
-                            onChange={date => field.onChange(date ? date.toISOString() : null)}
+                            onChange={date => field.onChange(date ? moment(date).format('YYYY-MM-DD') : null)}
                             slotProps={{
                                 textField: {
                                     fullWidth: true,
@@ -78,7 +78,7 @@ function PaymentInfo(props) {
                             label={'Last Invoice Date'}
                             views={['year', 'month', 'day']}
                             value={field.value ? moment(field.value) : null}
-                            onChange={date => field.onChange(date ? date.toISOString() : null)}
+                            onChange={date => field.onChange(date ? moment(date).format('YYYY-MM-DD') : null)}
                             slotProps={{
                                 textField: {
                                     fullWidth: true,
@@ -106,7 +106,7 @@ function PaymentInfo(props) {
                             label={'Last Payment Date'}
                             views={['year', 'month', 'day']}
                             value={field.value ? moment(field.value) : null}
-                            onChange={date => field.onChange(date ? date.toISOString() : null)}
+                            onChange={date => field.onChange(date ? moment(date).format('YYYY-MM-DD') : null)}
                             slotProps={{
                                 textField: {
                                     fullWidth: true,

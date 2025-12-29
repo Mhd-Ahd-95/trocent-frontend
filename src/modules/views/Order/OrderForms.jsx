@@ -47,6 +47,7 @@ function OrderForm(props) {
     return editMode ? { ...defaultOrderValue, ...OrderEngine.transformLoadedData(initialValues, defaultOrderValue) } : { ...defaultOrderValue, ...initialValues }
   }, [initialValues, editMode])
 
+
   const methods = useForm({
     defaultValues: transformedInitialValues,
     mode: 'onBlur',
@@ -178,6 +179,7 @@ function OrderForm(props) {
 
   const onSubmit = async (data, e) => {
     e.preventDefault()
+    console.log(data);
     let payload = OrderEngine.format_request(data)
     const action = e?.nativeEvent?.submitter?.id;
     if (editMode) {
