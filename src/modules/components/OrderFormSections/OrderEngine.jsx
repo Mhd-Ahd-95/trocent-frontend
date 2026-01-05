@@ -765,11 +765,13 @@ export default class OrderEngine {
             internal_note: data.internal_note,
 
             customer_id: data.customer_id,
-
+            customer_name: data.customer_name,
+            
             reference_numbers: data.reference_numbers,
             caller: data.caller,
 
             shipper_id: data.shipper_id,
+            shipper_name: data.shipper_name,
             shipper_email: data.shipper_email,
             shipper_suite: data.shipper_suite,
             shipper_contact_name: data.shipper_contact_name,
@@ -788,6 +790,7 @@ export default class OrderEngine {
             extra_stop_special_instructions: data.extra_stop_special_instructions,
 
             receiver_id: data.receiver_id,
+            receiver_name: data.receiver_name,
             receiver_email: data.receiver_email,
             receiver_contact_name: data.receiver_contact_name,
             receiver_phone_number: data.receiver_phone_number,

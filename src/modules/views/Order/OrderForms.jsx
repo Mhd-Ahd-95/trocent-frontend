@@ -179,7 +179,6 @@ function OrderForm(props) {
 
   const onSubmit = async (data, e) => {
     e.preventDefault()
-    console.log(data);
     let payload = OrderEngine.format_request(data)
     const action = e?.nativeEvent?.submitter?.id;
     if (editMode) {

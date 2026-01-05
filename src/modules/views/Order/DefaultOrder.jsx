@@ -1,7 +1,9 @@
 import moment from "moment";
+import globalVariables from "../../global";
 
 export const defaultOrderValue = {
-  username: '',
+  user_id: globalVariables.auth.user.id,
+  username: globalVariables.auth.user?.username || '',
   order_number: '',
   create_date: moment(new Date()).format('YYYY-MM-DD'),
   terminal: '',
@@ -12,11 +14,13 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
+  customer_name: '',
 
   reference_numbers: [],
   caller: '',
 
   shipper_id: '',
+  shipper_name: '',
   shipper_email: '',
   shipper_contact_name: '',
   shipper_phone_number: '',
@@ -41,6 +45,7 @@ export const defaultOrderValue = {
   extra_stop_special_instructions: '',
 
   receiver_id: '',
+  receiver_name: '',
   receiver_email: '',
   receiver_contact_name: '',
   receiver_phone_number: '',

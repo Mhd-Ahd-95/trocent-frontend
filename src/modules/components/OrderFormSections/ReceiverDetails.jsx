@@ -44,8 +44,10 @@ function ReceiverDetails(props) {
   }, [isError, error, enqueueSnackbar])
 
   const handleSelect = (value) => {
+    console.log(value);
     unstable_batchedUpdates(() => {
       selectedValue.current = value
+      setValue('receiver_name', value?.name || '')
       setValue('receiver_email', value?.email || '')
       setValue('receiver_contact_name', value?.contact_name || '')
       setValue('receiver_phone_number', value?.phone_number || '')

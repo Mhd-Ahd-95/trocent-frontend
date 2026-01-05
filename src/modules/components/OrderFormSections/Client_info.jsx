@@ -36,6 +36,7 @@ function ClientInfo(props) {
         setSelectedCustomer(customer)
         engine.customer = customer
         setValue('customer_number', customer.account_number)
+        setValue('customer_name', customer.name || '')
         setValue('customer_language', customer.language || '')
       }
     }
@@ -78,6 +79,7 @@ function ClientInfo(props) {
                   unstable_batchedUpdates(() => {
                     field.onChange(value?.id || '')
                     setValue('customer_language', value?.language || '')
+                    setValue('customer_name', value?.name || '')
                     setSelectedCustomer(value)
                     engine.customer = value
                     if (value) {
