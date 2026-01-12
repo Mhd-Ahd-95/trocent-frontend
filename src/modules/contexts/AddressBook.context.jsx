@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query'
 const AddressBookContext = React.createContext()
 
 const AddressBookContextProvider = props => {
+    
     const [loading, setLoading] = React.useState(true)
     const { enqueueSnackbar } = useSnackbar()
     const [countAddress, setCountAddress] = React.useState(0)
@@ -20,7 +21,7 @@ const AddressBookContextProvider = props => {
             queryKey: ['addressBookByName', 'messagers'],
             queryFn: async () => {
                 const res = await AddressBooksApi.getAddressBookByName('messagers');
-                return res.data.data;
+                return res.data.data || {};
             },
             staleTime: 60 * 60 * 1000,
             gcTime: 60 * 60 * 1000,
