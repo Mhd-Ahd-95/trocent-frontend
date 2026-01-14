@@ -12,29 +12,29 @@ export default function CustomerView() {
 
   const navigate = useNavigate()
   const { data, isLoading, isFetching, isError, error } = useCustomers()
-  const { removeMany } = useCustomerMutation()
+  const { remove } = useCustomerMutation()
   const selectedRef = React.useRef()
-  const [selectedCustomers, setSelectedCustomers] = React.useState([])
+  // const [selectedCustomers, setSelectedCustomers] = React.useState([])
   const [openModal, setOpenModal] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
 
-  const [rowSelectionModel, setRowSelectionModel] = React.useState({
-    type: 'include',
-    ids: new Set()
-  })
+  // const [rowSelectionModel, setRowSelectionModel] = React.useState({
+  //   type: 'include',
+  //   ids: new Set()
+  // })
 
-  const handleSelectionChange = newModel => {
-    setRowSelectionModel(newModel)
-    let selectedIds = Array.from(newModel.ids)
-    if (newModel.type === 'exclude' && selectedIds.length === 0) {
-      selectedIds = data.map(row => row.id)
-    }
-    setSelectedCustomers(selectedIds)
-  }
+  // const handleSelectionChange = newModel => {
+  //   setRowSelectionModel(newModel)
+  //   let selectedIds = Array.from(newModel.ids)
+  //   if (newModel.type === 'exclude' && selectedIds.length === 0) {
+  //     selectedIds = data.map(row => row.id)
+  //   }
+  //   setSelectedCustomers(selectedIds)
+  // }
 
-  const handleDeleteCustomers = (iids) => {
-    removeMany.mutate(iids)
-    setSelectedCustomers([])
+  const handleDeleteCustomers = async (cid) => {
+    await remove.mutateAsync(cid)
+    // setSelectedCustomers([])
     selectedRef.current = {}
     setOpenModal(false)
   }
@@ -75,10 +75,10 @@ export default function CustomerView() {
               sortable: true
             }}
             disableRowSelectionOnClick
-            deleteSelected={selectedCustomers.length > 0}
-            handleDeleteSelected={() => setOpenModal(2)}
-            onRowSelectionModelChange={handleSelectionChange}
-            rowSelectionModel={rowSelectionModel}
+            // deleteSelected={selectedCustomers.length > 0}
+            // handleDeleteSelected={() => setOpenModal(2)}
+            // onRowSelectionModelChange={handleSelectionChange}
+            // rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
             onRowClick={(rowData) => navigate(`/customer/edit/${rowData.row.id}`)}
             columns={[
@@ -196,10 +196,10 @@ export default function CustomerView() {
           }
           subtitle='Are you sure you want to continue?'
           handleClose={() => setOpenModal(false)}
-          handleSubmit={() => handleDeleteCustomers([selectedRef.current.id])}
+          handleSubmit={() => handleDeleteCustomers(selectedRef.current.id)}
         />
       </Modal>
-      <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
+      {/* <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
         <ConfirmModal
           title={
             <>
@@ -211,7 +211,7 @@ export default function CustomerView() {
           handleClose={() => setOpenModal(false)}
           handleSubmit={() => handleDeleteCustomers([...selectedCustomers])}
         />
-      </Modal>
+      </Modal> */}
     </MainLayout>
   )
 }

@@ -74,11 +74,28 @@ export function useUserMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
+                console.log(updated);
                 queryClient.setQueryData(['users'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );
                 queryClient.setQueryData(['user', Number(updated.id)], updated)
                 queryClient.invalidateQueries({ queryKey: ['users'], exact: true })
+                if (updated.type === 'driver') {
+                    const drivers = queryClient.getQueryData(['drivers'])
+                    if (drivers) {
+                        queryClient.setQueryData(['drivers'], (old = []) => {
+                            return old.map(dr => {
+                                if (dr.user_id === updated.id){
+                                    return ({...dr, login_username: updated.username})
+                                }
+                                return dr
+                            })
+                        });
+                    }
+                    else {
+                        queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
+                    }
+                }
                 enqueueSnackbar('User has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

@@ -771,6 +771,10 @@ export default class OrderEngine {
             caller: data.caller,
 
             shipper_id: data.shipper_id,
+            shipper_address: data.shipper_address,
+            shipper_city: data.shipper_city,
+            shipper_province: data.shipper_province,
+            shipper_postal_code: data.shipper_postal_code,
             shipper_name: data.shipper_name,
             shipper_email: data.shipper_email,
             shipper_suite: data.shipper_suite,
@@ -791,6 +795,10 @@ export default class OrderEngine {
 
             receiver_id: data.receiver_id,
             receiver_name: data.receiver_name,
+            receiver_address: data.receiver_address,
+            receiver_city: data.receiver_city,
+            receiver_province: data.receiver_province,
+            receiver_postal_code: data.receiver_postal_code,
             receiver_email: data.receiver_email,
             receiver_contact_name: data.receiver_contact_name,
             receiver_phone_number: data.receiver_phone_number,
