@@ -340,7 +340,7 @@ function BasicInfo(props) {
                 'On Dock',
                 'Arrived Shipper',
                 'Picked Up',
-                'Arrived Consignee',
+                'Arrived Receiver',
                 'Delivered',
                 'Approved',
                 'Billed',

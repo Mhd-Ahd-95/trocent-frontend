@@ -70,16 +70,19 @@ export const defaultOrderValue = {
   is_same_carrier: false,
 
   interliner_id: '',
+  interliner_name: '',
   interliner_special_instructions: '',
   interliner_charge_amount: '',
   interliner_invoice: '',
 
   interliner_pickup_id: '',
+  interliner_pickup_name: '',
   interliner_pickup_special_instructions: '',
   interliner_pickup_charge_amount: '',
   interliner_pickup_invoice: '',
 
   interliner_delivery_id: '',
+  interliner_delivery_name: '',
   interliner_delivery_special_instructions: '',
   interliner_delivery_charge_amount: '',
   interliner_delivery_invoice: '',
