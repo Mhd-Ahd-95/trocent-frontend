@@ -41,3 +41,10 @@ export { default as NoRows } from './Table/NoRows'
 export { default as Consignment } from './OrderFormSections/Consignment'
 export { default as HeaderForm } from './OrderFormSections/HeaderForm'
 export { default as Confirmation } from './Confirmation/Confirmation'
+export { default as StatsCards } from './DispatchOrderComponents/StatsCard'
+export { default as FilterBar } from './DispatchOrderComponents/FilterBar'
+export { default as TripRow } from './DispatchOrderComponents/TripRow'
+export { default as TripsList } from './DispatchOrderComponents/TripsList'
+export { default as UndispatchedOrders } from './DispatchOrderComponents/UndispatchedOrder';
+export { default as OrderActionsMenu } from './DispatchOrderComponents/OrderActionMenu';
+export { default as TripActionsBar } from './DispatchOrderComponents/TripActionBar';

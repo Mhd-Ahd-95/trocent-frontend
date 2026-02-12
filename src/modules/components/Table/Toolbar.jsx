@@ -97,7 +97,7 @@ export default function CustomToolbar (props) {
           Import Rate Sheet
         </Button>
       )}
-      {props.options.filtering && (
+      {props.options?.filtering && (
         <Tooltip title='Filters'>
           <FilterPanelTrigger
             render={(props, state) => (
