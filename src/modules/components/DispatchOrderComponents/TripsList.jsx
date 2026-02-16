@@ -4,13 +4,12 @@ import { LocalShipping } from '@mui/icons-material';
 import { Virtuoso } from 'react-virtuoso';
 import TripRow from './TripRow';
 
-const TripsList = ({ trips, activeTab, filters }) => {
+const TripsList = ({ trips, filters, isInterliner }) => {
+
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const filteredTrips = useMemo(() => {
     let filtered = [...trips];
-
-    // Apply filters
     if (filters?.searchInput) {
       const search = filters.searchInput.toLowerCase();
       filtered = filtered.filter(
@@ -72,18 +71,29 @@ const TripsList = ({ trips, activeTab, filters }) => {
   }
 
   return (
-    <Box sx={{ height: 'calc(100vh - 450px)', minHeight: 400 }}>
-      <Virtuoso
-        data={filteredTrips}
-        itemContent={(index, trip) => (
+    <Box
+      sx={{
+        minHeight: 400,
+        overflowX: 'auto',
+        '&::-webkit-scrollbar': {
+          height: 8,
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          borderRadius: 4,
+        },
+      }}
+    >
+      <Box sx={{ minWidth: 1200 }}>
+        {filteredTrips.map((trip, index) => (
           <TripRow
-            key={trip.id}
+            key={index}
             trip={trip}
-            activeTab={activeTab}
+            isInterliner={isInterliner}
             isToday={trip.trip_date === today}
           />
-        )}
-      />
+        ))}
+      </Box>
     </Box>
   );
 };

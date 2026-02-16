@@ -37,7 +37,7 @@ const defaultTheme = {
       main: "#DD9100",
       dark: colors.yellow[800],
       hover: "rgb(245, 161, 0)",
-      outlineHover: colors.orange[100],
+      outlineHover: colors.orange[50],
       contrastText: "#fff",
     },
     secondary: {

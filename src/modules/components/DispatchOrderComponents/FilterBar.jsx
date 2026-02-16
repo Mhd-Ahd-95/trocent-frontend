@@ -19,12 +19,7 @@ import {
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-const FilterBar = ({ 
-  onSearch, 
-  showSearchButton = false,
-  onFilterChange,
-  defaultExpanded = true 
-}) => {
+const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [filters, setFilters] = useState({
     pickupDate: null,
@@ -48,20 +43,18 @@ const FilterBar = ({
 
   return (
     <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ p: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <FilterList color="primary" />
           <span style={{ fontWeight: 600 }}>Filters</span>
         </Box>
-        <IconButton size="small" onClick={() => setExpanded(!expanded)}>
+        <IconButton size="small">
           {expanded ? <ExpandLess /> : <ExpandMore />}
         </IconButton>
       </Box>
-
       <Collapse in={expanded}>
         <Box sx={{ p: 2, pt: 0 }}>
           <Grid container spacing={2}>
-            {/* Date Filters */}
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <DatePicker
                 label="Pickup Date"
@@ -89,8 +82,6 @@ const FilterBar = ({
                 }}
               />
             </Grid>
-
-            {/* Search Input */}
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 size="small"
@@ -103,8 +94,6 @@ const FilterBar = ({
                 }}
               />
             </Grid>
-
-            {/* Search Button (for completed trips) */}
             {showSearchButton && (
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Button
@@ -118,8 +107,6 @@ const FilterBar = ({
                 </Button>
               </Grid>
             )}
-
-            {/* Quick Filters */}
             <Grid size={{ xs: 12, sm: 6, md: showSearchButton ? 6 : 3 }}>
               <ToggleButtonGroup
                 size="small"
@@ -132,8 +119,6 @@ const FilterBar = ({
                 <ToggleButton value="tomorrow">TOMORROW</ToggleButton>
               </ToggleButtonGroup>
             </Grid>
-
-            {/* Terminal Filters */}
             <Grid size={{ xs: 12, md: showSearchButton ? 6 : 3 }}>
               <ToggleButtonGroup
                 size="small"

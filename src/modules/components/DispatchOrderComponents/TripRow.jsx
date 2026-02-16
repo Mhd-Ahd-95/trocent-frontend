@@ -9,6 +9,11 @@ import {
   Chip,
   Collapse,
   Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Grid,
+  Link
 } from '@mui/material';
 import {
   ExpandMore,
@@ -28,27 +33,19 @@ import {
   NoteAdd,
 } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
+import { Link as RouterLink } from 'react-router-dom'
 
-const TripRow = ({ trip, activeTab, isToday }) => {
+const TripRow = ({ trip, isToday, isInterliner }) => {
   const [expanded, setExpanded] = useState(false);
-  const firstOrder = trip.orders[0];
-  const isInterliner = activeTab === 0;
+  const firstOrder = trip?.orders[0];
 
   const getServiceColor = useCallback((type) => {
-    const colors = {
-      Direct: 'error',
-      Rush: 'warning',
-      Regular: 'primary',
-    };
+    const colors = { Direct: 'success', Rush: 'info', Regular: 'primary', };
     return colors[type] || 'default';
   }, []);
 
   const getStatusColor = useCallback((status) => {
-    const colors = {
-      active: 'success',
-      planning: 'warning',
-      completed: 'default',
-    };
+    const colors = { active: 'success', planning: 'warning', completed: 'default', };
     return colors[status] || 'default';
   }, []);
 
@@ -59,174 +56,141 @@ const TripRow = ({ trip, activeTab, isToday }) => {
       <Paper
         elevation={0}
         sx={{
-          p: 2,
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 2,
-          bgcolor: 'background.paper',
+          py: 0, px: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper',
+          overflowX: 'auto',
+          '&::-webkit-scrollbar': {
+            height: 6,
+          },
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          {/* Order Number Badge */}
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: 'primary.main',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
-              fontSize: '0.875rem',
-            }}
-          >
-            {idx + 1}
-          </Box>
+        <Grid
+          container
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{
+            cursor: 'pointer',
+            minHeight: 50
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowFreight(!showFreight);
+          }}
+        >
+          <Grid size={1.2}>
+            <Link component={RouterLink} to={`/orders/${order.id}`}>
+              <Typography variant="subtitle1" fontWeight="700">
+                {order.order_number}
+              </Typography>
+            </Link>
+            <Typography variant="subtitle2">
+              {order.customer_name}
+            </Typography>
+          </Grid>
 
-          {/* Order Number */}
-          <Box sx={{ minWidth: 120 }}>
-            <Typography variant="body2" fontWeight="600">
-              {order.order_number}
+          <Divider orientation="vertical" flexItem />
+
+          <Grid size={0.7}>
+            <Typography variant="caption" color="textSecondary" fontWeight="600">
+              SERVICE
             </Typography>
             <Chip
               label={order.service_type}
               color={getServiceColor(order.service_type)}
-              size="small"
-              sx={{ mt: 0.5, height: 18, fontSize: '0.65rem' }}
+              size="medium"
+              sx={{ mt: 0.5, height: 20, fontSize: '0.8rem' }}
             />
-          </Box>
+          </Grid>
 
           <Divider orientation="vertical" flexItem />
 
-          {/* Shipper */}
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="caption"
-              color="success.main"
-              fontWeight="600"
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-            >
+          <Grid size={3.5}>
+            <Typography variant="caption" color="success.main" fontWeight="600" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Place sx={{ fontSize: 12 }} />
               SHIPPER
             </Typography>
             <Typography variant="body2" fontWeight="600">
               {order.shipper_name}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {order.shipper_city}
+            <Typography component="p" fontSize={14} color="text.secondary">
+              {order.shipper_address}
             </Typography>
-          </Box>
+            <Typography variant="caption" color="text.secondary">
+              {order.shipper_city || '-'} | {order.shipper_province || '-'} | {order.shipper_postal_code || '-'}
+            </Typography>
+          </Grid>
 
-          {/* Pickup Date */}
-          <Box sx={{ minWidth: 140 }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-            >
+          <Grid size={1}>
+            <Typography variant="caption" color="text.secondary" fontWeight="500" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <CalendarToday sx={{ fontSize: 12 }} />
               Pickup
             </Typography>
             <Typography variant="body2">{order.pickup_date}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {order.pickup_time}
+              {order.pickup_time_from} - {order.pickup_time_to}
             </Typography>
-          </Box>
+          </Grid>
 
-          <TrendingFlat sx={{ color: 'text.secondary' }} />
+          <Grid size={0.5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <TrendingFlat sx={{ color: 'primary.main' }} />
+          </Grid>
 
-          {/* Receiver */}
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="caption"
-              color="info.main"
-              fontWeight="600"
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-            >
+          <Grid size={3.5}>
+            <Typography variant="caption" color="info.main" fontWeight="600" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Place sx={{ fontSize: 12 }} />
               RECEIVER
             </Typography>
             <Typography variant="body2" fontWeight="600">
               {order.receiver_name}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {order.receiver_city}
+            <Typography component="p" fontSize={14} color="text.secondary">
+              {order.receiver_address}
             </Typography>
-          </Box>
+            <Typography variant="caption" color="text.secondary">
+              {order.receiver_city || '-'} | {order.receiver_province || '-'} | {order.receiver_postal_code || '-'}
+            </Typography>
+          </Grid>
 
-          {/* Delivery Date */}
-          <Box sx={{ minWidth: 140 }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-            >
+          <Grid size={1}>
+            <Typography variant="caption" color="text.secondary" fontWeight="500" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <CalendarToday sx={{ fontSize: 12 }} />
               Delivery
             </Typography>
             <Typography variant="body2">{order.delivery_date}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {order.delivery_time}
+              {order.delivery_time_from} - {order.delivery_time_to}
             </Typography>
-          </Box>
+          </Grid>
 
-          {/* Freight Count with Expand */}
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowFreight(!showFreight);
-            }}
-            sx={{
-              bgcolor: 'secondary.50',
-              '&:hover': { bgcolor: 'secondary.100' },
-            }}
-          >
-            <Inventory2 fontSize="small" color="secondary" />
-          </IconButton>
+          <Divider orientation="vertical" flexItem />
 
-          <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+          <Grid size={0.4}>
+            <Stack direction="column" spacing={0.5} sx={{ height: '100%', justifyContent: 'center' }}>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Undispatch order:', order.id);
+                }}
+                sx={{ '&:hover': { bgcolor: 'error.50' } }}
+              >
+                <LocalShippingOutlined fontSize="small" color="error" />
+              </IconButton>
 
-          {/* Order Actions */}
-          <Stack direction="row" spacing={0.5}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Update order:', order.id);
-              }}
-              sx={{ '&:hover': { bgcolor: 'primary.50' } }}
-            >
-              <Edit fontSize="small" color="primary" />
-            </IconButton>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Add note:', order.id);
+                }}
+                sx={{ '&:hover': { bgcolor: 'warning.50' } }}
+              >
+                <NoteAdd fontSize="small" color="warning" />
+              </IconButton>
+            </Stack>
+          </Grid>
+        </Grid>
 
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Undispatch order:', order.id);
-              }}
-              sx={{ '&:hover': { bgcolor: 'error.50' } }}
-            >
-              <LocalShippingOutlined fontSize="small" color="error" />
-            </IconButton>
-
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Add note:', order.id);
-              }}
-              sx={{ '&:hover': { bgcolor: 'warning.50' } }}
-            >
-              <NoteAdd fontSize="small" color="warning" />
-            </IconButton>
-          </Stack>
-        </Stack>
-
-        {/* Freight Details Collapse */}
         <Collapse in={showFreight}>
           <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
             <Typography variant="caption" fontWeight="600" color="text.secondary" gutterBottom>
@@ -241,7 +205,7 @@ const TripRow = ({ trip, activeTab, isToday }) => {
                     bgcolor: 'grey.50',
                     borderRadius: 1,
                     border: 1,
-                    borderColor: 'divider',
+                    borderColor: 'divider'
                   }}
                 >
                   <Stack direction="row" spacing={3}>
@@ -276,196 +240,150 @@ const TripRow = ({ trip, activeTab, isToday }) => {
   };
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Card
+    <Box sx={{ mb: 1 }}>
+      <Accordion
+        expanded={expanded}
+        onChange={() => setExpanded(!expanded)}
         elevation={0}
         sx={{
-          border: isToday ? '2px solid' : '1px solid',
-          borderColor: isToday ? 'warning.main' : 'divider',
-          borderRadius: 2,
           overflow: 'hidden',
-          transition: 'all 0.2s',
-          bgcolor: isToday ? 'warning.50' : 'background.paper',
-          '&:hover': {
-            borderColor: 'primary.main',
-            boxShadow: 2,
-          },
+          border: '1.5px solid',
+          borderColor: expanded ? 'primary.main' : 'divider',
+          borderRadius: 2,
+          overflowX: 'auto',
+          bgcolor: isToday ? 'primary.outlineHover' : 'background.paper',
+          '&:hover': { borderColor: 'primary.main', boxShadow: 2 },
+          '&:before': { display: 'none' },
+          '&.Mui-expanded': { margin: 0 },
         }}
       >
-        {/* Collapsed View */}
-        <Box
-          onClick={() => setExpanded(!expanded)}
-          sx={{
-            p: 2.5,
-            cursor: 'pointer',
-            bgcolor: expanded ? 'primary.50' : 'transparent',
-          }}
+        <AccordionSummary
+          sx={{ px: 1.5, py: 0.5, bgcolor: expanded ? 'primary' : 'transparent', '& .MuiAccordionSummary-content': { margin: '0', width: '100%' }, }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <IconButton
-              size="small"
-              sx={{
-                bgcolor: 'primary.main',
-                color: 'white',
-                '&:hover': { bgcolor: 'primary.dark' },
-              }}
-            >
-              {expanded ? <ExpandLess /> : <ExpandMore />}
-            </IconButton>
-
-            {/* Trip Number + Envelope */}
-            <Box sx={{ minWidth: 140 }}>
+          <Grid container spacing={2} alignItems="center" sx={{ width: '100%' }}>
+            <Grid size={{ xs: 1.5 }} sx={{ display: 'flex', alignItems: 'center', }}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <LocalShipping color="primary" sx={{ fontSize: 20 }} />
-                <Typography variant="h6" fontWeight="bold">
-                  {trip.trip_number}
-                </Typography>
-                {trip.has_updates && (
-                  trip.driver_active ? (
-                    <Mail sx={{ fontSize: 18, color: 'primary.main' }} />
-                  ) : (
-                    <MailOutline sx={{ fontSize: 18, color: 'text.secondary' }} />
-                  )
-                )}
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {trip.trip_number}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  >
+                    <CalendarToday sx={{ fontSize: 12 }} />
+                    {trip.trip_date}
+                    <span style={{ marginLeft: 5 }}>
+                      {trip.has_updates && (
+                        trip.driver_active ? (
+                          <Mail sx={{ fontSize: 22, color: 'primary.main' }} />
+                        ) : (
+                          <MailOutline sx={{ fontSize: 22, color: 'text.secondary' }} />
+                        )
+                      )}
+                    </span>
+                  </Typography>
+                </Box>
+
               </Stack>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
-              >
-                <CalendarToday sx={{ fontSize: 12 }} />
-                {trip.trip_date}
-              </Typography>
-            </Box>
+            </Grid>
 
-            <Divider orientation="vertical" flexItem />
-
-            <Box sx={{ minWidth: 180 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
-                {isInterliner ? (
-                  <Business sx={{ fontSize: 14 }} />
-                ) : (
-                  <PersonOutline sx={{ fontSize: 14 }} />
-                )}
+            <Grid size={{ xs: 1 }} sx={{}}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                {isInterliner ? (<Business sx={{ fontSize: 14 }} />) : (<PersonOutline sx={{ fontSize: 14 }} />)}
                 {isInterliner ? 'Interliner' : 'Driver'}
               </Typography>
               <Typography variant="body2" fontWeight="600">
                 {trip.driver_name}
               </Typography>
-            </Box>
+            </Grid>
 
-            <Divider orientation="vertical" flexItem />
-
-            <Box sx={{ minWidth: 120 }}>
-              <Typography variant="caption" color="text.secondary">Order</Typography>
+            <Grid size={{ xs: 1 }} sx={{}}>
+              <Typography variant="caption" color="text.secondary">
+                Order
+              </Typography>
               <Typography variant="body2" fontWeight="600">
                 {firstOrder.order_number}
               </Typography>
-              <Chip
-                label={firstOrder.service_type}
-                color={getServiceColor(firstOrder.service_type)}
-                size="small"
-                sx={{ mt: 0.5, height: 20, fontSize: '0.7rem' }}
-              />
-            </Box>
+            </Grid>
 
-            <Divider orientation="vertical" flexItem />
+            <Grid size={{ xs: 7.5 }}>
+              <Grid container alignItems={'center'} justifyContent={'space-around'}>
+                <Grid size>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Place sx={{ fontSize: 14, color: 'success.main' }} />
+                    <Typography variant="caption" fontWeight="600" color="success.main">
+                      PICKUP
+                    </Typography>
+                  </Stack>
+                  <Typography variant="body2" fontWeight="600" noWrap>
+                    {firstOrder.shipper_address}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {firstOrder.shipper_city ? firstOrder.shipper_city : '-'} | {firstOrder.shipper_province ? firstOrder.shipper_province : '-'} | {firstOrder.shipper_postal_code ? firstOrder.shipper_postal_code : '-'}
+                  </Typography>
+                </Grid>
+                <Grid size>
+                  <TrendingFlat sx={{ color: 'primary.main', fontSize: 28 }} />
+                </Grid>
+                <Grid size>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Place sx={{ fontSize: 14, color: 'info.main' }} />
+                    <Typography variant="caption" fontWeight="600" color="info.main">
+                      DELIVERY
+                    </Typography>
+                  </Stack>
+                  <Typography variant="body2" fontWeight="600" noWrap>
+                    {firstOrder.receiver_address}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {firstOrder.receiver_city ? firstOrder.receiver_city : '-'} | {firstOrder.receiver_province ? firstOrder.receiver_province : '-'} | {firstOrder.receiver_postal_code ? firstOrder.receiver_postal_code : '-'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
 
-            <Box sx={{ flex: 1, minWidth: 200 }}>
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Place sx={{ fontSize: 14, color: 'success.main' }} />
-                <Typography variant="caption" fontWeight="600" color="success.main">
-                  PICKUP
-                </Typography>
-              </Stack>
-              <Typography variant="body2" fontWeight="600" noWrap>
-                {firstOrder.shipper_name}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
-                {firstOrder.shipper_city}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
-              >
-                <AccessTime sx={{ fontSize: 12 }} />
-                {firstOrder.pickup_time}
-              </Typography>
-            </Box>
+            <Grid size={{ xs: 1 }} sx={{ textAlign: 'center' }}>
+              <Grid container spacing={1} alignItems={'center'}>
+                <Grid size={7}>
+                  <Typography variant="caption" color="text.secondary">
+                    Orders
+                  </Typography>
+                  <Typography variant="h6" fontWeight="bold" color="primary.main">
+                    {trip.total_orders_completed} / {trip.total_orders}
+                  </Typography>
+                </Grid>
+                <Grid size={5}>
+                  <TripActionsBar
+                    onUpdateStatus={() => console.log('Update status:', trip.id)}
+                    onShowTimeline={() => console.log('Show timeline:', trip.id)}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </AccordionSummary>
 
-            <TrendingFlat sx={{ color: 'primary.main', fontSize: 28 }} />
+        <AccordionDetails sx={{ bgcolor: 'grey.50', borderTop: 1, borderColor: 'divider', p: 1 }}>
+          {/* <Typography
+            variant="subtitle2"
+            color="primary"
+            fontWeight="600"
+            sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            <Inventory2 fontSize="small" />
+            All Orders ({trip.orders.length})
+          </Typography> */}
 
-            <Box sx={{ flex: 1, minWidth: 200 }}>
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Place sx={{ fontSize: 14, color: 'info.main' }} />
-                <Typography variant="caption" fontWeight="600" color="info.main">
-                  DELIVERY
-                </Typography>
-              </Stack>
-              <Typography variant="body2" fontWeight="600" noWrap>
-                {firstOrder.receiver_name}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
-                {firstOrder.receiver_city}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
-              >
-                <AccessTime sx={{ fontSize: 12 }} />
-                {firstOrder.delivery_time}
-              </Typography>
-            </Box>
-
-            <Divider orientation="vertical" flexItem />
-
-            <Box sx={{ minWidth: 100, textAlign: 'right' }}>
-              <Typography variant="caption" color="text.secondary">Orders</Typography>
-              <Typography variant="h6" fontWeight="bold" color="primary.main">
-                {trip.total_orders_completed} / {trip.total_orders}
-              </Typography>
-              <Chip
-                label={trip.trip_status}
-                color={getStatusColor(trip.trip_status)}
-                size="small"
-                sx={{ mt: 0.5, textTransform: 'capitalize' }}
-              />
-            </Box>
-
-            <TripActionsBar
-              onUpdateStatus={() => console.log('Update status:', trip.id)}
-              onShowTimeline={() => console.log('Show timeline:', trip.id)}
-            />
+          <Stack spacing={1.5}>
+            {trip.orders.map((order, idx) => (
+              <OrderCard key={order.id} order={order} idx={idx} />
+            ))}
           </Stack>
-        </Box>
-
-        {/* Expanded View - All Orders */}
-        <Collapse in={expanded}>
-          <Box sx={{ bgcolor: 'grey.50', borderTop: 1, borderColor: 'divider', p: 2 }}>
-            <Typography
-              variant="subtitle2"
-              color="primary"
-              fontWeight="600"
-              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-            >
-              <Inventory2 fontSize="small" />
-              All Orders ({trip.orders.length})
-            </Typography>
-
-            <Stack spacing={1.5}>
-              {trip.orders.map((order, idx) => (
-                <OrderCard key={order.id} order={order} idx={idx} />
-              ))}
-            </Stack>
-          </Box>
-        </Collapse>
-      </Card>
+        </AccordionDetails>
+      </Accordion>
     </Box>
   );
 };

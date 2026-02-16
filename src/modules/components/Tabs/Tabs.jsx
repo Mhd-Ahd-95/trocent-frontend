@@ -17,7 +17,7 @@ const Appbar = styled(AppBar)(({ theme }) => ({
   boxShadow: 'rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;'
 }))
 
-function TabPanel (props) {
+function TabPanel(props) {
   const { children, value, index, ...other } = props
 
   return (
@@ -43,15 +43,15 @@ TabPanel.propTypes = {
   value: PropTypes.number.isRequired
 }
 
-function a11yProps (index) {
+function a11yProps(index) {
   return {
     id: `full-width-tab-${index}`,
     'aria-controls': `full-width-tabpanel-${index}`
   }
 }
 
-export default function CustomTabs (props) {
-  const { labels, contents } = props
+export default function CustomTabs(props) {
+  const { labels, contents, icons } = props
   const theme = useTheme()
   const [value, setValue] = React.useState(0)
 
@@ -77,12 +77,14 @@ export default function CustomTabs (props) {
               indicatorColor='inherits'
               // centered
               textColor='primary'
-              variant='scrollable'
+              variant={icons ? 'fullWidth' : 'scrollable'}
               aria-label='full width tabs example'
             >
               {labels.map((label, index) => (
                 <Tab
                   key={index}
+                  iconPosition="start"
+                  icon={icons ? icons[index] : <></>}
                   label={label}
                   {...a11yProps(index)}
                   sx={{

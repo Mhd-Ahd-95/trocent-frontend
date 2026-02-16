@@ -4,10 +4,10 @@ import { Edit, Timeline } from '@mui/icons-material';
 
 const TripActionsBar = ({ onUpdateStatus, onShowTimeline }) => {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
       <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
       
-      <Tooltip title="Update Trip Status">
+      <Tooltip title="Update Trip Status" placement='top' arrow>
         <IconButton
           size="small"
           onClick={(e) => {
@@ -25,7 +25,7 @@ const TripActionsBar = ({ onUpdateStatus, onShowTimeline }) => {
         </IconButton>
       </Tooltip>
 
-      <Tooltip title="Driver Activity Timeline">
+      <Tooltip title="Driver Activity Timeline" arrow>
         <IconButton
           size="small"
           onClick={(e) => {

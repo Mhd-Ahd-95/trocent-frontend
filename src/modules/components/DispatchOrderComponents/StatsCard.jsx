@@ -34,14 +34,12 @@ const StatsCards = ({ totalTrips, undispatchedOrders, onRouteDrivers }) => {
                     <Card
                         elevation={0}
                         sx={{
-                            border: 1,
-                            borderColor: 'divider',
-                            borderRadius: 2,
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                                boxShadow: 3,
-                                transform: 'translateY(-2px)',
-                            },
+                            paddingInline: '10px',
+                            borderRadius: '16px',
+                            background: `linear-gradient(135deg, ${stat.bgColor}01 0%, ${stat.color}15 100%)`,
+                            border: `2px solid ${stat.color}30`,
+                            position: 'relative',
+                            overflow: 'hidden'
                         }}
                     >
                         <CardContent>
