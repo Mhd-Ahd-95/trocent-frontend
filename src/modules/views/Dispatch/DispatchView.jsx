@@ -30,6 +30,7 @@ const generateTrips = (count, type) => {
       orders.push({
         id: i * 100 + j,
         order_number: `ORD-${String(1000 + i * 10 + j).padStart(6, '0')}`,
+        order_status: 'Picked Up',
         customer_name: 'MHD AHD',
         service_type: serviceTypes[Math.floor(Math.random() * 3)],
         shipper_name: `Shipper ${i + j}`,
@@ -49,7 +50,7 @@ const generateTrips = (count, type) => {
         delivery_time_from: '10:00',
         delivery_time_to: '3:00',
         references: ['DAILY - TOROMONT POINTE CLAIRE-@3PM -> AIR INUIT/CANADIAN NORTH'],
-        freight_count: Math.floor(Math.random() * 5) + 1,
+        freight_count: Math.floor(Math.random() * 2) + 1,
         terminal: ['MTL', 'OTT', 'TOR'][Math.floor(Math.random() * 3)],
       });
     }

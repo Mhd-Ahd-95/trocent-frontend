@@ -40,7 +40,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
   const firstOrder = trip?.orders[0];
 
   const getServiceColor = useCallback((type) => {
-    const colors = { Direct: 'success', Rush: 'info', Regular: 'primary', };
+    const colors = { Direct: 'primary', Rush: 'info', Regular: 'success', };
     return colors[type] || 'default';
   }, []);
 
@@ -111,6 +111,16 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
             </Typography>
             <Typography variant="body2" fontWeight="600">
               {order.shipper_name}
+              {order.order_status === 'Picked Up' &&
+                <span style={{ marginLeft: 20 }}>
+                  <Chip
+                    label={order.order_status}
+                    color={'success'}
+                    size="medium"
+                    sx={{ height: 22, fontSize: '0.7rem', letterSpacing: '0.1px', marginTop: -0.5 }}
+                  />
+                </span>
+              }
             </Typography>
             <Typography component="p" fontSize={14} color="text.secondary">
               {order.shipper_address}
@@ -142,6 +152,16 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
             </Typography>
             <Typography variant="body2" fontWeight="600">
               {order.receiver_name}
+              {order.order_status === 'Delivered' &&
+                <span style={{ marginLeft: 20 }}>
+                  <Chip
+                    label={order.order_status}
+                    color={'info'}
+                    size="medium"
+                    sx={{ height: 22, fontSize: '0.8rem', marginTop: -0.5 }}
+                  />
+                </span>
+              }
             </Typography>
             <Typography component="p" fontSize={14} color="text.secondary">
               {order.receiver_address}
@@ -192,26 +212,27 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
         </Grid>
 
         <Collapse in={showFreight}>
-          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ mt: 2, py: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Grid container spacing={2}>
+              <Grid size={5}></Grid>
+              <Grid size={7}></Grid>
+            </Grid>
+            <Typography variant="caption" fontWeight="600" color="text.primary" gutterBottom>
+              Reference Number: <strong>REF123</strong><br></br>
+            </Typography>
             <Typography variant="caption" fontWeight="600" color="text.secondary" gutterBottom>
-              Freight Details ({order.freight_count} items)
+              Freight Details ({order.freight_count} Freights)
             </Typography>
             <Stack spacing={1} sx={{ mt: 1 }}>
               {Array.from({ length: order.freight_count }).map((_, i) => (
                 <Box
                   key={i}
-                  sx={{
-                    p: 1.5,
-                    bgcolor: 'grey.50',
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: 'divider'
-                  }}
+                  sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1, border: 1, borderColor: 'divider' }}
                 >
                   <Stack direction="row" spacing={3}>
                     <Box>
                       <Typography variant="caption" color="text.secondary">Type</Typography>
-                      <Typography variant="body2" fontWeight="600">Pallet</Typography>
+                      <Typography variant="body2" fontWeight="600">Skid</Typography>
                     </Box>
                     <Box>
                       <Typography variant="caption" color="text.secondary">Pieces</Typography>
@@ -223,7 +244,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
                     </Box>
                     <Box>
                       <Typography variant="caption" color="text.secondary">Dimensions (L×W×H)</Typography>
-                      <Typography variant="body2" fontWeight="600">48" × 40" × 60"</Typography>
+                      <Typography variant="body2" fontWeight="600">48 × 40 × 60</Typography>
                     </Box>
                     <Box>
                       <Typography variant="caption" color="text.secondary">Volume Weight</Typography>
@@ -367,16 +388,6 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
         </AccordionSummary>
 
         <AccordionDetails sx={{ bgcolor: 'grey.50', borderTop: 1, borderColor: 'divider', p: 1 }}>
-          {/* <Typography
-            variant="subtitle2"
-            color="primary"
-            fontWeight="600"
-            sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
-          >
-            <Inventory2 fontSize="small" />
-            All Orders ({trip.orders.length})
-          </Typography> */}
-
           <Stack spacing={1.5}>
             {trip.orders.map((order, idx) => (
               <OrderCard key={order.id} order={order} idx={idx} />
