@@ -12,6 +12,7 @@ import {
   Edit,
   LocalShipping,
   NoteAdd,
+  Update,
 } from '@mui/icons-material';
 
 const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
@@ -62,7 +63,7 @@ const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
           <ListItemIcon>
             <Edit fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Update Order</ListItemText>
+          <ListItemText>Edit Order</ListItemText>
         </MenuItem>
 
         {onUndispatch && (
@@ -73,6 +74,13 @@ const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
             <ListItemText>Undispatch</ListItemText>
           </MenuItem>
         )}
+
+        <MenuItem onClick={(e) => handleAction(onAddNote, e)}>
+          <ListItemIcon>
+            <Update fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Update Terminal</ListItemText>
+        </MenuItem>
 
         <MenuItem onClick={(e) => handleAction(onAddNote, e)}>
           <ListItemIcon>

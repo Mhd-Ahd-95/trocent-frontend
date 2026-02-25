@@ -16,7 +16,6 @@ import {
 import { MainLayout } from '../../layouts';
 import { StatsCards, FilterBar, TripsList, UndispatchedOrders, Tabs } from '../../components'
 
-// Generate dummy data
 const generateTrips = (count, type) => {
   const trips = [];
   const serviceTypes = ['Direct', 'Rush', 'Regular'];
@@ -75,33 +74,57 @@ const generateTrips = (count, type) => {
 const generateUndispatchedOrders = (count) => {
   const orders = [];
   const serviceTypes = ['Direct', 'Rush', 'Regular'];
+  const terminals = ['MTL', 'OTT', 'TOR'];
+  const statuses = ['Pending', 'Undispatched', 'Scheduled'];
 
   for (let i = 0; i < count; i++) {
     orders.push({
       id: i + 1,
-      order_number: `ORD-${String(2000 + i).padStart(6, '0')}`,
-      service_type: serviceTypes[Math.floor(Math.random() * 3)],
+      order_id: 1000 + i,
+      order_number: `${String(112343 + i).padStart(4, '0')}`,
+      leg_type: 'Pickup',
+      order_level: 'Standard',
+      scheduled_date: '2024-02-15',
+
+      pickup_time_from: '10:00',
+      pickup_time_to: '15:00',
+      delivery_time_from: '14:00',
+      delivery_time_to: '17:00',
+
+      trip_id: null,
+      terminal: terminals[Math.floor(Math.random() * terminals.length)],
+
+      customer_name: `Customer ${i}`,
+
+      shipper_id: 5000 + i,
       shipper_name: `Shipper ${i}`,
-      shipper_address: `${300 + i} Industrial Rd`,
-      shipper_city: 'Toronto, ON',
-      pickup_date: '2024-02-15',
-      pickup_time: '10:00 AM - 3:00 PM',
+      shipper_address: `${300 + i} 5001 TRANS-CANADIENNE`,
+      shipper_city: 'Toronto',
+      shipper_province: 'ON',
+      shipper_postal_code: 'M1A1A1',
+
+      receiver_id: 8000 + i,
       receiver_name: `Receiver ${i}`,
       receiver_address: `${400 + i} Commerce St`,
-      receiver_city: 'Mississauga, ON',
-      delivery_date: '2024-02-15',
-      delivery_time: '2:00 PM - 5:00 PM',
-      freight_count: Math.floor(Math.random() * 5) + 1,
-      terminal: ['MTL', 'OTT', 'TOR'][Math.floor(Math.random() * 3)],
+      receiver_city: 'Mississauga',
+      receiver_province: 'ON',
+      receiver_postal_code: 'L5B1A1',
+
+      service_type: serviceTypes[Math.floor(Math.random() * serviceTypes.length)],
+      order_status: statuses[Math.floor(Math.random() * statuses.length)],
+
+      reference_numbers: `REF-${10000 + i}`,
+      order_date: '2024-02-10',
     });
   }
+
   return orders;
 };
 
 const TRIPS_DATA = {
-  interliners: generateTrips(10, 'interliner'),
-  drivers: generateTrips(10, 'driver'),
-  completed: generateTrips(10, 'completed'),
+  interliners: generateTrips(5, 'interliner'),
+  drivers: generateTrips(5, 'driver'),
+  completed: generateTrips(5, 'completed'),
 };
 
 const UNDISPATCHED_ORDERS = generateUndispatchedOrders(100);
@@ -215,7 +238,7 @@ export default function TripManagement() {
             <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'grey.50', }}            >
               <Inventory2 color="primary" />
               <Typography variant="h6" fontWeight="bold">
-                Undispatched Orders ({UNDISPATCHED_ORDERS.length})
+                Undispatched Orders
               </Typography>
             </Box>
             <Box sx={{ p: 2, bgcolor: 'grey.50' }}>

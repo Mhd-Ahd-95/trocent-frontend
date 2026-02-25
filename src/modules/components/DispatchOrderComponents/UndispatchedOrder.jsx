@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Paper, Typography, Chip } from '@mui/material';
+import { Box, Paper, Typography, Chip, Divider } from '@mui/material';
 import { Inventory2 } from '@mui/icons-material';
 import { Table } from '../../components';
 import OrderActionsMenu from './OrderActionMenu';
+import moment from 'moment';
 
 const UndispatchedOrders = ({ orders, filters }) => {
   const [page, setPage] = useState(0);
@@ -42,9 +43,9 @@ const UndispatchedOrders = ({ orders, filters }) => {
 
   const getServiceColor = (type) => {
     const colors = {
-      Direct: 'error',
+      Direct: 'info',
       Rush: 'warning',
-      Regular: 'primary',
+      Regular: 'secondary',
     };
     return colors[type] || 'default';
   };
@@ -53,92 +54,104 @@ const UndispatchedOrders = ({ orders, filters }) => {
     {
       field: 'order_number',
       headerName: 'Order Number',
-      width: 130,
+      minWidth: 250,
+      flex: 1,
       renderCell: (params) => (
-        <Typography variant="body2" fontWeight="600">
-          {params.value}
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography variant='subtitle1' fontWeight={600} fontSize={14}>{params.value}</Typography>
+          <Typography variant='caption' color='textSecondary' fontSize={11}>{params.row.customer_name}</Typography>
+          <Typography variant='caption' color='textSecondary' noWrap fontSize={11}>{params.row.reference_numbers} gggdeujj hhdeu hjdehhd jojsjjjsw hjwbd jhdhede</Typography>
+          <Typography variant='caption' color='textSecondary' fontSize={11}>{moment(params.row.order_date || new Date()).format('ddd, DD/MM/YYYY')}</Typography>
+        </Box>
       ),
     },
     {
       field: 'service_type',
       headerName: 'Service Type',
-      width: 120,
+      minWidth: 100,
+      flex: 1,
       renderCell: (params) => (
         <Chip
           label={params.value}
           color={getServiceColor(params.value)}
           size="small"
+          sx={{ fontSize: 13 }}
         />
       ),
     },
     {
-      field: 'shipper_address',
+      field: 'shipper_name',
       headerName: 'Shipper Address',
       flex: 1,
-      minWidth: 200,
+      minWidth: 220,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'center', height: '100%' }}>
+          <Typography variant='subtitle1' fontWeight={600} fontSize={14}>{params.value}</Typography>
+          <Typography noWrap variant='caption' color='textSecondary' fontSize={11}>{params.row.shipper_address}</Typography>
+        </Box>
+      ),
     },
     {
       field: 'shipper_city',
       headerName: 'Shipper City',
-      width: 150,
-    },
-    {
-      field: 'pickup_date',
-      headerName: 'Pick up by date',
-      width: 140,
+      minWidth: 230,
+      flex: 1,
       renderCell: (params) => (
-        <Box>
-          <Typography variant="body2">{params.row.pickup_date}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {params.row.pickup_time}
-          </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+          <Typography noWrap variant='subtitle1' fontWeight={500} fontSize={13}>{params.value} | {params.row.shipper_province} | {params.row.shipper_postal_code}</Typography>
         </Box>
       ),
     },
     {
-      field: 'receiver_address',
-      headerName: 'Consignee Address',
+      field: 'scheduled_date',
+      headerName: 'Pick up by date',
+      minWidth: 135,
       flex: 1,
-      minWidth: 200,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+          <Typography variant="subtitle1" fontWeight={600} fontSize={13}>{moment(params.value).format('ddd, DD/MM/YYYY')}</Typography>
+          <Typography variant="caption" color="text.secondary">{params.row.pickup_time_from} - {params.row.pickup_time_to}</Typography>
+        </Box>
+      ),
+    },
+    {
+      field: 'receiver_name',
+      headerName: 'Receiver Address',
+      flex: 1,
+      minWidth: 220,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'center', height: '100%' }}>
+          <Typography variant='subtitle1' fontWeight={600} fontSize={14}>{params.value}</Typography>
+          <Typography noWrap variant='caption' color='textSecondary' fontSize={11}>{params.row.receiver_address}</Typography>
+        </Box>
+      ),
     },
     {
       field: 'receiver_city',
-      headerName: 'Consignee City',
-      width: 150,
-    },
-    {
-      field: 'delivery_date',
-      headerName: 'Delivery Date',
-      width: 140,
+      headerName: 'Receiver City',
+      width: 230,
       renderCell: (params) => (
-        <Box>
-          <Typography variant="body2">{params.row.delivery_date}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {params.row.delivery_time}
-          </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+          <Typography noWrap variant='subtitle1' fontWeight={500} fontSize={13}>{params.value} | {params.row.receiver_province} | {params.row.receiver_postal_code}</Typography>
         </Box>
       ),
     },
     {
-      field: 'freight_count',
-      headerName: 'Freight Details',
-      width: 120,
-      align: 'center',
-      headerAlign: 'center',
+      field: 'scheduled_date',
+      headerName: 'Delivery Date',
+      minWidth: 135,
+      flex: 1,
       renderCell: (params) => (
-        <Chip
-          icon={<Inventory2 sx={{ fontSize: 16 }} />}
-          label={params.value}
-          size="small"
-          color="secondary"
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+          <Typography variant="subtitle1" fontWeight={600} fontSize={13}>{moment(params.value).format('ddd, DD/MM/YYYY')}</Typography>
+          <Typography variant="caption" color="text.secondary">{params.row.delivery_time_from} - {params.row.delivery_time_to}</Typography>
+        </Box>
       ),
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 80,
+      width: 85,
       align: 'center',
       headerAlign: 'center',
       sortable: false,
@@ -172,7 +185,7 @@ const UndispatchedOrders = ({ orders, filters }) => {
         data={filteredOrders}
         pageSize={50}
         pageSizeOptions={[50, 100, 200]}
-        height={45}
+        height={80}
         disableRowSelectionOnClick
         paginationModel={{ page, pageSize }}
         onPaginationModelChange={(model) => {
