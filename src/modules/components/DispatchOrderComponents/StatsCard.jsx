@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Avatar, Grid } from '@mui/material';
-import { LocalShipping, Inventory2, PersonPin } from '@mui/icons-material';
+import { LocalShipping, Inventory2, PersonPin, PersonOff } from '@mui/icons-material';
 
 const StatsCards = ({ totalTrips, undispatchedOrders, onRouteDrivers }) => {
     const stats = [
@@ -12,9 +12,9 @@ const StatsCards = ({ totalTrips, undispatchedOrders, onRouteDrivers }) => {
             bgColor: '#e3f2fd',
         },
         {
-            title: 'Undispatched Orders',
+            title: 'Undispatched Drivers',
             value: undispatchedOrders,
-            icon: Inventory2,
+            icon: PersonOff,
             color: '#ed6c02',
             bgColor: '#fff4e5',
         },

@@ -13,6 +13,7 @@ import {
   LocalShipping,
   NoteAdd,
   Update,
+  MoreHoriz,
 } from '@mui/icons-material';
 
 const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
@@ -47,7 +48,7 @@ const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
             },
           }}
         >
-          <MoreVert fontSize="small" />
+          <MoreHoriz fontSize="small" />
         </IconButton>
       </Tooltip>
 

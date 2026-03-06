@@ -499,7 +499,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
+                  patch.mutate({ id: selectedReceiver?.id, payload: { [key]: value } })
                 }
               }}
               minRows={2}

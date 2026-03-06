@@ -13,7 +13,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Grid,
-  Link
+  Link,
+  Tooltip
 } from '@mui/material';
 import {
   ExpandMore,
@@ -53,25 +54,13 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
     const [showFreight, setShowFreight] = useState(false);
 
     return (
-      <Paper
-        elevation={0}
-        sx={{
-          py: 0, px: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper',
-          overflowX: 'auto',
-          '&::-webkit-scrollbar': {
-            height: 6,
-          },
-        }}
+      <Paper elevation={0} sx={{
+        py: 0, px: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper',
+        overflowX: 'auto',
+        '&::-webkit-scrollbar': { height: 6, },
+      }}
       >
-        <Grid
-          container
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          sx={{
-            cursor: 'pointer',
-            minHeight: 50
-          }}
+        <Grid container direction="row" spacing={1} alignItems="center" sx={{ cursor: 'pointer', minHeight: 50 }}
           onClick={(e) => {
             e.stopPropagation();
             setShowFreight(!showFreight);
@@ -86,10 +75,13 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
             <Typography variant="subtitle2">
               {order.customer_name}
             </Typography>
+            <Tooltip title='R123PT HHH GTFDK JJJJDGED HGDEDLK JDJEGAK GFFSBVC'>
+              <Typography component={'p'} fontSize={'11px'} noWrap>
+                {order.reference_numbers || 'R123PT HHH GTFDK JJJJDGED HGDEDLK JDJEGAK GFFSBVC'}
+              </Typography>
+            </Tooltip>
           </Grid>
-
           <Divider orientation="vertical" flexItem />
-
           <Grid size={0.7}>
             <Typography variant="caption" color="textSecondary" fontWeight="600">
               SERVICE
@@ -101,9 +93,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               sx={{ mt: 0.5, height: 20, fontSize: '0.8rem' }}
             />
           </Grid>
-
           <Divider orientation="vertical" flexItem />
-
           <Grid size={3.5}>
             <Typography variant="caption" color="success.main" fontWeight="600" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Place sx={{ fontSize: 12 }} />
@@ -140,11 +130,9 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               {order.pickup_time_from} - {order.pickup_time_to}
             </Typography>
           </Grid>
-
           <Grid size={0.5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TrendingFlat sx={{ color: 'primary.main' }} />
           </Grid>
-
           <Grid size={3.5}>
             <Typography variant="caption" color="info.main" fontWeight="600" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Place sx={{ fontSize: 12 }} />
@@ -170,7 +158,6 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               {order.receiver_city || '-'} | {order.receiver_province || '-'} | {order.receiver_postal_code || '-'}
             </Typography>
           </Grid>
-
           <Grid size={1}>
             <Typography variant="caption" color="text.secondary" fontWeight="500" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <CalendarToday sx={{ fontSize: 12 }} />
@@ -181,9 +168,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               {order.delivery_time_from} - {order.delivery_time_to}
             </Typography>
           </Grid>
-
           <Divider orientation="vertical" flexItem />
-
           <Grid size={0.4}>
             <Stack direction="column" spacing={0.5} sx={{ height: '100%', justifyContent: 'center' }}>
               <IconButton
@@ -196,7 +181,6 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               >
                 <LocalShippingOutlined fontSize="small" color="error" />
               </IconButton>
-
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -210,16 +194,8 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
             </Stack>
           </Grid>
         </Grid>
-
         <Collapse in={showFreight}>
           <Box sx={{ mt: 2, py: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Grid container spacing={2}>
-              <Grid size={5}></Grid>
-              <Grid size={7}></Grid>
-            </Grid>
-            <Typography variant="caption" fontWeight="600" color="text.primary" gutterBottom>
-              Reference Number: <strong>REF123</strong><br></br>
-            </Typography>
             <Typography variant="caption" fontWeight="600" color="text.secondary" gutterBottom>
               Freight Details ({order.freight_count} Freights)
             </Typography>
@@ -278,9 +254,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
           '&.Mui-expanded': { margin: 0 },
         }}
       >
-        <AccordionSummary
-          sx={{ px: 1.5, py: 0.5, bgcolor: expanded ? 'primary' : 'transparent', '& .MuiAccordionSummary-content': { margin: '0', width: '100%' }, }}
-        >
+        <AccordionSummary sx={{ px: 1.5, py: 0.5, bgcolor: expanded ? 'primary' : 'transparent', '& .MuiAccordionSummary-content': { margin: '0', width: '100%' }, }}        >
           <Grid container spacing={2} alignItems="center" sx={{ width: '100%' }}>
             <Grid size={{ xs: 1.5 }} sx={{ display: 'flex', alignItems: 'center', }}>
               <Stack direction="row" spacing={1} alignItems="center">
