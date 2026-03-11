@@ -57,6 +57,7 @@ export default function CustomTabs(props) {
 
   const handleChange = (event, newValue) => {
     setValue(newValue)
+    props?.onTabChange?.(newValue)
   }
 
   return (
@@ -83,6 +84,7 @@ export default function CustomTabs(props) {
               {labels.map((label, index) => (
                 <Tab
                   key={index}
+                  onMouseEnter={() => props?.onTabHover?.(index)}
                   iconPosition="start"
                   icon={icons ? icons[index] : <></>}
                   label={label}

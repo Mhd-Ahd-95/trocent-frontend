@@ -1,0 +1,148 @@
+import React, { useState, useCallback } from 'react';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { Business, PersonOutline, CheckCircle } from '@mui/icons-material';
+import { FilterBar, TripsList, Tabs } from '../../components';
+import { useInterlinerTrips, useCompletedTrips, useDriverTrips } from '../../hooks/useDispatchOrders';
+import CompletedTripsList from './CompletedTripList';
+
+const TabLoadingState = ({ textLoading }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+        <CircularProgress size={20} />
+        <Typography variant="body2" color="text.secondary">{textLoading ? textLoading : 'Loading trips…'}</Typography>
+    </Box>
+);
+
+const DriverTabContent = React.memo(({ enabled }) => {
+
+    const { data: trips, isLoading } = useDriverTrips({ enabled });
+    const [filters, setFilters] = useState({});
+    const handleFilterChange = useCallback((f) => setFilters(f), []);
+
+    if (isLoading) return <TabLoadingState textLoading={'Loading Driver Trips...'} />;
+
+    return (
+        <>
+            <Box sx={{ bgcolor: 'grey.50' }}>
+                <FilterBar
+                    onFilterChange={handleFilterChange}
+                    defaultExpanded={false}
+                />
+            </Box>
+            <Box sx={{ p: 2 }}>
+                <TripsList trips={trips ?? []} filters={filters} />
+            </Box>
+        </>
+    );
+});
+
+const InterlinerTabContent = React.memo(({ enabled }) => {
+
+    const [filters, setFilters] = useState({});
+    const { data: trips = [], isLoading } = useInterlinerTrips({ enabled });
+    const handleFilterChange = useCallback((f) => setFilters(f), []);
+
+    if (isLoading) return <TabLoadingState textLoading={'Loading Interliner Trips...'} />;
+
+    return (
+        <>
+            <Box sx={{ bgcolor: 'grey.50' }}>
+                <FilterBar onFilterChange={handleFilterChange} defaultExpanded={false} />
+            </Box>
+            <Box sx={{ p: 2 }}>
+                <TripsList trips={trips} filters={filters} isInterliner />
+            </Box>
+        </>
+    );
+});
+
+const CompletedTabContent = React.memo(({ enabled }) => {
+
+    const [appliedFilters, setAppliedFilters] = useState({});
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
+
+    const { data, isLoading, isFetching } = useCompletedTrips(appliedFilters, page + 1, rowsPerPage, { enabled });
+
+    const trips = data?.data ?? [];
+    const total = data?.meta?.total ?? 0;
+
+    const handleSearch = useCallback((sf) => {
+        setAppliedFilters(sf);
+        setPage(0);
+    }, []);
+
+    const handlePageChange = useCallback((_, newPage) => {
+        setPage(newPage);
+    }, []);
+
+    const handleRowsPerPageChange = useCallback((e) => {
+        setRowsPerPage(+e.target.value);
+        setPage(0);
+    }, []);
+
+    if (isLoading) return <TabLoadingState textLoading={'Loading Completed Trips...'} />;
+
+    return (
+        <>
+            <Box sx={{ bgcolor: 'grey.50' }}>
+                <FilterBar onSearch={handleSearch} defaultExpanded={false} showSearchButton />
+            </Box>
+            <Box sx={{ p: 2 }}>
+                <CompletedTripsList
+                    trips={trips}
+                    total={total}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    isFetching={isFetching}
+                />
+            </Box>
+        </>
+    );
+});
+
+export default function TripTabs({ }) {
+
+    const [activatedTabs, setActivatedTabs] = useState(() => new Set([0]));
+
+    const handleTabChange = useCallback((tabIndex) => {
+        console.log(tabIndex);
+        setActivatedTabs((prev) => {
+            if (prev.has(tabIndex)) return prev;
+            const next = new Set(prev);
+            next.add(tabIndex);
+            return next;
+        });
+    }, []);
+
+    return (
+        <Box>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+                <Tabs
+                    labels={['Drivers', 'Interliners', 'Completed']}
+                    icons={[
+                        <PersonOutline fontSize="small" />,
+                        <Business fontSize="small" />,
+                        <CheckCircle fontSize="small" />,
+                    ]}
+                    onTabChange={handleTabChange}
+                    contents={[
+                        <DriverTabContent
+                            key="driver"
+                            enabled={activatedTabs.has(0)}
+                        />,
+                        <InterlinerTabContent
+                            key="interliner"
+                            enabled={activatedTabs.has(1)}
+                        />,
+                        <CompletedTabContent
+                            key="completed"
+                            enabled={activatedTabs.has(2)}
+                        />,
+                    ]}
+                />
+            </Box>
+        </Box>
+    );
+}

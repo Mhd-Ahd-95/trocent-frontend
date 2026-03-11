@@ -1,6 +1,6 @@
 import React from 'react';
-import { Typography, Chip, IconButton, TableRow, TableCell, Divider, Tooltip } from '@mui/material';
-import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
+import { Typography, Chip, Link, TableRow, TableCell, Divider, Tooltip } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom'
 import OrderActionsMenu from './OrderActionMenu';
 import moment from 'moment';
 import InlineFreightCell from './InlineFreightCell';
@@ -15,7 +15,7 @@ const cellSx = {
 
 const getServiceColor = (type) => ({ Direct: 'info', Rush: 'warning', Regular: 'secondary' }[type] || 'default');
 
-const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick }) => (
+const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote }) => (
     <>
         <TableRow
             onClick={() => onRowClick(row)}
@@ -35,7 +35,9 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick }) =
             }}
         >
             <TableCell sx={{ ...cellSx, minWidth: 180, borderRight: '1px solid #ccc' }}>
-                <Typography fontWeight={700} fontSize={14} lineHeight={1.3}>{row.order_number}</Typography>
+                <Link component={RouterLink} to={`/orders/edit/${row.order_id}`}>
+                    <Typography fontWeight={700} fontSize={14} lineHeight={1.3}># {row.order_number}</Typography>
+                </Link>
                 <Typography variant="caption" color="text.secondary" display="block">{row.customer_name}</Typography>
                 <Typography variant="caption" color="text.secondary" display="block" noWrap sx={{ maxWidth: 180 }}>{row.reference_numbers}</Typography>
                 <Typography variant="caption" color="text.secondary" display="block">{moment(row.order_date || new Date()).format('ddd, DD/MM/YYYY')}</Typography>
@@ -113,13 +115,14 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick }) =
             </TableCell>
 
             <TableCell sx={{ ...cellSx, minWidth: 240, maxWidth: 300, borderRight: '1px solid #ccc' }}>
-                <InlineFreightCell freights={row.freights} />
+                <InlineFreightCell freights={row.freights} total_pieces={row.total_pieces} total_actual_weight={row.total_actual_weight} />
             </TableCell>
 
             <TableCell sx={{ ...cellSx, width: 50, textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                 <OrderActionsMenu
                     onUpdate={() => console.log('Update order:', row.id)}
-                    onAddNote={() => console.log('Add note:', row.id)}
+                    onUpdateTerminal={() => console.log('Update Terminal:', row.id)}
+                    onAddNote={() => onAddNote(row)}
                 />
             </TableCell>
         </TableRow>

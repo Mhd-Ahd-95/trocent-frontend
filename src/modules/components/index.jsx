@@ -48,3 +48,4 @@ export { default as TripsList } from './DispatchOrderComponents/TripsList'
 export { default as UndispatchedOrders } from './DispatchOrderComponents/UndispatchedOrder';
 export { default as OrderActionsMenu } from './DispatchOrderComponents/OrderActionMenu';
 export { default as TripActionsBar } from './DispatchOrderComponents/TripActionBar';
+export { default as TripTabs } from './DispatchOrderComponents/TripTabs'

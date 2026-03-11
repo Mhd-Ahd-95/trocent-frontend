@@ -3,13 +3,14 @@ import DriversApi from "../apis/Drivers.api";
 import { useSnackbar } from "notistack";
 
 
-export function useDrivers() {
+export function useDrivers({ enabled = false }) {
     return useQuery({
         queryKey: ['drivers'],
         queryFn: async () => {
             const response = await DriversApi.getDrivers();
             return response.data;
         },
+        enabled: enabled,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,

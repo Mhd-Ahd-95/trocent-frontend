@@ -1,65 +1,25 @@
 import React, { useState, useCallback } from 'react';
-import {
-  Box,
-  Card,
-  IconButton,
-  Typography,
-  Stack,
-  Divider,
-  Chip,
-  Collapse,
-  Paper,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Grid,
-  Link,
-  Tooltip
-} from '@mui/material';
-import {
-  ExpandMore,
-  ExpandLess,
-  LocalShipping,
-  CalendarToday,
-  AccessTime,
-  Place,
-  PersonOutline,
-  Business,
-  Inventory2,
-  TrendingFlat,
-  MailOutline,
-  Mail,
-  Edit,
-  LocalShippingOutlined,
-  NoteAdd,
-} from '@mui/icons-material';
+import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip } from '@mui/material';
+import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom'
 
 const TripRow = ({ trip, isToday, isInterliner }) => {
+
   const [expanded, setExpanded] = useState(false);
-  const firstOrder = trip?.orders[0];
+  const firstOrder = trip?.dispatched_orders[0] ?? [];
 
   const getServiceColor = useCallback((type) => {
     const colors = { Direct: 'primary', Rush: 'info', Regular: 'success', };
     return colors[type] || 'default';
   }, []);
 
-  const getStatusColor = useCallback((status) => {
-    const colors = { active: 'success', planning: 'warning', completed: 'default', };
-    return colors[status] || 'default';
-  }, []);
-
   const OrderCard = ({ order, idx }) => {
+
     const [showFreight, setShowFreight] = useState(false);
 
     return (
-      <Paper elevation={0} sx={{
-        py: 0, px: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper',
-        overflowX: 'auto',
-        '&::-webkit-scrollbar': { height: 6, },
-      }}
-      >
+      <Paper elevation={0} sx={{ py: 0, px: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper', overflowX: 'auto', '&::-webkit-scrollbar': { height: 6, }, }}>
         <Grid container direction="row" spacing={1} alignItems="center" sx={{ cursor: 'pointer', minHeight: 50 }}
           onClick={(e) => {
             e.stopPropagation();
@@ -67,9 +27,9 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
           }}
         >
           <Grid size={1.2}>
-            <Link component={RouterLink} to={`/orders/${order.id}`}>
+            <Link component={RouterLink} to={`/orders/edit/${order.id}`}>
               <Typography variant="subtitle1" fontWeight="700">
-                {order.order_number}
+                # {order.order_number}
               </Typography>
             </Link>
             <Typography variant="subtitle2">
@@ -194,7 +154,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
             </Stack>
           </Grid>
         </Grid>
-        <Collapse in={showFreight}>
+        {/* <Collapse in={showFreight}>
           <Box sx={{ mt: 2, py: 2, borderTop: 1, borderColor: 'divider' }}>
             <Typography variant="caption" fontWeight="600" color="text.secondary" gutterBottom>
               Freight Details ({order.freight_count} Freights)
@@ -231,7 +191,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               ))}
             </Stack>
           </Box>
-        </Collapse>
+        </Collapse> */}
       </Paper>
     );
   };
@@ -240,7 +200,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
     <Box sx={{ mb: 1 }}>
       <Accordion
         expanded={expanded}
-        onChange={() => setExpanded(!expanded)}
+        onClick={() => setExpanded(!expanded)}
         elevation={0}
         sx={{
           overflow: 'hidden',
@@ -254,7 +214,9 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
           '&.Mui-expanded': { margin: 0 },
         }}
       >
-        <AccordionSummary sx={{ px: 1.5, py: 0.5, bgcolor: expanded ? 'primary' : 'transparent', '& .MuiAccordionSummary-content': { margin: '0', width: '100%' }, }}        >
+        <Box
+          onClick={() => setExpanded(!expanded)}
+          sx={{ px: 1.5, py: 0.5, cursor: 'pointer', bgcolor: 'transparent', display: 'flex', alignItems: 'center', }}    >
           <Grid container spacing={2} alignItems="center" sx={{ width: '100%' }}>
             <Grid size={{ xs: 1.5 }} sx={{ display: 'flex', alignItems: 'center', }}>
               <Stack direction="row" spacing={1} alignItems="center">
@@ -271,17 +233,10 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
                     <CalendarToday sx={{ fontSize: 12 }} />
                     {trip.trip_date}
                     <span style={{ marginLeft: 5 }}>
-                      {trip.has_updates && (
-                        trip.driver_active ? (
-                          <Mail sx={{ fontSize: 22, color: 'primary.main' }} />
-                        ) : (
-                          <MailOutline sx={{ fontSize: 22, color: 'text.secondary' }} />
-                        )
-                      )}
+                      {trip.has_updates && (trip.driver_active ? (<Mail sx={{ fontSize: 22, color: 'primary.main' }} />) : (<MailOutline sx={{ fontSize: 22, color: 'text.secondary' }} />))}
                     </span>
                   </Typography>
                 </Box>
-
               </Stack>
             </Grid>
 
@@ -291,7 +246,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
                 {isInterliner ? 'Interliner' : 'Driver'}
               </Typography>
               <Typography variant="body2" fontWeight="600">
-                {trip.driver_name}
+                {isInterliner ? trip.interliner_name : trip.driver_name}
               </Typography>
             </Grid>
 
@@ -300,7 +255,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
                 Order
               </Typography>
               <Typography variant="body2" fontWeight="600">
-                {firstOrder.order_number}
+                # {firstOrder.order_number}
               </Typography>
             </Grid>
 
@@ -359,12 +314,16 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               </Grid>
             </Grid>
           </Grid>
-        </AccordionSummary>
+        </Box>
 
         <AccordionDetails sx={{ bgcolor: 'grey.50', borderTop: 1, borderColor: 'divider', p: 1 }}>
           <Stack spacing={1.5}>
-            {trip.orders.map((order, idx) => (
-              <OrderCard key={order.id} order={order} idx={idx} />
+            {(trip?.dispatched_orders || []).map((order, idx) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                idx={idx}
+              />
             ))}
           </Stack>
         </AccordionDetails>

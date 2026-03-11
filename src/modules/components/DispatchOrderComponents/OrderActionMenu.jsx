@@ -16,7 +16,7 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 
-const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
+const OrderActionsMenu = ({ onUndispatch, onAddNote, onUpdateTerminal }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -60,13 +60,6 @@ const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={(e) => handleAction(onUpdate, e)}>
-          <ListItemIcon>
-            <Edit fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Edit Order</ListItemText>
-        </MenuItem>
-
         {onUndispatch && (
           <MenuItem onClick={(e) => handleAction(onUndispatch, e)}>
             <ListItemIcon>
@@ -76,7 +69,7 @@ const OrderActionsMenu = ({ onUpdate, onUndispatch, onAddNote }) => {
           </MenuItem>
         )}
 
-        <MenuItem onClick={(e) => handleAction(onAddNote, e)}>
+        <MenuItem onClick={(e) => handleAction(onUpdateTerminal, e)}>
           <ListItemIcon>
             <Update fontSize="small" />
           </ListItemIcon>

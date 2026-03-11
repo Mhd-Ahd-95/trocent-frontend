@@ -1,25 +1,14 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import OrderApi from "../apis/Order.api";
 import { useSnackbar } from "notistack";
-
-
-// export function useOrders() {
-//     return useQuery({
-//         queryKey: ['orders'],
-//         queryFn: async () => {
-//             const response = await OrderApi.getOrders()
-//             return response.data.data;
-//         },
-//         staleTime: 5 * 60 * 1000,
-//         gcTime: 60 * 60 * 1000,
-//         refetchOnWindowFocus: false,
-//         retry: 0,
-//         // refetchOnReconnect: false,
-//         // refetchOnMount: false,
-//     });
-// }
+import { dispatchKeys } from "./useDispatchOrders";
+import { useDispatchCacheUpdate } from "./useDispatchCacheUpdate";
 
 export function useOrderPagination(page = 1, pageSize = 10) {
+    const queryClient = useQueryClient()
+    const allOrdersDispatched = queryClient.getQueriesData({ queryKey: ['dispatch'] });
+
+    console.log(allOrdersDispatched);
     return useQuery({
         queryKey: ['orders', page, pageSize],
         queryFn: async () => {
@@ -75,11 +64,31 @@ const updateOrders = (updated) => {
     })
 }
 
+const handle_dispatch_undispatch_orders = (trips = [], undispatchedOrder = [], order) => {
+    const queryClient = useQueryClient()
+    const driverTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'driver'] });
+    const interlinerTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'interliner'] });
+    const allUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+    const hasInterlinerTrip = trips.some(t => t.trip_type === 'interliner')
+    const hasDriverTrip = trips.some(t => t.trip_type === 'driver')
+    const hasUndispatched = undispatchedOrder.some((disp) => disp.trip_id === null)
+
+    if (hasInterlinerTrip) {
+        if (interlinerTrips) {
+            queryClient.setQueryData()
+        }
+        else {
+
+        }
+    }
+}
+
 
 export function useOrderMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
     const hasCachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+    const updateDispatchCache = useDispatchCacheUpdate();
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -91,14 +100,16 @@ export function useOrderMutations() {
     const create = useMutation({
         mutationFn: async (payload) => {
             const res = await OrderApi.createOrder(payload)
-            return res.data.data;
+            return res.data;
         },
-        onSuccess: (newOrder) => {
+        onSuccess: (response) => {
+            const { order, trips, undispatched_orders } = response
+            console.log(response);
             if (hasCachedList.length > 0) {
                 hasCachedList.forEach(([key, old]) => {
                     queryClient.setQueryData(key, (prev = {}) => ({
                         ...prev,
-                        data: [newOrder, ...(prev.data || [])],
+                        data: [order, ...(prev.data || [])],
                         meta: { ...prev.meta, total: (prev.meta?.total || 0) + 1 },
                     }));
                 });
@@ -106,6 +117,7 @@ export function useOrderMutations() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
             }
+            updateDispatchCache({ trips: trips, undispatchedOrders: undispatched_orders, });
             enqueueSnackbar('Order has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -147,23 +159,26 @@ export function useOrderMutations() {
                 const res = await OrderApi.updateOrder(id, payload)
                 return res.data;
             },
-            onSuccess: (updated) => {
-                if (updated) {
-                    const orderUpdated = updateOrders(updated)
+            onSuccess: (response) => {
+                console.log(response);
+                const { order, trips, undispatched_orders } = response
+                if (order) {
+                    const orderUpdated = updateOrders(order)
                     if (hasCachedList.length > 0) {
                         hasCachedList.forEach(([key, old]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
                                 ...prev,
-                                data: (prev.data || []).map(item => item.id === Number(updated.id) ? orderUpdated : item)
+                                data: (prev.data || []).map(item => item.id === Number(order.id) ? orderUpdated : item)
                             }));
                         });
                     }
                     else {
                         queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
                     }
-                    queryClient.setQueryData(['order', Number(updated.id)], updated)
+                    queryClient.setQueryData(['order', Number(order.id)], order)
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
+                updateDispatchCache({ trips: trips, undispatchedOrders: undispatched_orders, });
             },
             onError: handleError,
         }

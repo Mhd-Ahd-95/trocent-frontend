@@ -4,7 +4,7 @@ import { Box, Typography, Divider, Tooltip } from '@mui/material';
 const MAX_ROWS = 4;
 
 const FreightRow = ({ f }) => {
-    const dims = (f.length && f.width && f.height) ? `${f.length} × ${f.width} × ${f.height}` : '—';
+    const dims = `${f.length ? f.length : 0}×${f.width ? f.width : 0}×${f.height ? f.height : 0} ${f.dim_unit ? f.dim_unit.toUpperCase() : 'IN'}`
     return (
         <Box sx={{ display: 'grid', gridTemplateColumns: '25px 50px 1fr 50px', alignItems: 'baseline', lineHeight: 1.5 }}>
             <Typography fontSize={12} fontWeight={600} color="text.primary" noWrap>{f.pieces ?? '—'}</Typography>
@@ -20,7 +20,7 @@ const InlineFreightCell = React.memo(({ freights = [], total_pieces, total_actua
         return <Typography variant="caption" color="text.disabled">—</Typography>;
     }
 
-    const weightUnit = freights.find((f) => f.unit)?.unit ?? 'lbs';
+    const weightUnit = freights.find((f) => f.unit)?.unit.toUpperCase() ?? 'LBS';
     const hasOverflow = freights.length > MAX_ROWS;
     const visibleFreights = hasOverflow ? freights.slice(0, MAX_ROWS) : freights;
 
@@ -30,7 +30,7 @@ const InlineFreightCell = React.memo(({ freights = [], total_pieces, total_actua
                 All {freights.length} Freights
             </Typography>
             {freights.map((f, idx) => {
-                const dims = (f.length && f.width && f.height) ? `${f.length}×${f.width}×${f.height}` : '—';
+                const dims = `${f.length ? f.length : 0}×${f.width ? f.width : 0}×${f.height ? f.height : 0} ${f.dim_unit ? f.dim_unit.toUpperCase() : 'IN'}`
                 return (
                     <Box key={f.id ?? idx} sx={{ display: 'grid', gridTemplateColumns: '22px 48px 1fr 36px', gap: '0 6px', mb: 0.3 }}>
                         <Typography fontSize={11} fontWeight={700} color="inherit">{f.pieces ?? '—'}</Typography>
@@ -79,12 +79,12 @@ const InlineFreightCell = React.memo(({ freights = [], total_pieces, total_actua
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1 }}>
                 <Typography fontSize={11} color="text.secondary" noWrap>
                     <Box component="span" fontWeight={700} color="text.primary">
-                        {total_pieces ?? freights.reduce((s, f) => s + (f.pieces || 0), 0)}
+                        {total_pieces ?? 0}
                     </Box>
                 </Typography>
                 <Typography fontSize={11} color="text.secondary" noWrap sx={{ ml: 1 }}>
                     <Box component="span" fontWeight={700} color="text.primary">
-                        {total_actual_weight ? total_actual_weight.toFixed(2) : freights.reduce((s, f) => s + (f.weight || 0), 0).toFixed(2)}
+                        {total_actual_weight ? total_actual_weight.toFixed(2) : 0}
                     </Box>
                     {' '}
                     <Box component="span" fontWeight={600}>{weightUnit}</Box>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, TextField, InputAdornment, Autocomplete, Chip, Avatar, Grid } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, TextField, InputAdornment, Autocomplete, Chip, Avatar, Grid, CircularProgress } from '@mui/material';
 import { RouteOutlined, PersonOutline, LocalShippingOutlined, CalendarTodayOutlined, TagOutlined, SearchOutlined, AddCircleOutlineOutlined, HistoryOutlined } from '@mui/icons-material';
 import StyledButton from '../StyledButton/StyledButton';
 import SubmitButton from '../SubmitButton/SubmitButton';
+import { useDriverTrips } from '../../hooks/useDispatchOrders';
+import { useDrivers } from '../../hooks/useDrivers'
 
 const DRIVERS = [
     { id: 1, name: 'James Tremblay', number: 'DRV-001' },
@@ -29,6 +31,13 @@ const OLD_TRIPS = [
     { id: 9, trip_number: 'TRP-8849', date: '2025-03-05', driver_number: 'DRV-004', driver_name: 'Sylvie Lapointe' },
     { id: 10, trip_number: 'TRP-8850', date: '2025-03-05', driver_number: 'DRV-008', driver_name: 'Priya Nair' },
 ];
+
+const LoadingState = ({ textLoading }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+        <CircularProgress size={20} />
+        <Typography variant="body2" color="text.secondary">{textLoading ? textLoading : 'Loading trips…'}</Typography>
+    </Box>
+);
 
 const initials = (name) => name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
 
@@ -74,7 +83,7 @@ const TripCard = ({ trip, selected, onClick }) => (
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
             <CalendarTodayOutlined sx={{ fontSize: 13, color: 'text.disabled' }} />
-            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{formatDate(trip.date)}</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{formatDate(trip.trip_date)}</Typography>
         </Box>
         <Chip
             avatar={
@@ -85,9 +94,9 @@ const TripCard = ({ trip, selected, onClick }) => (
             label={trip.driver_number}
             // size="small"
             sx={{
-                fontSize: 11, fontWeight: 600, bgcolor: 'transparent', border: '1px solid', borderColor: 'divider', py:2,
+                fontSize: 11, fontWeight: 600, bgcolor: 'transparent', border: '1px solid', borderColor: 'divider', py: 2,
                 '& .MuiChip-avatar': {
-                    width: 25,                   
+                    width: 25,
                     height: 25,
                     marginRight: 0.1,
                     color: '#fff'
@@ -100,21 +109,25 @@ const TripCard = ({ trip, selected, onClick }) => (
     </Box>
 );
 
-export default function TripForm({ onFormChange }) {
+export default function TripForm({ onFormChange, enabled }) {
+
     const [mode, setMode] = useState('existing');
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [tripSearch, setTripSearch] = useState('');
 
     const handleModeChange = (_, val) => { if (val) setMode(val); };
+    const { data: trips, isLoading } = useDriverTrips({ enabled });
 
-    const filteredTrips = OLD_TRIPS.filter((t) => {
+    const { data: drivers, isLoading: isDriverLoading } = useDrivers({ enabled: mode === 'new' ? true : false })
+
+    const filteredTrips = (trips || []).filter((t) => {
         const q = tripSearch.toLowerCase();
         return (
             t.trip_number.toLowerCase().includes(q) ||
             t.driver_number.toLowerCase().includes(q) ||
             t.driver_name.toLowerCase().includes(q) ||
-            t.date.includes(q)
+            t.trip_date.includes(q)
         );
     });
 
@@ -202,18 +215,19 @@ export default function TripForm({ onFormChange }) {
                                 '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
                                 '&::-webkit-scrollbar-thumb': { bgcolor: 'grey.300', borderRadius: 2 },
                             }}>
-                                {filteredTrips.length === 0 ? (
-                                    <Box sx={{ textAlign: 'center', py: 4 }}>
-                                        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>No trips match your search</Typography>
-                                    </Box>
-                                ) : filteredTrips.map((trip) => (
-                                    <TripCard
-                                        key={trip.id}
-                                        trip={trip}
-                                        selected={selectedTrip?.id === trip.id}
-                                        onClick={() => setSelectedTrip(selectedTrip?.id === trip.id ? null : trip)}
-                                    />
-                                ))}
+                                {isLoading ? <LoadingState textLoading={'Loading Driver Trips...'} /> :
+                                    filteredTrips.length === 0 ? (
+                                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                                            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>No trips match your search</Typography>
+                                        </Box>
+                                    ) : filteredTrips.map((trip) => (
+                                        <TripCard
+                                            key={trip.id}
+                                            trip={trip}
+                                            selected={selectedTrip?.id === trip.id}
+                                            onClick={() => setSelectedTrip(selectedTrip?.id === trip.id ? null : trip)}
+                                        />
+                                    ))}
                             </Box>
                             {selectedTrip && (
                                 <Paper elevation={0} sx={{
@@ -238,50 +252,58 @@ export default function TripForm({ onFormChange }) {
                     {mode === 'new' && (
                         <Box>
                             <SectionLabel icon={PersonOutline}>Assign Driver</SectionLabel>
-                            <Autocomplete
-                                options={DRIVERS}
-                                value={selectedDriver}
-                                onChange={(_, val) => setSelectedDriver(val)}
-                                getOptionLabel={(o) => `${o.name} — ${o.number}`}
-                                renderOption={(props, option) => (
-                                    <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: '10px !important' }}>
-                                        <Avatar sx={{ width: 32, height: 32, bgcolor: avatarColor(), fontSize: 12, fontWeight: 700 }}>
-                                            {initials(option.name)}
-                                        </Avatar>
-                                        <Box>
-                                            <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{option.name}</Typography>
-                                            <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{option.number}</Typography>
-                                        </Box>
+                            {isDriverLoading ? <LoadingState textLoading={'Loading Drivers...'} />
+                                :
+                                (drivers || []).length === 0 ?
+                                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                                        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>No drivers available</Typography>
                                     </Box>
-                                )}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        placeholder="Search driver by name or number…"
-                                        InputProps={{
-                                            ...params.InputProps,
-                                            startAdornment: (
-                                                <>
-                                                    {selectedDriver ? (
-                                                        <Avatar sx={{ width: 24, height: 24, bgcolor: avatarColor(), fontSize: 10, fontWeight: 700, mr: 0.5 }}>
-                                                            {initials(selectedDriver.name)}
-                                                        </Avatar>
-                                                    ) : (
-                                                        <PersonOutline sx={{ fontSize: 17, color: 'text.disabled', mr: 0.5 }} />
-                                                    )}
-                                                    {params.InputProps.startAdornment}
-                                                </>
-                                            ),
-                                            sx: {
-                                                borderRadius: '10px', fontSize: 13,
-                                                bgcolor: 'grey.50',
-                                                '& fieldset': { borderColor: 'grey.200' },
-                                            },
-                                        }}
+                                    :
+                                    <Autocomplete
+                                        options={drivers || []}
+                                        value={selectedDriver}
+                                        onChange={(_, val) => setSelectedDriver(val)}
+                                        getOptionLabel={(o) => `${o.fname} ${o.lname} — ${o.driver_number}`}
+                                        renderOption={(props, option) => (
+                                            <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: '10px !important' }}>
+                                                <Avatar sx={{ width: 32, height: 32, bgcolor: avatarColor(), fontSize: 12, fontWeight: 700 }}>
+                                                    {initials(`${option.fname} ${option.lname}`)}
+                                                </Avatar>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{`${option.fname} ${option.lname}`}</Typography>
+                                                    <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{option.driver_number}</Typography>
+                                                </Box>
+                                            </Box>
+                                        )}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                placeholder="Search driver by name or number…"
+                                                InputProps={{
+                                                    ...params.InputProps,
+                                                    startAdornment: (
+                                                        <>
+                                                            {selectedDriver ? (
+                                                                <Avatar sx={{ width: 24, height: 24, bgcolor: avatarColor(), fontSize: 10, fontWeight: 700, mr: 0.5 }}>
+                                                                    {initials(`${selectedDriver.fname} ${selectedDriver.lname}`)}
+                                                                </Avatar>
+                                                            ) : (
+                                                                <PersonOutline sx={{ fontSize: 17, color: 'text.disabled', mr: 0.5 }} />
+                                                            )}
+                                                            {params.InputProps.startAdornment}
+                                                        </>
+                                                    ),
+                                                    sx: {
+                                                        borderRadius: '10px', fontSize: 13,
+                                                        bgcolor: 'grey.50',
+                                                        '& fieldset': { borderColor: 'grey.200' },
+                                                    },
+                                                }}
+                                            />
+                                        )}
+                                        sx={{ mb: 2.5 }}
                                     />
-                                )}
-                                sx={{ mb: 2.5 }}
-                            />
+                            }
                             {selectedDriver && (
                                 <Paper elevation={0} sx={{
                                     p: 2, borderRadius: '12px',
@@ -290,14 +312,14 @@ export default function TripForm({ onFormChange }) {
                                     display: 'flex', alignItems: 'center', gap: 2,
                                 }}>
                                     <Avatar sx={{ width: 44, height: 44, bgcolor: avatarColor(), fontSize: 16, fontWeight: 700 }}>
-                                        {initials(selectedDriver.name)}
+                                        {initials(`${selectedDriver.fname} ${selectedDriver.lname}`)}
                                     </Avatar>
                                     <Box sx={{ flex: 1 }}>
-                                        <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{selectedDriver.name}</Typography>
+                                        <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{`${selectedDriver.fname} ${selectedDriver.lname}`}</Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
                                             <TagOutlined sx={{ fontSize: 13, color: 'text.disabled' }} />
                                             <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-                                                {selectedDriver.number}
+                                                {selectedDriver.driver_number}
                                             </Typography>
                                         </Box>
                                     </Box>

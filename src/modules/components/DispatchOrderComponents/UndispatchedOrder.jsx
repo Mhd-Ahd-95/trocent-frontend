@@ -1,95 +1,41 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button } from '@mui/material';
-import { Inventory2, AddRoad } from '@mui/icons-material';
+import React, { useState, useCallback } from 'react';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, Stack } from '@mui/material';
+import { Inventory2, AddRoad, NoteAdd } from '@mui/icons-material';
 import moment from 'moment';
 import OrderRow from './OrderRow';
 import FilterBar from './FilterBar';
 import { DrawerForm } from '..';
 import TripForm from './TripForm';
+import { useUndispatchedOrders } from '../../hooks/useDispatchOrders';
+import OrderNoteForm from './NoteForm';
 
-const today = new Date();
-const yesterday = new Date();
-yesterday.setDate(today.getDate() - 1);
-const tomorrow = new Date();
-tomorrow.setDate(today.getDate() + 1);
-
-const getRandomDateBetween = (start, end) => {
-  const startTime = start.getTime();
-  const endTime = end.getTime();
-  const randomTime = startTime + Math.random() * (endTime - startTime);
-  return new Date(randomTime);
-};
-
-const generateUndispatchedOrders = (count) => {
-  const orders = [];
-  const serviceTypes = ['Direct', 'Rush', 'Regular'];
-  const terminals = ['MTL', 'OTT', 'TOR'];
-  const statuses = ['Pending', 'Undispatched', 'Scheduled'];
-
-  for (let i = 0; i < count; i++) {
-    orders.push({
-      id: i + 1,
-      order_id: 1000 + i,
-      order_number: `${String(112343 + i).padStart(4, '0')}`,
-      leg_type: 'Pickup',
-      order_level: 'Standard',
-      scheduled_date: '2024-02-15',
-      pickup_time_from: '10:00',
-      pickup_time_to: '15:00',
-      delivery_time_from: '14:00',
-      delivery_time_to: '17:00',
-      trip_id: null,
-      terminal: terminals[Math.floor(Math.random() * terminals.length)],
-      customer_name: `Customer ${i}`,
-      shipper_id: 5000 + i,
-      shipper_name: `Shipper ${i}`,
-      shipper_address: `${300 + i} 5001 TRANS-CANADIENNE`,
-      shipper_city: 'Toronto',
-      shipper_province: 'ON',
-      shipper_postal_code: 'M1A1A1',
-      shipper_special_instructions: 'PICKUP MONDAY-MARCH 2ND @ 11:45 - SHARP',
-      shipper_appointment_numbers: ['A123456 GehJHKJDE'],
-      receiver_id: 8000 + i,
-      receiver_name: `Receiver ${i}`,
-      receiver_address: `${400 + i} Commerce St`,
-      receiver_city: 'Mississauga',
-      receiver_province: 'ON',
-      receiver_postal_code: 'L5B1A1',
-      receiver_special_instructions: 'PICKUP MONDAY-MARCH 2ND @ 11:45 - SHARP',
-      receiver_appointment_numbers: ['A123456 GehJHKJDE'],
-      service_type: serviceTypes[Math.floor(Math.random() * serviceTypes.length)],
-      order_status: statuses[Math.floor(Math.random() * statuses.length)],
-      reference_numbers: `REF-${10000 + i}`,
-      order_date: getRandomDateBetween(yesterday, tomorrow),
-      freights: [
-        { type: 'Skid', pieces: 2, length: 10, width: 15, height: 20, weight: 22.2, volume_weight: 13.32, unit: 'lbs' },
-        { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-        // { type: 'Box', pieces: 1, length: 20, width: 25, height: 30, weight: 222.2, volume_weight: 123.32, unit: 'kg' },
-      ]
-    });
-  }
-  return orders;
-};
-
-const UNDISPATCHED_ORDERS = generateUndispatchedOrders(100);
+const CustomTitle = React.memo(({ order_number }) => (
+  <Stack direction="row" alignItems="center" spacing={1.5}>
+    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}      >
+      <NoteAdd sx={{ fontSize: 18, color: '#fff' }} />
+    </Box>
+    <Box>
+      <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
+        Add Note
+      </Typography>
+      <Stack direction="row" alignItems="center" spacing={0.5}>
+        <Typography variant="caption" color="text.secondary">
+          Order
+        </Typography>
+        <Typography variant="caption" fontWeight={700}
+          sx={{ color: 'primary.main', bgcolor: 'primary.outlineHover', px: 0.75, py: 0.1, borderRadius: 1, fontFamily: 'monospace', fontSize: 12, }}
+        >
+          # {order_number}
+        </Typography>
+      </Stack>
+    </Box>
+  </Stack>
+))
 
 const headerCellSx = {
-  fontWeight: 700,
-  fontSize: 13,
-  color: 'text.primary',
-  bgcolor: 'grey.200',
-  borderBottom: '1px solid',
-  borderColor: 'divider',
-  whiteSpace: 'nowrap',
-  py: 1.5,
-  px: 2,
+  fontWeight: 700, fontSize: 13, color: 'text.primary',
+  bgcolor: 'grey.200', borderBottom: '1px solid', borderColor: 'divider',
+  whiteSpace: 'nowrap', py: 1.5, px: 2,
 };
 
 const COLUMNS = [
@@ -101,45 +47,21 @@ const COLUMNS = [
   { label: 'Receiver Name', key: 'receiver_name' },
   { label: 'Receiver City', key: 'receiver_city' },
   { label: 'Delivery Date', key: 'delivery_date' },
-  { label: 'Freight Details', key: null }, 
+  { label: 'Freight Details', key: null },
   { label: 'Actions', key: null },
 ];
 
-const getValue = (row, key) => {
-  const val = row[key];
-  if (val === undefined || val === null) return '';
-  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val).getTime();
-  if (typeof val === 'string') return val.toLowerCase();
-  return val;
-};
+const SkeletonRows = ({ count = 10 }) =>
+  Array.from({ length: count }).map((_, i) => (
+    <TableRow key={i}>
+      {COLUMNS.map(({ label }) => (
+        <TableCell key={label}><Skeleton variant="text" width="80%" /></TableCell>
+      ))}
+    </TableRow>
+  ));
 
-const sortRows = (rows, key, direction) => {
-  if (!key) return rows;
-  return [...rows].sort((a, b) => {
-    const av = getValue(a, key);
-    const bv = getValue(b, key);
-    if (av < bv) return direction === 'asc' ? -1 : 1;
-    if (av > bv) return direction === 'asc' ? 1 : -1;
-    return 0;
-  });
-};
 
-const UndispatchedOrdersTable = ({ orders, filters, selectedRows, onRowSelect }) => {
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(50);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
-  const handleSort = useCallback((key) => {
-    if (!key) return;
-    setSortConfig((prev) =>
-      prev.key === key
-        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-        : { key, direction: 'asc' }
-    );
-    setPage(0);
-  }, []);
-
+const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
   const handleRowClick = useCallback((row) => {
     onRowSelect((prev) => {
       const next = new Map(prev);
@@ -148,36 +70,7 @@ const UndispatchedOrdersTable = ({ orders, filters, selectedRows, onRowSelect })
     });
   }, [onRowSelect]);
 
-  const filteredOrders = useMemo(() => {
-    let filtered = [...orders];
-    if (filters?.searchInput) {
-      const s = filters.searchInput.toLowerCase();
-      filtered = filtered.filter((o) =>
-        o.order_number.toLowerCase().includes(s) ||
-        o.shipper_name?.toLowerCase().includes(s) ||
-        o.receiver_name?.toLowerCase().includes(s)
-      );
-    }
-    if (filters?.pickupDate)
-      filtered = filtered.filter((o) => o.pickup_date === filters.pickupDate.format('YYYY-MM-DD'));
-    if (filters?.deliveryDate)
-      filtered = filtered.filter((o) => o.delivery_date === filters.deliveryDate.format('YYYY-MM-DD'));
-    if (filters?.terminal)
-      filtered = filtered.filter((o) => o.terminal === filters.terminal);
-    return filtered;
-  }, [orders, filters]);
-
-  const sortedOrders = useMemo(
-    () => sortRows(filteredOrders, sortConfig.key, sortConfig.direction),
-    [filteredOrders, sortConfig]
-  );
-
-  const visibleRows = useMemo(
-    () => sortedOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [sortedOrders, page, rowsPerPage]
-  );
-
-  if (filteredOrders.length === 0) {
+  if (!isLoading && orders.length === 0) {
     return (
       <Paper elevation={0} sx={{ p: 8, textAlign: 'center', border: 1, borderColor: 'divider' }}>
         <Inventory2 sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
@@ -187,7 +80,11 @@ const UndispatchedOrdersTable = ({ orders, filters, selectedRows, onRowSelect })
   }
 
   return (
-    <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+    <Paper elevation={0} sx={{
+      border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden',
+      opacity: isFetching && !isLoading ? 0.7 : 1,
+      transition: 'opacity 0.15s ease',
+    }}>
       <Box sx={{ overflowX: 'auto' }}>
         <Table size="small" stickyHeader>
           <TableHead>
@@ -207,11 +104,10 @@ const UndispatchedOrdersTable = ({ orders, filters, selectedRows, onRowSelect })
                     <TableSortLabel
                       active={sortConfig.key === key}
                       direction={sortConfig.key === key ? sortConfig.direction : 'asc'}
-                      onClick={() => handleSort(key)}
+                      onClick={() => onSort(key)}
                       sx={{
                         '& .MuiTableSortLabel-icon': { opacity: sortConfig.key === key ? 1 : 0.3 },
-                        fontWeight: 700,
-                        fontSize: 13,
+                        fontWeight: 700, fontSize: 13,
                       }}
                     >
                       {label}
@@ -222,78 +118,97 @@ const UndispatchedOrdersTable = ({ orders, filters, selectedRows, onRowSelect })
             </TableRow>
           </TableHead>
           <TableBody>
-            {visibleRows.map((row, idx) => (
-              <OrderRow
-                key={row.id}
-                row={row}
-                isEven={idx % 2 === 0}
-                isToday={moment(row.order_date).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')}
-                isSelected={selectedRows.has(row.id)}
-                onRowClick={handleRowClick}
-              />
-            ))}
+            {isLoading
+              ? <SkeletonRows count={rowsPerPage} />
+              : orders.map((row, idx) => (
+                <OrderRow
+                  key={row.id}
+                  row={row}
+                  onAddNote={onAddNote}
+                  isEven={idx % 2 === 0}
+                  isToday={moment(row.order_date).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')}
+                  isSelected={selectedRows.has(row.id)}
+                  onRowClick={handleRowClick}
+                />
+              ))
+            }
           </TableBody>
         </Table>
       </Box>
       <TablePagination
         component="div"
-        count={filteredOrders.length}
+        count={total}
         page={page}
-        onPageChange={(_, p) => setPage(p)}
+        onPageChange={(_, p) => onPageChange(p)}
         rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => { setRowsPerPage(+e.target.value); setPage(0); }}
+        onRowsPerPageChange={(e) => { onRowsPerPageChange(+e.target.value); }}
         rowsPerPageOptions={[50, 100, 200]}
         sx={{ borderTop: 1, borderColor: 'divider' }}
       />
     </Paper>
   );
-};
+});
 
-function UndispatchedOrders(props) {
+function UndispatchedOrders() {
 
-  const [undispatchedFilters, setUndispatchedFilters] = useState({});
+  const [appliedFilters, setAppliedFilters] = useState({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [selectedRows, setSelectedRows] = useState(new Map());
-  const [openDrawer, setOpenDrawer] = React.useState(false)
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [dispatchOrder, setDispatchOrder] = React.useState({})
 
-  const handleUndispatchedFilterChange = useCallback((newFilters) => {
-    setUndispatchedFilters(newFilters);
+  const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction }, page + 1, rowsPerPage,);
+
+  const orders = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+
+  const handleSearch = useCallback((searchFilters) => {
+    setAppliedFilters(searchFilters);
+    setPage(0);
   }, []);
 
-  const handleUndispatchedSearch = useCallback((searchFilters) => {
-    console.log('Search undispatched orders:', searchFilters);
+  const handleSort = useCallback((key) => {
+    if (!key) return;
+    setSortConfig((prev) => prev.key === key ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' });
+    setPage(0);
+  }, []);
+
+  const handlePageChange = useCallback((newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: document.getElementById('undispatched-section')?.offsetTop ?? 0, behavior: 'smooth', });
+  }, []);
+
+  const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
   }, []);
 
   const hasSelection = selectedRows.size > 0;
 
   return (
-    <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
-      <Box sx={{
-        p: 2, borderBottom: 1, borderColor: 'divider',
-        display: 'flex', alignItems: 'center', gap: 2,
-        bgcolor: 'grey.50', borderTopLeftRadius: 10, borderTopRightRadius: 10
-      }}>
+    <Paper id="undispatched-section" elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'grey.50', borderTopLeftRadius: 10, borderTopRightRadius: 10, }}>
         <Inventory2 color="primary" />
         <Typography variant="h6" fontWeight="bold">Undispatched Orders</Typography>
+
+        {isFetching && !isLoading && <CircularProgress size={14} sx={{ ml: 1 }} />}
 
         {hasSelection && (
           <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>{selectedRows.size}</strong> order{selectedRows.size > 1 ? 's' : ''} selected
             </Typography>
-
             <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddRoad />}
-              onClick={() => setOpenDrawer(true)}
+              variant="contained" size="small" startIcon={<AddRoad />}
+              onClick={() => setOpenDrawer(1)}
               sx={{ fontWeight: 600, textTransform: 'none', borderRadius: '8px', whiteSpace: 'nowrap' }}
             >
               Create or Select Trip
             </Button>
-
             <Typography
-              variant="body2"
-              color="text.secondary"
+              variant="body2" color="text.secondary"
               sx={{ cursor: 'pointer', textDecoration: 'underline', whiteSpace: 'nowrap' }}
               onClick={() => setSelectedRows(new Map())}
             >
@@ -304,27 +219,46 @@ function UndispatchedOrders(props) {
       </Box>
 
       <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
-        <FilterBar
-          onFilterChange={handleUndispatchedFilterChange}
-          onSearch={handleUndispatchedSearch}
-          showSearchButton={true}
-          defaultExpanded={false}
-        />
+        <FilterBar onSearch={handleSearch} showSearchButton defaultExpanded={false} />
       </Box>
 
       <Box sx={{ p: 2 }}>
         <UndispatchedOrdersTable
-          orders={UNDISPATCHED_ORDERS}
-          filters={undispatchedFilters}
+          orders={orders}
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          isLoading={isLoading}
+          isFetching={isFetching}
           selectedRows={selectedRows}
           onRowSelect={setSelectedRows}
+          onAddNote={(row) => {
+            setDispatchOrder(row)
+            setOpenDrawer(2)
+          }}
         />
       </Box>
-      {openDrawer &&
-        <DrawerForm title='Create or Select Trip' setOpen={setOpenDrawer} open={openDrawer}>
-          <TripForm />
+
+      {openDrawer === 1 && (
+        <DrawerForm title="Create or Select Trip" setOpen={setOpenDrawer} open={openDrawer}>
+          <TripForm
+            enabled={true}
+          />
         </DrawerForm>
-      }
+      )}
+
+      {openDrawer === 2 && (
+        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrder.order_number} />} setOpen={setOpenDrawer} open={openDrawer}>
+          <OrderNoteForm
+            order={dispatchOrder}
+            onClose={() => setOpenDrawer(false)}
+          />
+        </DrawerForm>
+      )}
     </Paper>
   );
 }

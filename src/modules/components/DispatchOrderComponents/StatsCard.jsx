@@ -2,25 +2,25 @@ import React from 'react';
 import { Card, CardContent, Typography, Box, Avatar, Grid } from '@mui/material';
 import { LocalShipping, Inventory2, PersonPin, PersonOff } from '@mui/icons-material';
 
-const StatsCards = ({ totalTrips, undispatchedOrders, onRouteDrivers }) => {
+const StatsCards = ({ totalTrips, undispatchedOrders, onRouteDrivers, isLoading }) => {
     const stats = [
         {
             title: 'Total Trips',
-            value: totalTrips,
+            value: isLoading ? '...' : totalTrips,
             icon: LocalShipping,
             color: '#1976d2',
             bgColor: '#e3f2fd',
         },
         {
             title: 'Undispatched Drivers',
-            value: undispatchedOrders,
+            value: isLoading ? '...' : undispatchedOrders,
             icon: PersonOff,
             color: '#ed6c02',
             bgColor: '#fff4e5',
         },
         {
             title: 'On Route Drivers',
-            value: onRouteDrivers,
+            value: isLoading ? '...' : onRouteDrivers,
             icon: PersonPin,
             color: '#2e7d32',
             bgColor: '#e8f5e9',
