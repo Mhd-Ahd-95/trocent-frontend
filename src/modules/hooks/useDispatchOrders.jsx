@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DispatchOrderApi from "../apis/DispatchOrder.api";
+import { useSnackbar } from "notistack";
 
 export const dispatchKeys = {
     trips: (type) => ['dispatch', 'trips', type],
@@ -14,7 +15,7 @@ const BASE_QUERY_CONFIG = {
     retry: 0,
 };
 
-export function useDriverTrips({enabled = false}) {
+export function useDriverTrips({ enabled = false }) {
     return useQuery({
         queryKey: dispatchKeys.trips('driver'),
         queryFn: async () => {
@@ -65,4 +66,44 @@ export function useCompletedTrips(filters = {}, page = 1, perPage = 50, { enable
         ...BASE_QUERY_CONFIG,
         placeholderData: (prev) => prev,
     });
+}
+
+export function useDispatchOrderMutation() {
+    const queryClient = useQueryClient()
+    const { enqueueSnackbar } = useSnackbar()
+
+    const handleError = (error) => {
+        const message = error.response?.data?.message;
+        const status = error.response?.status;
+        const errorMessage = message ? `${message} - ${status}` : error.message;
+        enqueueSnackbar(errorMessage, { variant: 'error' });
+    };
+
+    const createTrip = useMutation({
+        mutationFn: async ({ payload }) => {
+            console.log(payload);
+            const res = await DispatchOrderApi.createTrip(payload);
+            return res.data;
+        },
+        onSuccess: (updated) => {
+            console.log(updated);
+            enqueueSnackbar('Trip has been successfully created', { variant: 'success' });
+        },
+        onError: handleError,
+    });
+
+    const addOrdersToTrip = useMutation({
+        mutationFn: async ({ id, payload }) => {
+            const res = await DispatchOrderApi.addOrdersToTrip(id, payload);
+            return res.data;
+        },
+        onSuccess: (updated) => {
+
+            enqueueSnackbar('Orders has been sucessfully added to trip', { variant: 'success' });
+        },
+        onError: handleError,
+    });
+
+    return { createTrip, addOrdersToTrip }
+
 }

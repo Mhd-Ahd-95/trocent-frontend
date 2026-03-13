@@ -3,8 +3,9 @@ import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, Ac
 import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom'
+import moment from 'moment';
 
-const TripRow = ({ trip, isToday, isInterliner }) => {
+const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
 
   const [expanded, setExpanded] = useState(false);
   const firstOrder = trip?.dispatched_orders[0] ?? [];
@@ -14,7 +15,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
     return colors[type] || 'default';
   }, []);
 
-  const OrderCard = ({ order, idx }) => {
+  const OrderCard = ({ order, idx, tripAction }) => {
 
     const [showFreight, setShowFreight] = useState(false);
 
@@ -27,7 +28,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
           }}
         >
           <Grid size={1.2}>
-            <Link component={RouterLink} to={`/orders/edit/${order.id}`}>
+            <Link component={RouterLink} to={`/orders/edit/${order.order_id}`}>
               <Typography variant="subtitle1" fontWeight="700">
                 # {order.order_number}
               </Typography>
@@ -85,10 +86,19 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               <CalendarToday sx={{ fontSize: 12 }} />
               Pickup
             </Typography>
-            <Typography variant="body2">{order.pickup_date}</Typography>
+            <Typography variant="body2">{moment(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
             <Typography variant="caption" color="text.secondary">
               {order.pickup_time_from} - {order.pickup_time_to}
             </Typography>
+            {order.shipper_special_instructions && <>
+              <Divider />
+              <Tooltip title={order.shipper_special_instructions}>
+                <Typography component="p" fontSize="12px" color="text.secondary"
+                  sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {order.shipper_special_instructions}
+                </Typography>
+              </Tooltip>
+            </>}
           </Grid>
           <Grid size={0.5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TrendingFlat sx={{ color: 'primary.main' }} />
@@ -123,34 +133,48 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
               <CalendarToday sx={{ fontSize: 12 }} />
               Delivery
             </Typography>
-            <Typography variant="body2">{order.delivery_date}</Typography>
+            <Typography variant="body2">{moment(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
             <Typography variant="caption" color="text.secondary">
               {order.delivery_time_from} - {order.delivery_time_to}
             </Typography>
+            {order.receiver_special_instructions && <>
+              <Divider />
+              <Tooltip title={order.receiver_special_instructions}>
+                <Typography component="p" fontSize="12px" color="text.secondary"
+                  sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {order.receiver_special_instructions}
+                </Typography>
+              </Tooltip>
+            </>}
           </Grid>
           <Divider orientation="vertical" flexItem />
           <Grid size={0.4}>
             <Stack direction="column" spacing={0.5} sx={{ height: '100%', justifyContent: 'center' }}>
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Undispatch order:', order.id);
-                }}
-                sx={{ '&:hover': { bgcolor: 'error.50' } }}
-              >
-                <LocalShippingOutlined fontSize="small" color="error" />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Add note:', order.id);
-                }}
-                sx={{ '&:hover': { bgcolor: 'warning.50' } }}
-              >
-                <NoteAdd fontSize="small" color="warning" />
-              </IconButton>
+              <Tooltip title='Undispatch Order'>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Undispatch order:', order.id);
+                  }}
+                  sx={{ '&:hover': { bgcolor: 'error.50' } }}
+                >
+                  <LocalShippingOutlined fontSize="small" color="error" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Add Note'>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Add note:', order.id);
+                    tripAction.current?.addNote(order)
+                  }}
+                  sx={{ '&:hover': { bgcolor: 'warning.50' } }}
+                >
+                  <NoteAdd fontSize="small" color="warning" />
+                </IconButton>
+              </Tooltip>
             </Stack>
           </Grid>
         </Grid>
@@ -223,7 +247,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
                 <LocalShipping color="primary" sx={{ fontSize: 20 }} />
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
-                    {trip.trip_number}
+                    # {trip.trip_number}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -320,6 +344,7 @@ const TripRow = ({ trip, isToday, isInterliner }) => {
           <Stack spacing={1.5}>
             {(trip?.dispatched_orders || []).map((order, idx) => (
               <OrderCard
+                tripAction={tripAction}
                 key={order.id}
                 order={order}
                 idx={idx}

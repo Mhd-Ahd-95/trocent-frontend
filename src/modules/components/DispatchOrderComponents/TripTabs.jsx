@@ -35,7 +35,7 @@ const DriverTabContent = React.memo(({ enabled }) => {
     );
 });
 
-const InterlinerTabContent = React.memo(({ enabled }) => {
+const InterlinerTabContent = React.memo(({ enabled, tripAction }) => {
 
     const [filters, setFilters] = useState({});
     const { data: trips = [], isLoading } = useInterlinerTrips({ enabled });
@@ -49,7 +49,7 @@ const InterlinerTabContent = React.memo(({ enabled }) => {
                 <FilterBar onFilterChange={handleFilterChange} defaultExpanded={false} />
             </Box>
             <Box sx={{ p: 2 }}>
-                <TripsList trips={trips} filters={filters} isInterliner />
+                <TripsList trips={trips} filters={filters} isInterliner tripAction={tripAction} />
             </Box>
         </>
     );
@@ -102,7 +102,7 @@ const CompletedTabContent = React.memo(({ enabled }) => {
     );
 });
 
-export default function TripTabs({ }) {
+export default function TripTabs({ tripAction }) {
 
     const [activatedTabs, setActivatedTabs] = useState(() => new Set([0]));
 
@@ -131,10 +131,12 @@ export default function TripTabs({ }) {
                         <DriverTabContent
                             key="driver"
                             enabled={activatedTabs.has(0)}
+                            tripAction={tripAction}
                         />,
                         <InterlinerTabContent
                             key="interliner"
                             enabled={activatedTabs.has(1)}
+                            tripAction={tripAction}
                         />,
                         <CompletedTabContent
                             key="completed"

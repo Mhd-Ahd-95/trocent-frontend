@@ -4,15 +4,12 @@ import { useSnackbar } from "notistack";
 import { dispatchKeys } from "./useDispatchOrders";
 import { useDispatchCacheUpdate } from "./useDispatchCacheUpdate";
 
-export function useOrderPagination(page = 1, pageSize = 10) {
-    const queryClient = useQueryClient()
-    const allOrdersDispatched = queryClient.getQueriesData({ queryKey: ['dispatch'] });
-
-    console.log(allOrdersDispatched);
+export function useOrderPagination(page = 1, pageSize = 50) {
     return useQuery({
         queryKey: ['orders', page, pageSize],
         queryFn: async () => {
             const res = await OrderApi.getOrders({ page, pageSize });
+            console.log(res);
             return res.data;
         },
         keepPreviousData: true,
@@ -64,24 +61,24 @@ const updateOrders = (updated) => {
     })
 }
 
-const handle_dispatch_undispatch_orders = (trips = [], undispatchedOrder = [], order) => {
-    const queryClient = useQueryClient()
-    const driverTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'driver'] });
-    const interlinerTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'interliner'] });
-    const allUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
-    const hasInterlinerTrip = trips.some(t => t.trip_type === 'interliner')
-    const hasDriverTrip = trips.some(t => t.trip_type === 'driver')
-    const hasUndispatched = undispatchedOrder.some((disp) => disp.trip_id === null)
+// const handle_dispatch_undispatch_orders = (trips = [], undispatchedOrder = [], order) => {
+//     const queryClient = useQueryClient()
+//     const driverTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'driver'] });
+//     const interlinerTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'interliner'] });
+//     const allUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+//     const hasInterlinerTrip = trips.some(t => t.trip_type === 'interliner')
+//     const hasDriverTrip = trips.some(t => t.trip_type === 'driver')
+//     const hasUndispatched = undispatchedOrder.some((disp) => disp.trip_id === null)
 
-    if (hasInterlinerTrip) {
-        if (interlinerTrips) {
-            queryClient.setQueryData()
-        }
-        else {
+//     if (hasInterlinerTrip) {
+//         if (interlinerTrips) {
+//             queryClient.setQueryData()
+//         }
+//         else {
 
-        }
-    }
-}
+//         }
+//     }
+// }
 
 
 export function useOrderMutations() {
@@ -178,7 +175,7 @@ export function useOrderMutations() {
                     queryClient.setQueryData(['order', Number(order.id)], order)
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
-                updateDispatchCache({ trips: trips, undispatchedOrders: undispatched_orders, });
+                updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });
             },
             onError: handleError,
         }

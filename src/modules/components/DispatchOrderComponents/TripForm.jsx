@@ -5,6 +5,7 @@ import StyledButton from '../StyledButton/StyledButton';
 import SubmitButton from '../SubmitButton/SubmitButton';
 import { useDriverTrips } from '../../hooks/useDispatchOrders';
 import { useDrivers } from '../../hooks/useDrivers'
+import moment from 'moment';
 
 const DRIVERS = [
     { id: 1, name: 'James Tremblay', number: 'DRV-001' },
@@ -109,14 +110,27 @@ const TripCard = ({ trip, selected, onClick }) => (
     </Box>
 );
 
-export default function TripForm({ onFormChange, enabled }) {
+export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderIds }) {
+
+    console.log(orderIds);
 
     const [mode, setMode] = useState('existing');
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [tripSearch, setTripSearch] = useState('');
 
-    const handleModeChange = (_, val) => { if (val) setMode(val); };
+    console.log(selectedDriver);
+
+    const handleModeChange = (_, val) => {
+        if (val === 'new') {
+            setSelectedTrip(null)
+        }
+        else {
+            setSelectedDriver(null)
+        }
+        setMode(val)
+    };
+
     const { data: trips, isLoading } = useDriverTrips({ enabled });
 
     const { data: drivers, isLoading: isDriverLoading } = useDrivers({ enabled: mode === 'new' ? true : false })
@@ -131,8 +145,38 @@ export default function TripForm({ onFormChange, enabled }) {
         );
     });
 
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            let payload = {}
+            if (mode === 'new') {
+                payload = {
+                    driver_id: selectedDriver.id,
+                    driver_number: selectedDriver.driver_number,
+                    driver_name: `${selectedDriver.fname} ${selectedDriver.lname}`,
+                    trip_date: moment(new Date()).format('YYYY-MM-DD'),
+                    trip_type: 'driver',
+                    trip_status: 'planning',
+                    driver_active: false,
+                    dispatch_orders: orderIds.map((id, index) => ({ order_id: id, order_level: index + 1 }))
+                }
+                await createTrip(payload)
+            }
+            else {
+                payload = {
+                    trip_id: Number(selectedTrip),
+                    dispatch_orders: orderIds.map((id) => Number(id))
+                }
+                await addOrdersToTrip(payload)
+            }
+        }
+        catch (err) {
+            //
+        }
+    }
+
     return (
-        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }}        >
+        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }} onSubmit={handleSubmit}>
             <div style={{ flexGrow: 1, overflow: 'auto', padding: '24px' }}>
                 <Box sx={{ px: 5, py: 2 }}>
                     <Box sx={{ mb: 3 }}>

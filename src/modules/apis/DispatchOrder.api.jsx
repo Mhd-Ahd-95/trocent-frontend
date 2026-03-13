@@ -8,9 +8,21 @@ const getTripsByType = (type) =>    CustomAxios.get('/api/dispatch-orders/active
 
 const loadCompletedTrips = (params = {}) =>    CustomAxios.get('/api/dispatch-orders/completed', { params });
 
+const createTrip = (payload) => CustomAxios.post('/api/trips', payload)
+
+const addOrdersToTrip = (tid, payload) => CustomAxios.put(`/api/trips/${tid}`, payload)
+
+const updateTrip = (tid, payload) => CustomAxios.put(`/api/trips/update/${tid}`, payload)
+
+const removeOrderFromTrip = (tid, oid) => CustomAxios.put(`/api/trips/${tid}/undispatch-order/${oid}`)
+
 export default {
     loadTripAndUndispatched,
     getUndispatchedOrders,
     getTripsByType,
     loadCompletedTrips,
+    createTrip,
+    addOrdersToTrip,
+    updateTrip,
+    removeOrderFromTrip
 };

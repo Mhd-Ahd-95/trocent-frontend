@@ -4,7 +4,7 @@ import { LocalShipping } from '@mui/icons-material';
 import { Virtuoso } from 'react-virtuoso';
 import TripRow from './TripRow';
 
-const TripsList = ({ trips, filters, isInterliner }) => {
+const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -64,6 +64,7 @@ const TripsList = ({ trips, filters, isInterliner }) => {
           <TripRow
             key={index}
             trip={trip}
+            tripAction={tripAction}
             isInterliner={isInterliner}
             isToday={trip.trip_date === today}
           />

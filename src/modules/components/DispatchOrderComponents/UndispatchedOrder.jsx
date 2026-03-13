@@ -6,7 +6,7 @@ import OrderRow from './OrderRow';
 import FilterBar from './FilterBar';
 import { DrawerForm } from '..';
 import TripForm from './TripForm';
-import { useUndispatchedOrders } from '../../hooks/useDispatchOrders';
+import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/useDispatchOrders';
 import OrderNoteForm from './NoteForm';
 
 const CustomTitle = React.memo(({ order_number }) => (
@@ -62,6 +62,7 @@ const SkeletonRows = ({ count = 10 }) =>
 
 
 const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
+
   const handleRowClick = useCallback((row) => {
     onRowSelect((prev) => {
       const next = new Map(prev);
@@ -149,7 +150,9 @@ const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, 
   );
 });
 
-function UndispatchedOrders() {
+function UndispatchedOrders(props) {
+
+  const { tripAction } = props
 
   const [appliedFilters, setAppliedFilters] = useState({});
   const [page, setPage] = useState(0);
@@ -158,6 +161,10 @@ function UndispatchedOrders() {
   const [selectedRows, setSelectedRows] = useState(new Map());
   const [openDrawer, setOpenDrawer] = useState(false);
   const [dispatchOrder, setDispatchOrder] = React.useState({})
+
+  console.log(Array.from(selectedRows.keys()));
+
+  const { createTrip, addOrdersToTrip } = useDispatchOrderMutation()
 
   const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction }, page + 1, rowsPerPage,);
 
@@ -185,7 +192,16 @@ function UndispatchedOrders() {
     setPage(0);
   }, []);
 
+  const handleNote = (row) => {
+    setDispatchOrder(row)
+    setOpenDrawer(2)
+  }
+
   const hasSelection = selectedRows.size > 0;
+
+  React.useImperativeHandle(tripAction, () => ({
+    addNote: handleNote
+  }), [dispatchOrder])
 
   return (
     <Paper id="undispatched-section" elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
@@ -236,10 +252,7 @@ function UndispatchedOrders() {
           isFetching={isFetching}
           selectedRows={selectedRows}
           onRowSelect={setSelectedRows}
-          onAddNote={(row) => {
-            setDispatchOrder(row)
-            setOpenDrawer(2)
-          }}
+          onAddNote={handleNote}
         />
       </Box>
 
@@ -247,6 +260,9 @@ function UndispatchedOrders() {
         <DrawerForm title="Create or Select Trip" setOpen={setOpenDrawer} open={openDrawer}>
           <TripForm
             enabled={true}
+            createTrip={async (payload) => await createTrip.mutateAsync({ payload })}
+            addOrdersToTrip={async (payload) => await addOrdersToTrip.mutateAsync({ id: payload.trip_id, payload })}
+            orderIds={Array.from(selectedRows.keys())}
           />
         </DrawerForm>
       )}

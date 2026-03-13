@@ -10,7 +10,7 @@ const FreightRow = ({ f }) => {
             <Typography fontSize={12} fontWeight={600} color="text.primary" noWrap>{f.pieces ?? '—'}</Typography>
             <Typography fontSize={11} color="text.secondary" noWrap>{f.type ?? '—'}</Typography>
             <Typography fontSize={11} color="text.secondary" noWrap>{dims}</Typography>
-            <Typography fontSize={11} fontWeight={600} color="text.secondary" noWrap>FAK</Typography>
+            <Typography fontSize={11} fontWeight={600} color="text.secondary" noWrap>{f.description ? f.description : 'FAK'}</Typography>
         </Box>
     );
 };
@@ -36,7 +36,7 @@ const InlineFreightCell = React.memo(({ freights = [], total_pieces, total_actua
                         <Typography fontSize={11} fontWeight={700} color="inherit">{f.pieces ?? '—'}</Typography>
                         <Typography fontSize={11} color="inherit" sx={{ opacity: 0.85 }}>{f.type ?? '—'}</Typography>
                         <Typography fontSize={11} color="inherit" sx={{ opacity: 0.75 }}>{dims}</Typography>
-                        <Typography fontSize={11} fontWeight={600} color="inherit">FAK</Typography>
+                        <Typography fontSize={11} fontWeight={600} color="inherit">{f.description ? f.description : 'FAK'}</Typography>
                     </Box>
                 );
             })}

@@ -1,7 +1,6 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { dispatchKeys } from './useDispatchOrders';
-
 
 const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
     if (!cachedTrips) return updatedTrips;
@@ -12,65 +11,65 @@ const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
     return [...newTrips, ...merged];
 };
 
-const mergeUndispatched = (cachedPage, updatedUndispatched = []) => {
+
+const mergeUndispatched = (orderId, cachedPage, updatedUndispatched = []) => {
     if (!cachedPage) return null;
-    const updatedMap = new Map(updatedUndispatched.map(o => [o.id, o]));
-    const dispatchedIds = new Set(updatedUndispatched.filter(o => o.trip_id !== null).map(o => o.id));
-
-    const filtered = (cachedPage.data ?? [])
-        .filter(o => !dispatchedIds.has(o.id))
-        .map(o => updatedMap.has(o.id) ? updatedMap.get(o.id) : o);
-
-    const existingIds = new Set(cachedPage.data?.map(o => o.id) ?? []);
-    const newUndispatched = updatedUndispatched.filter(o => o.trip_id === null && !existingIds.has(o.id));
-
-    const newData = [...newUndispatched, ...filtered];
-    const removedCount = (cachedPage.data ?? []).filter(o => dispatchedIds.has(o.id)).length;
-    const addedCount = newUndispatched.length;
+    const cachedData = cachedPage.data ?? [];
+    const withoutOldOrderRows = cachedData.filter(o => Number(o.order_id) !== Number(orderId));
+    const newUndispatchedRows = updatedUndispatched.filter(o => o.trip_id === null);
+    const newData = [...newUndispatchedRows, ...withoutOldOrderRows];
+    const removedCount = cachedData.length - withoutOldOrderRows.length;
+    const addedCount = newUndispatchedRows.length;
 
     return {
         ...cachedPage,
         data: newData,
-        meta: { ...cachedPage.meta, total: (cachedPage.meta?.total ?? 0) - removedCount + addedCount, }
+        meta: { ...cachedPage.meta, total: (cachedPage.meta?.total ?? 0) - removedCount + addedCount, },
     };
 };
 
 export function useDispatchCacheUpdate() {
     const queryClient = useQueryClient();
-    const updateCache = useCallback(({ trips = [], undispatchedOrders = [] }) => {
+
+    const updateCache = useCallback(({ order = {}, trips = [], undispatchedOrders = [] }) => {
+        const orderId = order?.id;
+        if (!orderId) return;
 
         const driverTrips = trips.filter(t => t.trip_type === 'driver');
         if (driverTrips.length > 0) {
-            const driverCacheKey = dispatchKeys.trips('driver');
-            const cachedDriverTrips = queryClient.getQueryData(driverCacheKey);
-            if (cachedDriverTrips !== undefined) {
-                queryClient.setQueryData(driverCacheKey, mergeTrips(cachedDriverTrips, driverTrips));
+            const key = dispatchKeys.trips('driver');
+            const cached = queryClient.getQueryData(key);
+            if (cached !== undefined) {
+                queryClient.setQueryData(key, mergeTrips(cached, driverTrips));
             } else {
-                queryClient.invalidateQueries({ queryKey: driverCacheKey });
+                queryClient.invalidateQueries({ queryKey: key });
             }
         }
 
         const interlinerTrips = trips.filter(t => t.trip_type === 'interliner');
         if (interlinerTrips.length > 0) {
-            const interlinerCacheKey = dispatchKeys.trips('interliner');
-            const cachedInterlinerTrips = queryClient.getQueryData(interlinerCacheKey);
-            if (cachedInterlinerTrips !== undefined) {
-                queryClient.setQueryData(interlinerCacheKey, mergeTrips(cachedInterlinerTrips, interlinerTrips));
+            const key = dispatchKeys.trips('interliner');
+            const cached = queryClient.getQueryData(key);
+            if (cached !== undefined) {
+                queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips));
             } else {
-                queryClient.invalidateQueries({ queryKey: interlinerCacheKey });
+                queryClient.invalidateQueries({ queryKey: key });
             }
         }
 
-        const allUndispatchedKeys = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'], });
-        if (allUndispatchedKeys.length > 0) {
-            allUndispatchedKeys.forEach(([key, cachedPage]) => {
+        const allUndispatchedEntries = queryClient.getQueriesData({
+            queryKey: ['dispatch', 'undispatched'],
+        });
+
+        if (allUndispatchedEntries.length > 0) {
+            allUndispatchedEntries.forEach(([key, cachedPage]) => {
                 if (!cachedPage) return;
-                const updated = mergeUndispatched(cachedPage, undispatchedOrders);
+                const updated = mergeUndispatched(orderId, cachedPage, undispatchedOrders);
                 if (updated) {
                     queryClient.setQueryData(key, updated);
                 }
             });
-        } else if (undispatchedOrders.length > 0) {
+        } else {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] });
         }
 
