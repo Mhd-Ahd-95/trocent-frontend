@@ -7,32 +7,6 @@ import { useDriverTrips } from '../../hooks/useDispatchOrders';
 import { useDrivers } from '../../hooks/useDrivers'
 import moment from 'moment';
 
-const DRIVERS = [
-    { id: 1, name: 'James Tremblay', number: 'DRV-001' },
-    { id: 2, name: 'Marie Bouchard', number: 'DRV-002' },
-    { id: 3, name: 'Kevin Okafor', number: 'DRV-003' },
-    { id: 4, name: 'Sylvie Lapointe', number: 'DRV-004' },
-    { id: 5, name: 'Ahmed Mansouri', number: 'DRV-005' },
-    { id: 6, name: 'Chantal Gagnon', number: 'DRV-006' },
-    { id: 7, name: 'Derek Fontaine', number: 'DRV-007' },
-    { id: 8, name: 'Priya Nair', number: 'DRV-008' },
-    { id: 9, name: 'Lucas Bergeron', number: 'DRV-009' },
-    { id: 10, name: 'Fatima El-Hassan', number: 'DRV-010' },
-];
-
-const OLD_TRIPS = [
-    { id: 1, trip_number: 'TRP-8841', date: '2025-03-01', driver_number: 'DRV-003', driver_name: 'Kevin Okafor' },
-    { id: 2, trip_number: 'TRP-8842', date: '2025-03-01', driver_number: 'DRV-007', driver_name: 'Derek Fontaine' },
-    { id: 3, trip_number: 'TRP-8843', date: '2025-03-02', driver_number: 'DRV-001', driver_name: 'James Tremblay' },
-    { id: 4, trip_number: 'TRP-8844', date: '2025-03-02', driver_number: 'DRV-005', driver_name: 'Ahmed Mansouri' },
-    { id: 5, trip_number: 'TRP-8845', date: '2025-03-03', driver_number: 'DRV-009', driver_name: 'Lucas Bergeron' },
-    { id: 6, trip_number: 'TRP-8846', date: '2025-03-03', driver_number: 'DRV-002', driver_name: 'Marie Bouchard' },
-    { id: 7, trip_number: 'TRP-8847', date: '2025-03-04', driver_number: 'DRV-010', driver_name: 'Fatima El-Hassan' },
-    { id: 8, trip_number: 'TRP-8848', date: '2025-03-04', driver_number: 'DRV-006', driver_name: 'Chantal Gagnon' },
-    { id: 9, trip_number: 'TRP-8849', date: '2025-03-05', driver_number: 'DRV-004', driver_name: 'Sylvie Lapointe' },
-    { id: 10, trip_number: 'TRP-8850', date: '2025-03-05', driver_number: 'DRV-008', driver_name: 'Priya Nair' },
-];
-
 const LoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
         <CircularProgress size={20} />
@@ -79,7 +53,7 @@ const TripCard = ({ trip, selected, onClick }) => (
     >
         <Box sx={{ px: 1, py: 0.4, borderRadius: '6px', bgcolor: selected ? 'primary.main' : 'grey.200', minWidth: 90, textAlign: 'center', }}>
             <Typography sx={{ fontSize: 12, fontWeight: 700, color: selected ? '#fff' : 'text.primary' }}>
-                {trip.trip_number}
+                # {trip.trip_number}
             </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
@@ -110,16 +84,13 @@ const TripCard = ({ trip, selected, onClick }) => (
     </Box>
 );
 
-export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderIds }) {
-
-    console.log(orderIds);
+export default function TripForm({ createTrip, addOrdersToTrip, orderIds, setSelectedOrders }) {
 
     const [mode, setMode] = useState('existing');
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [tripSearch, setTripSearch] = useState('');
-
-    console.log(selectedDriver);
+    const [submitted, setSubmitted] = useState(false)
 
     const handleModeChange = (_, val) => {
         if (val === 'new') {
@@ -131,22 +102,22 @@ export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderId
         setMode(val)
     };
 
-    const { data: trips, isLoading } = useDriverTrips({ enabled });
-
+    const { data: trips, isLoading } = useDriverTrips({ enabled: true });
     const { data: drivers, isLoading: isDriverLoading } = useDrivers({ enabled: mode === 'new' ? true : false })
 
     const filteredTrips = (trips || []).filter((t) => {
         const q = tripSearch.toLowerCase();
         return (
-            t.trip_number.toLowerCase().includes(q) ||
-            t.driver_number.toLowerCase().includes(q) ||
-            t.driver_name.toLowerCase().includes(q) ||
-            t.trip_date.includes(q)
+            String(t.trip_number)?.includes(q) ||
+            String(t.driver_number)?.toLowerCase()?.includes(q) ||
+            String(t.driver_name)?.toLowerCase()?.includes(q) ||
+            String(t.trip_date)?.includes(q)
         );
     });
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setSubmitted(true)
         try {
             let payload = {}
             if (mode === 'new') {
@@ -173,6 +144,15 @@ export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderId
         catch (err) {
             //
         }
+        finally {
+            setSubmitted(false)
+        }
+    }
+
+    const reset = () => {
+        setSelectedDriver(null)
+        setSelectedTrip(null)
+        setSelectedOrders(new Map())
     }
 
     return (
@@ -308,17 +288,20 @@ export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderId
                                         value={selectedDriver}
                                         onChange={(_, val) => setSelectedDriver(val)}
                                         getOptionLabel={(o) => `${o.fname} ${o.lname} — ${o.driver_number}`}
-                                        renderOption={(props, option) => (
-                                            <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: '10px !important' }}>
-                                                <Avatar sx={{ width: 32, height: 32, bgcolor: avatarColor(), fontSize: 12, fontWeight: 700 }}>
-                                                    {initials(`${option.fname} ${option.lname}`)}
-                                                </Avatar>
-                                                <Box>
-                                                    <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{`${option.fname} ${option.lname}`}</Typography>
-                                                    <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{option.driver_number}</Typography>
+                                        renderOption={(props, option) => {
+                                            const { key, ...restProps } = props;
+                                            return (
+                                                <Box key={key} component="li" {...restProps} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: '10px !important' }}>
+                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: avatarColor(), fontSize: 12, fontWeight: 700 }}>
+                                                        {initials(`${option.fname} ${option.lname}`)}
+                                                    </Avatar>
+                                                    <Box>
+                                                        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{`${option.fname} ${option.lname}`}</Typography>
+                                                        <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{option.driver_number}</Typography>
+                                                    </Box>
                                                 </Box>
-                                            </Box>
-                                        )}
+                                            );
+                                        }}
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
@@ -388,7 +371,7 @@ export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderId
                             color='secondary'
                             size='small'
                             textTransform='capitalize'
-                        // isLoading={loading}
+                            isLoading={submitted}
                         >
                             Submit
                         </SubmitButton>
@@ -398,9 +381,9 @@ export default function TripForm({ createTrip, addOrdersToTrip, enabled, orderId
                             variant='outlined'
                             color='error'
                             size='small'
-                            // disabled={loading}
+                            disabled={submitted}
                             textTransform='capitalize'
-                        // onClick={() => reset()}
+                            onClick={() => reset()}
                         >
                             Reset
                         </StyledButton>

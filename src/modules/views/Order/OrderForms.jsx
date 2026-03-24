@@ -31,7 +31,11 @@ function OrderForm(props) {
   const { initialValues, submit, editMode } = props
   const [showAll, setShowAll] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
-  const engine = React.useRef(new OrderEngine(enqueueSnackbar, initialValues.create_date)).current
+  const engineRef = React.useRef(null)
+  if (!engineRef.current) {
+    engineRef.current = new OrderEngine(enqueueSnackbar, initialValues.create_date)
+  }
+  const engine = engineRef.current
   const calculationRef = React.useRef(null)
   const accessorialRef = React.useRef(null)
   const shipperSelectValue = React.useRef(null)

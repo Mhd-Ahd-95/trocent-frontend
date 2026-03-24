@@ -16,7 +16,9 @@ export default class OrderEngine {
         this.custRateSheet = []
         this.fuelSurchargeByDate = null
         this.fuelSurchargePromise = null
-        this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).format('YYYY-MM-DD'))
+        if (!this.fuelSurchargePromise) {
+            this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).format('YYYY-MM-DD'))
+        }
     }
 
     set customerRateSheets(cr) { this.custRateSheet = cr }
@@ -617,7 +619,7 @@ export default class OrderEngine {
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
-
+            console.log(res);
             if (res.data.data) {
                 this.fuelSurchargeByDate = res.data.data
             }

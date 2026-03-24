@@ -4,6 +4,7 @@ import { LocalShipping } from '@mui/icons-material';
 import { Virtuoso } from 'react-virtuoso';
 import TripRow from './TripRow';
 
+
 const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -51,26 +52,30 @@ const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
     );
   }
 
+
+
   return (
-    <Box
-      sx={{
-        minHeight: 400, overflowX: 'auto',
-        '&::-webkit-scrollbar': { height: 8, },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 4, },
-      }}
-    >
-      <Box sx={{ minWidth: 1200 }}>
-        {filteredTrips.map((trip, index) => (
-          <TripRow
-            key={index}
-            trip={trip}
-            tripAction={tripAction}
-            isInterliner={isInterliner}
-            isToday={trip.trip_date === today}
-          />
-        ))}
+    <>
+      <Box
+        sx={{
+          minHeight: 400, overflowX: 'auto',
+          '&::-webkit-scrollbar': { height: 8, },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 4, },
+        }}
+      >
+        <Box sx={{ minWidth: 1200 }}>
+          {filteredTrips.map((trip, index) => (
+            <TripRow
+              key={index}
+              trip={trip}
+              tripAction={tripAction}
+              isInterliner={isInterliner}
+              isToday={trip.trip_date === today}
+            />
+          ))}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

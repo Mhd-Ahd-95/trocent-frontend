@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { Business, PersonOutline, CheckCircle } from '@mui/icons-material';
-import { FilterBar, TripsList, Tabs } from '../../components';
+import { FilterBar, TripsList, Tabs, Modal, ConfirmModal } from '../../components';
 import { useInterlinerTrips, useCompletedTrips, useDriverTrips } from '../../hooks/useDispatchOrders';
 import CompletedTripsList from './CompletedTripList';
 
@@ -12,7 +12,7 @@ const TabLoadingState = ({ textLoading }) => (
     </Box>
 );
 
-const DriverTabContent = React.memo(({ enabled }) => {
+const DriverTabContent = React.memo(({ enabled, tripAction }) => {
 
     const { data: trips, isLoading } = useDriverTrips({ enabled });
     const [filters, setFilters] = useState({});
@@ -29,7 +29,7 @@ const DriverTabContent = React.memo(({ enabled }) => {
                 />
             </Box>
             <Box sx={{ p: 2 }}>
-                <TripsList trips={trips ?? []} filters={filters} />
+                <TripsList trips={trips ?? []} filters={filters} tripAction={tripAction} />
             </Box>
         </>
     );
@@ -107,7 +107,6 @@ export default function TripTabs({ tripAction }) {
     const [activatedTabs, setActivatedTabs] = useState(() => new Set([0]));
 
     const handleTabChange = useCallback((tabIndex) => {
-        console.log(tabIndex);
         setActivatedTabs((prev) => {
             if (prev.has(tabIndex)) return prev;
             const next = new Set(prev);

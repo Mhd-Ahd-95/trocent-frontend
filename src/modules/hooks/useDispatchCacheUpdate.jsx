@@ -57,9 +57,7 @@ export function useDispatchCacheUpdate() {
             }
         }
 
-        const allUndispatchedEntries = queryClient.getQueriesData({
-            queryKey: ['dispatch', 'undispatched'],
-        });
+        const allUndispatchedEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
 
         if (allUndispatchedEntries.length > 0) {
             allUndispatchedEntries.forEach(([key, cachedPage]) => {

@@ -160,9 +160,7 @@ function UndispatchedOrders(props) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [selectedRows, setSelectedRows] = useState(new Map());
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [dispatchOrder, setDispatchOrder] = React.useState({})
-
-  console.log(Array.from(selectedRows.keys()));
+  const dispatchOrderRef = React.useRef(null)
 
   const { createTrip, addOrdersToTrip } = useDispatchOrderMutation()
 
@@ -193,7 +191,7 @@ function UndispatchedOrders(props) {
   }, []);
 
   const handleNote = (row) => {
-    setDispatchOrder(row)
+    dispatchOrderRef.current = row
     setOpenDrawer(2)
   }
 
@@ -201,7 +199,7 @@ function UndispatchedOrders(props) {
 
   React.useImperativeHandle(tripAction, () => ({
     addNote: handleNote
-  }), [dispatchOrder])
+  }), [dispatchOrderRef.current])
 
   return (
     <Paper id="undispatched-section" elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
@@ -260,17 +258,24 @@ function UndispatchedOrders(props) {
         <DrawerForm title="Create or Select Trip" setOpen={setOpenDrawer} open={openDrawer}>
           <TripForm
             enabled={true}
-            createTrip={async (payload) => await createTrip.mutateAsync({ payload })}
-            addOrdersToTrip={async (payload) => await addOrdersToTrip.mutateAsync({ id: payload.trip_id, payload })}
+            createTrip={async (payload) => {
+              await createTrip.mutateAsync({ payload })
+              setOpenDrawer(false)
+            }}
+            addOrdersToTrip={async (payload) => {
+              await addOrdersToTrip.mutateAsync({ id: payload.trip_id, payload: payload.dispatch_orders })
+              setOpenDrawer(false)
+            }}
             orderIds={Array.from(selectedRows.keys())}
+            setSelectedOrders={setSelectedRows}
           />
         </DrawerForm>
       )}
 
       {openDrawer === 2 && (
-        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrder.order_number} />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrderRef.current.order_number} />} setOpen={setOpenDrawer} open={openDrawer}>
           <OrderNoteForm
-            order={dispatchOrder}
+            order={dispatchOrderRef.current}
             onClose={() => setOpenDrawer(false)}
           />
         </DrawerForm>
