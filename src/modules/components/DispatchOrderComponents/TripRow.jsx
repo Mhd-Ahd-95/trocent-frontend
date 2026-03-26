@@ -7,7 +7,7 @@ import { ConfirmModal, Modal } from '..';
 import moment from 'moment';
 import { useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 
-const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder }) => {
+const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner }) => {
 
   const [showFreight, setShowFreight] = useState(false);
 
@@ -147,18 +147,20 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder }) =>
         <Divider orientation="vertical" flexItem />
         <Grid size={0.4}>
           <Stack direction="column" spacing={0.5} sx={{ height: '100%', justifyContent: 'center' }}>
-            <Tooltip title='Undispatch Order'>
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUndispatchedOrder(order)
-                }}
-                sx={{ '&:hover': { bgcolor: 'error.50' } }}
-              >
-                <LocalShippingOutlined fontSize="small" color="error" />
-              </IconButton>
-            </Tooltip>
+            {!isInterliner &&
+              <Tooltip title='Undispatch Order'>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUndispatchedOrder(order)
+                  }}
+                  sx={{ '&:hover': { bgcolor: 'error.50' } }}
+                >
+                  <LocalShippingOutlined fontSize="small" color="error" />
+                </IconButton>
+              </Tooltip>
+            }
             <Tooltip title='Add Note'>
               <IconButton
                 size="small"
@@ -358,6 +360,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
                   actionTrip={tripAction}
                   handleUndispatchedOrder={handleUndispatchedOrder}
                   key={order.id}
+                  isInterliner={isInterliner}
                   order={order}
                   idx={idx}
                 />
@@ -379,7 +382,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
             subtitle='Are you sure you want to continue?'
             handleClose={() => setOpenModal(false)}
             handleSubmit={async () => {
-              await undispatchOrder.mutateAsync({id: trip.id, oid: dispatchedOrderRef.current.id})
+              await undispatchOrder.mutateAsync({ id: trip.id, oid: dispatchedOrderRef.current.id })
               dispatchedOrderRef.current = null
               setOpenModal(false)
             }}

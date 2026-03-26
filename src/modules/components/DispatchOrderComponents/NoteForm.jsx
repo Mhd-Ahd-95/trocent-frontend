@@ -95,7 +95,6 @@ export default function OrderNoteForm({ order, onClose }) {
 
     const handleSave = () => {
         setSubmitted(true);
-        console.log(note);
     };
 
     return (

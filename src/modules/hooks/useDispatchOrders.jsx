@@ -65,14 +65,24 @@ export function useCompletedTrips(filters = {}, page = 1, perPage = 50, { enable
     });
 }
 
+const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
+    if (!cachedTrips) return updatedTrips;
+    const updatedMap = new Map(updatedTrips.map(t => [t.id, t]));
+    const existingIds = new Set(cachedTrips.map(t => t.id));
+    const merged = cachedTrips.map(t => updatedMap.has(t.id) ? updatedMap.get(t.id) : t);
+    const newTrips = updatedTrips.filter(t => !existingIds.has(t.id));
+    return [...newTrips, ...merged];
+};
+
 const updateDispatchOrdersCache = (queryClient, trip, created = false, oids = []) => {
     const key = dispatchKeys.trips('driver');
     const allUndispatchedEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+    const cachedTrips = queryClient.getQueryData(key)
     if (created) {
-        queryClient.setQueryData(key, (old = []) => ([trip, ...old]));
+        queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
     }
     else {
-        queryClient.setQueryData(key, (old = []) => old.map(t => Number(t.id) === Number(trip.id)) ? trip : t);
+        queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
     }
     allUndispatchedEntries.forEach(([key, cachedPage]) => {
         if (!cachedPage) return;
@@ -133,13 +143,13 @@ export function useDispatchOrderMutation() {
             return res.data
         },
         onSuccess: (updated) => {
-            console.log(updated);
             if (updated) {
-                const { trips, undispatched_orders } = updated
-                const orderId = undispatched_orders?.length > 0 ? undispatched_orders[0].order_id : 0
+                const { trip, undispatch_order } = updated
+                const orderId = undispatch_order ? undispatch_order.order_id : null
                 const order = { id: orderId, order_status: 'Entered' }
                 const hasCachedOrderList = queryClient.getQueriesData({ queryKey: 'orders' })
                 if (orderId) {
+                    updateDispatchCache({ order, trips: [trip], undispatchedOrders: [undispatch_order] });
                     if (hasCachedOrderList.length > 0) {
                         hasCachedOrderList.forEach(([key, old]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
@@ -150,7 +160,11 @@ export function useDispatchOrderMutation() {
                     }
                     else queryClient.invalidateQueries({ queryKey: ['orders'] })
                 }
-                updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders });
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
+                    queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] })
+                    queryClient.invalidateQueries({ queryKey: ['orders'] })
+                }
             }
             enqueueSnackbar('Order has been successfully undispatched', { variant: 'success' })
         },

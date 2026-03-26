@@ -619,7 +619,6 @@ export default class OrderEngine {
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
-            console.log(res);
             if (res.data.data) {
                 this.fuelSurchargeByDate = res.data.data
             }

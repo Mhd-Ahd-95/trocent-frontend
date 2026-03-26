@@ -56,7 +56,6 @@ export function useDriverMutation() {
             return res.data;
         },
         onSuccess: (updated) => {
-            console.log(updated);
             queryClient.setQueryData(['drivers'], (old = []) =>
                 old.map((item) => item.id === Number(updated.id) ? updated : item)
             );

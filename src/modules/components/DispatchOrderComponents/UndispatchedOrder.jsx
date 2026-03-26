@@ -260,10 +260,12 @@ function UndispatchedOrders(props) {
             enabled={true}
             createTrip={async (payload) => {
               await createTrip.mutateAsync({ payload })
+              setSelectedRows(new Map())
               setOpenDrawer(false)
             }}
             addOrdersToTrip={async (payload) => {
               await addOrdersToTrip.mutateAsync({ id: payload.trip_id, payload: payload.dispatch_orders })
+              setSelectedRows(new Map())
               setOpenDrawer(false)
             }}
             orderIds={Array.from(selectedRows.keys())}

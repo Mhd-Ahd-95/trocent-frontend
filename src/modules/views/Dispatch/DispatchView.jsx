@@ -23,14 +23,14 @@ export default function TripManagement() {
         </Grid>
 
         <Grid size={12}>
-          <TripTabs 
+          <TripTabs
             tripAction={tripAction}
           />
         </Grid>
 
         <Grid size={12}>
           <React.Suspense fallback={<Grid container justifyContent={'center'} py={15} sx={{ width: '100%' }}><Skeleton variant='rectangular' width='100%' height={400} /></Grid>}>
-            <UndispatchedOrders 
+            <UndispatchedOrders
               tripAction={tripAction}
             />
           </React.Suspense>

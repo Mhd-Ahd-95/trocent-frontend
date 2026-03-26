@@ -8,7 +8,6 @@ export function useOrderPagination(page = 1, pageSize = 50) {
         queryKey: ['orders', page, pageSize],
         queryFn: async () => {
             const res = await OrderApi.getOrders({ page, pageSize });
-            console.log(res);
             return res.data;
         },
         keepPreviousData: true,
@@ -102,7 +101,6 @@ export function useOrderMutations() {
             console.log(response);
             const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
             if (cachedList.length > 0) {
-                console.log(cachedList);
                 cachedList.forEach(([key, old]) => {
                     queryClient.setQueryData(key, (prev = {}) => ({
                         ...prev,
@@ -114,7 +112,7 @@ export function useOrderMutations() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['orders']})
             }
-            updateDispatchCache({ trips: trips, undispatchedOrders: undispatched_orders, });
+            updateDispatchCache({order, trips: trips, undispatchedOrders: undispatched_orders, });
             enqueueSnackbar('Order has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -157,10 +155,11 @@ export function useOrderMutations() {
                 return res.data;
             },
             onSuccess: (response) => {
+                console.log(response);
                 const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
                 const { order, trips, undispatched_orders } = response
                 if (order) {
-                    const orderUpdated = updateOrders(order)
+                    const orderUpdated = order
                     if (cachedList.length > 0) {
                         cachedList.forEach(([key, old]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
@@ -172,7 +171,7 @@ export function useOrderMutations() {
                     else {
                         queryClient.invalidateQueries({ queryKey: ['orders']})
                     }
-                    queryClient.setQueryData(['order', Number(order.id)], order)
+                    queryClient.invalidateQueries(['order', Number(order.id)])
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
                 updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });

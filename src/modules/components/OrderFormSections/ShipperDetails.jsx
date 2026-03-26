@@ -493,7 +493,6 @@ function ShipperDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  console.log(value);
                   patch.mutate({ id: selectedShipper?.id, payload: { [key]: value } })
                 }
               }}

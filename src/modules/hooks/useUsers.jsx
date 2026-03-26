@@ -74,7 +74,6 @@ export function useUserMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                console.log(updated);
                 queryClient.setQueryData(['users'], (old = []) =>
                     old.map((item) => item.id === Number(updated.id) ? updated : item)
                 );

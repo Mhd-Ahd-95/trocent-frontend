@@ -44,7 +44,6 @@ function ReceiverDetails(props) {
   }, [isError, error, enqueueSnackbar])
 
   const handleSelect = (value) => {
-    console.log(value);
     unstable_batchedUpdates(() => {
       selectedValue.current = value
       setValue('receiver_name', value?.name || '')
