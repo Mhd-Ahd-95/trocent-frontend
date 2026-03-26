@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip } from '@mui/material';
-import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, } from '@mui/icons-material';
+import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Fade, Collapse } from '@mui/material';
+import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, CheckCircle, ExpandMoreRounded, ReceiptLongRounded, TagRounded } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom'
 import { ConfirmModal, Modal } from '..';
@@ -144,8 +144,10 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
             </Tooltip>
           </>}
         </Grid>
+        {/* <Grid size={0.1}> */}
         <Divider orientation="vertical" flexItem />
-        <Grid size={0.4}>
+        {/* </Grid> */}
+        <Grid size={0.3}>
           <Stack direction="column" spacing={0.5} sx={{ height: '100%', justifyContent: 'center' }}>
             {!isInterliner &&
               <Tooltip title='Undispatch Order'>
@@ -166,7 +168,6 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 size="small"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('Add note:', order.id);
                   actionTrip?.current?.addNote(order)
                 }}
                 sx={{ '&:hover': { bgcolor: 'warning.50' } }}
@@ -225,12 +226,16 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
   const firstOrder = trip?.dispatched_orders[0] ?? [];
   const dispatchedOrderRef = React.useRef(null)
   const [openModal, setOpenModal] = React.useState(false)
+  const [showCompleted, setShowCompleted] = React.useState(false)
+
   const { undispatchOrder } = useDispatchOrderMutation()
 
   const handleUndispatchedOrder = (order) => {
     dispatchedOrderRef.current = order
     setOpenModal(true)
   }
+
+  const theme = useTheme()
 
   return (
     <>
@@ -240,15 +245,8 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
           onClick={() => setExpanded(!expanded)}
           elevation={0}
           sx={{
-            overflow: 'hidden',
-            border: '1.5px solid',
-            borderColor: expanded ? 'primary.main' : 'divider',
-            borderRadius: 2,
-            overflowX: 'auto',
-            bgcolor: isToday ? 'primary.outlineHover' : 'background.paper',
-            '&:hover': { borderColor: 'primary.main', boxShadow: 2 },
-            '&:before': { display: 'none' },
-            '&.Mui-expanded': { margin: 0 },
+            overflow: 'hidden', border: '1.5px solid', borderColor: expanded ? 'primary.main' : 'divider', borderRadius: 2, overflowX: 'auto',
+            bgcolor: isToday ? alpha(theme.palette.primary.main, 0.09) : 'background.paper', '&:hover': { borderColor: 'primary.main', boxShadow: 2 }, '&:before': { display: 'none' }, '&.Mui-expanded': { margin: 0 },
           }}
         >
           <Box
@@ -257,7 +255,12 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
             <Grid container spacing={2} alignItems="center" sx={{ width: '100%' }}>
               <Grid size={{ xs: 1.5 }} sx={{ display: 'flex', alignItems: 'center', }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <LocalShipping color="primary" sx={{ fontSize: 20 }} />
+                  <Box sx={{
+                    width: 36, height: 36, borderRadius: '10px', background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.4)}`, flexShrink: 0,
+                  }}>
+                    <LocalShipping sx={{ fontSize: 18, color: '#fff' }} />
+                  </Box>
                   <Box>
                     <Typography variant="h6" fontWeight="bold">
                       # {trip.trip_number}
@@ -277,18 +280,19 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
                 </Stack>
               </Grid>
 
-              <Grid size={{ xs: 1 }} sx={{}}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   {isInterliner ? (<Business sx={{ fontSize: 14 }} />) : (<PersonOutline sx={{ fontSize: 14 }} />)}
                   {isInterliner ? 'Interliner' : 'Driver'}
                 </Typography>
-                <Typography variant="body2" fontWeight="600">
+                <Typography variant="body2" fontWeight="600" >
                   {isInterliner ? trip.interliner_name : trip.driver_name}
                 </Typography>
               </Grid>
 
               <Grid size={{ xs: 1 }} sx={{}}>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <TagRounded sx={{ fontSize: 14 }} />
                   Order
                 </Typography>
                 <Typography variant="body2" fontWeight="600">
@@ -336,7 +340,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
                 <Grid container spacing={1} alignItems={'center'}>
                   <Grid size={7}>
                     <Typography variant="caption" color="text.secondary">
-                      Orders
+                      ORDERS
                     </Typography>
                     <Typography variant="h6" fontWeight="bold" color="primary.main">
                       {trip.total_orders_completed} / {trip.total_orders}
@@ -366,6 +370,36 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
                 />
               ))}
             </Stack>
+            {trip.total_orders_completed > 0 && (
+              <Box sx={{ mt: 1.5 }}>
+                <Box
+                  onClick={(e) => { e.stopPropagation(); setShowCompleted((p) => !p); }}
+                  sx={{
+                    display: 'inline-flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.5, borderRadius: '8px', cursor: 'pointer', border: '1px dashed',
+                    borderColor: alpha('#000', 0.1), color: 'text.secondary', fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
+                    '&:hover': { borderColor: theme.palette.primary.main, color: theme.palette.primary.main, bgcolor: alpha(theme.palette.primary.main, 0.05), },
+                  }}
+                >
+                  <CheckCircle sx={{ fontSize: 13 }} />
+                  {showCompleted ? 'Hide' : 'Show'} Completed Orders
+                  <ExpandMoreRounded sx={{ fontSize: 15, transition: 'transform 0.2s', transform: showCompleted ? 'rotate(180deg)' : 'rotate(0deg)', }} />
+                </Box>
+
+                <Collapse in={showCompleted} timeout="auto">
+                  <Stack spacing={1} sx={{ mt: 1.5 }}>
+                    {(trip?.dispatched_orders || []).map((order) => (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        actionTrip={tripAction}
+                        handleUndispatchedOrder={handleUndispatchedOrder}
+                        isInterliner={isInterliner}
+                      />
+                    ))}
+                  </Stack>
+                </Collapse>
+              </Box>
+            )}
           </AccordionDetails>
         </Accordion>
       </Box>

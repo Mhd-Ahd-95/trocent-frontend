@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Chip, Link, TableRow, TableCell, Divider, Tooltip } from '@mui/material';
+import { Typography, Chip, Link, TableRow, TableCell, Divider, Tooltip, alpha } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom'
 import OrderActionsMenu from './OrderActionMenu';
 import moment from 'moment';
@@ -15,12 +15,12 @@ const cellSx = {
 
 const getServiceColor = (type) => ({ Direct: 'info', Rush: 'warning', Regular: 'secondary' }[type] || 'default');
 
-const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote }) => (
+const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote, theme }) => (
     <>
         <TableRow
             onClick={() => onRowClick(row)}
             sx={{
-                bgcolor: isSelected ? 'primary.light' : isToday ? 'primary.outlineHover' : isEven ? '#fff' : 'grey.200',
+                bgcolor: isSelected ? 'primary.light' : isToday ? alpha(theme.palette.primary.main, 0.09) : isEven ? '#fff' : 'grey.200',
                 cursor: 'pointer',
                 outline: isSelected ? '2px solid' : 'none',
                 outlineColor: isSelected ? 'primary.main' : 'transparent',

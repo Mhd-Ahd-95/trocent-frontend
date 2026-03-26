@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { Business, PersonOutline, CheckCircle } from '@mui/icons-material';
-import { FilterBar, TripsList, Tabs, Modal, ConfirmModal } from '../../components';
+import { FilterBar, TripsList, Tabs } from '../../components';
 import { useInterlinerTrips, useCompletedTrips, useDriverTrips } from '../../hooks/useDispatchOrders';
 import CompletedTripsList from './CompletedTripList';
+import * as _ from 'lodash'
 
 const TabLoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
@@ -16,7 +17,9 @@ const DriverTabContent = React.memo(({ enabled, tripAction }) => {
 
     const { data: trips, isLoading } = useDriverTrips({ enabled });
     const [filters, setFilters] = useState({});
-    const handleFilterChange = useCallback((f) => setFilters(f), []);
+    const handleFilterChange = useCallback(_.debounce((f) => {
+        setFilters(f)
+    }, 500), [trips]);
 
     if (isLoading) return <TabLoadingState textLoading={'Loading Driver Trips...'} />;
 
@@ -39,7 +42,9 @@ const InterlinerTabContent = React.memo(({ enabled, tripAction }) => {
 
     const [filters, setFilters] = useState({});
     const { data: trips = [], isLoading } = useInterlinerTrips({ enabled });
-    const handleFilterChange = useCallback((f) => setFilters(f), []);
+    const handleFilterChange = useCallback(_.debounce((f) => {
+        setFilters(f)
+    }, 500), [trips]);
 
     if (isLoading) return <TabLoadingState textLoading={'Loading Interliner Trips...'} />;
 

@@ -98,7 +98,6 @@ export function useOrderMutations() {
         },
         onSuccess: (response) => {
             const { order, trips, undispatched_orders } = response
-            console.log(response);
             const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
             if (cachedList.length > 0) {
                 cachedList.forEach(([key, old]) => {
@@ -155,7 +154,6 @@ export function useOrderMutations() {
                 return res.data;
             },
             onSuccess: (response) => {
-                console.log(response);
                 const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
                 const { order, trips, undispatched_orders } = response
                 if (order) {

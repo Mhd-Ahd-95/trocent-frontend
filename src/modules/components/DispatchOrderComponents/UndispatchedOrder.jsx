@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, Stack } from '@mui/material';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, Stack, useTheme } from '@mui/material';
 import { Inventory2, AddRoad, NoteAdd } from '@mui/icons-material';
 import moment from 'moment';
 import OrderRow from './OrderRow';
@@ -71,6 +71,8 @@ const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, 
     });
   }, [onRowSelect]);
 
+  const theme = useTheme()
+
   if (!isLoading && orders.length === 0) {
     return (
       <Paper elevation={0} sx={{ p: 8, textAlign: 'center', border: 1, borderColor: 'divider' }}>
@@ -83,7 +85,7 @@ const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, 
   return (
     <Paper elevation={0} sx={{
       border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden',
-      opacity: isFetching && !isLoading ? 0.7 : 1,
+      opacity: isFetching && !isLoading ? 0.5 : 1,
       transition: 'opacity 0.15s ease',
     }}>
       <Box sx={{ overflowX: 'auto' }}>
@@ -126,6 +128,7 @@ const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, 
                   key={row.id}
                   row={row}
                   onAddNote={onAddNote}
+                  theme={theme}
                   isEven={idx % 2 === 0}
                   isToday={moment(row.order_date).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')}
                   isSelected={selectedRows.has(row.id)}
@@ -170,7 +173,14 @@ function UndispatchedOrders(props) {
   const total = data?.meta?.total ?? 0;
 
   const handleSearch = useCallback((searchFilters) => {
-    setAppliedFilters(searchFilters);
+    const formatted = { ...searchFilters }
+    if (formatted.pickupDate) {
+      formatted.pickupDate = moment(formatted.pickupDate).format('YYYY-MM-DD 00:00:00');
+    }
+    if (formatted.deliveryDate) {
+      formatted.deliveryDate = moment(formatted.deliveryDate).format('YYYY-MM-DD 23:59:59');
+    }
+    setAppliedFilters(formatted);
     setPage(0);
   }, []);
 
@@ -233,12 +243,12 @@ function UndispatchedOrders(props) {
       </Box>
 
       <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
-        <FilterBar onSearch={handleSearch} showSearchButton defaultExpanded={false} />
+        <FilterBar onSearch={handleSearch} showSearchButton defaultExpanded={false} placeholderSearch='Order #, Shipper, Receiver...' />
       </Box>
 
       <Box sx={{ p: 2 }}>
         <UndispatchedOrdersTable
-          orders={orders}
+          orders={orders.sort((a, b) => b.order_number - a.order_number)}
           total={total}
           page={page}
           rowsPerPage={rowsPerPage}
