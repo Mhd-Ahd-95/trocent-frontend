@@ -12,7 +12,7 @@ const createTrip = (payload) => CustomAxios.post('/api/trips', payload)
 
 const addOrdersToTrip = (tid, payload) => CustomAxios.put(`/api/trips/${tid}`, payload)
 
-const updateTrip = (tid, payload) => CustomAxios.put(`/api/trips/update/${tid}`, payload)
+const updateTrip = (tid, payload) => CustomAxios.put(`/api/trips/update/${tid}/trip`, payload)
 
 const removeOrderFromTrip = (tid, oid) => CustomAxios.put(`/api/trips/${tid}/undispatch-order/${oid}`)
 

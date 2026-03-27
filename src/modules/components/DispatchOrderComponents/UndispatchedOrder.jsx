@@ -9,7 +9,7 @@ import TripForm from './TripForm';
 import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/useDispatchOrders';
 import OrderNoteForm from './NoteForm';
 
-const CustomTitle = React.memo(({ order_number }) => (
+export const CustomTitle = React.memo(({ order_number }) => (
   <Stack direction="row" alignItems="center" spacing={1.5}>
     <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}      >
       <NoteAdd sx={{ fontSize: 18, color: '#fff' }} />

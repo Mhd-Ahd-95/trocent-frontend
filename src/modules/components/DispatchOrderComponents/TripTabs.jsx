@@ -5,6 +5,7 @@ import { FilterBar, TripsList, Tabs } from '../../components';
 import { useInterlinerTrips, useCompletedTrips, useDriverTrips } from '../../hooks/useDispatchOrders';
 import CompletedTripsList from './CompletedTripList';
 import * as _ from 'lodash'
+import moment from 'moment';
 
 const TabLoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
@@ -51,7 +52,7 @@ const InterlinerTabContent = React.memo(({ enabled, tripAction }) => {
     return (
         <>
             <Box sx={{ bgcolor: 'grey.50' }}>
-                <FilterBar onFilterChange={handleFilterChange} defaultExpanded={false} />
+                <FilterBar onFilterChange={handleFilterChange} defaultExpanded={false} placeholderSearch={'Order #, Trip #, Interliner...'} />
             </Box>
             <Box sx={{ p: 2 }}>
                 <TripsList trips={trips} filters={filters} isInterliner tripAction={tripAction} />
@@ -71,8 +72,15 @@ const CompletedTabContent = React.memo(({ enabled }) => {
     const trips = data?.data ?? [];
     const total = data?.meta?.total ?? 0;
 
-    const handleSearch = useCallback((sf) => {
-        setAppliedFilters(sf);
+    const handleSearch = useCallback((searchFilters) => {
+        const formatted = { ...searchFilters }
+        if (formatted.pickupDate) {
+            formatted.pickupDate = moment(formatted.pickupDate).format('YYYY-MM-DD 00:00:00');
+        }
+        if (formatted.deliveryDate) {
+            formatted.deliveryDate = moment(formatted.deliveryDate).format('YYYY-MM-DD 23:59:59');
+        }
+        setAppliedFilters(formatted);
         setPage(0);
     }, []);
 
@@ -90,7 +98,7 @@ const CompletedTabContent = React.memo(({ enabled }) => {
     return (
         <>
             <Box sx={{ bgcolor: 'grey.50' }}>
-                <FilterBar onSearch={handleSearch} defaultExpanded={false} showSearchButton />
+                <FilterBar onSearch={handleSearch} defaultExpanded={false} showSearchButton placeholderSearch={'Driver #, Order #, Trip #, Interliner...'} ftDate />
             </Box>
             <Box sx={{ p: 2 }}>
                 <CompletedTripsList

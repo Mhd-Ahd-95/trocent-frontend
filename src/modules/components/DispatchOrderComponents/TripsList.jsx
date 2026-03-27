@@ -15,6 +15,7 @@ const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
       filtered = filtered.filter((trip) =>
         String(trip.trip_number).includes(search) ||
         trip.driver_name?.toLowerCase().includes(search) ||
+        trip.interliner_name?.toLowerCase().includes(search) ||
         trip.dispatched_orders.some((order) => String(order.order_number).toLowerCase().includes(search))
       );
     }

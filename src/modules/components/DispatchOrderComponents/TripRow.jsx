@@ -3,9 +3,34 @@ import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, Ac
 import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, CheckCircle, ExpandMoreRounded, ReceiptLongRounded, TagRounded } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom'
-import { ConfirmModal, Modal } from '..';
+import { ConfirmModal, DrawerForm, Modal } from '..';
 import moment from 'moment';
 import { useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
+import UpdateTripForm from './UpdateTripForm'
+
+export const CustomTitle = React.memo(({ trip_number }) => (
+  <Stack direction="row" alignItems="center" spacing={1.5}>
+    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}      >
+      <LocalShipping sx={{ fontSize: 18, color: '#fff' }} />
+    </Box>
+    <Box>
+      <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
+        Update Trip
+      </Typography>
+      <Stack direction="row" alignItems="center" spacing={0.5}>
+        <Typography variant="caption" color="text.secondary">
+          Trip
+        </Typography>
+        <Typography variant="caption" fontWeight={700}
+          sx={{ color: 'primary.main', bgcolor: 'primary.outlineHover', px: 0.75, py: 0.1, borderRadius: 1, fontFamily: 'monospace', fontSize: 12, }}
+        >
+          # {trip_number}
+        </Typography>
+      </Stack>
+    </Box>
+  </Stack>
+))
+
 
 const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner }) => {
 
@@ -220,15 +245,17 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
   );
 });
 
-const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
+const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
 
   const [expanded, setExpanded] = useState(false);
   const firstOrder = trip?.dispatched_orders[0] ?? [];
   const dispatchedOrderRef = React.useRef(null)
   const [openModal, setOpenModal] = React.useState(false)
   const [showCompleted, setShowCompleted] = React.useState(false)
+  const [openDrawer, setOpenDrawer] = React.useState(false)
+  const tripRef = React.useRef()
 
-  const { undispatchOrder } = useDispatchOrderMutation()
+  const { undispatchOrder, updateTrip } = useDispatchOrderMutation()
 
   const handleUndispatchedOrder = (order) => {
     dispatchedOrderRef.current = order
@@ -348,7 +375,10 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
                   </Grid>
                   <Grid size={5}>
                     <TripActionsBar
-                      onUpdateStatus={() => console.log('Update status:', trip.id)}
+                      onUpdateStatus={() => {
+                        tripRef.current = trip
+                        setOpenDrawer(1)
+                      }}
                       onShowTimeline={() => console.log('Show timeline:', trip.id)}
                     />
                   </Grid>
@@ -359,7 +389,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
 
           <AccordionDetails sx={{ bgcolor: 'grey.50', borderTop: 1, borderColor: 'divider', p: 1 }}>
             <Stack spacing={1.5}>
-              {(trip?.dispatched_orders || []).map((order, idx) => (
+              {(trip?.dispatched_orders || []).sort((a, b) => a.order_level - b.order_level).map((order, idx) => (
                 <OrderCard
                   actionTrip={tripAction}
                   handleUndispatchedOrder={handleUndispatchedOrder}
@@ -370,7 +400,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
                 />
               ))}
             </Stack>
-            {trip.total_orders_completed > 0 && (
+            {!isCompleted && trip.total_orders_completed > 0 && (
               <Box sx={{ mt: 1.5 }}>
                 <Box
                   onClick={(e) => { e.stopPropagation(); setShowCompleted((p) => !p); }}
@@ -423,6 +453,17 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction }) => {
           />
         </Modal>
       }
+      {openDrawer === 1 && (
+        <DrawerForm customTitle={<CustomTitle trip_number={trip.trip_number} />} setOpen={setOpenDrawer} open={openDrawer}>
+          <UpdateTripForm
+            // order={dispatchOrderRef.current}
+            updateTrip={(async (payload) => await updateTrip.mutateAsync({trip_id: payload.trip_id, payload: payload.payload}))}
+            isInterliner={Boolean(isInterliner)}
+            tripData={trip}
+            onClose={() => setOpenDrawer(false)}
+          />
+        </DrawerForm>
+      )}
     </>
   );
 };

@@ -29,7 +29,7 @@ const MiniChip = ({ label, color }) => (
   </Box>
 );
 
-const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true, placeholderSearch}) => {
+const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true, placeholderSearch, ftDate}) => {
 
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -39,8 +39,10 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
   const paperBg = theme.palette.background.paper;
   const defaultBg = theme.palette.background.default;
 
+  const quickFilter = ftDate ? [{ value: 'yesterday', label: 'YESTERDAY' }, { value: 'today', label: 'TODAY' }] : [{ value: 'today', label: 'TODAY' }, { value: 'tomorrow', label: 'TOMORROW' }]
+
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [filters, setFilters] = useState({ pickupDate: null, deliveryDate: null, searchInput: '', quickFilter: null, terminal: null, });
+  const [filters, setFilters] = useState({ pickupDate: null, deliveryDate: null, searchInput: '', quickFilter: null, terminal: null, tripType: null});
 
   const handleFilterChange = useCallback(
     (key, value) => {
@@ -152,7 +154,7 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
             <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {filters.quickFilter && (
                 <MiniChip
-                  label={filters.quickFilter === 'today' ? 'Today' : 'Tomorrow'}
+                  label={filters.quickFilter === 'today' ? 'Today' : filters.quickFilter === 'yesterday' ? 'YESTERDAY' : 'Tomorrow'}
                   color={primary}
                 />
               )}
@@ -160,6 +162,12 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
                 <MiniChip
                   label={filters.terminal}
                   color={terminalConfig[filters.terminal]?.color || secondary}
+                />
+              )}
+              {filters.tripType && (
+                <MiniChip
+                  label={String(filters.tripType)?.toUpperCase()}
+                  color={filters.tripType === 'interliner' ? '#8e44ad' : primary}
                 />
               )}
               {filters.searchInput && (
@@ -184,14 +192,14 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
       <Collapse in={expanded}>
         <Box sx={{ p: 2.5, pt: 2 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: showSearchButton ? { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' } : { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2, }}          >
-            <LabeledField label="Pickup Date" icon={<CalendarTodayRounded sx={{ fontSize: 11, color: primary }} />}>
+            <LabeledField label={ftDate ? 'From Date' : "Pickup Date"} icon={<CalendarTodayRounded sx={{ fontSize: 11, color: primary }} />}>
               <DatePicker
                 value={filters.pickupDate || null}
                 onChange={(d) => handleFilterChange('pickupDate', d ? moment(d) : null)}
                 slotProps={{ textField: { size: 'small', fullWidth: true, sx: inputSx } }}
               />
             </LabeledField>
-            <LabeledField label="Delivery Date" icon={<LocalShippingRounded sx={{ fontSize: 11, color: '#e67e22' }} />}>
+            <LabeledField label={ftDate ? 'To Date' : "Delivery Date"} icon={ftDate ? <CalendarTodayRounded sx={{ fontSize: 11, color: primary }} /> : <LocalShippingRounded sx={{ fontSize: 11, color: '#e67e22' }} />}>
               <DatePicker
                 value={filters.deliveryDate || null}
                 onChange={(d) => handleFilterChange('deliveryDate', d ? moment(d) : null)}
@@ -243,10 +251,10 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
               </LabeledField>
             )}
           </Box>
-          <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1.6fr' }, gap: 2, }}          >
+          <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: ftDate ? '1fr 1.6fr 1fr' : '1fr 1.6fr' }, gap: 2, }}          >
             <LabeledField label="Quick Filter">
               <Box sx={{ display: 'flex', gap: 1 }}>
-                {[{ value: 'today', label: 'TODAY' }, { value: 'tomorrow', label: 'TOMORROW' },].map(({ value, label }) => (
+                {quickFilter.map(({ value, label }) => (
                   <PillToggle
                     key={value}
                     value={value}
@@ -273,6 +281,22 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
                 ))}
               </Box>
             </LabeledField>
+            {ftDate && (
+            <LabeledField label="Trip Type">
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {[{ value: 'driver', label: 'DRIVER', color: primary }, { value: 'interliner', label: 'INTERLINER', color: '#8e44ad' },].map(({ value, label, color }) => (
+                  <PillToggle
+                    key={value}
+                    value={value}
+                    label={label}
+                    active={filters.tripType === value}
+                    activeColor={color}
+                    onClick={() => handleFilterChange('tripType', filters.tripType === value ? null : value)}
+                  />
+                ))}
+              </Box>
+            </LabeledField>
+            )}
           </Box>
           {activeCount > 0 && (
             <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end' }}>

@@ -3,7 +3,7 @@ import InterlinersApi from "../apis/Interliners.api";
 import { useSnackbar } from "notistack";
 
 
-export function useInterliners(enabled = true) {
+export function useInterliners({ enabled = true }) {
     return useQuery({
         queryKey: ['interliners'],
         queryFn: async () => {

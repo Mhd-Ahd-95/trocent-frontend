@@ -3,6 +3,7 @@ import { Box, TablePagination, Paper, Typography } from "@mui/material";
 import TripRow from "./TripRow";
 import { LocalShipping } from "@mui/icons-material";
 
+
 const EmptyState = () => (
     <Paper elevation={0} sx={{ p: 8, textAlign: 'center', border: 1, borderColor: 'divider' }}>
         <LocalShipping sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
@@ -14,6 +15,8 @@ const CompletedTripsList = React.memo(({ trips, total, page, rowsPerPage, onPage
 
     if (trips.length === 0) return <EmptyState />;
 
+    const today = React.useMemo(() => new Date().toISOString().split('T')[0], []);
+
     return (
         <Box sx={{
             border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden',
@@ -22,7 +25,7 @@ const CompletedTripsList = React.memo(({ trips, total, page, rowsPerPage, onPage
         }}>
             <Box sx={{ minWidth: 1200, overflowX: 'auto' }}>
                 {trips.map((trip) => (
-                    <TripRow key={trip.id} trip={trip} isToday={trip.trip_date === today} />
+                    <TripRow key={trip.id} trip={trip} isToday={trip.trip_date === today} isCompleted isInterliner={trip.trip_type === 'interliner'} />
                 ))}
             </Box>
             <TablePagination

@@ -20,7 +20,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
         <TableRow
             onClick={() => onRowClick(row)}
             sx={{
-                bgcolor: isSelected ? 'primary.light' : isToday ? alpha(theme.palette.primary.main, 0.09) : isEven ? '#fff' : 'grey.200',
+                bgcolor: isSelected ?  alpha(theme.palette.primary.main, 0.4) : isToday ? alpha(theme.palette.primary.main, 0.09) : isEven ? '#fff' : 'grey.200',
                 cursor: 'pointer',
                 outline: isSelected ? '2px solid' : 'none',
                 outlineColor: isSelected ? 'primary.main' : 'transparent',
@@ -29,7 +29,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
                 maxHeight: 60,
                 overflow: 'hidden',
                 '&:hover': {
-                    bgcolor: isSelected ? 'primary.light' : isToday ? '#ffe0b2' : 'grey.100',
+                    bgcolor: isSelected ?  alpha(theme.palette.primary.main, 0.6) : isToday ?  alpha(theme.palette.primary.main, 0.2) : 'grey.100',
                     filter: isSelected ? 'brightness(0.97)' : 'none',
                 }
             }}

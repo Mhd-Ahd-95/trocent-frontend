@@ -65,6 +65,12 @@ export function useCompletedTrips(filters = {}, page = 1, perPage = 50, { enable
     });
 }
 
+const removeTrips = (cachedTrips = [], tripId) => {
+    if (!cachedTrips) return [];
+    const filteredTrips = cachedTrips.filter(t => Number(t.id) !== Number(tripId))
+    return filteredTrips
+}
+
 const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
     if (!cachedTrips) return updatedTrips;
     const updatedMap = new Map(updatedTrips.map(t => [t.id, t]));
@@ -74,8 +80,8 @@ const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
     return [...newTrips, ...merged];
 };
 
-const updateDispatchOrdersCache = (queryClient, trip, created = false, oids = []) => {
-    const key = dispatchKeys.trips('driver');
+const updateDispatchOrdersCache = (queryClient, trip, created = false, oids = [], tripType = 'driver') => {
+    const key = dispatchKeys.trips(tripType);
     const allUndispatchedEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
     const cachedTrips = queryClient.getQueryData(key)
     if (created) {
@@ -84,16 +90,18 @@ const updateDispatchOrdersCache = (queryClient, trip, created = false, oids = []
     else {
         queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
     }
-    allUndispatchedEntries.forEach(([key, cachedPage]) => {
-        if (!cachedPage) return;
-        const newData = (cachedPage?.data ?? []).filter(o => !oids.includes(Number(o.id)))
-        const updated = {
-            ...cachedPage,
-            data: newData,
-            meta: { ...cachedPage.meta, total: (cachedPage.meta?.total ?? 0) - oids.length },
-        };
-        queryClient.setQueryData(key, updated);
-    });
+    if (oids.length > 0) {
+        allUndispatchedEntries.forEach(([key, cachedPage]) => {
+            if (!cachedPage) return;
+            const newData = (cachedPage?.data ?? []).filter(o => !oids.includes(Number(o.id)))
+            const updated = {
+                ...cachedPage,
+                data: newData,
+                meta: { ...cachedPage.meta, total: (cachedPage.meta?.total ?? 0) - oids.length },
+            };
+            queryClient.setQueryData(key, updated);
+        });
+    }
 }
 
 export function useDispatchOrderMutation() {
@@ -171,6 +179,31 @@ export function useDispatchOrderMutation() {
         onError: handleError,
     })
 
-    return { createTrip, addOrdersToTrip, undispatchOrder }
+    const updateTrip = useMutation({
+        mutationFn: async ({ trip_id, payload }) => {
+            const res = await DispatchOrderApi.updateTrip(trip_id, payload)
+            return res.data
+        },
+        onSuccess: (updated) => {
+            if (updated){
+                const tripStatus = updated.trip_status
+                const tripType = updated.trip_type
+                const key = ['dispatch', 'trips', tripType]
+                const cachedTrips = queryClient.getQueryData(key)
+                if (tripStatus === 'completed'){
+                    queryClient.setQueryData(key, removeTrips(cachedTrips, updated.id))
+                    queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                }
+                else {
+                    queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
+                }
+            }
+            enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip }
 
 }
