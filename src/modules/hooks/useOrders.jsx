@@ -20,11 +20,6 @@ export function useOrder(oid) {
     return useQuery({
         queryKey: ['order', Number(oid)],
         queryFn: async () => {
-
-            // const cachedOrders = queryClient.getQueryData(['orders']) || [];
-            // const cached = cachedOrders.find(item => Number(item.id) === Number(oid));
-            // if (cached) return cached;
-
             const res = await OrderApi.getOrderById(oid)
             return res.data;
         },
@@ -35,49 +30,6 @@ export function useOrder(oid) {
         retry: 0,
     });
 }
-
-const updateOrders = (updated) => {
-    return ({
-        id: updated.id,
-        order_number: updated.order_number,
-        order_status: updated.order_status,
-        customer_name: updated.customer.account_number + ' ' + updated.customer.name,
-        shipper_name: updated.shipper_name,
-        shipper_address: updated.shipper_address,
-        shipper_city: updated.shipper_city,
-        shipper_province: updated.shipper_province,
-        shipper_postal_code: updated.shipper_postal_code,
-        receiver_name: updated.receiver_name,
-        receiver_address: updated.receiver_address,
-        receiver_city: updated.receiver_city,
-        receiver_province: updated.receiver_province,
-        receiver_postal_code: updated.receiver_postal_code,
-        reference_numbers: updated.reference_numbers,
-        pickup_date: updated.pickup_date,
-        delivery_date: updated.delivery_date,
-        create_date: updated.create_date,
-    })
-}
-
-// const handle_dispatch_undispatch_orders = (trips = [], undispatchedOrder = [], order) => {
-//     const queryClient = useQueryClient()
-//     const driverTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'driver'] });
-//     const interlinerTrips = queryClient.getQueryData({ queryKey: ['dispatch', 'trips', 'interliner'] });
-//     const allUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
-//     const hasInterlinerTrip = trips.some(t => t.trip_type === 'interliner')
-//     const hasDriverTrip = trips.some(t => t.trip_type === 'driver')
-//     const hasUndispatched = undispatchedOrder.some((disp) => disp.trip_id === null)
-
-//     if (hasInterlinerTrip) {
-//         if (interlinerTrips) {
-//             queryClient.setQueryData()
-//         }
-//         else {
-
-//         }
-//     }
-// }
-
 
 export function useOrderMutations() {
     const queryClient = useQueryClient()
@@ -109,9 +61,9 @@ export function useOrderMutations() {
                 });
             }
             else {
-                queryClient.invalidateQueries({ queryKey: ['orders']})
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
-            updateDispatchCache({order, trips: trips, undispatchedOrders: undispatched_orders, });
+            updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });
             enqueueSnackbar('Order has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -167,7 +119,7 @@ export function useOrderMutations() {
                         });
                     }
                     else {
-                        queryClient.invalidateQueries({ queryKey: ['orders']})
+                        queryClient.invalidateQueries({ queryKey: ['orders'] })
                     }
                     queryClient.invalidateQueries(['order', Number(order.id)])
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
@@ -197,7 +149,7 @@ export function useOrderMutations() {
                     });
                 }
                 else {
-                    queryClient.invalidateQueries({ queryKey: ['orders']})
+                    queryClient.invalidateQueries({ queryKey: ['orders'] })
                 }
                 if (hasCachedOrderId) {
                     queryClient.setQueryData(['order', Number(id)], (old = {}) => {
@@ -231,7 +183,7 @@ export function useOrderMutations() {
                 });
             }
             else {
-                queryClient.invalidateQueries({ queryKey: ['orders']})
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
             queryClient.invalidateQueries({ queryKey: ['order', Number(id)], exact: true })
             enqueueSnackbar('Order has been duplicated successfully', { variant: 'success' });
@@ -239,38 +191,61 @@ export function useOrderMutations() {
         onError: handleError,
     })
 
-    // const remove = useMutation({
-    //     mutationFn: async (iid) => {
-    //         const res = await DriversApi.deletDriver(iid);
-    //         return res.data
-    //     },
-    //     onSuccess: (res, iid) => {
-    //         if (res) {
-    //             queryClient.setQueryData(['drivers'], (old = []) =>
-    //                 old.filter((item) => item.id !== iid)
-    //             );
-    //             enqueueSnackbar('Driver has been deleted successfully', { variant: 'success' });
-    //         }
-    //     },
-    //     onError: handleError,
-    // });
+    const updateTerminal = useMutation({
+        mutationFn: async ({ oid, terminal }) => {
+            const res = await OrderApi.updateTerminal(oid, terminal)
+            return res.data
+        },
+        onSuccess: (dos, { oid, terminal }) => {
+            const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+            if (cachedList?.length > 0) {
+                cachedList.forEach(([key]) => {
+                    queryClient.setQueryData(key, (prev = {}) => ({
+                        ...prev,
+                        data: (prev.data || []).map(o => Number(o.id) === Number(oid) ? { ...o, terminal } : o),
+                    }));
+                });
+            } else {
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
+            }
+            const cachedUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] })
+            const cachedTripDrivers = queryClient.getQueryData(['dispatch', 'trips', 'driver'])
+            const cachedTripInterliners = queryClient.getQueryData(['dispatch', 'trips', 'interliner'])
 
-    // const removeMany = useMutation({
-    //     mutationFn: async (iids) => {
-    //         const res = await DriversApi.deletDrivers(iids);
-    //         return res.data;
-    //     },
-    //     onSuccess: (res, iids) => {
-    //         if (res) {
-    //             queryClient.setQueryData(['drivers'], (old = []) =>
-    //                 old.filter((item) => !iids.includes(item.id))
-    //             );
-    //             enqueueSnackbar('Selected Drivers have been deleted successfully', { variant: 'success' });
-    //         }
-    //     },
-    //     onError: handleError,
-    // });
+            for (const { id, trip_id } of dos) {
+                if (trip_id) {
+                    if (cachedTripDrivers) {
+                        queryClient.setQueryData(['dispatch', 'trips', 'driver'], (old = []) =>
+                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o), } : t)
+                        )
+                    }
+                    if (cachedTripInterliners) {
+                        queryClient.setQueryData(['dispatch', 'trips', 'interliner'], (old = []) =>
+                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o), } : t)
+                        )
+                    }
+                    if (!cachedTripDrivers) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
+                    if (!cachedTripInterliners) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'interliner'] })
 
-    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder };
+                } else {
+                    if (cachedUndispatched?.length > 0) {
+                        cachedUndispatched.forEach(([key]) => {
+                            queryClient.setQueryData(key, (prev = {}) => ({
+                                ...prev,
+                                data: (prev.data || []).map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o),
+                            }));
+                        });
+                    } else {
+                        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] })
+                    }
+                }
+            }
+            queryClient.setQueryData(['order', Number(oid)], (old) => old ? { ...old, terminal } : old)
+            enqueueSnackbar('Terminal has been updated successfully', { variant: 'success' })
+        },
+        onError: handleError,
+    })
+
+    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder, updateTerminal };
 
 }

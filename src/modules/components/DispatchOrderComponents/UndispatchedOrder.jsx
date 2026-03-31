@@ -8,15 +8,17 @@ import { DrawerForm } from '..';
 import TripForm from './TripForm';
 import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/useDispatchOrders';
 import OrderNoteForm from './NoteForm';
+import UpdateTerminalForm from './UpdateTerminalForm';
+import { useOrderMutations } from '../../hooks/useOrders';
 
-export const CustomTitle = React.memo(({ order_number }) => (
+export const CustomTitle = React.memo(({ order_number, title }) => (
   <Stack direction="row" alignItems="center" spacing={1.5}>
     <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}      >
       <NoteAdd sx={{ fontSize: 18, color: '#fff' }} />
     </Box>
     <Box>
       <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
-        Add Note
+        {title}
       </Typography>
       <Stack direction="row" alignItems="center" spacing={0.5}>
         <Typography variant="caption" color="text.secondary">
@@ -61,7 +63,7 @@ const SkeletonRows = ({ count = 10 }) =>
   ));
 
 
-const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
+const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
 
   const handleRowClick = useCallback((row) => {
     onRowSelect((prev) => {
@@ -133,6 +135,7 @@ const UndispatchedOrdersTable = React.memo(({ orders, total, page, rowsPerPage, 
                   isToday={moment(row.order_date).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')}
                   isSelected={selectedRows.has(row.id)}
                   onRowClick={handleRowClick}
+                  onTerminalUpdate={onTerminalUpdate}
                 />
               ))
             }
@@ -167,10 +170,12 @@ function UndispatchedOrders(props) {
 
   const { createTrip, addOrdersToTrip } = useDispatchOrderMutation()
 
+  const { updateTerminal } = useOrderMutations()
+
   const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction }, page + 1, rowsPerPage,);
 
   const orders = data?.data ?? [];
-  const total = data?.meta?.total ?? 0;
+  const total = data?.total ?? 0;
 
   const handleSearch = useCallback((searchFilters) => {
     const formatted = { ...searchFilters }
@@ -203,6 +208,11 @@ function UndispatchedOrders(props) {
   const handleNote = (row) => {
     dispatchOrderRef.current = row
     setOpenDrawer(2)
+  }
+
+  const handleTerminal = (row) => {
+    dispatchOrderRef.current = row
+    setOpenDrawer(3)
   }
 
   const hasSelection = selectedRows.size > 0;
@@ -261,6 +271,7 @@ function UndispatchedOrders(props) {
           selectedRows={selectedRows}
           onRowSelect={setSelectedRows}
           onAddNote={handleNote}
+          onTerminalUpdate={handleTerminal}
         />
       </Box>
 
@@ -285,10 +296,23 @@ function UndispatchedOrders(props) {
       )}
 
       {openDrawer === 2 && (
-        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrderRef.current.order_number} />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrderRef.current.order_number} title='Add Note' />} setOpen={setOpenDrawer} open={openDrawer}>
           <OrderNoteForm
             order={dispatchOrderRef.current}
             onClose={() => setOpenDrawer(false)}
+          />
+        </DrawerForm>
+      )}
+      {openDrawer === 3 && (
+        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrderRef.current.order_number} title='Update Terminal' />} setOpen={setOpenDrawer} open={openDrawer}>
+          <UpdateTerminalForm
+            orderData={dispatchOrderRef.current}
+            onClose={() => setOpenDrawer(false)}
+            updateTerminal={async (terminal) => {
+              await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.order_id, terminal })
+              dispatchOrderRef.current = null
+              setOpenDrawer(false)
+            }}
           />
         </DrawerForm>
       )}
