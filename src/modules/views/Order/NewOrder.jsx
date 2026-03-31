@@ -2,14 +2,11 @@ import React from 'react'
 import { CircularProgress, Grid } from '@mui/material'
 import { MainLayout } from '../../layouts'
 import { Breadcrumbs } from '../../components'
-import global from '../../global'
 import { useOrderMutations } from '../../hooks/useOrders'
 
 const OrderForm = React.lazy(() => import('./OrderForms'))
 
 export default function NewOrder() {
-
-    const authedUser = global.auth.user
     
     const { create } = useOrderMutations()
 
@@ -28,7 +25,7 @@ export default function NewOrder() {
                 <Grid size={12}>
                     <React.Suspense fallback={<Grid container justifyContent={'center'} py={15} sx={{ width: '100%' }}><CircularProgress /></Grid>}>
                         <OrderForm
-                            initialValues={{ username: authedUser?.username, user_id: authedUser?.id, create_date: new Date(), }}
+                            initialValues={{ }}
                             submit={async (payload) => await create.mutateAsync(payload)}
                             isGenerating
                         />

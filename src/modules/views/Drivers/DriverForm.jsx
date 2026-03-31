@@ -231,7 +231,7 @@ export default function DriverForm(props) {
                                                                                 label={label}
                                                                                 views={['year', 'month', 'day']}
                                                                                 value={controllerField.value ? moment(controllerField.value) : null}
-                                                                                onChange={date => controllerField.onChange(date ? date.toISOString() : null)}
+                                                                                onChange={date => controllerField.onChange(date ? moment(date).format('YYYY-MM-DD') : null)}
                                                                                 slotProps={{
                                                                                     textField: {
                                                                                         error: !!errors[field],

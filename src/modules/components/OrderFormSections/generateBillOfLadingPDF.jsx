@@ -148,7 +148,6 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
         });
         pdf.addImage(img, 'PNG', margin, headerYPos, 70, 10);
     } catch (error) {
-        console.log(error);
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.text('MESSAGERS', margin, headerYPos + 5);

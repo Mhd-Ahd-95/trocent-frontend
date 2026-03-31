@@ -46,6 +46,7 @@ function ReceiverDetails(props) {
   const handleSelect = (value) => {
     unstable_batchedUpdates(() => {
       selectedValue.current = value
+      setValue('receiver_name', value?.name || '')
       setValue('receiver_email', value?.email || '')
       setValue('receiver_contact_name', value?.contact_name || '')
       setValue('receiver_phone_number', value?.phone_number || '')
@@ -497,7 +498,7 @@ function ReceiverDetails(props) {
                 }
                 if (value?.trim()?.toLowerCase() !== selectedValue.current[key]?.trim()?.toLowerCase()) {
                   selectedValue.current[key] = value
-                  patch.mutate({ id: receiverSelected, payload: { [key]: value } })
+                  patch.mutate({ id: selectedReceiver?.id, payload: { [key]: value } })
                 }
               }}
               minRows={2}

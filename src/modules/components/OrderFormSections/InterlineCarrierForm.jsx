@@ -44,9 +44,9 @@ const Fieldset = styled('fieldset')(({ theme }) => ({
 
 export function InterlineCarrierForm(props) {
 
-  const { interline_type, label, control, editMode, getValues } = props
+  const { interline_type, label, control, editMode, getValues, setValue } = props
   const { enqueueSnackbar } = useSnackbar()
-  
+
   const inputName = nm => interline_type ? `interliner_${interline_type}_${nm}` : `interliner_${nm}`
   const [search, setSearch] = React.useState('')
   const [inputValue, setInputValue] = React.useState('')
@@ -63,27 +63,27 @@ export function InterlineCarrierForm(props) {
     }
   }, [isError, error, enqueueSnackbar])
 
-   const handleInterliner = React.useCallback(() => {
-      const interlinerId = getValues(inputName('id'))
-      if (editMode && interlinerId) {
-        const interliner = getValues(interline_type ? `interliner_${interline_type}` : 'interliner')
-        if (interliner) {
-          setSelectedInterliner(interliner)
-        }
+  const handleInterliner = React.useCallback(() => {
+    const interlinerId = getValues(inputName('id'))
+    if (editMode && interlinerId) {
+      const interliner = getValues(interline_type ? `interliner_${interline_type}` : 'interliner')
+      if (interliner) {
+        setSelectedInterliner(interliner)
       }
-    }, [getValues])
+    }
+  }, [getValues])
 
-    React.useEffect(() => {
-      if (editMode){
-        handleInterliner()
-      }
-    }, [editMode, handleInterliner])
+  React.useEffect(() => {
+    if (editMode) {
+      handleInterliner()
+    }
+  }, [editMode, handleInterliner])
 
   const isLoading = isSearching || isFetching
 
   React.useImperativeHandle(props.interlinerRef, () => ({
-      resetInterliner: handleInterliner
-    }), [handleInterliner])
+    resetInterliner: handleInterliner
+  }), [handleInterliner])
 
   return (
     <Grid container spacing={2} mt={2}>
@@ -100,21 +100,37 @@ export function InterlineCarrierForm(props) {
                 value={selectedInterliner}
                 inputValue={inputValue || ''}
                 onInputChange={(event, newInputValue, reason) => {
-                  if (reason === 'input') {
+                  if (reason === 'reset') {
+                    if (!newInputValue || newInputValue === 'undefined' || newInputValue === 'null') {
+                      setInputValue('')
+                    } else {
+                      setInputValue(newInputValue)
+                    }
+                    return
+                  }
+                  else if (reason === 'input') {
                     setInputValue(newInputValue)
-                    setSearch(newInputValue)
-                  } else if (reason === 'reset') {
-                    setInputValue(newInputValue)
+                    if (newInputValue?.length >= 2) setSearch(newInputValue)
+                    else setSearch('')
+                  }
+                  else if (reason === 'clear') {
+                    setInputValue('')
+                    setSearch('')
                   }
                 }}
                 onChange={(_, value) => {
-                  unstable_batchedUpdates(() => {
-                    field.onChange(value?.id || '')
-                    setSelectedInterliner(value)
-                    if (value) {
+                  if (value && typeof value === 'object') {
+                    unstable_batchedUpdates(() => {
+                      field.onChange(value?.id || '')
+                      setValue(inputName('name'), value?.name || '')
+                      setSelectedInterliner(value)
                       setInputValue(`${value.name}`)
-                    }
-                  })
+                    })
+                  } else {
+                    setSelectedInterliner(null)
+                    field.onChange('')
+                    setValue(inputName('name'), '')
+                  }
                 }}
                 getOptionLabel={option => option ? `${option.name}` : ''}
                 isOptionEqualToValue={(option, value) => option?.id === value?.id}

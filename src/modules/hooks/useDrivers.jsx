@@ -3,13 +3,14 @@ import DriversApi from "../apis/Drivers.api";
 import { useSnackbar } from "notistack";
 
 
-export function useDrivers() {
+export function useDrivers({ enabled = false }) {
     return useQuery({
         queryKey: ['drivers'],
         queryFn: async () => {
             const response = await DriversApi.getDrivers();
-            return response.data.data;
+            return response.data;
         },
+        enabled: enabled,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -21,14 +22,9 @@ export function useDrivers() {
 
 
 export function useDriver(cid) {
-    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['driver', Number(cid)],
         queryFn: async () => {
-
-            const cachedDrivers = queryClient.getQueryData(['drivers']) || [];
-            const cached = cachedDrivers.find(item => Number(item.id) === Number(cid));
-            if (cached) return cached;
 
             const res = await DriversApi.getDriver(Number(cid));
             return res.data.data;
@@ -57,7 +53,7 @@ export function useDriverMutation() {
     const createDriverLogin = useMutation({
         mutationFn: async ({ id, payload }) => {
             const res = await DriversApi.create_driver_login(id, payload);
-            return res.data.data;
+            return res.data;
         },
         onSuccess: (updated) => {
             queryClient.setQueryData(['drivers'], (old = []) =>
@@ -95,7 +91,7 @@ export function useDriverMutation() {
         {
             mutationFn: async ({ id, payload }) => {
                 const res = await DriversApi.updateDriver(Number(id), payload);
-                return res.data.data;
+                return res.data;
             },
             onSuccess: (updated) => {
                 if (hasCachedList) {
@@ -106,7 +102,7 @@ export function useDriverMutation() {
                 else {
                     queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
                 }
-                queryClient.setQueryData(['driver', Number(updated.id)], updated)
+                queryClient.invalidateQueries({ queryKey: ['driver', Number(updated.id)], exact: true })
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,

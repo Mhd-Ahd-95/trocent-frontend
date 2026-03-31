@@ -17,7 +17,7 @@ export default function Drivers() {
   const navigate = useNavigate()
   const [selectedDrivers, setSelectedDrivers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
-  const { data, isLoading, isError, error, isFetching } = useDrivers()
+  const { data, isLoading, isError, error, isFetching } = useDrivers({enabled: true})
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { removeMany, createDriverLogin } = useDriverMutation()

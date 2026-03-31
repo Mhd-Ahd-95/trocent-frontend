@@ -42,10 +42,12 @@ const DrawerContent = styled(Box)(({ theme }) => ({
   flexDirection: 'column'
 }))
 
-export default function DrawerComponent (props) {
+export default function DrawerComponent(props) {
   const { open, setOpen, children } = props
   const theme = useTheme()
   const isMdDown = useMediaQuery(theme.breakpoints.down('md'))
+
+  const CustomTitle = props.customTitle
 
   return (
     <CustomDrawer
@@ -59,7 +61,7 @@ export default function DrawerComponent (props) {
         myProp: isMdDown ? 'true' : 'false'
       }}
       anchor='right'
-      // aria-hidden={!open}
+    // aria-hidden={!open}
     >
       <DrawerHeader>
         <Grid
@@ -69,12 +71,14 @@ export default function DrawerComponent (props) {
           sx={{ paddingInline: 3, paddingBlock: 2 }}
         >
           <Grid size='auto'>
-            <Typography
-              component={'h2'}
-              sx={{ fontSize: 16, fontWeight: 600, color: 'text.primary' }}
-            >
-              {props.title}
-            </Typography>
+            {CustomTitle ? CustomTitle :
+              <Typography
+                component={'h2'}
+                sx={{ fontSize: 16, fontWeight: 600, color: 'text.primary' }}
+              >
+                {props.title}
+              </Typography>
+            }
           </Grid>
           <Grid size='auto'>
             <IconButton

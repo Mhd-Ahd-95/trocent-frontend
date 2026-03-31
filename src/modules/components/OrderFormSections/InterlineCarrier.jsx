@@ -1,38 +1,16 @@
 import React from 'react'
-import {
-  Grid,
-  FormControl,
-  Switch,
-  FormHelperText,
-  Typography,
-  useTheme
-} from '@mui/material'
+import { Grid, FormControl, Switch, FormHelperText, Typography, useTheme } from '@mui/material'
 import { InterlineCarrierForm, TabInterlineForm } from './InterlineCarrierForm'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
 
 function InterlineCarrier(props) {
-  
-  const {
-    control,
-    setValue,
-    getValues,
-  } = useFormContext()
 
-  const isPickup = useWatch({
-    control: control,
-    name: 'is_pickup',
-  })
+  const { control, setValue, getValues, } = useFormContext()
 
-  const isDelivery = useWatch({
-    control: control,
-    name: 'is_delivery',
-  })
-
-  const isSameCarrierForBoth = useWatch({
-    control: control,
-    name: 'is_same_carrier',
-  })
+  const isPickup = useWatch({ control: control, name: 'is_pickup', })
+  const isDelivery = useWatch({ control: control, name: 'is_delivery', })
+  const isSameCarrierForBoth = useWatch({ control: control, name: 'is_same_carrier', })
 
   const theme = useTheme()
 
@@ -56,16 +34,19 @@ function InterlineCarrier(props) {
                         setValue('is_pickup', true)
                         setValue('is_delivery', true)
                         setValue('interliner_delivery_id', '')
+                        setValue('interliner_delivery_name', '')
                         setValue('interliner_delivery_special_instructions', '')
                         setValue('interliner_delivery_charge_amount', '')
                         setValue('interliner_delivery_invoice', '')
                         setValue('interliner_pickup_id', '')
+                        setValue('interliner_pickup_name', '')
                         setValue('interliner_pickup_special_instructions', '')
                         setValue('interliner_pickup_charge_amount', '')
                         setValue('interliner_pickup_invoice', '')
                       }
                       if (!checked) {
                         setValue('interliner_id', '')
+                        setValue('interliner_name', '')
                         setValue('interliner_special_instructions', '')
                         setValue('interliner_charge_amount', '')
                         setValue('interliner_invoice', '')
@@ -101,10 +82,12 @@ function InterlineCarrier(props) {
                           if (!checked) {
                             setValue('is_same_carrier', false)
                             setValue('interliner_pickup_id', '')
+                            setValue('interliner_pickup_name', '')
                             setValue('interliner_pickup_special_instructions', '')
                             setValue('interliner_pickup_charge_amount', '')
                             setValue('interliner_pickup_invoice', '')
                             setValue('interliner_id', '')
+                            setValue('interliner_name', '')
                             setValue('interliner_special_instructions', '')
                             setValue('interliner_charge_amount', '')
                             setValue('interliner_invoice', '')
@@ -135,10 +118,12 @@ function InterlineCarrier(props) {
                           if (!checked) {
                             setValue('is_same_carrier', false)
                             setValue('interliner_delivery_id', '')
+                            setValue('interliner_delivery_name', '')
                             setValue('interliner_delivery_special_instructions', '')
                             setValue('interliner_delivery_charge_amount', '')
                             setValue('interliner_delivery_invoice', '')
                             setValue('interliner_id', '')
+                            setValue('interliner_name', '')
                             setValue('interliner_special_instructions', '')
                             setValue('interliner_charge_amount', '')
                             setValue('interliner_invoice', '')
@@ -177,6 +162,7 @@ function InterlineCarrier(props) {
             interlinerRef={props.interlinerRef}
             control={control}
             getValues={getValues}
+            setValue={setValue}
             interline_type='pickup'
           />
         )}
@@ -186,6 +172,7 @@ function InterlineCarrier(props) {
             interlinerRef={props.interlinerRef}
             control={control}
             getValues={getValues}
+            setValue={setValue}
             interline_type='delivery'
           />
         )}
@@ -194,6 +181,7 @@ function InterlineCarrier(props) {
             editMode={props.editMode}
             interlinerRef={props.interlinerRef}
             control={control}
+            setValue={setValue}
             getValues={getValues}
           />
         )}
@@ -206,6 +194,7 @@ function InterlineCarrier(props) {
                 interlinerRef={props.interlinerRef}
                 control={control}
                 label='Pickup'
+                setValue={setValue}
                 getValues={getValues}
                 interline_type='pickup'
               />,
@@ -214,6 +203,7 @@ function InterlineCarrier(props) {
                 interlinerRef={props.interlinerRef}
                 control={control}
                 label='Delivery'
+                setValue={setValue}
                 getValues={getValues}
                 interline_type='delivery'
               />

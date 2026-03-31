@@ -160,8 +160,9 @@ function BasicInfo(props) {
               value={field.value ? moment(field.value) : null}
               onChange={async (date) => {
                 if (date) {
-                  field.onChange(date.toISOString())
-                  await props.engine.get_fuel_surcharge_by_date(date.toISOString())
+                  const onlyDate = moment(date).format("YYYY-MM-DD");
+                  field.onChange(onlyDate);
+                  await props.engine.get_fuel_surcharge_by_date(onlyDate);
                   props.calculationRef.current?.recalculate()
                 }
               }}
@@ -339,7 +340,7 @@ function BasicInfo(props) {
                 'On Dock',
                 'Arrived Shipper',
                 'Picked Up',
-                'Arrived Consignee',
+                'Arrived Receiver',
                 'Delivered',
                 'Approved',
                 'Billed',

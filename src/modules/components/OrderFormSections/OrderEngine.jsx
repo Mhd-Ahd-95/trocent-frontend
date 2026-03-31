@@ -16,7 +16,9 @@ export default class OrderEngine {
         this.custRateSheet = []
         this.fuelSurchargeByDate = null
         this.fuelSurchargePromise = null
-        this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).toISOString())
+        if (!this.fuelSurchargePromise) {
+            this.fuelSurchargePromise = this.get_fuel_surcharge_by_date(moment(orderDate).format('YYYY-MM-DD'))
+        }
     }
 
     set customerRateSheets(cr) { this.custRateSheet = cr }
@@ -617,7 +619,6 @@ export default class OrderEngine {
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
-
             if (res.data.data) {
                 this.fuelSurchargeByDate = res.data.data
             }
@@ -765,11 +766,17 @@ export default class OrderEngine {
             internal_note: data.internal_note,
 
             customer_id: data.customer_id,
+            customer_name: data.customer_name,
 
             reference_numbers: data.reference_numbers,
             caller: data.caller,
 
             shipper_id: data.shipper_id,
+            shipper_address: data.shipper_address,
+            shipper_city: data.shipper_city,
+            shipper_province: data.shipper_province,
+            shipper_postal_code: data.shipper_postal_code,
+            shipper_name: data.shipper_name,
             shipper_email: data.shipper_email,
             shipper_suite: data.shipper_suite,
             shipper_contact_name: data.shipper_contact_name,
@@ -788,6 +795,11 @@ export default class OrderEngine {
             extra_stop_special_instructions: data.extra_stop_special_instructions,
 
             receiver_id: data.receiver_id,
+            receiver_name: data.receiver_name,
+            receiver_address: data.receiver_address,
+            receiver_city: data.receiver_city,
+            receiver_province: data.receiver_province,
+            receiver_postal_code: data.receiver_postal_code,
             receiver_email: data.receiver_email,
             receiver_contact_name: data.receiver_contact_name,
             receiver_phone_number: data.receiver_phone_number,
@@ -803,16 +815,19 @@ export default class OrderEngine {
             pickup_appointment_numbers: data.pickup_appointment_numbers,
 
             interliner_id: data.interliner_id,
+            interliner_name: data.interliner_name,
             interliner_special_instructions: data.interliner_special_instructions,
             interliner_charge_amount: data.interliner_charge_amount,
             interliner_invoice: data.interliner_invoice,
 
             interliner_pickup_id: data.interliner_pickup_id,
+            interliner_pickup_name: data.interliner_pickup_name,
             interliner_pickup_special_instructions: data.interliner_pickup_special_instructions,
             interliner_pickup_charge_amount: data.interliner_pickup_charge_amount,
             interliner_pickup_invoice: data.interliner_pickup_invoice,
 
             interliner_delivery_id: data.interliner_delivery_id,
+            interliner_delivery_name: data.interliner_delivery_name,
             interliner_delivery_special_instructions: data.interliner_delivery_special_instructions,
             interliner_delivery_charge_amount: data.interliner_delivery_charge_amount,
             interliner_delivery_invoice: data.interliner_delivery_invoice,
@@ -900,12 +915,12 @@ export default class OrderEngine {
 
         return {
             ...data,
-            create_date: data.create_date ? moment(data.create_date).toISOString() : moment(new Date()).toISOString(),
-            pickup_date: data.pickup_date ? moment(data.pickup_date).toISOString() : moment(new Date()).toISOString(),
-            delivery_date: data.delivery_date ? moment(data.delivery_date).toISOString() : moment(new Date()).toISOString(),
-            pickup_at: data.pickup_at ? moment(data.pickup_at).toISOString() : null,
-            delivery_at: data.delivery_at ? moment(data.delivery_at).toISOString() : null,
-            billing_invoice_date: data.billing_invoice_date ? moment(data.billing_invoice_date).toISOString() : moment(new Date()).toISOString(),
+            create_date: data.create_date ? moment(data.create_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
+            pickup_date: data.pickup_date ? moment(data.pickup_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
+            delivery_date: data.delivery_date ? moment(data.delivery_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
+            pickup_at: data.pickup_at ? moment(data.pickup_at).format('YYYY-MM-DD') : null,
+            delivery_at: data.delivery_at ? moment(data.delivery_at).format('YYYY-MM-DD') : null,
+            billing_invoice_date: data.billing_invoice_date ? moment(data.billing_invoice_date).format('YYYY-MM-DD') : moment(new Date()).format('YYYY-MM-DD'),
 
             pickup_in: data.pickup_in ? data.pickup_in : null,
             pickup_out: data.pickup_out ? (data.pickup_out.includes('T') ? moment(data.pickup_out).format('HH:mm') : data.pickup_out) : null,

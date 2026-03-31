@@ -90,19 +90,21 @@ function MainLayout(props) {
                     justifyContent={"space-between"}
                     alignItems={"center"}
                   >
-                    <Grid>
-                      <Typography
-                        variant="h5"
-                        color="textPrimary"
-                        gutterBottom
-                        sx={{
-                          fontWeight: 700,
-                          marginBottom: -0.2,
-                        }}
-                      >
-                        {props.title}
-                      </Typography>
-                    </Grid>
+                    {!props.untitled &&
+                      <Grid>
+                        <Typography
+                          variant="h5"
+                          color="textPrimary"
+                          gutterBottom
+                          sx={{
+                            fontWeight: 700,
+                            marginBottom: -0.2,
+                          }}
+                        >
+                          {props.title}
+                        </Typography>
+                      </Grid>
+                    }
                     {props.button && (
                       <Grid>
                         <StyledButton

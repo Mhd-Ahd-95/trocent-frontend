@@ -96,8 +96,8 @@ export default function FuelSurchargeForm(props) {
                                     value={field.value ? moment(field.value) : null}
                                     onChange={date => {
                                         if (date) {
-                                            field.onChange(date.toISOString())
-                                            setValue('to_date', moment(date.toISOString()).add(6, 'days'))
+                                            field.onChange(moment(date).format('YYYY-MM-DD'))
+                                            setValue('to_date', moment(date).add(6, 'days').format('YYYY-MM-DD'))
                                         }
                                     }}
                                     slotProps={{
@@ -130,7 +130,7 @@ export default function FuelSurchargeForm(props) {
                                     label={'To Date*'}
                                     views={['year', 'month', 'day']}
                                     value={field.value ? moment(field.value) : null}
-                                    onChange={date => field.onChange(date ? date.toISOString() : null)}
+                                    onChange={date => field.onChange(date ? moment(date).format('YYYY-MM-DD') : null)}
                                     slotProps={{
                                         textField: {
                                             error: !!errors?.to_date,
@@ -162,7 +162,7 @@ export default function FuelSurchargeForm(props) {
                     padding: '16px 24px',
                     zIndex: 1
                 }}
-            >
+                >
                 <Grid container spacing={2} justifyContent={'flex-start'}>
                     <Grid size='auto'>
                         <SubmitButton

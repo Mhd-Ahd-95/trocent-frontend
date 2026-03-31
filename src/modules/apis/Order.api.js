@@ -26,6 +26,8 @@ const duplicateOrder = (oid, uid) => CustomAxios.put(`/api/orders/${oid}/user/${
 
 const cancelOrder = (oid, uid, sts) => CustomAxios.patch(`/api/orders/${oid}/user/${uid}/status/${sts}`)
 
+const updateTerminal = (oid, t) => CustomAxios.patch(`/api/orders/order/${oid}/terminal/${t}`)
+
 export default {
     getOrders,
     getOrderById,
@@ -35,5 +37,6 @@ export default {
     deleteFile,
     updateOrder,
     cancelOrder,
-    duplicateOrder
+    duplicateOrder,
+    updateTerminal
 }

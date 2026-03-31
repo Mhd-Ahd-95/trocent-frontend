@@ -10,7 +10,6 @@ import {
   Modal
 } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
-import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { DeleteForever } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
 import UserForm from './UserForm'

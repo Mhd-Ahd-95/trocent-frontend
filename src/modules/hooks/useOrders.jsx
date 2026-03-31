@@ -1,25 +1,9 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import OrderApi from "../apis/Order.api";
 import { useSnackbar } from "notistack";
+import { useDispatchCacheUpdate } from "./useDispatchCacheUpdate";
 
-
-// export function useOrders() {
-//     return useQuery({
-//         queryKey: ['orders'],
-//         queryFn: async () => {
-//             const response = await OrderApi.getOrders()
-//             return response.data.data;
-//         },
-//         staleTime: 5 * 60 * 1000,
-//         gcTime: 60 * 60 * 1000,
-//         refetchOnWindowFocus: false,
-//         retry: 0,
-//         // refetchOnReconnect: false,
-//         // refetchOnMount: false,
-//     });
-// }
-
-export function useOrderPagination(page = 1, pageSize = 10) {
+export function useOrderPagination(page = 1, pageSize = 50) {
     return useQuery({
         queryKey: ['orders', page, pageSize],
         queryFn: async () => {
@@ -36,11 +20,6 @@ export function useOrder(oid) {
     return useQuery({
         queryKey: ['order', Number(oid)],
         queryFn: async () => {
-
-            // const cachedOrders = queryClient.getQueryData(['orders']) || [];
-            // const cached = cachedOrders.find(item => Number(item.id) === Number(oid));
-            // if (cached) return cached;
-
             const res = await OrderApi.getOrderById(oid)
             return res.data;
         },
@@ -52,34 +31,10 @@ export function useOrder(oid) {
     });
 }
 
-const updateOrders = (updated) => {
-    return ({
-        id: updated.id,
-        order_number: updated.order_number,
-        order_status: updated.order_status,
-        customer_name: updated.customer.account_number + ' ' + updated.customer.name,
-        shipper_name: updated.shipper_name,
-        shipper_address: updated.shipper_address,
-        shipper_city: updated.shipper_city,
-        shipper_province: updated.shipper_province,
-        shipper_postal_code: updated.shipper_postal_code,
-        receiver_name: updated.receiver_name,
-        receiver_address: updated.receiver_address,
-        receiver_city: updated.receiver_city,
-        receiver_province: updated.receiver_province,
-        receiver_postal_code: updated.receiver_postal_code,
-        reference_numbers: updated.reference_numbers,
-        pickup_date: updated.pickup_date,
-        delivery_date: updated.delivery_date,
-        create_date: updated.create_date,
-    })
-}
-
-
 export function useOrderMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
-    const hasCachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+    const updateDispatchCache = useDispatchCacheUpdate();
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -91,21 +46,24 @@ export function useOrderMutations() {
     const create = useMutation({
         mutationFn: async (payload) => {
             const res = await OrderApi.createOrder(payload)
-            return res.data.data;
+            return res.data;
         },
-        onSuccess: (newOrder) => {
-            if (hasCachedList.length > 0) {
-                hasCachedList.forEach(([key, old]) => {
+        onSuccess: (response) => {
+            const { order, trips, undispatched_orders } = response
+            const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+            if (cachedList.length > 0) {
+                cachedList.forEach(([key, old]) => {
                     queryClient.setQueryData(key, (prev = {}) => ({
                         ...prev,
-                        data: [newOrder, ...(prev.data || [])],
+                        data: [order, ...(prev.data || [])],
                         meta: { ...prev.meta, total: (prev.meta?.total || 0) + 1 },
                     }));
                 });
             }
             else {
-                queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
+            updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });
             enqueueSnackbar('Order has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -147,23 +105,26 @@ export function useOrderMutations() {
                 const res = await OrderApi.updateOrder(id, payload)
                 return res.data;
             },
-            onSuccess: (updated) => {
-                if (updated) {
-                    const orderUpdated = updateOrders(updated)
-                    if (hasCachedList.length > 0) {
-                        hasCachedList.forEach(([key, old]) => {
+            onSuccess: (response) => {
+                const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+                const { order, trips, undispatched_orders } = response
+                if (order) {
+                    const orderUpdated = order
+                    if (cachedList.length > 0) {
+                        cachedList.forEach(([key, old]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
                                 ...prev,
-                                data: (prev.data || []).map(item => item.id === Number(updated.id) ? orderUpdated : item)
+                                data: (prev.data || []).map(item => item.id === Number(order.id) ? orderUpdated : item)
                             }));
                         });
                     }
                     else {
-                        queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
+                        queryClient.invalidateQueries({ queryKey: ['orders'] })
                     }
-                    queryClient.setQueryData(['order', Number(updated.id)], updated)
+                    queryClient.invalidateQueries(['order', Number(order.id)])
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
+                updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });
             },
             onError: handleError,
         }
@@ -177,9 +138,10 @@ export function useOrderMutations() {
         onSuccess: (updated, payload) => {
             const { id, sts } = payload
             const hasCachedOrderId = queryClient.getQueryData(['order', Number(id)])
+            const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
             if (updated && updated.length > 0) {
-                if (hasCachedList) {
-                    hasCachedList.forEach(([key, old]) => {
+                if (cachedList) {
+                    cachedList.forEach(([key, old]) => {
                         queryClient.setQueryData(key, (prev = {}) => ({
                             ...prev,
                             data: (prev.data || []).map(item => item.id === Number(id) ? { ...item, order_status: sts } : item)
@@ -187,7 +149,7 @@ export function useOrderMutations() {
                     });
                 }
                 else {
-                    queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
+                    queryClient.invalidateQueries({ queryKey: ['orders'] })
                 }
                 if (hasCachedOrderId) {
                     queryClient.setQueryData(['order', Number(id)], (old = {}) => {
@@ -210,8 +172,9 @@ export function useOrderMutations() {
         },
         onSuccess: (newOrder, payload) => {
             const { id } = payload
-            if (hasCachedList) {
-                hasCachedList.forEach(([key, old]) => {
+            const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+            if (cachedList) {
+                cachedList.forEach(([key, old]) => {
                     queryClient.setQueryData(key, (prev = {}) => ({
                         ...prev,
                         data: [newOrder, ...(prev.data || [])],
@@ -220,7 +183,7 @@ export function useOrderMutations() {
                 });
             }
             else {
-                queryClient.invalidateQueries({ queryKey: ['orders'], exact: true })
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
             queryClient.invalidateQueries({ queryKey: ['order', Number(id)], exact: true })
             enqueueSnackbar('Order has been duplicated successfully', { variant: 'success' });
@@ -228,38 +191,61 @@ export function useOrderMutations() {
         onError: handleError,
     })
 
-    // const remove = useMutation({
-    //     mutationFn: async (iid) => {
-    //         const res = await DriversApi.deletDriver(iid);
-    //         return res.data
-    //     },
-    //     onSuccess: (res, iid) => {
-    //         if (res) {
-    //             queryClient.setQueryData(['drivers'], (old = []) =>
-    //                 old.filter((item) => item.id !== iid)
-    //             );
-    //             enqueueSnackbar('Driver has been deleted successfully', { variant: 'success' });
-    //         }
-    //     },
-    //     onError: handleError,
-    // });
+    const updateTerminal = useMutation({
+        mutationFn: async ({ oid, terminal }) => {
+            const res = await OrderApi.updateTerminal(oid, terminal)
+            return res.data
+        },
+        onSuccess: (dos, { oid, terminal }) => {
+            const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
+            if (cachedList?.length > 0) {
+                cachedList.forEach(([key]) => {
+                    queryClient.setQueryData(key, (prev = {}) => ({
+                        ...prev,
+                        data: (prev.data || []).map(o => Number(o.id) === Number(oid) ? { ...o, terminal } : o),
+                    }));
+                });
+            } else {
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
+            }
+            const cachedUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] })
+            const cachedTripDrivers = queryClient.getQueryData(['dispatch', 'trips', 'driver'])
+            const cachedTripInterliners = queryClient.getQueryData(['dispatch', 'trips', 'interliner'])
 
-    // const removeMany = useMutation({
-    //     mutationFn: async (iids) => {
-    //         const res = await DriversApi.deletDrivers(iids);
-    //         return res.data;
-    //     },
-    //     onSuccess: (res, iids) => {
-    //         if (res) {
-    //             queryClient.setQueryData(['drivers'], (old = []) =>
-    //                 old.filter((item) => !iids.includes(item.id))
-    //             );
-    //             enqueueSnackbar('Selected Drivers have been deleted successfully', { variant: 'success' });
-    //         }
-    //     },
-    //     onError: handleError,
-    // });
+            for (const { id, trip_id } of dos) {
+                if (trip_id) {
+                    if (cachedTripDrivers) {
+                        queryClient.setQueryData(['dispatch', 'trips', 'driver'], (old = []) =>
+                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o), } : t)
+                        )
+                    }
+                    if (cachedTripInterliners) {
+                        queryClient.setQueryData(['dispatch', 'trips', 'interliner'], (old = []) =>
+                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o), } : t)
+                        )
+                    }
+                    if (!cachedTripDrivers) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
+                    if (!cachedTripInterliners) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'interliner'] })
 
-    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder };
+                } else {
+                    if (cachedUndispatched?.length > 0) {
+                        cachedUndispatched.forEach(([key]) => {
+                            queryClient.setQueryData(key, (prev = {}) => ({
+                                ...prev,
+                                data: (prev.data || []).map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o),
+                            }));
+                        });
+                    } else {
+                        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] })
+                    }
+                }
+            }
+            queryClient.setQueryData(['order', Number(oid)], (old) => old ? { ...old, terminal } : old)
+            enqueueSnackbar('Terminal has been updated successfully', { variant: 'success' })
+        },
+        onError: handleError,
+    })
+
+    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder, updateTerminal };
 
 }

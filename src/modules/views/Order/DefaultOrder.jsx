@@ -1,9 +1,11 @@
 import moment from "moment";
+import globalVariables from "../../global";
 
 export const defaultOrderValue = {
-  username: '',
+  user_id: globalVariables.auth.user.id,
+  username: globalVariables.auth.user?.username || '',
   order_number: '',
-  create_date: new Date(),
+  create_date: moment(new Date()).format('YYYY-MM-DD'),
   terminal: '',
   quote: false,
   is_crossdock: false,
@@ -12,11 +14,13 @@ export const defaultOrderValue = {
   internal_note: '',
 
   customer_id: '',
+  customer_name: '',
 
   reference_numbers: [],
   caller: '',
 
   shipper_id: '',
+  shipper_name: '',
   shipper_email: '',
   shipper_contact_name: '',
   shipper_phone_number: '',
@@ -41,6 +45,7 @@ export const defaultOrderValue = {
   extra_stop_special_instructions: '',
 
   receiver_id: '',
+  receiver_name: '',
   receiver_email: '',
   receiver_contact_name: '',
   receiver_phone_number: '',
@@ -52,7 +57,7 @@ export const defaultOrderValue = {
   receiver_special_instructions: '',
   receiver_no_waiting_time: false,
 
-  pickup_date: new Date(),
+  pickup_date: moment(new Date()).format('YYYY-MM-DD'),
   pickup_time_from: '00:00',
   pickup_time_to: '00:00',
   pickup_driver_assigned: '',
@@ -65,21 +70,24 @@ export const defaultOrderValue = {
   is_same_carrier: false,
 
   interliner_id: '',
+  interliner_name: '',
   interliner_special_instructions: '',
   interliner_charge_amount: '',
   interliner_invoice: '',
 
   interliner_pickup_id: '',
+  interliner_pickup_name: '',
   interliner_pickup_special_instructions: '',
   interliner_pickup_charge_amount: '',
   interliner_pickup_invoice: '',
 
   interliner_delivery_id: '',
+  interliner_delivery_name: '',
   interliner_delivery_special_instructions: '',
   interliner_delivery_charge_amount: '',
   interliner_delivery_invoice: '',
 
-  delivery_date: new Date(),
+  delivery_date: moment(new Date()).format('YYYY-MM-DD'),
   delivery_time_from: '00:00',
   delivery_time_to: '00:00',
   delivery_driver_assigned: '',
@@ -136,7 +144,7 @@ export const defaultOrderValue = {
   delivery_at: null,
   pickup_signee: '',
   delivery_signee: '',
-  billing_invoice_date: new Date(),
+  billing_invoice_date: moment(new Date()).format('YYYY-MM-DD'),
   billing_invoice: '',
   billing_invoiced: false,
   total_pickup: 0,

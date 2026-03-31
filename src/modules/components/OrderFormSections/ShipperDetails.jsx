@@ -46,6 +46,7 @@ function ShipperDetails(props) {
   const handleSelect = (value) => {
     unstable_batchedUpdates(() => {
       selectedValue.current = value
+      setValue('shipper_name', value?.name || '')
       setValue('shipper_email', value?.email || '')
       setValue('shipper_contact_name', value?.contact_name || '')
       setValue('shipper_phone_number', value?.phone_number || '')
