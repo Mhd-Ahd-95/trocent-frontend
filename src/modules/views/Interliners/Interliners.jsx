@@ -11,7 +11,7 @@ import { useSnackbar } from 'notistack'
 export default function Interliners() {
 
   const navigate = useNavigate()
-  const { data, isLoading, error, isError, refetch, isFetching } = useInterliners()
+  const { data, isLoading, error, isError, refetch, isFetching } = useInterliners({enabled: true})
   const { removeMany } = useInterlinerMutations()
   const { enqueueSnackbar } = useSnackbar()
   const [openModal, setOpenModal] = React.useState(false)
