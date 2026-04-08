@@ -2,10 +2,13 @@ import React, { useMemo } from 'react';
 import { Box, Grid, Skeleton } from '@mui/material';
 import { MainLayout } from '../../layouts';
 import { StatsCards, TripTabs } from '../../components';
+import { useDispatchScreenSync } from '../../hooks/useDispatchScreenSync';
 
 const UndispatchedOrders = React.lazy(() => import('../../components/DispatchOrderComponents/UndispatchedOrder'))
 
 export default function TripManagement() {
+
+  useDispatchScreenSync()
 
   const stats = useMemo(() => ({ totalTrips: 0, undispatchedOrders: 0, onRouteDrivers: 0, }), []);
   const tripAction = React.useRef()
