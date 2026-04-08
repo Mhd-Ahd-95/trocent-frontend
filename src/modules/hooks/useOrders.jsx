@@ -49,7 +49,7 @@ export function useOrderMutations() {
             return res.data;
         },
         onSuccess: (response) => {
-            const { order, trips, undispatched_orders } = response
+            const { order } = response
             const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
             if (cachedList.length > 0) {
                 cachedList.forEach(([key, old]) => {
@@ -63,7 +63,6 @@ export function useOrderMutations() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
-            updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });
             enqueueSnackbar('Order has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -107,7 +106,7 @@ export function useOrderMutations() {
             },
             onSuccess: (response) => {
                 const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
-                const { order, trips, undispatched_orders } = response
+                const { order } = response
                 if (order) {
                     const orderUpdated = order
                     if (cachedList.length > 0) {
@@ -124,7 +123,6 @@ export function useOrderMutations() {
                     queryClient.invalidateQueries(['order', Number(order.id)])
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
-                updateDispatchCache({ order, trips: trips, undispatchedOrders: undispatched_orders, });
             },
             onError: handleError,
         }
