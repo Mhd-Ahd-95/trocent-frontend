@@ -39,7 +39,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
                     <Typography fontWeight={700} fontSize={14} lineHeight={1.3}># {row.order_number}</Typography>
                 </Link>
                 <Typography variant="caption" color="text.secondary" display="block">{row.customer_name}</Typography>
-                <Typography variant="caption" color="text.secondary" display="block" noWrap sx={{ maxWidth: 180 }}>{row.reference_numbers}</Typography>
+                <Typography variant="caption" color="text.secondary" display="block" noWrap sx={{ maxWidth: 180 }}>{row.reference_numbers ? row.reference_numbers[0] : '-'}</Typography>
                 <Typography variant="caption" color="text.secondary" display="block">{moment(row.order_date || new Date()).format('ddd, DD/MM/YYYY')}</Typography>
             </TableCell>
 
