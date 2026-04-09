@@ -132,7 +132,7 @@ const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, p
                   onAddNote={onAddNote}
                   theme={theme}
                   isEven={idx % 2 === 0}
-                  isToday={moment(row.order_date).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')}
+                  isToday={moment(row.scheduled_date).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')}
                   isSelected={selectedRows.has(row.id)}
                   onRowClick={handleRowClick}
                   onTerminalUpdate={onTerminalUpdate}
@@ -173,6 +173,8 @@ function UndispatchedOrders(props) {
   const { updateTerminal } = useOrderMutations()
 
   const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction }, page + 1, rowsPerPage,);
+
+  console.log(data);
 
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;

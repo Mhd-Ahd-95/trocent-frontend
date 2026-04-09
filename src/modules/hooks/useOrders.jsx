@@ -45,6 +45,7 @@ export function useOrderMutations() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
+            console.log(payload);
             const res = await OrderApi.createOrder(payload)
             return res.data;
         },
@@ -101,6 +102,7 @@ export function useOrderMutations() {
     const update = useMutation(
         {
             mutationFn: async ({ id, payload }) => {
+                console.log(payload);
                 const res = await OrderApi.updateOrder(id, payload)
                 return res.data;
             },
