@@ -86,7 +86,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
             <CalendarToday sx={{ fontSize: 12 }} />
             Pickup
           </Typography>
-          <Typography variant="body2">{moment(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+          <Typography variant="body2">{moment.utc(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
           <Typography variant="caption" color="text.secondary">
             {order.pickup_time_from} - {order.pickup_time_to}
           </Typography>
@@ -133,7 +133,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
             <CalendarToday sx={{ fontSize: 12 }} />
             Delivery
           </Typography>
-          <Typography variant="body2">{moment(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+          <Typography variant="body2">{moment.utc(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
           <Typography variant="caption" color="text.secondary">
             {order.delivery_time_from} - {order.delivery_time_to}
           </Typography>
