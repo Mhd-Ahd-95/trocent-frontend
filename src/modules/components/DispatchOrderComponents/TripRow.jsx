@@ -1,38 +1,16 @@
 import React, { useState, useCallback } from 'react';
-import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Fade, Collapse } from '@mui/material';
-import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, CheckCircle, ExpandMoreRounded, ReceiptLongRounded, TagRounded } from '@mui/icons-material';
+import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Collapse } from '@mui/material';
+import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom'
 import { ConfirmModal, DrawerForm, Modal } from '..';
 import moment from 'moment';
 import { useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 import UpdateTripForm from './UpdateTripForm'
+import UpdateOrderStatusForm from './UpdateOrderStatusForm';
+import { CustomTitle } from './CustomTitle';
 
-export const CustomTitle = React.memo(({ trip_number }) => (
-  <Stack direction="row" alignItems="center" spacing={1.5}>
-    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}      >
-      <LocalShipping sx={{ fontSize: 18, color: '#fff' }} />
-    </Box>
-    <Box>
-      <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
-        Update Trip
-      </Typography>
-      <Stack direction="row" alignItems="center" spacing={0.5}>
-        <Typography variant="caption" color="text.secondary">
-          Trip
-        </Typography>
-        <Typography variant="caption" fontWeight={700}
-          sx={{ color: 'primary.main', bgcolor: 'primary.outlineHover', px: 0.75, py: 0.1, borderRadius: 1, fontFamily: 'monospace', fontSize: 12, }}
-        >
-          # {trip_number}
-        </Typography>
-      </Stack>
-    </Box>
-  </Stack>
-))
-
-
-const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner }) => {
+const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus }) => {
 
   const [showFreight, setShowFreight] = useState(false);
 
@@ -173,9 +151,9 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
         <Divider orientation="vertical" flexItem />
         {/* </Grid> */}
         <Grid size={0.3}>
-          <Stack direction="column" spacing={0.5} sx={{ height: '100%', justifyContent: 'center' }}>
+          <Stack direction="column" spacing={0.2} sx={{ height: '100%', justifyContent: 'center' }}>
             {!isInterliner &&
-              <Tooltip title='Undispatch Order'>
+              <Tooltip title='Undispatch Order' placement='right'>
                 <IconButton
                   size="small"
                   onClick={(e) => {
@@ -188,7 +166,19 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 </IconButton>
               </Tooltip>
             }
-            <Tooltip title='Add Note'>
+            {/* <Tooltip title='Update Order Status' placement='right'>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpdateOrderStatus(order)
+                }}
+                sx={{ '&:hover': { bgcolor: 'error.50' } }}
+              >
+                <SystemUpdateAlt fontSize="small" color="action" />
+              </IconButton>
+            </Tooltip> */}
+            <Tooltip title='Add Note' placement='right'>
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -203,44 +193,6 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
           </Stack>
         </Grid>
       </Grid>
-      {/* <Collapse in={showFreight}>
-          <Box sx={{ mt: 2, py: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="caption" fontWeight="600" color="text.secondary" gutterBottom>
-              Freight Details ({order.freight_count} Freights)
-            </Typography>
-            <Stack spacing={1} sx={{ mt: 1 }}>
-              {Array.from({ length: order.freight_count }).map((_, i) => (
-                <Box
-                  key={i}
-                  sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1, border: 1, borderColor: 'divider' }}
-                >
-                  <Stack direction="row" spacing={3}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Type</Typography>
-                      <Typography variant="body2" fontWeight="600">Skid</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Pieces</Typography>
-                      <Typography variant="body2" fontWeight="600">5</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Weight</Typography>
-                      <Typography variant="body2" fontWeight="600">500 lbs</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Dimensions (L×W×H)</Typography>
-                      <Typography variant="body2" fontWeight="600">48 × 40 × 60</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Volume Weight</Typography>
-                      <Typography variant="body2" fontWeight="600">450 lbs</Typography>
-                    </Box>
-                  </Stack>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        </Collapse> */}
     </Paper>
   );
 });
@@ -260,6 +212,11 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
   const handleUndispatchedOrder = (order) => {
     dispatchedOrderRef.current = order
     setOpenModal(true)
+  }
+
+  const handleUpdateOrderStatus = (order) => {
+    dispatchedOrderRef.current = order
+    setOpenDrawer(2)
   }
 
   const theme = useTheme()
@@ -393,6 +350,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
                 <OrderCard
                   actionTrip={tripAction}
                   handleUndispatchedOrder={handleUndispatchedOrder}
+                  handleUpdateOrderStatus={handleUpdateOrderStatus}
                   key={order.id}
                   isInterliner={isInterliner}
                   order={order}
@@ -423,6 +381,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
                         order={order}
                         actionTrip={tripAction}
                         handleUndispatchedOrder={handleUndispatchedOrder}
+                        handleUpdateOrderStatus={handleUpdateOrderStatus}
                         isInterliner={isInterliner}
                       />
                     ))}
@@ -454,14 +413,19 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
         </Modal>
       }
       {openDrawer === 1 && (
-        <DrawerForm customTitle={<CustomTitle trip_number={trip.trip_number} />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle number={trip.trip_number} title='Update Trip' Icon={LocalShipping} />} setOpen={setOpenDrawer} open={openDrawer}>
           <UpdateTripForm
             // order={dispatchOrderRef.current}
-            updateTrip={(async (payload) => await updateTrip.mutateAsync({trip_id: payload.trip_id, payload: payload.payload}))}
+            updateTrip={(async (payload) => await updateTrip.mutateAsync({ trip_id: payload.trip_id, payload: payload.payload }))}
             isInterliner={Boolean(isInterliner)}
             tripData={trip}
             onClose={() => setOpenDrawer(false)}
           />
+        </DrawerForm>
+      )}
+      {openDrawer === 2 && (
+        <DrawerForm customTitle={<CustomTitle number={dispatchedOrderRef.current.order_number} title='Update Order Status' isOrder Icon={LocalShipping}  />} setOpen={setOpenDrawer} open={openDrawer}>
+          <UpdateOrderStatusForm />
         </DrawerForm>
       )}
     </>

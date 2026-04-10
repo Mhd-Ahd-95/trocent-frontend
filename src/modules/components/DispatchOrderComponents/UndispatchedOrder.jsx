@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, Stack, useTheme } from '@mui/material';
-import { Inventory2, AddRoad, NoteAdd } from '@mui/icons-material';
+import { Inventory2, AddRoad, NoteAdd, Terminal } from '@mui/icons-material';
 import moment from 'moment';
 import OrderRow from './OrderRow';
 import FilterBar from './FilterBar';
@@ -10,29 +10,7 @@ import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/use
 import OrderNoteForm from './NoteForm';
 import UpdateTerminalForm from './UpdateTerminalForm';
 import { useOrderMutations } from '../../hooks/useOrders';
-
-export const CustomTitle = React.memo(({ order_number, title }) => (
-  <Stack direction="row" alignItems="center" spacing={1.5}>
-    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}      >
-      <NoteAdd sx={{ fontSize: 18, color: '#fff' }} />
-    </Box>
-    <Box>
-      <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
-        {title}
-      </Typography>
-      <Stack direction="row" alignItems="center" spacing={0.5}>
-        <Typography variant="caption" color="text.secondary">
-          Order
-        </Typography>
-        <Typography variant="caption" fontWeight={700}
-          sx={{ color: 'primary.main', bgcolor: 'primary.outlineHover', px: 0.75, py: 0.1, borderRadius: 1, fontFamily: 'monospace', fontSize: 12, }}
-        >
-          # {order_number}
-        </Typography>
-      </Stack>
-    </Box>
-  </Stack>
-))
+import { CustomTitle } from './CustomTitle';
 
 const headerCellSx = {
   fontWeight: 700, fontSize: 13, color: 'text.primary',
@@ -174,8 +152,6 @@ function UndispatchedOrders(props) {
 
   const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction }, page + 1, rowsPerPage,);
 
-  console.log(data);
-
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;
 
@@ -298,7 +274,7 @@ function UndispatchedOrders(props) {
       )}
 
       {openDrawer === 2 && (
-        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrderRef.current.order_number} title='Add Note' />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Add Note' Icon={NoteAdd} isOrder />} setOpen={setOpenDrawer} open={openDrawer}>
           <OrderNoteForm
             order={dispatchOrderRef.current}
             onClose={() => setOpenDrawer(false)}
@@ -306,7 +282,7 @@ function UndispatchedOrders(props) {
         </DrawerForm>
       )}
       {openDrawer === 3 && (
-        <DrawerForm customTitle={<CustomTitle order_number={dispatchOrderRef.current.order_number} title='Update Terminal' />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Update Terminal' isOrder Icon={Terminal}  />} setOpen={setOpenDrawer} open={openDrawer}>
           <UpdateTerminalForm
             orderData={dispatchOrderRef.current}
             onClose={() => setOpenDrawer(false)}
