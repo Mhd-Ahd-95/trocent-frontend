@@ -40,7 +40,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
                 </Link>
                 <Typography variant="caption" color="text.secondary" display="block">{row.customer_name}</Typography>
                 <Typography variant="caption" color="text.secondary" display="block" noWrap sx={{ maxWidth: 180 }}>{row.reference_numbers ? row.reference_numbers[0] : '-'}</Typography>
-                <Typography variant="caption" color="text.secondary" display="block">{moment(row.order_date || new Date()).format('ddd, DD/MM/YYYY')}</Typography>
+                <Typography variant="caption" color="text.secondary" display="block">{moment.utc(row.order_date || new Date()).format('ddd, DD/MM/YYYY')}</Typography>
             </TableCell>
 
             <TableCell sx={{ ...cellSx, width: 50, maxWidth: 50, borderRight: '1px solid #ccc' }}>
@@ -62,7 +62,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
             </TableCell>
 
             <TableCell sx={{ ...cellSx, minWidth: 140, maxWidth: 190, borderRight: '1px solid #ccc' }}>
-                <Typography fontWeight={600} fontSize={13}>{moment(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+                <Typography fontWeight={600} fontSize={13}>{moment.utc(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
                 <Typography variant="caption" color="text.secondary">{row.pickup_time_from} - {row.pickup_time_to}</Typography>
                 {row.shipper_special_instructions && <>
                     <Divider />
@@ -93,7 +93,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
             </TableCell>
 
             <TableCell sx={{ ...cellSx, minWidth: 140, maxWidth: 190, borderRight: '1px solid #ccc' }}>
-                <Typography fontWeight={600} fontSize={13}>{moment(row.delivery_date || row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+                <Typography fontWeight={600} fontSize={13}>{moment.utc(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
                 <Typography variant="caption" color="text.secondary">{row.delivery_time_from} - {row.delivery_time_to}</Typography>
                 {row.receiver_special_instructions && <>
                     <Divider />
