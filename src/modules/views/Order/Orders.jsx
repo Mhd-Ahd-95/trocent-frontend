@@ -194,14 +194,14 @@ export default function OrdersView() {
         field: 'pickup_date',
         flex: 1,
         minWidth: 130,
-        valueFormatter: val => moment(val).format('MMM DD, YYYY')
+        valueFormatter: val => moment.utc(val).format('MMM DD, YYYY')
       },
       {
         headerName: 'Delivery',
         field: 'delivery_date',
         flex: 1,
         minWidth: 130,
-        valueFormatter: val => moment(val).format('MMM DD, YYYY')
+        valueFormatter: val => moment.utc(val).format('MMM DD, YYYY')
       },
       {
         field: 'actions',
