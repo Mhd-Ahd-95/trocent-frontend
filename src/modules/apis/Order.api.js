@@ -1,7 +1,7 @@
 import globalVariables from '../global'
 import CustomAxios from './customAxios'
 
-const getOrders = (payload) => CustomAxios.get('/api/orders', { data: { ...payload } })
+const getOrders = (params = {}) => CustomAxios.get('/api/orders', { params })
 
 const getOrderById = (oid) => CustomAxios.get(`/api/orders/${oid}`)
 
@@ -26,7 +26,11 @@ const duplicateOrder = (oid, uid) => CustomAxios.put(`/api/orders/${oid}/user/${
 
 const cancelOrder = (oid, uid, sts) => CustomAxios.patch(`/api/orders/${oid}/user/${uid}/status/${sts}`)
 
-const updateTerminal = (oid, t) => CustomAxios.patch(`/api/orders/order/${oid}/terminal/${t}`)
+const updateTerminal = (oid, t, l) => CustomAxios.patch(`/api/orders/order/${oid}/terminal/${t}/leg/${l}`)
+
+const addNote = (payload) => CustomAxios.post('/api/orders/order/add-note', payload)
+
+const getNotes = (oid) => CustomAxios.get(`/api/orders/order/${oid}/notes`)
 
 export default {
     getOrders,
@@ -38,5 +42,7 @@ export default {
     updateOrder,
     cancelOrder,
     duplicateOrder,
-    updateTerminal
+    updateTerminal,
+    getNotes,
+    addNote
 }

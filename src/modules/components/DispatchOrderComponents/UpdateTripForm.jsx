@@ -190,6 +190,13 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
                                         </Box>
                                     );
                                 }}
+                                slotProps={{
+                                    popper: {
+                                        sx: {
+                                            zIndex: 9999,
+                                        },
+                                    },
+                                }}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}

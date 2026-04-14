@@ -196,6 +196,7 @@ export default function TripForm({ createTrip, addOrdersToTrip, orderIds, setSel
 
     const { data: trips, isLoading } = useDriverTrips({ enabled: true });
     const { data: drivers, isLoading: isDriverLoading } = useDrivers({ enabled: mode === 'new' });
+    console.log(drivers);
 
     const filteredTrips = useMemo(() => (trips || []).filter((t) => {
         const q = tripSearch.toLowerCase();
@@ -353,6 +354,14 @@ export default function TripForm({ createTrip, addOrdersToTrip, orderIds, setSel
                                             value={selectedDriver}
                                             onChange={handleDriverChange}
                                             getOptionLabel={(o) => `${o.fname} ${o.lname} — ${o.driver_number}`}
+                                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                                            slotProps={{
+                                                popper: {
+                                                    sx: {
+                                                        zIndex: 9999,
+                                                    },
+                                                },
+                                            }}
                                             renderOption={(props, option) => {
                                                 const { key, ...rest } = props;
                                                 const color = avatarColor(option.fname + option.lname);

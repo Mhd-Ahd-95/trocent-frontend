@@ -63,7 +63,7 @@ const InterlinerTabContent = React.memo(({ enabled, tripAction }) => {
 
 const CompletedTabContent = React.memo(({ enabled }) => {
 
-    const [appliedFilters, setAppliedFilters] = useState({});
+    const [appliedFilters, setAppliedFilters] = useState({quickFilter: 'today'});
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(50);
 
@@ -108,7 +108,7 @@ const CompletedTabContent = React.memo(({ enabled }) => {
                     rowsPerPage={rowsPerPage}
                     onPageChange={handlePageChange}
                     onRowsPerPageChange={handleRowsPerPageChange}
-                    isFetching={isFetching}
+                    isFetching={isFetching || isLoading}
                 />
             </Box>
         </>

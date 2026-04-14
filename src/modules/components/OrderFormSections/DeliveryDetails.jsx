@@ -14,6 +14,7 @@ function DeliveryDetails(props) {
   const {
     control,
     setValue,
+    getValues
   } = useFormContext()
 
   const { data } = useTerminals()
@@ -22,6 +23,14 @@ function DeliveryDetails(props) {
     control: control,
     name: 'delivery_appointment',
   })
+
+  const deliveryNotes = React.useCallback(() => {
+    const orderNotes = getValues('order_notes')
+    if (orderNotes && orderNotes?.length > 0) {
+      return orderNotes.filter(on => on.note_type === 'delivery').map(on => on.note).join('\n')
+    }
+    else return 'Dispatch/Driver Notes'
+  }, [props.editMode])
 
   return (
     <Grid container spacing={4}>
@@ -133,7 +142,12 @@ function DeliveryDetails(props) {
               label='Driver Assigned'
               variant='outlined'
               fullWidth
-              helperText={props.editMode ? 'Dispatch/Driver Notes' : null}
+              FormHelperTextProps={{
+                sx: {
+                  whiteSpace: 'pre-line'
+                }
+              }}
+              helperText={props.editMode ? deliveryNotes() : null}
             />
           )}
         />

@@ -29,7 +29,7 @@ const MiniChip = ({ label, color }) => (
   </Box>
 );
 
-const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true, placeholderSearch, ftDate}) => {
+const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true, placeholderSearch, ftDate }) => {
 
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -42,13 +42,16 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
   const quickFilter = ftDate ? [{ value: 'yesterday', label: 'YESTERDAY' }, { value: 'today', label: 'TODAY' }] : [{ value: 'today', label: 'TODAY' }, { value: 'tomorrow', label: 'TOMORROW' }]
 
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [filters, setFilters] = useState({ pickupDate: null, deliveryDate: null, searchInput: '', quickFilter: null, terminal: null, tripType: null});
+  const [filters, setFilters] = useState({ pickupDate: null, deliveryDate: null, searchInput: '', quickFilter: ftDate ? 'today' : null, terminal: null, tripType: null });
 
   const handleFilterChange = useCallback(
-    (key, value) => {
+    (key, value, quickSearch = false) => {
       setFilters((prev) => {
         const next = { ...prev, [key]: value };
         onFilterChange?.(next);
+        if (quickSearch) {
+          onSearch?.(next)
+        }
         return next;
       });
     },
@@ -59,6 +62,7 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
     const cleared = { pickupDate: null, deliveryDate: null, searchInput: '', quickFilter: null, terminal: null };
     setFilters(cleared);
     onFilterChange?.(cleared);
+    onSearch?.(cleared)
   };
 
   const activeCount = Object.values(filters).filter(Boolean).length;
@@ -261,7 +265,7 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
                     label={label}
                     active={filters.quickFilter === value}
                     activeColor={primary}
-                    onClick={() => handleFilterChange('quickFilter', filters.quickFilter === value ? null : value)}
+                    onClick={() => handleFilterChange('quickFilter', filters.quickFilter === value ? null : value, true)}
                   />
                 ))}
               </Box>
@@ -276,26 +280,26 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
                     // sublabel={cfg.label}
                     active={filters.terminal === code}
                     activeColor={cfg.color}
-                    onClick={() => handleFilterChange('terminal', filters.terminal === code ? null : code)}
+                    onClick={() => handleFilterChange('terminal', filters.terminal === code ? null : code, true)}
                   />
                 ))}
               </Box>
             </LabeledField>
             {ftDate && (
-            <LabeledField label="Trip Type">
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                {[{ value: 'driver', label: 'DRIVER', color: primary }, { value: 'interliner', label: 'INTERLINER', color: '#8e44ad' },].map(({ value, label, color }) => (
-                  <PillToggle
-                    key={value}
-                    value={value}
-                    label={label}
-                    active={filters.tripType === value}
-                    activeColor={color}
-                    onClick={() => handleFilterChange('tripType', filters.tripType === value ? null : value)}
-                  />
-                ))}
-              </Box>
-            </LabeledField>
+              <LabeledField label="Trip Type">
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {[{ value: 'driver', label: 'DRIVER', color: primary }, { value: 'interliner', label: 'INTERLINER', color: '#8e44ad' },].map(({ value, label, color }) => (
+                    <PillToggle
+                      key={value}
+                      value={value}
+                      label={label}
+                      active={filters.tripType === value}
+                      activeColor={color}
+                      onClick={() => handleFilterChange('tripType', filters.tripType === value ? null : value, true)}
+                    />
+                  ))}
+                </Box>
+              </LabeledField>
             )}
           </Box>
           {activeCount > 0 && (

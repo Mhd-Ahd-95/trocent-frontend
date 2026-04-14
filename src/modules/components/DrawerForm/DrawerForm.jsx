@@ -14,7 +14,8 @@ import { Close } from '@mui/icons-material'
 const CustomDrawer = styled(Drawer)(({ theme, ismddown }) => ({
   width: ismddown === 'true' ? '100%' : '50%',
   flexShrink: 0,
-  overflow: 'hidden'
+  overflow: 'hidden',
+  zIndex: 2100
 }))
 
 const DrawerPaper = styled('div', {

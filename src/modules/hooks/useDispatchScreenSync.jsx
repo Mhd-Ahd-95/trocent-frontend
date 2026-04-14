@@ -10,8 +10,9 @@ export function useDispatchScreenSync() {
         const channel = window.Echo.channel('dispatch-screen');
 
         channel.listen('.dispatch.updated', (e) => {
-            const { trips, undispatched_orders, order } = e;
-            updateDispatchCache({ order, trips, undispatchedOrders: undispatched_orders, });
+            const { trips, undispatched_orders, order, action } = e;
+            console.log(e);
+            updateDispatchCache({ order, trips, undispatchedOrders: undispatched_orders, action });
         });
 
         return () => {

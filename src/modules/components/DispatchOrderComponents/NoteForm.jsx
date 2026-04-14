@@ -1,26 +1,16 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel, Chip, Avatar, Stack, Grid, Divider, } from '@mui/material';
+import { Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel, Chip, Avatar, Stack, Grid, Divider, Skeleton, CircularProgress, } from '@mui/material';
 import { NoteAdd, LocalShipping, Inventory2, AccessTime, Person, } from '@mui/icons-material';
-import globalVariables from '../../global';
 import SubmitButton from '../SubmitButton/SubmitButton';
 import StyledButton from '../StyledButton/StyledButton';
+import { useOrderMutations, useOrderNotes } from '../../hooks/useOrders';
 
-const DUMMY_NOTES = [
-    {
-        id: 1,
-        note_type: 'pickup',
-        note: 'Driver will arrive between 10am-11am. Customer requested ...',
-        created_by: 'Mhd Ahd',
-        created_at: '2026-03-10T09:32:00',
-    },
-    {
-        id: 2,
-        note_type: 'delivery',
-        note: 'Receiver not available until 2pm.',
-        created_by: 'IAM',
-        created_at: '2026-03-10T11:15:00',
-    }
-];
+const LoadingNote = () => (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+        <CircularProgress size={20} />
+        <Typography variant="body2" color="text.secondary">Loading Notes...</Typography>
+    </Box>
+);
 
 const NOTE_TYPES = [
     {
@@ -88,17 +78,33 @@ const NoteHistoryItem = ({ note }) => {
 
 export default function OrderNoteForm({ order, onClose }) {
 
-    const authedUser = globalVariables.auth.user
-    const [note, setNote] = React.useState({ do_id: order.id, order_id: order.order_id, note_type: '', text_note: '', user_id: authedUser.id })
     const [submitted, setSubmitted] = useState(false);
-    const [notes, setNotes] = useState(DUMMY_NOTES);
+    const orderId = order.order_id
+    const [note, setNote] = React.useState({ order_id: orderId, note_type: '', note: '' })
+    const { data: notes, isLoading } = useOrderNotes(orderId)
+    const { addNote } = useOrderMutations()
 
-    const handleSave = () => {
+    const handleSave = async (e) => {
+        e.preventDefault()
         setSubmitted(true);
+        try {
+            await addNote.mutateAsync(note)
+            reset()
+        }
+        catch (_) {
+            //
+        }
+        finally {
+            setSubmitted(false)
+        }
     };
 
+    const reset = () => {
+        setNote({ order_id: orderId, note_type: '', note: '' })
+    }
+
     return (
-        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }}        >
+        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }} onSubmit={(e) => handleSave(e)}>
             <div style={{ flexGrow: 1, overflow: 'auto', padding: '24px' }}>
                 <Grid container spacing={2}>
                     <Grid size={12}>
@@ -109,7 +115,15 @@ export default function OrderNoteForm({ order, onClose }) {
                                 label="Note Type"
                                 // required
                                 onChange={(e) => setNote((prev) => ({ ...prev, note_type: e.target.value }))}
-                                sx={{ fontSize: 13, borderRadius: 2 }}
+                                sx={{ fontSize: 13, borderRadius: 2, }}
+                                MenuProps={{
+                                    disablePortal: true,
+                                    PaperProps: {
+                                        sx: {
+                                            zIndex: 9999,
+                                        },
+                                    },
+                                }}
                                 renderValue={(val) => {
                                     const t = getNoteType(val);
                                     return (
@@ -146,9 +160,9 @@ export default function OrderNoteForm({ order, onClose }) {
                             // size="small"
                             label="Note"
                             placeholder="Enter instructions, or any relevant details…"
-                            value={note.text_note}
-                            onChange={(e) => setNote((prev) => ({ ...prev, text_note: e.target.value }))}
-                            helperText={`${note.text_note.length} characters`}
+                            value={note.note}
+                            onChange={(e) => setNote((prev) => ({ ...prev, note: e.target.value }))}
+                            helperText={`${note.note.length} characters`}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 13 }, '& .MuiFormHelperText-root': { mx: 0 }, }}
                         />
                     </Grid>
@@ -162,24 +176,24 @@ export default function OrderNoteForm({ order, onClose }) {
                                     Notes History
                                 </Typography>
                                 <Chip
-                                    label={`${notes.length} note${notes.length !== 1 ? 's' : ''}`}
+                                    label={notes ? `${notes.length} note${notes.length !== 1 ? 's' : ''}` : <Skeleton variant='rectangular' height={20} width={20} />}
                                     size="small"
                                     sx={{ height: 20, fontSize: 11, fontWeight: 700, bgcolor: 'grey.100', color: 'text.secondary' }}
                                 />
                             </Stack>
-
-                            {notes.length === 0 ? (
-                                <Box sx={{ textAlign: 'center', py: 6 }}>
-                                    <NoteAdd sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
-                                    <Typography variant="body2" color="text.disabled">No notes yet</Typography>
-                                </Box>
-                            ) : (
-                                <Stack spacing={1.5}>
-                                    {notes.map((note) => (
-                                        <NoteHistoryItem key={note.id} note={note} />
-                                    ))}
-                                </Stack>
-                            )}
+                            {isLoading || addNote.isPending ? <LoadingNote /> :
+                                notes.length === 0 ? (
+                                    <Box sx={{ textAlign: 'center', py: 6 }}>
+                                        <NoteAdd sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+                                        <Typography variant="body2" color="text.disabled">No notes yet</Typography>
+                                    </Box>
+                                ) : (
+                                    <Stack spacing={1.5}>
+                                        {notes.map((note) => (
+                                            <NoteHistoryItem key={note.id} note={note} />
+                                        ))}
+                                    </Stack>
+                                )}
                         </Box>
                     </Grid>
                 </Grid>
@@ -193,7 +207,7 @@ export default function OrderNoteForm({ order, onClose }) {
                             color='secondary'
                             size='small'
                             textTransform='capitalize'
-                        // isLoading={loading}
+                            isLoading={submitted}
                         >
                             Submit
                         </SubmitButton>
@@ -203,9 +217,9 @@ export default function OrderNoteForm({ order, onClose }) {
                             variant='outlined'
                             color='error'
                             size='small'
-                            // disabled={loading}
+                            disabled={submitted}
                             textTransform='capitalize'
-                        // onClick={() => reset()}
+                            onClick={() => reset()}
                         >
                             Reset
                         </StyledButton>

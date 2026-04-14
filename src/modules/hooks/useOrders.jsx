@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import OrderApi from "../apis/Order.api";
 import { useSnackbar } from "notistack";
-import { useDispatchCacheUpdate } from "./useDispatchCacheUpdate";
 
 export function useOrderPagination(page = 1, pageSize = 50) {
     return useQuery({
@@ -10,9 +9,11 @@ export function useOrderPagination(page = 1, pageSize = 50) {
             const res = await OrderApi.getOrders({ page, pageSize });
             return res.data;
         },
-        keepPreviousData: true,
         staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
+        retry: 0,
+        placeholderData: (prev) => prev,
     });
 }
 
@@ -31,10 +32,24 @@ export function useOrder(oid) {
     });
 }
 
+export function useOrderNotes(oid) {
+    return useQuery({
+        queryKey: ['orderNotes', Number(oid)],
+        queryFn: async () => {
+            const res = await OrderApi.getNotes(oid)
+            return res.data;
+        },
+        enabled: !!oid,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 export function useOrderMutations() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
-    const updateDispatchCache = useDispatchCacheUpdate();
 
     const handleError = (error) => {
         const message = error.response?.data?.message;
@@ -45,7 +60,6 @@ export function useOrderMutations() {
 
     const create = useMutation({
         mutationFn: async (payload) => {
-            console.log(payload);
             const res = await OrderApi.createOrder(payload)
             return res.data;
         },
@@ -102,7 +116,6 @@ export function useOrderMutations() {
     const update = useMutation(
         {
             mutationFn: async ({ id, payload }) => {
-                console.log(payload);
                 const res = await OrderApi.updateOrder(id, payload)
                 return res.data;
             },
@@ -192,36 +205,26 @@ export function useOrderMutations() {
     })
 
     const updateTerminal = useMutation({
-        mutationFn: async ({ oid, terminal }) => {
-            const res = await OrderApi.updateTerminal(oid, terminal)
+        mutationFn: async ({ oid, terminal, leg }) => {
+            const res = await OrderApi.updateTerminal(oid, terminal, leg)
             return res.data
         },
-        onSuccess: (dos, { oid, terminal }) => {
-            const cachedList = queryClient.getQueriesData({ queryKey: ['orders'] })
-            if (cachedList?.length > 0) {
-                cachedList.forEach(([key]) => {
-                    queryClient.setQueryData(key, (prev = {}) => ({
-                        ...prev,
-                        data: (prev.data || []).map(o => Number(o.id) === Number(oid) ? { ...o, terminal } : o),
-                    }));
-                });
-            } else {
-                queryClient.invalidateQueries({ queryKey: ['orders'] })
-            }
+        onSuccess: (dos, { oid, terminal, leg }) => {
+            queryClient.invalidateQueries({ queryKey: ['orders'] })
+            queryClient.invalidateQueries({ queryKey: ['order'] })
             const cachedUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] })
             const cachedTripDrivers = queryClient.getQueryData(['dispatch', 'trips', 'driver'])
             const cachedTripInterliners = queryClient.getQueryData(['dispatch', 'trips', 'interliner'])
-
             for (const { id, trip_id } of dos) {
                 if (trip_id) {
                     if (cachedTripDrivers) {
                         queryClient.setQueryData(['dispatch', 'trips', 'driver'], (old = []) =>
-                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o), } : t)
+                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) && o.leg_type === leg ? { ...o, terminal } : o), } : t)
                         )
                     }
                     if (cachedTripInterliners) {
                         queryClient.setQueryData(['dispatch', 'trips', 'interliner'], (old = []) =>
-                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o), } : t)
+                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) && o.leg_type === leg ? { ...o, terminal } : o), } : t)
                         )
                     }
                     if (!cachedTripDrivers) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
@@ -232,7 +235,7 @@ export function useOrderMutations() {
                         cachedUndispatched.forEach(([key]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
                                 ...prev,
-                                data: (prev.data || []).map(o => Number(o.id) === Number(id) ? { ...o, terminal } : o),
+                                data: (prev.data || []).map(o => Number(o.id) === Number(id) && o.leg_type === leg ? { ...o, terminal } : o),
                             }));
                         });
                     } else {
@@ -240,12 +243,29 @@ export function useOrderMutations() {
                     }
                 }
             }
-            queryClient.setQueryData(['order', Number(oid)], (old) => old ? { ...old, terminal } : old)
             enqueueSnackbar('Terminal has been updated successfully', { variant: 'success' })
         },
         onError: handleError,
     })
 
-    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder, updateTerminal };
+    const addNote = useMutation({
+        mutationFn: async (payload) => {
+            const res = await OrderApi.addNote(payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            const orderId = res.order_id
+            const hasCachedOrderNotes = queryClient.getQueryData(['orderNotes', Number(orderId)])
+            if (hasCachedOrderNotes) {
+                queryClient.setQueryData(['orderNotes', Number(orderId)], (old = []) => ([res, ...old]))
+            }
+            else queryClient.invalidateQueries(['orderNotes', Number(orderId)])
+            queryClient.invalidateQueries(['order', Number(orderId)])
+            enqueueSnackbar('New note has been added successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder, updateTerminal, addNote };
 
 }

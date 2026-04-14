@@ -166,7 +166,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 </IconButton>
               </Tooltip>
             }
-            {/* <Tooltip title='Update Order Status' placement='right'>
+            <Tooltip title='Update Order Status' placement='right'>
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -177,7 +177,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
               >
                 <SystemUpdateAlt fontSize="small" color="action" />
               </IconButton>
-            </Tooltip> */}
+            </Tooltip>
             <Tooltip title='Add Note' placement='right'>
               <IconButton
                 size="small"
@@ -424,7 +424,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
         </DrawerForm>
       )}
       {openDrawer === 2 && (
-        <DrawerForm customTitle={<CustomTitle number={dispatchedOrderRef.current.order_number} title='Update Order Status' isOrder Icon={LocalShipping}  />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle number={dispatchedOrderRef.current.order_number} title='Update Order Status' isOrder Icon={LocalShipping} />} setOpen={setOpenDrawer} open={openDrawer}>
           <UpdateOrderStatusForm />
         </DrawerForm>
       )}

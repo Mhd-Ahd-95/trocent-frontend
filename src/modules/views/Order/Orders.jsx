@@ -13,6 +13,7 @@ import { generateBillOfLadingPDF } from '../../components/OrderFormSections/gene
 import { useSnackbar } from 'notistack'
 
 export default function OrdersView() {
+
   const navigate = useNavigate()
   const authedUser = globalVariables.auth.user
   const [anchorEl, setAnchorEl] = React.useState(null)
@@ -236,6 +237,11 @@ export default function OrdersView() {
       }
     ], [handleClick])
 
+  const handlePaginationChange = React.useCallback(({ page, pageSize }) => {
+    setPage(page);
+    setPageSize(pageSize);
+  }, []);
+
   return (
     <MainLayout
       title='Orders'
@@ -253,19 +259,17 @@ export default function OrdersView() {
         <Grid size={12}>
           <Table
             pageSizeOptions={[50, 100, 150]}
-            pageSize={50}
+            pageSize={pageSize}
             height={50}
-            rowCount={data?.meta?.total[0] || 0}
+            rowCount={data?.meta?.total || 0}
             paginationMode="server"
+            paginationModel={{ page, pageSize }}
             loading={isLoading || isFetching}
             options={{
               filtering: true,
               search: true
             }}
-            onPaginationModelChange={({ page, pageSize }) => {
-              setPage(page);
-              setPageSize(pageSize);
-            }}
+            onPaginationModelChange={handlePaginationChange}
             disableRowSelectionOnClick
             onRowClick={(rowData) => navigate(`/orders/edit/${rowData.row.id}`)}
             columns={columns}
