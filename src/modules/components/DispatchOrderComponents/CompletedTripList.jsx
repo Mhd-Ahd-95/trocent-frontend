@@ -20,7 +20,7 @@ const CompletedTripsList = React.memo(({ trips, total, page, rowsPerPage, onPage
     return (
         <Box sx={{
             border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden',
-            opacity: isFetching ? 0.7 : 1,
+            opacity: isFetching ? 0.5 : 1,
             transition: 'opacity 0.15s ease',
         }}>
             <Box sx={{ minWidth: 1200, overflowX: 'auto' }}>

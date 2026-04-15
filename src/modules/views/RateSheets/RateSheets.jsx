@@ -128,8 +128,8 @@ export default function RateSheets() {
         {customer ?
           <Grid size={12}>
             <Table
-              pageSizeOptions={[10, 25, 50]}
-              pageSize={10}
+              pageSizeOptions={[50, 100, 200]}
+              pageSize={50}
               checkboxSelection
               // paginationMode={'server'}
               // rowCount={data?.meta?.total[0] || 0}

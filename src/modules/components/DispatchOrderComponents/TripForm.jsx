@@ -353,6 +353,14 @@ export default function TripForm({ createTrip, addOrdersToTrip, orderIds, setSel
                                             value={selectedDriver}
                                             onChange={handleDriverChange}
                                             getOptionLabel={(o) => `${o.fname} ${o.lname} — ${o.driver_number}`}
+                                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                                            slotProps={{
+                                                popper: {
+                                                    sx: {
+                                                        zIndex: 9999,
+                                                    },
+                                                },
+                                            }}
                                             renderOption={(props, option) => {
                                                 const { key, ...rest } = props;
                                                 const color = avatarColor(option.fname + option.lname);

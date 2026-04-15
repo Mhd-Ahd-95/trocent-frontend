@@ -2,37 +2,136 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { dispatchKeys } from './useDispatchOrders';
 
-const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
+const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
     if (!cachedTrips) return updatedTrips;
     const updatedMap = new Map(updatedTrips.map(t => [t.id, t]));
     const existingIds = new Set(cachedTrips.map(t => t.id));
-    const merged = cachedTrips.map(t => updatedMap.has(t.id) ? updatedMap.get(t.id) : t);
+    const merged = cachedTrips.map(t => {
+        if (updatedMap.has(t.id)) {
+            const updatedTrip = updatedMap.get(t.id)
+            const updatedDispatchedOrders = updatedTrip?.dispatched_orders ?? []
+            const oldOrdersWithoutUpdated = t?.dispatched_orders.filter(o => o.order_id !== orderId) ?? []
+            const newDispatchedOrders = [...oldOrdersWithoutUpdated, ...updatedDispatchedOrders].sort((a, b) => a.order_level - b.order_level)
+            return ({ ...updatedTrip, dispatched_orders: newDispatchedOrders })
+        }
+        return t
+    });
     const newTrips = updatedTrips.filter(t => !existingIds.has(t.id));
     return [...newTrips, ...merged];
 };
 
+const PER_PAGE = 50;
 
-const mergeUndispatched = (orderId, cachedPage, updatedUndispatched = []) => {
-    if (!cachedPage) return null;
-    const cachedData = cachedPage.data ?? [];
-    const withoutOldOrderRows = cachedData.filter(o => Number(o.order_id) !== Number(orderId));
-    const newUndispatchedRows = updatedUndispatched.filter(o => o.trip_id === null);
-    const newData = [...newUndispatchedRows, ...withoutOldOrderRows];
-    const removedCount = cachedData.length - withoutOldOrderRows.length;
-    const addedCount = newUndispatchedRows.length;
+const getPageNumber = (queryKey) => queryKey.find(k => typeof k === 'object' && k !== null && 'page' in k)?.page ?? 1;
 
-    return {
-        ...cachedPage,
-        data: newData,
-        meta: { ...cachedPage.meta, total: (cachedPage.meta?.total ?? 0) - removedCount + addedCount, },
-    };
+const invalidateFromPage = (queryClient, fromPage) => {
+    const allEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+    allEntries.forEach(([key]) => {
+        if (getPageNumber(key) >= fromPage) {
+            queryClient.invalidateQueries({ queryKey: key });
+        }
+    });
+};
+
+const handleCreatedUndispatched = (queryClient, newUndispatchedOrders) => {
+    if (!newUndispatchedOrders || newUndispatchedOrders.length === 0) return;
+    const allEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+    const page1Entry = allEntries.find(([key]) => {
+        const queryKeyObj = key.find(k => typeof k === 'object' && k !== null && 'page' in k);
+        return queryKeyObj?.page === 1;
+    });
+    if (!page1Entry) {
+        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] });
+        return;
+    }
+    const [page1Key, page1Data] = page1Entry;
+    if (!page1Data) {
+        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] });
+        return;
+    }
+    const currentData = page1Data.data ?? [];
+    const newCount = newUndispatchedOrders.length;
+    const perPage = page1Data.perPage ?? PER_PAGE;
+
+    let updatedData;
+    if (currentData.length + newCount > perPage) {
+        const trimmed = currentData.slice(0, perPage - newCount);
+        updatedData = [...newUndispatchedOrders, ...trimmed];
+    } else {
+        updatedData = [...newUndispatchedOrders, ...currentData];
+    }
+    const addedCount = newUndispatchedOrders.length;
+    queryClient.setQueryData(page1Key, { ...page1Data, data: updatedData, total: (page1Data.total ?? 0) + addedCount, });
+
+    allEntries.forEach(([key]) => {
+        if (key === page1Key) return;
+        const queryKeyObj = key.find(k => typeof k === 'object' && k !== null && 'page' in k);
+        if (queryKeyObj?.page !== 1) {
+            queryClient.invalidateQueries({ queryKey: key });
+        }
+    });
+};
+
+const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) => {
+    const allEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+    let foundInAnyPage = false;
+    allEntries.forEach(([key, cachedPage]) => {
+        if (!cachedPage) return;
+        const currentData = cachedPage.data ?? [];
+        const matchingRows = currentData.filter(o => Number(o.order_id) === Number(orderId));
+        const perPage = cachedPage.perPage ?? PER_PAGE;
+        if (matchingRows.length === 0) return;
+        foundInAnyPage = true;
+        const withoutOld = currentData.filter(o => Number(o.order_id) !== Number(orderId));
+        const removedCount = matchingRows.length;
+        if (!newUndispatchedOrders || newUndispatchedOrders.length === 0) {
+            invalidateFromPage(queryClient, getPageNumber(key));
+            return;
+        }
+        const newCount = newUndispatchedOrders.length;
+        const firstMatchIndex = currentData.findIndex(o => Number(o.order_id) === Number(orderId));
+
+        let updatedData;
+        if (withoutOld.length + newCount > perPage) {
+            const beforeInsert = withoutOld.slice(0, firstMatchIndex);
+            const afterInsert = withoutOld.slice(firstMatchIndex);
+            const merged = [...beforeInsert, ...newUndispatchedOrders, ...afterInsert];
+            updatedData = merged.slice(0, perPage);
+            const allEntriesForInvalidation = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+            allEntriesForInvalidation.forEach(([otherKey]) => {
+                if (otherKey === key) return;
+                queryClient.invalidateQueries({ queryKey: otherKey });
+            });
+        } else {
+            if (newCount === removedCount) {
+                const beforeInsert = withoutOld.slice(0, firstMatchIndex);
+                const afterInsert = withoutOld.slice(firstMatchIndex);
+                updatedData = [...beforeInsert, ...newUndispatchedOrders, ...afterInsert];
+            }
+            else {
+                invalidateFromPage(queryClient, getPageNumber(key));
+                return;
+            }
+        }
+
+        const totalDiff = newCount - removedCount;
+
+        queryClient.setQueryData(key, {
+            ...cachedPage,
+            data: updatedData,
+            total: (cachedPage.total ?? 0) + totalDiff,
+        });
+    });
+
+    if (!foundInAnyPage) {
+        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] });
+    }
 };
 
 export function useDispatchCacheUpdate() {
     const queryClient = useQueryClient();
 
-    const updateCache = useCallback(({ order = {}, trips = [], undispatchedOrders = [] }) => {
-        const orderId = order?.id;
+    const updateCache = useCallback(({ orderId, trips = [], undispatchedOrders = [], action = 'created' }) => {
         if (!orderId) return;
 
         const driverTrips = trips.filter(t => t.trip_type === 'driver');
@@ -40,41 +139,29 @@ export function useDispatchCacheUpdate() {
             const key = dispatchKeys.trips('driver');
             const cached = queryClient.getQueryData(key);
             if (cached !== undefined) {
-                queryClient.setQueryData(key, mergeTrips(cached, driverTrips));
+                queryClient.setQueryData(key, mergeTrips(cached, driverTrips, orderId));
             } else {
                 queryClient.invalidateQueries({ queryKey: key });
             }
         }
-
         const interlinerTrips = trips.filter(t => t.trip_type === 'interliner');
         if (interlinerTrips.length > 0) {
             const key = dispatchKeys.trips('interliner');
             const cached = queryClient.getQueryData(key);
             if (cached !== undefined) {
-                queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips));
+                queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips, orderId));
             } else {
                 queryClient.invalidateQueries({ queryKey: key });
             }
         }
-
-        const allUndispatchedEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
-
-        if (allUndispatchedEntries.length > 0) {
-            allUndispatchedEntries.forEach(([key, cachedPage]) => {
-                if (!cachedPage) return;
-                const updated = mergeUndispatched(orderId, cachedPage, undispatchedOrders);
-                if (updated) {
-                    queryClient.setQueryData(key, updated);
-                }
-            });
-        } else {
-            queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] });
+        if (action === 'created') {
+            handleCreatedUndispatched(queryClient, undispatchedOrders);
+        } else if (action === 'updated') {
+            handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
         }
-
         if (trips.length > 0) {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
         }
-
     }, [queryClient]);
 
     return updateCache;

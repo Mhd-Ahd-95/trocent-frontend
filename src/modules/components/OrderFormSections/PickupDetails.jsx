@@ -14,6 +14,7 @@ function PickupDetails(props) {
   const {
     control,
     setValue,
+    getValues
   } = useFormContext()
 
   const { data } = useTerminals()
@@ -22,6 +23,14 @@ function PickupDetails(props) {
     control: control,
     name: 'pickup_appointment',
   })
+
+  const pickupNotes = React.useCallback(() => {
+    const orderNotes = getValues('order_notes')
+    if (orderNotes && orderNotes?.length > 0) {
+      return orderNotes.filter(on => on.note_type === 'pickup').map(on => on.note).join('.\n')
+    }
+    else return 'Dispatch/Driver Notes'
+  }, [props.editMode])
 
   return (
     <Grid container spacing={4}>
@@ -133,8 +142,24 @@ function PickupDetails(props) {
               value={field.value || ''}
               label='Driver Assigned'
               variant='outlined'
+              disabled
               fullWidth
-              helperText={props.editMode ? 'Dispatch/Driver Notes' : null}
+              sx={{
+                '& .MuiInputBase-input.Mui-disabled': {
+                  WebkitTextFillColor: '#000',
+                  color: '#000'
+                },
+                '& .MuiInputLabel-root.Mui-disabled': {
+                  color: '#000'
+                }
+              }}
+              FormHelperTextProps={{
+                sx: {
+                  whiteSpace: 'pre-line',
+                  color: '#000 !important'
+                }
+              }}
+              helperText={props.editMode ? pickupNotes() : null}
             />
           )}
         />

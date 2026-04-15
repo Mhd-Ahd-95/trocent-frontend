@@ -28,6 +28,18 @@ export function useDriverTrips({ enabled = false }) {
     });
 }
 
+export function useUndispatchedDriversCount({ enabled }) {
+    return useQuery({
+        queryKey: ['undispatchedDriversCount'],
+        queryFn: async () => {
+            const response = await DispatchOrderApi.getUndispatchedDrivers();
+            return response.data;
+        },
+        enabled,
+        ...BASE_QUERY_CONFIG,
+    });
+}
+
 export function useInterlinerTrips({ enabled = false } = {}) {
     return useQuery({
         queryKey: dispatchKeys.trips('interliner'),
@@ -80,29 +92,68 @@ const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
     return [...newTrips, ...merged];
 };
 
-const updateDispatchOrdersCache = (queryClient, trip, created = false, oids = [], tripType = 'driver') => {
-    const key = dispatchKeys.trips(tripType);
+const getPageNumber = (queryKey) => queryKey.find(k => typeof k === 'object' && k !== null && 'page' in k)?.page ?? 1;
+
+const invalidateFromPage = (queryClient, fromPage) => {
+    const allEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
+    allEntries.forEach(([key]) => {
+        if (getPageNumber(key) >= fromPage) {
+            queryClient.invalidateQueries({ queryKey: key });
+        }
+    });
+};
+
+const updateDispatchOrdersCache = (queryClient, trip, oids = []) => {
+    const key = dispatchKeys.trips('driver');
+    const cachedTrips = queryClient.getQueryData(key);
+    queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
+    if (oids.length === 0) return;
+
     const allUndispatchedEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
-    const cachedTrips = queryClient.getQueryData(key)
-    if (created) {
-        queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
+    if (allUndispatchedEntries.length === 0) return;
+    const sortedEntries = [...allUndispatchedEntries].sort(([a], [b]) => getPageNumber(a) - getPageNumber(b));
+    const affectedPages = sortedEntries
+        .filter(([, cachedPage]) => {
+            if (!cachedPage) return false;
+            return (cachedPage.data ?? []).some(o => oids.includes(Number(o.id)));
+        }).map(([key]) => getPageNumber(key));
+
+    if (affectedPages.length === 0) {
+        invalidateFromPage(queryClient, 1);
+        return;
     }
-    else {
-        queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
+    const lowestAffectedPage = Math.min(...affectedPages);
+    const pageMap = new Map(sortedEntries.map(([key, data]) => [getPageNumber(key), { key, data }]));
+    if (lowestAffectedPage > 1) {
+        invalidateFromPage(queryClient, lowestAffectedPage);
+        return;
     }
-    if (oids.length > 0) {
-        allUndispatchedEntries.forEach(([key, cachedPage]) => {
-            if (!cachedPage) return;
-            const newData = (cachedPage?.data ?? []).filter(o => !oids.includes(Number(o.id)))
-            const updated = {
-                ...cachedPage,
-                data: newData,
-                meta: { ...cachedPage.meta, total: (cachedPage.meta?.total ?? 0) - oids.length },
-            };
-            queryClient.setQueryData(key, updated);
-        });
+    const page1 = pageMap.get(1);
+    const perPage = page1.data.perPage ?? 50;
+    let page1Data = (page1.data.data ?? []).filter(o => !oids.includes(Number(o.id)));
+    let lastFilledPage = 1;
+    let nextPageNum = 2;
+    while (page1Data.length < perPage) {
+        const nextPage = pageMap.get(nextPageNum);
+        if (!nextPage || !nextPage.data) {
+            invalidateFromPage(queryClient, 1);
+            return;
+        }
+        const nextPageData = nextPage.data.data ?? [];
+        const needed = perPage - page1Data.length;
+        if (nextPageData.length <= needed) {
+            page1Data = [...page1Data, ...nextPageData];
+            lastFilledPage = nextPageNum;
+            nextPageNum++;
+        } else {
+            page1Data = [...page1Data, ...nextPageData.slice(0, needed)];
+            lastFilledPage = nextPageNum;
+            break;
+        }
     }
-}
+    queryClient.setQueryData(page1.key, { ...page1.data, data: page1Data, total: (page1.data.total ?? 0) - oids.length, });
+    invalidateFromPage(queryClient, lastFilledPage);
+};
 
 export function useDispatchOrderMutation() {
 
@@ -124,9 +175,11 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (newTrip) => {
             const oids = newTrip.dispatched_orders.map(o => Number(o.id))
-            updateDispatchOrdersCache(queryClient, newTrip, true, oids)
+            updateDispatchOrdersCache(queryClient, newTrip, oids)
             enqueueSnackbar('Trip has been successfully created', { variant: 'success' });
             queryClient.invalidateQueries({ queryKey: ['orders'] })
+            queryClient.invalidateQueries({ queryKey: ['order'] })
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
         },
         onError: handleError,
     });
@@ -138,8 +191,10 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (tripUpdate, { id, payload }) => {
             const oids = payload
-            updateDispatchOrdersCache(queryClient, tripUpdate, false, oids)
+            updateDispatchOrdersCache(queryClient, tripUpdate, oids)
             queryClient.invalidateQueries({ queryKey: ['orders'] })
+            queryClient.invalidateQueries({ queryKey: ['order'] })
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('New Orders has been sucessfully added to trip', { variant: 'success' });
         },
         onError: handleError,
@@ -157,7 +212,7 @@ export function useDispatchOrderMutation() {
                 const order = { id: orderId, order_status: 'Entered' }
                 const hasCachedOrderList = queryClient.getQueriesData({ queryKey: 'orders' })
                 if (orderId) {
-                    updateDispatchCache({ order, trips: [trip], undispatchedOrders: [undispatch_order] });
+                    updateDispatchCache({ orderId, trips: [trip], undispatchedOrders: [undispatch_order] });
                     if (hasCachedOrderList.length > 0) {
                         hasCachedOrderList.forEach(([key, old]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
@@ -172,7 +227,9 @@ export function useDispatchOrderMutation() {
                     queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
                     queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] })
                     queryClient.invalidateQueries({ queryKey: ['orders'] })
+                    queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
                 }
+                queryClient.invalidateQueries({ queryKey: ['order'] })
             }
             enqueueSnackbar('Order has been successfully undispatched', { variant: 'success' })
         },
@@ -185,12 +242,12 @@ export function useDispatchOrderMutation() {
             return res.data
         },
         onSuccess: (updated) => {
-            if (updated){
+            if (updated) {
                 const tripStatus = updated.trip_status
                 const tripType = updated.trip_type
                 const key = ['dispatch', 'trips', tripType]
                 const cachedTrips = queryClient.getQueryData(key)
-                if (tripStatus === 'completed'){
+                if (tripStatus === 'completed') {
                     queryClient.setQueryData(key, removeTrips(cachedTrips, updated.id))
                     queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -198,7 +255,9 @@ export function useDispatchOrderMutation() {
                 else {
                     queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
                 }
+                queryClient.invalidateQueries({ queryKey: ['order'] });
             }
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
         },
         onError: handleError

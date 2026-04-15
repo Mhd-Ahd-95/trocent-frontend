@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, Stack, useTheme } from '@mui/material';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, useTheme } from '@mui/material';
 import { Inventory2, AddRoad, NoteAdd, Terminal } from '@mui/icons-material';
 import moment from 'moment';
 import OrderRow from './OrderRow';
@@ -11,6 +11,7 @@ import OrderNoteForm from './NoteForm';
 import UpdateTerminalForm from './UpdateTerminalForm';
 import { useOrderMutations } from '../../hooks/useOrders';
 import { CustomTitle } from './CustomTitle';
+import { createPortal } from 'react-dom';
 
 const headerCellSx = {
   fontWeight: 700, fontSize: 13, color: 'text.primary',
@@ -40,6 +41,36 @@ const SkeletonRows = ({ count = 10 }) =>
     </TableRow>
   ));
 
+const StickyHeader = React.memo(({ isFetching, isLoading, selectedRows, onOpenDrawer, onClearSelection }) => {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: 'grey.50', borderBottom: 1, borderColor: 'divider', borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
+      <Inventory2 color="primary" />
+      <Typography variant="h6" fontWeight="bold">Undispatched Orders</Typography>
+      {isFetching && !isLoading && <CircularProgress size={14} sx={{ ml: 1 }} />}
+      {selectedRows.size > 0 && (
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Typography variant="body2" color="text.secondary">
+            <strong>{selectedRows.size}</strong> order{selectedRows.size > 1 ? 's' : ''} selected
+          </Typography>
+          <Button
+            variant="contained" size="small" startIcon={<AddRoad />}
+            onClick={onOpenDrawer}
+            sx={{ fontWeight: 600, textTransform: 'none', borderRadius: '8px', whiteSpace: 'nowrap' }}
+          >
+            Create or Select Trip
+          </Button>
+          <Typography
+            variant="body2" color="text.secondary"
+            sx={{ cursor: 'pointer', textDecoration: 'underline', whiteSpace: 'nowrap' }}
+            onClick={onClearSelection}
+          >
+            Clear
+          </Typography>
+        </Box>
+      )}
+    </Box>
+  );
+});
 
 const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
 
@@ -51,7 +82,7 @@ const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, p
     });
   }, [onRowSelect]);
 
-  const theme = useTheme()
+  const theme = useTheme();
 
   if (!isLoading && orders.length === 0) {
     return (
@@ -136,7 +167,7 @@ const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, p
 
 function UndispatchedOrders(props) {
 
-  const { tripAction } = props
+  const { tripAction } = props;
 
   const [appliedFilters, setAppliedFilters] = useState({});
   const [page, setPage] = useState(0);
@@ -144,40 +175,40 @@ function UndispatchedOrders(props) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [selectedRows, setSelectedRows] = useState(new Map());
   const [openDrawer, setOpenDrawer] = useState(false);
-  const dispatchOrderRef = React.useRef(null)
+  const dispatchOrderRef = useRef(null);
 
-  const { createTrip, addOrdersToTrip } = useDispatchOrderMutation()
+  const { createTrip, addOrdersToTrip } = useDispatchOrderMutation();
+  const { updateTerminal } = useOrderMutations();
 
-  const { updateTerminal } = useOrderMutations()
-
-  const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction }, page + 1, rowsPerPage,);
+  const { data, isLoading, isFetching } = useUndispatchedOrders(
+    { ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction },
+    page + 1,
+    rowsPerPage,
+  );
 
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;
-
-  console.log(orders);
-
+  
   const handleSearch = useCallback((searchFilters) => {
-    const formatted = { ...searchFilters }
-    if (formatted.pickupDate) {
-      formatted.pickupDate = moment(formatted.pickupDate).format('YYYY-MM-DD 00:00:00');
-    }
-    if (formatted.deliveryDate) {
-      formatted.deliveryDate = moment(formatted.deliveryDate).format('YYYY-MM-DD 23:59:59');
-    }
+    const formatted = { ...searchFilters };
+    if (formatted.pickupDate) formatted.pickupDate = moment(formatted.pickupDate).format('YYYY-MM-DD 00:00:00');
+    if (formatted.deliveryDate) formatted.deliveryDate = moment(formatted.deliveryDate).format('YYYY-MM-DD 23:59:59');
     setAppliedFilters(formatted);
     setPage(0);
   }, []);
 
   const handleSort = useCallback((key) => {
     if (!key) return;
-    setSortConfig((prev) => prev.key === key ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' });
+    setSortConfig((prev) => prev.key === key
+      ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      : { key, direction: 'asc' }
+    );
     setPage(0);
   }, []);
 
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage);
-    window.scrollTo({ top: document.getElementById('undispatched-section')?.offsetTop ?? 0, behavior: 'smooth', });
+    window.scrollTo({ top: document.getElementById('undispatched-section')?.offsetTop ?? 0, behavior: 'smooth' });
   }, []);
 
   const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
@@ -185,118 +216,129 @@ function UndispatchedOrders(props) {
     setPage(0);
   }, []);
 
-  const handleNote = (row) => {
-    dispatchOrderRef.current = row
-    setOpenDrawer(2)
-  }
+  const handleNote = useCallback((row) => {
+    dispatchOrderRef.current = row;
+    setOpenDrawer(2);
+  }, []);
 
-  const handleTerminal = (row) => {
-    dispatchOrderRef.current = row
-    setOpenDrawer(3)
-  }
+  const handleTerminal = useCallback((row) => {
+    dispatchOrderRef.current = row;
+    setOpenDrawer(3);
+  }, []);
 
-  const hasSelection = selectedRows.size > 0;
+  const handleOpenTripDrawer = useCallback(() => setOpenDrawer(1), []);
+  const handleClearSelection = useCallback(() => setSelectedRows(new Map()), []);
 
   React.useImperativeHandle(tripAction, () => ({
     addNote: handleNote
-  }), [dispatchOrderRef.current])
+  }), [handleNote]);
+
+  const paperRef = useRef(null);
+  const [isSticky, setIsSticky] = useState(false);
+  const [paperWidth, setPaperWidth] = useState('auto');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!paperRef.current) return;
+      const rect = paperRef.current.getBoundingClientRect();
+      setIsSticky(rect.top <= 30);
+      setPaperWidth(paperRef.current.offsetWidth);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <Paper id="undispatched-section" elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'grey.50', borderTopLeftRadius: 10, borderTopRightRadius: 10, }}>
-        <Inventory2 color="primary" />
-        <Typography variant="h6" fontWeight="bold">Undispatched Orders</Typography>
+    <>
+      <Paper ref={paperRef} id="undispatched-section" elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
 
-        {isFetching && !isLoading && <CircularProgress size={14} sx={{ ml: 1 }} />}
+        <Box sx={{ visibility: isSticky ? 'hidden' : 'visible' }}>
+          <StickyHeader
+            isFetching={isFetching}
+            isLoading={isLoading}
+            selectedRows={selectedRows}
+            onOpenDrawer={handleOpenTripDrawer}
+            onClearSelection={handleClearSelection}
+          />
+        </Box>
 
-        {hasSelection && (
-          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant="body2" color="text.secondary">
-              <strong>{selectedRows.size}</strong> order{selectedRows.size > 1 ? 's' : ''} selected
-            </Typography>
-            <Button
-              variant="contained" size="small" startIcon={<AddRoad />}
-              onClick={() => setOpenDrawer(1)}
-              sx={{ fontWeight: 600, textTransform: 'none', borderRadius: '8px', whiteSpace: 'nowrap' }}
-            >
-              Create or Select Trip
-            </Button>
-            <Typography
-              variant="body2" color="text.secondary"
-              sx={{ cursor: 'pointer', textDecoration: 'underline', whiteSpace: 'nowrap' }}
-              onClick={() => setSelectedRows(new Map())}
-            >
-              Clear
-            </Typography>
-          </Box>
+        {isSticky && createPortal(
+          <Box sx={{ position: 'fixed', top: 65, marginTop: 0.1, right: 32, zIndex: 2000, width: paperWidth, boxShadow: 1, borderTop: '1px solid #ccc', overflow: 'hidden' }}>
+            <StickyHeader
+              isFetching={isFetching}
+              isLoading={isLoading}
+              selectedRows={selectedRows}
+              onOpenDrawer={handleOpenTripDrawer}
+              onClearSelection={handleClearSelection}
+            />
+          </Box>,
+          document.body
         )}
-      </Box>
 
-      <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
-        <FilterBar onSearch={handleSearch} showSearchButton defaultExpanded={false} placeholderSearch='Order #, Shipper, Receiver...' />
-      </Box>
+        <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
+          <FilterBar onSearch={handleSearch} showSearchButton defaultExpanded={false} placeholderSearch='Order #, Shipper, Receiver...' />
+        </Box>
 
-      <Box sx={{ p: 2 }}>
-        <UndispatchedOrdersTable
-          orders={orders.sort((a, b) => b.order_number - a.order_number)}
-          total={total}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handlePageChange}
-          onRowsPerPageChange={handleRowsPerPageChange}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-          isLoading={isLoading}
-          isFetching={isFetching}
-          selectedRows={selectedRows}
-          onRowSelect={setSelectedRows}
-          onAddNote={handleNote}
-          onTerminalUpdate={handleTerminal}
-        />
-      </Box>
-
-      {openDrawer === 1 && (
-        <DrawerForm title="Create or Select Trip" setOpen={setOpenDrawer} open={openDrawer}>
-          <TripForm
-            enabled={true}
-            createTrip={async (payload) => {
-              await createTrip.mutateAsync({ payload })
-              setSelectedRows(new Map())
-              setOpenDrawer(false)
-            }}
-            addOrdersToTrip={async (payload) => {
-              await addOrdersToTrip.mutateAsync({ id: payload.trip_id, payload: payload.dispatch_orders })
-              setSelectedRows(new Map())
-              setOpenDrawer(false)
-            }}
-            orderIds={Array.from(selectedRows.keys())}
-            setSelectedOrders={setSelectedRows}
+        <Box sx={{ p: 2 }}>
+          <UndispatchedOrdersTable
+            orders={orders}
+            total={total}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            isLoading={isLoading}
+            isFetching={isFetching}
+            selectedRows={selectedRows}
+            onRowSelect={setSelectedRows}
+            onAddNote={handleNote}
+            onTerminalUpdate={handleTerminal}
           />
-        </DrawerForm>
-      )}
+        </Box>
 
-      {openDrawer === 2 && (
-        <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Add Note' Icon={NoteAdd} isOrder />} setOpen={setOpenDrawer} open={openDrawer}>
-          <OrderNoteForm
-            order={dispatchOrderRef.current}
-            onClose={() => setOpenDrawer(false)}
-          />
-        </DrawerForm>
-      )}
-      {openDrawer === 3 && (
-        <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Update Terminal' isOrder Icon={Terminal}  />} setOpen={setOpenDrawer} open={openDrawer}>
-          <UpdateTerminalForm
-            orderData={dispatchOrderRef.current}
-            onClose={() => setOpenDrawer(false)}
-            updateTerminal={async (terminal) => {
-              await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.order_id, terminal })
-              dispatchOrderRef.current = null
-              setOpenDrawer(false)
-            }}
-          />
-        </DrawerForm>
-      )}
-    </Paper>
+        {openDrawer === 1 && (
+          <DrawerForm title="Create or Select Trip" setOpen={setOpenDrawer} open={openDrawer}>
+            <TripForm
+              enabled={true}
+              createTrip={async (payload) => {
+                await createTrip.mutateAsync({ payload });
+                setSelectedRows(new Map());
+                setOpenDrawer(false);
+              }}
+              addOrdersToTrip={async (payload) => {
+                await addOrdersToTrip.mutateAsync({ id: payload.trip_id, payload: payload.dispatch_orders });
+                setSelectedRows(new Map());
+                setOpenDrawer(false);
+              }}
+              orderIds={Array.from(selectedRows.keys())}
+              setSelectedOrders={setSelectedRows}
+            />
+          </DrawerForm>
+        )}
+
+        {openDrawer === 2 && (
+          <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Add Note' Icon={NoteAdd} isOrder />} setOpen={setOpenDrawer} open={openDrawer}>
+            <OrderNoteForm order={dispatchOrderRef.current} onClose={() => setOpenDrawer(false)} />
+          </DrawerForm>
+        )}
+
+        {openDrawer === 3 && (
+          <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Update Terminal' isOrder Icon={Terminal} />} setOpen={setOpenDrawer} open={openDrawer}>
+            <UpdateTerminalForm
+              orderData={dispatchOrderRef.current}
+              onClose={() => setOpenDrawer(false)}
+              updateTerminal={async (terminal) => {
+                await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.order_id, terminal, leg: dispatchOrderRef.current.leg_type });
+                dispatchOrderRef.current = null;
+                setOpenDrawer(false);
+              }}
+            />
+          </DrawerForm>
+        )}
+      </Paper>
+    </>
   );
 }
 

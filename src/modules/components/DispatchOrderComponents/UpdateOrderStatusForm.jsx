@@ -66,7 +66,7 @@ const StatusBanner = ({ complete, tab }) => {
 
 
 const TabPanel = ({ type, state, onChange }) => {
-    
+
     const label = type === 'pickup' ? 'Pickup' : 'Delivery';
     const Icon = type === 'pickup' ? MoveToInboxOutlined : LocalShippingOutlined;
     const complete = isTabComplete(state);
@@ -79,7 +79,14 @@ const TabPanel = ({ type, state, onChange }) => {
                     <TimePicker
                         value={state.in}
                         onChange={(val) => onChange('in', val)}
-                        slotProps={pickerSlotProps(`${label} In`)}
+                        slotProps={{
+                            ...pickerSlotProps(`${label} In`),
+                            popper: {
+                                sx: {
+                                    zIndex: 9999,
+                                },
+                            },
+                        }}
                     />
                     <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.5, pl: 0.5 }}>
                         Arrival time
@@ -89,7 +96,14 @@ const TabPanel = ({ type, state, onChange }) => {
                     <TimePicker
                         value={state.out}
                         onChange={(val) => onChange('out', val)}
-                        slotProps={pickerSlotProps(`${label} Out`)}
+                        slotProps={{
+                            ...pickerSlotProps(`${label} Out`),
+                            popper: {
+                                sx: {
+                                    zIndex: 9999,
+                                },
+                            },
+                        }}
                     />
                     <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.5, pl: 0.5 }}>
                         Departure time
@@ -99,7 +113,14 @@ const TabPanel = ({ type, state, onChange }) => {
                     <DatePicker
                         value={state.at}
                         onChange={(val) => onChange('at', val)}
-                        slotProps={pickerSlotProps(`${label} At`)}
+                        slotProps={{
+                            ...pickerSlotProps(`${label} At`),
+                            popper: {
+                                sx: {
+                                    zIndex: 9999,
+                                },
+                            },
+                        }}
                     />
                     <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.5, pl: 0.5 }}>
                         Date

@@ -65,10 +65,28 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
             {order.order_status === 'Picked Up' &&
               <span style={{ marginLeft: 20 }}>
                 <Chip
+                  component={'span'}
                   label={order.order_status}
                   color={'success'}
                   size="medium"
-                  sx={{ height: 22, fontSize: '0.7rem', letterSpacing: '0.1px', marginTop: -0.5 }}
+                  sx={{
+                    height: 22,
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.1px',
+                    marginTop: -0.5,
+                    animation: 'pulse 1.5s infinite',
+                    '@keyframes pulse': {
+                      '0%': {
+                        boxShadow: '0 0 0 0 rgba(76, 175, 80, 0.7)',
+                      },
+                      '70%': {
+                        boxShadow: '0 0 0 8px rgba(76, 175, 80, 0)',
+                      },
+                      '100%': {
+                        boxShadow: '0 0 0 0 rgba(76, 175, 80, 0)',
+                      },
+                    },
+                  }}
                 />
               </span>
             }
@@ -113,6 +131,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
             {order.order_status === 'Delivered' &&
               <span style={{ marginLeft: 20 }}>
                 <Chip
+                  component={'span'}
                   label={order.order_status}
                   color={'info'}
                   size="medium"
@@ -166,7 +185,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 </IconButton>
               </Tooltip>
             }
-            {/* <Tooltip title='Update Order Status' placement='right'>
+            <Tooltip title='Update Order Status' placement='right'>
               <IconButton
                 size="small"
                 onClick={(e) => {
@@ -177,7 +196,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
               >
                 <SystemUpdateAlt fontSize="small" color="action" />
               </IconButton>
-            </Tooltip> */}
+            </Tooltip>
             <Tooltip title='Add Note' placement='right'>
               <IconButton
                 size="small"
@@ -270,8 +289,13 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
                   {isInterliner ? 'Interliner' : 'Driver'}
                 </Typography>
                 <Typography variant="body2" fontWeight="600" >
-                  {isInterliner ? trip.interliner_name : trip.driver_name}
+                  {isInterliner ? trip.interliner_name : `${trip.driver_name}`}
                 </Typography>
+                {!isInterliner &&
+                  <Typography variant="caption" fontWeight="600" >
+                    {`${trip.driver_number}`}
+                  </Typography>
+                }
               </Grid>
 
               <Grid size={{ xs: 1 }} sx={{}}>
@@ -424,7 +448,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
         </DrawerForm>
       )}
       {openDrawer === 2 && (
-        <DrawerForm customTitle={<CustomTitle number={dispatchedOrderRef.current.order_number} title='Update Order Status' isOrder Icon={LocalShipping}  />} setOpen={setOpenDrawer} open={openDrawer}>
+        <DrawerForm customTitle={<CustomTitle number={dispatchedOrderRef.current.order_number} title='Update Order Status' isOrder Icon={LocalShipping} />} setOpen={setOpenDrawer} open={openDrawer}>
           <UpdateOrderStatusForm />
         </DrawerForm>
       )}

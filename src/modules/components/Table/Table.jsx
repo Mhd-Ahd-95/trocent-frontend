@@ -17,6 +17,8 @@ function Pagination({ page, onPageChange, className }) {
       count={pageCount}
       page={page + 1}
       onChange={(event, newPage) => {
+        event.stopPropagation()
+        event.preventDefault()
         onPageChange(event, newPage - 1);
       }}
     />
@@ -105,7 +107,7 @@ export default function Table(props) {
             />
           ), // pass the component, NOT a function
           noRowsOverlay: () => <CustomNoRows row={props.row} />,
-          noResultsOverlay: CustomNoResultsOverlay
+          noResultsOverlay: CustomNoResultsOverlay,
         }}
         showToolbar={!props.noToolbar}
         onRowSelectionModelChange={props.onRowSelectionModelChange}

@@ -82,6 +82,7 @@ export function useDriverMutation() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
             }
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('Driver has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -103,6 +104,8 @@ export function useDriverMutation() {
                     queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
                 }
                 queryClient.invalidateQueries({ queryKey: ['driver', Number(updated.id)], exact: true })
+                queryClient.invalidateQueries({ queryKey: ['order'] })
+                queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -119,6 +122,7 @@ export function useDriverMutation() {
                 queryClient.setQueryData(['drivers'], (old = []) =>
                     old.filter((item) => item.id !== iid)
                 );
+                queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
                 enqueueSnackbar('Driver has been deleted successfully', { variant: 'success' });
             }
         },
@@ -135,6 +139,7 @@ export function useDriverMutation() {
                 queryClient.setQueryData(['drivers'], (old = []) =>
                     old.filter((item) => !iids.includes(item.id))
                 );
+                queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
                 enqueueSnackbar('Selected Drivers have been deleted successfully', { variant: 'success' });
             }
         },

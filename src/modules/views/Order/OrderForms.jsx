@@ -51,7 +51,6 @@ function OrderForm(props) {
     return editMode ? { ...defaultOrderValue, ...OrderEngine.transformLoadedData(initialValues, defaultOrderValue) } : { ...defaultOrderValue, ...initialValues }
   }, [initialValues, editMode])
 
-
   const methods = useForm({
     defaultValues: transformedInitialValues,
     mode: 'onBlur',
