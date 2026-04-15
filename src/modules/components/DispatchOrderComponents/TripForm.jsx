@@ -196,7 +196,6 @@ export default function TripForm({ createTrip, addOrdersToTrip, orderIds, setSel
 
     const { data: trips, isLoading } = useDriverTrips({ enabled: true });
     const { data: drivers, isLoading: isDriverLoading } = useDrivers({ enabled: mode === 'new' });
-    console.log(drivers);
 
     const filteredTrips = useMemo(() => (trips || []).filter((t) => {
         const q = tripSearch.toLowerCase();

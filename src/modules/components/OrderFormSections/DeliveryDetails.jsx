@@ -141,10 +141,21 @@ function DeliveryDetails(props) {
               value={field.value || ''}
               label='Driver Assigned'
               variant='outlined'
+              disabled
               fullWidth
+              sx={{
+                '& .MuiInputBase-input.Mui-disabled': {
+                  WebkitTextFillColor: '#000',
+                  color: '#000'
+                },
+                '& .MuiInputLabel-root.Mui-disabled': {
+                  color: '#000'
+                }
+              }}
               FormHelperTextProps={{
                 sx: {
-                  whiteSpace: 'pre-line'
+                  whiteSpace: 'pre-line',
+                  color: '#000 !important'
                 }
               }}
               helperText={props.editMode ? deliveryNotes() : null}

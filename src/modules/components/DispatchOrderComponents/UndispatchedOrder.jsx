@@ -158,7 +158,7 @@ const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, p
         onPageChange={(_, p) => onPageChange(p)}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={(e) => { onRowsPerPageChange(+e.target.value); }}
-        rowsPerPageOptions={[5, 100, 200]}
+        rowsPerPageOptions={[50, 100, 200]}
         sx={{ borderTop: 1, borderColor: 'divider' }}
       />
     </Paper>
@@ -171,7 +171,7 @@ function UndispatchedOrders(props) {
 
   const [appliedFilters, setAppliedFilters] = useState({});
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [selectedRows, setSelectedRows] = useState(new Map());
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -188,7 +188,7 @@ function UndispatchedOrders(props) {
 
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;
-
+  
   const handleSearch = useCallback((searchFilters) => {
     const formatted = { ...searchFilters };
     if (formatted.pickupDate) formatted.pickupDate = moment(formatted.pickupDate).format('YYYY-MM-DD 00:00:00');

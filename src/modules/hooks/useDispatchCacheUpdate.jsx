@@ -2,11 +2,20 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { dispatchKeys } from './useDispatchOrders';
 
-const mergeTrips = (cachedTrips = [], updatedTrips = []) => {
+const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
     if (!cachedTrips) return updatedTrips;
     const updatedMap = new Map(updatedTrips.map(t => [t.id, t]));
     const existingIds = new Set(cachedTrips.map(t => t.id));
-    const merged = cachedTrips.map(t => updatedMap.has(t.id) ? updatedMap.get(t.id) : t);
+    const merged = cachedTrips.map(t => {
+        if (updatedMap.has(t.id)) {
+            const updatedTrip = updatedMap.get(t.id)
+            const updatedDispatchedOrders = updatedTrip?.dispatched_orders ?? []
+            const oldOrdersWithoutUpdated = t?.dispatched_orders.filter(o => o.order_id !== orderId) ?? []
+            const newDispatchedOrders = [...oldOrdersWithoutUpdated, ...updatedDispatchedOrders].sort((a, b) => a.order_level - b.order_level)
+            return ({ ...updatedTrip, dispatched_orders: newDispatchedOrders })
+        }
+        return t
+    });
     const newTrips = updatedTrips.filter(t => !existingIds.has(t.id));
     return [...newTrips, ...merged];
 };
@@ -70,6 +79,7 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
         if (!cachedPage) return;
         const currentData = cachedPage.data ?? [];
         const matchingRows = currentData.filter(o => Number(o.order_id) === Number(orderId));
+        const perPage = cachedPage.perPage ?? PER_PAGE;
         if (matchingRows.length === 0) return;
         foundInAnyPage = true;
         const withoutOld = currentData.filter(o => Number(o.order_id) !== Number(orderId));
@@ -78,7 +88,6 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
             invalidateFromPage(queryClient, getPageNumber(key));
             return;
         }
-        const perPage = cachedPage.perPage ?? PER_PAGE;
         const newCount = newUndispatchedOrders.length;
         const firstMatchIndex = currentData.findIndex(o => Number(o.order_id) === Number(orderId));
 
@@ -122,8 +131,7 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
 export function useDispatchCacheUpdate() {
     const queryClient = useQueryClient();
 
-    const updateCache = useCallback(({ order = {}, trips = [], undispatchedOrders = [], action = 'created' }) => {
-        const orderId = order?.id;
+    const updateCache = useCallback(({ orderId, trips = [], undispatchedOrders = [], action = 'created' }) => {
         if (!orderId) return;
 
         const driverTrips = trips.filter(t => t.trip_type === 'driver');
@@ -131,7 +139,7 @@ export function useDispatchCacheUpdate() {
             const key = dispatchKeys.trips('driver');
             const cached = queryClient.getQueryData(key);
             if (cached !== undefined) {
-                queryClient.setQueryData(key, mergeTrips(cached, driverTrips));
+                queryClient.setQueryData(key, mergeTrips(cached, driverTrips, orderId));
             } else {
                 queryClient.invalidateQueries({ queryKey: key });
             }
@@ -141,7 +149,7 @@ export function useDispatchCacheUpdate() {
             const key = dispatchKeys.trips('interliner');
             const cached = queryClient.getQueryData(key);
             if (cached !== undefined) {
-                queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips));
+                queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips, orderId));
             } else {
                 queryClient.invalidateQueries({ queryKey: key });
             }

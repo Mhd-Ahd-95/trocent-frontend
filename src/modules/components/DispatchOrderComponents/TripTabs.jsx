@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { Business, PersonOutline, CheckCircle } from '@mui/icons-material';
 import { FilterBar, TripsList, Tabs } from '../../components';
-import { useInterlinerTrips, useCompletedTrips, useDriverTrips } from '../../hooks/useDispatchOrders';
+import { useCompletedTrips } from '../../hooks/useDispatchOrders';
 import CompletedTripsList from './CompletedTripList';
 import * as _ from 'lodash'
 import moment from 'moment';
@@ -14,9 +14,8 @@ const TabLoadingState = ({ textLoading }) => (
     </Box>
 );
 
-const DriverTabContent = React.memo(({ enabled, tripAction }) => {
+const DriverTabContent = React.memo(({ tripAction, trips = [], isLoading }) => {
 
-    const { data: trips, isLoading } = useDriverTrips({ enabled });
     const [filters, setFilters] = useState({});
     const handleFilterChange = useCallback(_.debounce((f) => {
         setFilters(f)
@@ -39,10 +38,9 @@ const DriverTabContent = React.memo(({ enabled, tripAction }) => {
     );
 });
 
-const InterlinerTabContent = React.memo(({ enabled, tripAction }) => {
+const InterlinerTabContent = React.memo(({ tripAction, trips = [], isLoading }) => {
 
     const [filters, setFilters] = useState({});
-    const { data: trips = [], isLoading } = useInterlinerTrips({ enabled });
     const handleFilterChange = useCallback(_.debounce((f) => {
         setFilters(f)
     }, 500), [trips]);
@@ -63,7 +61,7 @@ const InterlinerTabContent = React.memo(({ enabled, tripAction }) => {
 
 const CompletedTabContent = React.memo(({ enabled }) => {
 
-    const [appliedFilters, setAppliedFilters] = useState({quickFilter: 'today'});
+    const [appliedFilters, setAppliedFilters] = useState({ quickFilter: 'today' });
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(50);
 
@@ -115,17 +113,10 @@ const CompletedTabContent = React.memo(({ enabled }) => {
     );
 });
 
-export default function TripTabs({ tripAction }) {
-
-    const [activatedTabs, setActivatedTabs] = useState(() => new Set([0]));
+export default function TripTabs({ tripAction, trips, isLoading, onTabChange, activatedTab }) {
 
     const handleTabChange = useCallback((tabIndex) => {
-        setActivatedTabs((prev) => {
-            if (prev.has(tabIndex)) return prev;
-            const next = new Set(prev);
-            next.add(tabIndex);
-            return next;
-        });
+        onTabChange(tabIndex)
     }, []);
 
     return (
@@ -142,17 +133,19 @@ export default function TripTabs({ tripAction }) {
                     contents={[
                         <DriverTabContent
                             key="driver"
-                            enabled={activatedTabs.has(0)}
                             tripAction={tripAction}
+                            trips={trips}
+                            isLoading={isLoading}
                         />,
                         <InterlinerTabContent
                             key="interliner"
-                            enabled={activatedTabs.has(1)}
                             tripAction={tripAction}
+                            trips={trips}
+                            isLoading={isLoading}
                         />,
                         <CompletedTabContent
                             key="completed"
-                            enabled={activatedTabs.has(2)}
+                            enabled={activatedTab === 2}
                         />,
                     ]}
                 />

@@ -28,6 +28,18 @@ export function useDriverTrips({ enabled = false }) {
     });
 }
 
+export function useUndispatchedDriversCount({ enabled }) {
+    return useQuery({
+        queryKey: ['undispatchedDriversCount'],
+        queryFn: async () => {
+            const response = await DispatchOrderApi.getUndispatchedDrivers();
+            return response.data;
+        },
+        enabled,
+        ...BASE_QUERY_CONFIG,
+    });
+}
+
 export function useInterlinerTrips({ enabled = false } = {}) {
     return useQuery({
         queryKey: dispatchKeys.trips('interliner'),
@@ -166,6 +178,8 @@ export function useDispatchOrderMutation() {
             updateDispatchOrdersCache(queryClient, newTrip, oids)
             enqueueSnackbar('Trip has been successfully created', { variant: 'success' });
             queryClient.invalidateQueries({ queryKey: ['orders'] })
+            queryClient.invalidateQueries({ queryKey: ['order'] })
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
         },
         onError: handleError,
     });
@@ -179,6 +193,8 @@ export function useDispatchOrderMutation() {
             const oids = payload
             updateDispatchOrdersCache(queryClient, tripUpdate, oids)
             queryClient.invalidateQueries({ queryKey: ['orders'] })
+            queryClient.invalidateQueries({ queryKey: ['order'] })
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('New Orders has been sucessfully added to trip', { variant: 'success' });
         },
         onError: handleError,
@@ -196,7 +212,7 @@ export function useDispatchOrderMutation() {
                 const order = { id: orderId, order_status: 'Entered' }
                 const hasCachedOrderList = queryClient.getQueriesData({ queryKey: 'orders' })
                 if (orderId) {
-                    updateDispatchCache({ order, trips: [trip], undispatchedOrders: [undispatch_order] });
+                    updateDispatchCache({ orderId, trips: [trip], undispatchedOrders: [undispatch_order] });
                     if (hasCachedOrderList.length > 0) {
                         hasCachedOrderList.forEach(([key, old]) => {
                             queryClient.setQueryData(key, (prev = {}) => ({
@@ -211,7 +227,9 @@ export function useDispatchOrderMutation() {
                     queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
                     queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] })
                     queryClient.invalidateQueries({ queryKey: ['orders'] })
+                    queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
                 }
+                queryClient.invalidateQueries({ queryKey: ['order'] })
             }
             enqueueSnackbar('Order has been successfully undispatched', { variant: 'success' })
         },
@@ -237,7 +255,9 @@ export function useDispatchOrderMutation() {
                 else {
                     queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
                 }
+                queryClient.invalidateQueries({ queryKey: ['order'] });
             }
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
         },
         onError: handleError
