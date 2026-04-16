@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Collapse } from '@mui/material';
+import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Collapse, colors } from '@mui/material';
 import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, LocalShippingOutlined, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom'
@@ -78,6 +78,34 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                     '@keyframes pulse': {
                       '0%': {
                         boxShadow: '0 0 0 0 rgba(76, 175, 80, 0.7)',
+                      },
+                      '70%': {
+                        boxShadow: '0 0 0 8px rgba(76, 175, 80, 0)',
+                      },
+                      '100%': {
+                        boxShadow: '0 0 0 0 rgba(76, 175, 80, 0)',
+                      },
+                    },
+                  }}
+                />
+              </span>
+            }
+            {order.order_status === 'Arrived Shipper' &&
+              <span style={{ marginLeft: 20 }}>
+                <Chip
+                  component={'span'}
+                  label={'Arrived At 22:10 PM'}
+                  color={'warning'}
+                  size="medium"
+                  sx={{
+                    height: 22,
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.1px',
+                    marginTop: -0.5,
+                    animation: 'pulse 1.5s infinite',
+                    '@keyframes pulse': {
+                      '0%': {
+                        boxShadow: '0 0 0 0 rgba(235, 176, 65, 0.7)',
                       },
                       '70%': {
                         boxShadow: '0 0 0 8px rgba(76, 175, 80, 0)',
@@ -181,7 +209,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                   }}
                   sx={{ '&:hover': { bgcolor: 'error.50' } }}
                 >
-                  <LocalShippingOutlined fontSize="small" color="error" />
+                  <SystemUpdateAlt fontSize="small" color="error" />
                 </IconButton>
               </Tooltip>
             }
@@ -192,9 +220,9 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                   e.stopPropagation();
                   handleUpdateOrderStatus(order)
                 }}
-                sx={{ '&:hover': { bgcolor: 'error.50' } }}
+                sx={{ '&:hover': { bgcolor: 'success.50' } }}
               >
-                <SystemUpdateAlt fontSize="small" color="action" />
+                <LocalShipping fontSize="small" color='inherit' sx={{color: colors.green[700]}} />
               </IconButton>
             </Tooltip>
             <Tooltip title='Add Note' placement='right'>

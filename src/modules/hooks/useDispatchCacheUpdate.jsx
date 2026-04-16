@@ -159,6 +159,9 @@ export function useDispatchCacheUpdate() {
         } else if (action === 'updated') {
             handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
         }
+        else if (action === 'removed') {
+            handleRemoveDispatchOrder(queryClient, undispatchedOrders)
+        }
         if (trips.length > 0) {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
         }
@@ -166,3 +169,35 @@ export function useDispatchCacheUpdate() {
 
     return updateCache;
 }
+
+
+const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders) => {
+    if (!newUndispatchedOrders?.length) return;
+    const newOrder = newUndispatchedOrders[0];
+    const pages = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] }).sort(([a], [b]) => {
+        const getPage = (k) => k.find(x => x?.page)?.page ?? 0;
+        return getPage(a) - getPage(b);
+    });
+    let insertedIndex = -1;
+    for (let i = 0; i < pages.length; i++) {
+        const [key, page] = pages[i];
+        const data = page?.data ?? [];
+        const perPage = page?.perPage ?? PER_PAGE;
+        if (!data.length) continue;
+        const first = data[0], last = data[data.length - 1];
+        const n = newOrder.order_number;
+        const belongs = n <= first.order_number && n >= last.order_number;
+        if (!belongs) continue;
+        let updated = [...data, newOrder].sort((a, b) => b.order_number - a.order_number).slice(0, perPage);
+        queryClient.setQueryData(key, { ...page, data: updated, total: (page.total ?? 0) + 1 });
+        insertedIndex = i;
+        break;
+    }
+    if (insertedIndex === -1) {
+        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] });
+        return;
+    }
+    for (let i = insertedIndex + 1; i < pages.length; i++) {
+        queryClient.invalidateQueries({ queryKey: pages[i][0] });
+    }
+};
