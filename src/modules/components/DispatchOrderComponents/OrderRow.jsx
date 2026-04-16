@@ -4,6 +4,8 @@ import { Link as RouterLink } from 'react-router-dom'
 import OrderActionsMenu from './OrderActionMenu';
 import moment from 'moment';
 import InlineFreightCell from './InlineFreightCell';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import EventBusyIcon from '@mui/icons-material/EventBusy';
 
 const cellSx = {
     py: 0.5,
@@ -20,7 +22,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
         <TableRow
             onClick={() => onRowClick(row)}
             sx={{
-                bgcolor: isSelected ?  alpha(theme.palette.primary.main, 0.4) : isToday ? alpha(theme.palette.primary.main, 0.09) : isEven ? '#fff' : 'grey.200',
+                bgcolor: isSelected ? alpha(theme.palette.primary.main, 0.4) : isToday ? alpha(theme.palette.primary.main, 0.09) : isEven ? '#fff' : 'grey.200',
                 cursor: 'pointer',
                 outline: isSelected ? '2px solid' : 'none',
                 outlineColor: isSelected ? 'primary.main' : 'transparent',
@@ -29,7 +31,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
                 maxHeight: 60,
                 overflow: 'hidden',
                 '&:hover': {
-                    bgcolor: isSelected ?  alpha(theme.palette.primary.main, 0.6) : isToday ?  alpha(theme.palette.primary.main, 0.2) : 'grey.100',
+                    bgcolor: isSelected ? alpha(theme.palette.primary.main, 0.6) : isToday ? alpha(theme.palette.primary.main, 0.2) : 'grey.100',
                     filter: isSelected ? 'brightness(0.97)' : 'none',
                 }
             }}
@@ -62,7 +64,12 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
             </TableCell>
 
             <TableCell sx={{ ...cellSx, minWidth: 140, maxWidth: 190, borderRight: '1px solid #ccc' }}>
-                <Typography fontWeight={600} fontSize={13}>{moment.utc(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Typography fontWeight={600} fontSize={13}>{moment.utc(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+                    {row.pickup_appointment ?
+                        (<Tooltip title='Pickup Appointment scheduled'><EventAvailableIcon sx={{ fontSize: 16, color: 'green' }} /></Tooltip>)
+                        : (<Tooltip title='No Appointment Scheduled'><EventBusyIcon sx={{ fontSize: 16, color: '#999' }} /></Tooltip>)}
+                </div>
                 <Typography variant="caption" color="text.secondary">{row.pickup_time_from} - {row.pickup_time_to}</Typography>
                 {row.shipper_special_instructions && <>
                     <Divider />
@@ -93,7 +100,12 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
             </TableCell>
 
             <TableCell sx={{ ...cellSx, minWidth: 140, maxWidth: 190, borderRight: '1px solid #ccc' }}>
-                <Typography fontWeight={600} fontSize={13}>{moment.utc(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Typography fontWeight={600} fontSize={13}>{moment.utc(row.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+                    {row.delivery_appointment ?
+                        (<Tooltip title='Delivery Appointment scheduled'><EventAvailableIcon sx={{ fontSize: 16, color: 'green' }} /></Tooltip>)
+                        : (<Tooltip title='No Appointment Scheduled'><EventBusyIcon sx={{ fontSize: 16, color: '#999' }} /></Tooltip>)}
+                </div>
                 <Typography variant="caption" color="text.secondary">{row.delivery_time_from} - {row.delivery_time_to}</Typography>
                 {row.receiver_special_instructions && <>
                     <Divider />
