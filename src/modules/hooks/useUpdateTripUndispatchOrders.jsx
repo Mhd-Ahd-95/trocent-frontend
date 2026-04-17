@@ -35,6 +35,10 @@ export function useUpdateTripUndispatchOrders() {
         const cachedTrips = queryClient.getQueryData(key);
         queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
 
+        queryClient.invalidateQueries({ queryKey: ['orders'] })
+        queryClient.invalidateQueries({ queryKey: ['order'] })
+        queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
+
         if (oids.length === 0) return;
 
         const allUndispatchedEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });

@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { Box, Typography, TextField, InputAdornment, Autocomplete, Avatar, Grid, CircularProgress } from '@mui/material';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Box, Typography, TextField, Autocomplete, Avatar, Grid, CircularProgress } from '@mui/material';
 import { PersonOutline, CalendarTodayOutlined, LocalShippingOutlined, CheckCircleOutlined, RadioButtonUncheckedOutlined, DirectionsCarOutlined, DoneAllOutlined, BusinessOutlined } from '@mui/icons-material';
 import StyledButton from '../StyledButton/StyledButton';
 import SubmitButton from '../SubmitButton/SubmitButton';
 import { useDrivers } from '../../hooks/useDrivers';
 import { useInterliners } from '../../hooks/useInterliners';
 import moment from 'moment';
-
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 
 const LoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
@@ -15,45 +15,18 @@ const LoadingState = ({ textLoading }) => (
     </Box>
 );
 
-const initials = (name) =>
-    name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) ?? '??';
+const initials = (name) => name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) ?? '??';
 
 const AVATAR_COLORS = ['#DD9100', '#7c3aed', '#0891b2', '#059669', '#d97706', '#2c3e50'];
 const avatarColor = (seed) => {
-    const idx = seed
-        ? seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length
-        : 0;
+    const idx = seed ? seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length : 0;
     return AVATAR_COLORS[idx];
 };
 
 const TRIP_STATUSES = [
-    {
-        value: 'planning',
-        label: 'Planning',
-        icon: RadioButtonUncheckedOutlined,
-        color: '#64748b',
-        bg: '#f1f5f9',
-        chipBg: '#e2e8f0',
-        chipColor: '#475569',
-    },
-    {
-        value: 'active',
-        label: 'Active',
-        icon: DirectionsCarOutlined,
-        color: '#2980b9',
-        bg: '#eff6ff',
-        chipBg: '#dbeafe',
-        chipColor: '#1e40af',
-    },
-    {
-        value: 'completed',
-        label: 'Completed',
-        icon: DoneAllOutlined,
-        color: '#059669',
-        bg: '#f0fdf4',
-        chipBg: '#dcfce7',
-        chipColor: '#166534',
-    },
+    { value: 'planning', label: 'Planning', icon: RadioButtonUncheckedOutlined, color: '#64748b', bg: '#f1f5f9', chipBg: '#e2e8f0', chipColor: '#475569' },
+    { value: 'active', label: 'Active', icon: DirectionsCarOutlined, color: '#2980b9', bg: '#eff6ff', chipBg: '#dbeafe', chipColor: '#1e40af' },
+    { value: 'completed', label: 'Completed', icon: DoneAllOutlined, color: '#059669', bg: '#f0fdf4', chipBg: '#dcfce7', chipColor: '#166534' },
 ];
 
 const SectionLabel = ({ icon: Icon, children }) => (
@@ -65,7 +38,7 @@ const SectionLabel = ({ icon: Icon, children }) => (
     </Box>
 );
 
-const StatusOption = ({ status, selected, onClick }) => {
+const StatusOption = React.memo(({ status, selected, onClick }) => {
     const Icon = status.icon;
     return (
         <Box
@@ -82,45 +55,42 @@ const StatusOption = ({ status, selected, onClick }) => {
             <Typography sx={{ fontSize: 12.5, fontWeight: selected ? 700 : 500, color: selected ? status.color : 'text.primary', flex: 1 }}>
                 {status.label}
             </Typography>
-            {selected && (<CheckCircleOutlined sx={{ fontSize: 16, color: status.color, flexShrink: 0 }} />)}
+            {selected && <CheckCircleOutlined sx={{ fontSize: 16, color: status.color, flexShrink: 0 }} />}
         </Box>
     );
-};
+});
 
-export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onClose }) {
+export default function UpdateTripForm({ updateTrip, tripData, isInterliner }) {
 
-    const [selectedAssignee, setSelectedAssignee] = useState(null);
-    const [tripStatus, setTripStatus] = useState(tripData?.trip_status ?? '');
-    const [tripDate, setTripDate] = useState(tripData?.trip_date ? moment(tripData.trip_date).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD'));
+    const [form, setForm] = useState({ assignee: null, status: tripData?.trip_status ?? '', trip_date: moment(tripData.trip_date).format('YYYY-MM-DD') });
     const [submitted, setSubmitted] = useState(false);
 
     const { data: drivers, isLoading: isDriverLoading } = useDrivers({ enabled: !Boolean(isInterliner) });
     const { data: interliners, isLoading: isInterlinerLoading } = useInterliners({ enabled: Boolean(isInterliner) });
 
-    const options = isInterliner ? (interliners || []) : (drivers || []);
-    const isLoading = isInterliner ? isInterlinerLoading : isDriverLoading;
+    const options = useMemo(() => (isInterliner ? interliners : drivers) ?? [], [isInterliner, interliners, drivers]);
 
-    const getOptionLabel = (o) => isInterliner ? o.name : `${o.fname} ${o.lname} — ${o.driver_number}`;
-    const getAssigneeName = (o) => isInterliner ? o.name : `${o.fname} ${o.lname}`;
-    const getAssigneeNumber = (o) => isInterliner ? null : o.driver_number;
-    const getAssigneeSeed = (o) => isInterliner ? o.name : `${o.fname}${o.lname}`;
+    const getOptionLabel = useCallback((o) => isInterliner ? o.name : `${o.fname} ${o.lname} — ${o.driver_number}`, [isInterliner]);
+    const getAssigneeName = useCallback((o) => isInterliner ? o.name : `${o.fname} ${o.lname}`, [isInterliner]);
+    const getAssigneeNumber = useCallback((o) => isInterliner ? null : o.driver_number, [isInterliner]);
+    const getAssigneeSeed = useCallback((o) => isInterliner ? o.name : `${o.fname}${o.lname}`, [isInterliner]);
 
-    const isSubmitDisabled = useMemo(() => {
-        if (submitted) return true;
-        return !selectedAssignee && !tripStatus && !tripDate;
-    }, [submitted, selectedAssignee, tripStatus, tripDate]);
+    useEffect(() => {
+        if (!options.length) return;
+        const match = isInterliner ? options.find((o) => o.id === tripData?.interliner_id) : options.find((o) => o.id === tripData?.driver_id);
+        setForm((prev) => ({ ...prev, assignee: match ?? null }));
+    }, [options, isInterliner, tripData?.interliner_id, tripData?.driver_id]);
+
+    const isSubmitDisabled = submitted || (!form.assignee && !form.status && !form.date);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitted(true);
         try {
-            let payload = { trip_id: tripData?.id }
-            if (isInterliner) {
-                payload['payload'] = { interliner_id: selectedAssignee.id, interliner_name: selectedAssignee.name, trip_status: tripStatus, trip_date: tripDate }
-            }
-            else {
-                payload['payload'] = { driver_id: selectedAssignee.id, driver_number: selectedAssignee.driver_number, driver_name: `${selectedAssignee.fname} ${selectedAssignee.lname}`, trip_status: tripStatus, trip_date: tripDate }
-            }
+            const payload = { trip_id: tripData?.id };
+            payload.payload = isInterliner
+                ? { interliner_id: form.assignee.id, interliner_name: form.assignee.name, trip_status: form.status, trip_date: moment.utc(form.trip_date).format('YYYY-MM-DD') }
+                : { driver_id: form.assignee.id, driver_number: form.assignee.driver_number, driver_name: `${form.assignee.fname} ${form.assignee.lname}`, trip_status: form.status, trip_date: moment.utc(form.trip_date).format('YYYY-MM-DD') };
             await updateTrip(payload);
         } catch (_) {
         } finally {
@@ -128,27 +98,14 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
         }
     };
 
-    const reset = () => {
-        handleSelectedAssigned();
-        setTripStatus(tripData?.trip_status ?? '');
-        setTripDate(tripData?.trip_date ? moment(tripData.trip_date).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD'));
-    };
+    const handleReset = useCallback(() => {
+        const match = isInterliner ? options.find((o) => o.id === tripData?.interliner_id) : options.find((o) => o.id === tripData?.driver_id);
+        setForm({ assignee: match ?? null, status: tripData?.trip_status ?? '', trip_date: moment(tripData.trip_date).format('YYYY-MM-DD') });
+    }, [options, isInterliner, tripData]);
 
-    const handleSelectedAssigned = () => {
-        if (isInterliner) {
-            const interliner = options.find(o => o.id === tripData.interliner_id)
-            interliner ? setSelectedAssignee(interliner) : setSelectedAssignee(null)
-            return
-        }
-        const driver = options.find(o => o.id === tripData.driver_id)
-        driver ? setSelectedAssignee(driver) : setSelectedAssignee(null)
-    }
-
-    React.useEffect(() => {
-        if (options?.length > 0) {
-            handleSelectedAssigned()
-        }
-    }, [options, isInterliner])
+    const handleStatusToggle = useCallback((value) => setForm((prev) => ({ ...prev, status: prev.status === value ? '' : value })), []);
+    const handleAssigneeChange = useCallback((_, val) => setForm((prev) => ({ ...prev, assignee: val })), []);
+    const handleDateChange = useCallback((date) => setForm((prev) => ({ ...prev, trip_date: date })), []);
 
     return (
         <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }} onSubmit={handleSubmit}>
@@ -158,7 +115,7 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
                         <SectionLabel icon={isInterliner ? BusinessOutlined : PersonOutline}>
                             {isInterliner ? 'Assign Interliner' : 'Assign Driver'}
                         </SectionLabel>
-                        {isLoading ? (
+                        {isDriverLoading || isInterlinerLoading ? (
                             <LoadingState textLoading={isInterliner ? 'Loading Interliners…' : 'Loading Drivers…'} />
                         ) : options.length === 0 ? (
                             <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -169,8 +126,8 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
                         ) : (
                             <Autocomplete
                                 options={options}
-                                value={selectedAssignee}
-                                onChange={(_, val) => setSelectedAssignee(val)}
+                                value={form.assignee}
+                                onChange={handleAssigneeChange}
                                 getOptionLabel={getOptionLabel}
                                 renderOption={(props, option) => {
                                     const { key, ...rest } = props;
@@ -190,36 +147,31 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
                                         </Box>
                                     );
                                 }}
-                                slotProps={{
-                                    popper: {
-                                        sx: {
-                                            zIndex: 9999,
-                                        },
-                                    },
-                                }}
+                                slotProps={{ popper: { sx: { zIndex: 9999 } } }}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
+                                        required
                                         placeholder={isInterliner ? 'Search interliner by company or number…' : 'Search driver by name or number…'}
                                         InputProps={{
                                             ...params.InputProps,
                                             startAdornment: (
                                                 <>
-                                                    {selectedAssignee ? (
-                                                        <Avatar sx={{ width: 24, height: 24, bgcolor: avatarColor(getAssigneeSeed(selectedAssignee)), fontSize: 10, fontWeight: 700, mr: 0.5 }}>
-                                                            {initials(getAssigneeName(selectedAssignee))}
+                                                    {form.assignee ? (
+                                                        <Avatar sx={{ width: 24, height: 24, bgcolor: avatarColor(getAssigneeSeed(form.assignee)), fontSize: 10, fontWeight: 700, mr: 0.5 }}>
+                                                            {initials(getAssigneeName(form.assignee))}
                                                         </Avatar>
-                                                    ) : isInterliner ? (
-                                                        <BusinessOutlined sx={{ fontSize: 17, color: 'text.disabled', mr: 0.5 }} />
-                                                    ) : (
-                                                        <PersonOutline sx={{ fontSize: 17, color: 'text.disabled', mr: 0.5 }} />
+                                                    ) : isInterliner ? (<BusinessOutlined sx={{ fontSize: 17, color: 'text.disabled', mr: 0.5 }} />
+                                                    ) : (<PersonOutline sx={{ fontSize: 17, color: 'text.disabled', mr: 0.5 }} />
                                                     )}
                                                     {params.InputProps.startAdornment}
                                                 </>
                                             ),
                                             sx: {
                                                 borderRadius: '10px', fontSize: 13, bgcolor: 'grey.50',
-                                                '& fieldset': { borderColor: 'grey.200' }, '&:hover fieldset': { borderColor: 'primary.main' }, '&.Mui-focused fieldset': { borderColor: 'primary.main' },
+                                                '& fieldset': { borderColor: 'grey.200' },
+                                                '&:hover fieldset': { borderColor: 'primary.main' },
+                                                '&.Mui-focused fieldset': { borderColor: 'primary.main' },
                                             },
                                         }}
                                     />
@@ -234,44 +186,39 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
                                 <StatusOption
                                     key={status.value}
                                     status={status}
-                                    selected={tripStatus === status.value}
-                                    onClick={() => setTripStatus(tripStatus === status.value ? '' : status.value)}
+                                    selected={form.status === status.value}
+                                    onClick={() => handleStatusToggle(status.value)}
                                 />
                             ))}
                         </Box>
                     </Box>
                     <Box sx={{ mb: 2 }}>
                         <SectionLabel icon={CalendarTodayOutlined}>Trip Date</SectionLabel>
-                        <TextField
-                            fullWidth
-                            type="date"
-                            size="small"
-                            value={tripDate}
-                            onChange={(e) => setTripDate(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <CalendarTodayOutlined sx={{ fontSize: 16, color: 'primary.main' }} />
-                                    </InputAdornment>
-                                ),
-                                sx: {
-                                    borderRadius: '10px', fontSize: 13, bgcolor: 'grey.50',
-                                    '& fieldset': { borderColor: 'grey.200' },
-                                    '&:hover fieldset': { borderColor: 'primary.main' },
-                                    '&.Mui-focused fieldset': { borderColor: 'primary.main' },
-                                },
+                        <DatePicker
+                            views={['year', 'month', 'day']}
+                            value={form.trip_date ? moment(form.trip_date) : null}
+                            onChange={(date) => {
+                                const onlyDate = date ? moment(date).format("YYYY-MM-DD") : null;
+                                handleDateChange(onlyDate)
                             }}
-                            inputProps={{ style: { fontSize: 13 } }}
+                            slotProps={{
+                                popper: {
+                                    sx: { zIndex: 9999 }
+                                },
+                                textField: {
+                                    required: true,
+                                    fullWidth: true,
+                                    sx: {
+                                        '& .MuiPickersOutlinedInput-root': { height: 45, borderRadius: 2 },
+                                        '& .MuiOutlinedInput-input': { fontSize: '14px', padding: '10px 14px' },
+                                        '& .MuiInputLabel-root': { fontSize: '13px' },
+                                        '& .MuiInputLabel-shrink': { fontSize: '14px' },
+                                    }
+                                }
+                            }}
                         />
-                        {tripDate && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, mt: 0.75, pl: 0.5 }}>
-                                <CheckCircleOutlined sx={{ fontSize: 13, color: 'primary.main' }} />
-                                <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
-                                    {moment(tripDate).format('dddd, MMMM D, YYYY')}
-                                </Typography>
-                            </Box>
-                        )}
                     </Box>
+
                 </Box>
             </div>
             <div style={{ flexShrink: 0, borderTop: '1px solid #e0e0e0', backgroundColor: '#fff', padding: '16px 24px', zIndex: 1 }}>
@@ -297,7 +244,7 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onC
                             size="small"
                             disabled={submitted}
                             textTransform="capitalize"
-                            onClick={reset}
+                            onClick={handleReset}
                         >
                             Reset
                         </StyledButton>

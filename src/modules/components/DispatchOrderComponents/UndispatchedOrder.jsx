@@ -27,7 +27,7 @@ const COLUMNS = [
   { label: 'Pickup Date', key: 'scheduled_date' },
   { label: 'Receiver Name', key: 'receiver_name' },
   { label: 'Receiver City', key: 'receiver_city' },
-  { label: 'Delivery Date', key: 'delivery_date' },
+  { label: 'Delivery Date', key: 'scheduled_date' },
   { label: 'Freight Details', key: null },
   { label: 'Actions', key: null },
 ];
@@ -172,7 +172,7 @@ function UndispatchedOrders(props) {
   const [appliedFilters, setAppliedFilters] = useState({});
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(50);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'order_number', direction: 'desc' });
   const [selectedRows, setSelectedRows] = useState(new Map());
   const [openDrawer, setOpenDrawer] = useState(false);
   const dispatchOrderRef = useRef(null);
@@ -180,15 +180,32 @@ function UndispatchedOrders(props) {
   const { createTrip, addOrdersToTrip } = useDispatchOrderMutation();
   const { updateTerminal } = useOrderMutations();
 
-  const { data, isLoading, isFetching } = useUndispatchedOrders(
-    { ...appliedFilters, sort_by: sortConfig.key, sort_direction: sortConfig.direction },
-    page + 1,
-    rowsPerPage,
-  );
+  const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters }, page + 1, rowsPerPage,);
 
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;
-  
+
+  const sortedOrders = useMemo(() => {
+    if (!sortConfig.key) return orders;
+    return [...orders].sort((a, b) => {
+      let aVal = a[sortConfig.key] ?? '';
+      let bVal = b[sortConfig.key] ?? '';
+      if (sortConfig.key === 'order_number') {
+        aVal = Number(aVal)
+        bVal = Number(bVal)
+      }
+      if (sortConfig.key === 'scheduled_date') {
+        const aTime = aVal ? new Date(aVal).getTime() : 0;
+        const bTime = bVal ? new Date(bVal).getTime() : 0;
+        return sortConfig.direction === 'asc' ? aTime - bTime : bTime - aTime;
+      }
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return sortConfig.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+  }, [orders, sortConfig]);
+
   const handleSearch = useCallback((searchFilters) => {
     const formatted = { ...searchFilters };
     if (formatted.pickupDate) formatted.pickupDate = moment(formatted.pickupDate).format('YYYY-MM-DD 00:00:00');
@@ -199,11 +216,7 @@ function UndispatchedOrders(props) {
 
   const handleSort = useCallback((key) => {
     if (!key) return;
-    setSortConfig((prev) => prev.key === key
-      ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-      : { key, direction: 'asc' }
-    );
-    setPage(0);
+    setSortConfig((prev) => prev.key === key ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' } : { key, direction: 'asc' });
   }, []);
 
   const handlePageChange = useCallback((newPage) => {
@@ -281,7 +294,7 @@ function UndispatchedOrders(props) {
 
         <Box sx={{ p: 2 }}>
           <UndispatchedOrdersTable
-            orders={orders}
+            orders={sortedOrders}
             total={total}
             page={page}
             rowsPerPage={rowsPerPage}

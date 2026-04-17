@@ -11,9 +11,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import OrderApi from '../../apis/Order.api'
 import { generateBillOfLadingPDF } from '../../components/OrderFormSections/generateBillOfLadingPDF'
 import { useSnackbar } from 'notistack'
+import { useDispatchScreenSync } from '../../hooks/useDispatchScreenSync'
 
 export default function OrdersView() {
 
+  useDispatchScreenSync()
   const navigate = useNavigate()
   const authedUser = globalVariables.auth.user
   const [anchorEl, setAnchorEl] = React.useState(null)

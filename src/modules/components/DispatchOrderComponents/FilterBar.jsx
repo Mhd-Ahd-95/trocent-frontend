@@ -46,16 +46,14 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
 
   const handleFilterChange = useCallback(
     (key, value, quickSearch = false) => {
-      setFilters((prev) => {
-        const next = { ...prev, [key]: value };
-        onFilterChange?.(next);
-        if (quickSearch) {
-          onSearch?.(next)
-        }
-        return next;
-      });
+      const next = { ...filters, [key]: value };
+      setFilters(next);
+      onFilterChange?.(next);
+      if (quickSearch) {
+        onSearch?.(next);
+      }
     },
-    [onFilterChange]
+    [filters, onFilterChange, onSearch]
   );
 
   const clearAll = () => {
