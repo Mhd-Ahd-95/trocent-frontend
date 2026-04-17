@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { useDispatchCacheUpdate } from './useDispatchCacheUpdate';
 import { useUpdateTripUndispatchOrders } from './useUpdateTripUndispatchOrders';
+import { useDispatchScreenTripUpdated } from './useDispatchScreenTripUpdated';
 
 export function useDispatchScreenSync() {
 
     const updateDispatchCache = useDispatchCacheUpdate();
     const updateTripUndispatchOrders = useUpdateTripUndispatchOrders()
+    const updateTrip = useDispatchScreenTripUpdated()
 
     useEffect(() => {
 
@@ -16,8 +18,12 @@ export function useDispatchScreenSync() {
             updateDispatchCache({ orderId, trips, undispatchedOrders: undispatched_orders, action });
         });
 
-        channel.listen('.dispatch.screen.updated', ({ trip_id, oids }) => {
+        channel.listen('.dispatch.screen.addOrCreate', ({ trip_id, oids }) => {
             updateTripUndispatchOrders(trip_id, oids);
+        });
+
+        channel.listen('.dispatch.screen.trip.updated', ({ trip }) => {
+            updateTrip(trip)
         });
 
         return () => {

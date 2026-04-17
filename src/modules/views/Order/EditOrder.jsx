@@ -5,11 +5,13 @@ import { Breadcrumbs } from '../../components'
 import { useParams } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { useOrderMutations, useOrder } from '../../hooks/useOrders'
+import { useDispatchScreenSync } from '../../hooks/useDispatchScreenSync'
 
 const OrderForm = React.lazy(() => import('./OrderForms'))
 
 export default function EditOrder() {
 
+    useDispatchScreenSync()
     const { id } = useParams()
     const { enqueueSnackbar } = useSnackbar()
     const { data, isLoading, isRefetching, error, isError } = useOrder(id)

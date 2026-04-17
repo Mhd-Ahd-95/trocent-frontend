@@ -76,11 +76,6 @@ export function useCompletedTrips(filters = {}, page = 1, perPage = 50, { enable
     });
 }
 
-const removeTrips = (cachedTrips = [], tripId) => {
-    if (!cachedTrips) return [];
-    const filteredTrips = cachedTrips.filter(t => Number(t.id) !== Number(tripId))
-    return filteredTrips
-}
 
 export function useDispatchOrderMutation() {
 
@@ -101,9 +96,6 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (newTrip) => {
             enqueueSnackbar('Trip has been successfully created', { variant: 'success' });
-            queryClient.invalidateQueries({ queryKey: ['orders'] })
-            queryClient.invalidateQueries({ queryKey: ['order'] })
-            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
         },
         onError: handleError,
     });
@@ -114,9 +106,6 @@ export function useDispatchOrderMutation() {
             return res.data;
         },
         onSuccess: (tripUpdate, { id, payload }) => {
-            queryClient.invalidateQueries({ queryKey: ['orders'] })
-            queryClient.invalidateQueries({ queryKey: ['order'] })
-            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('New Orders has been sucessfully added to trip', { variant: 'success' });
         },
         onError: handleError,
@@ -139,27 +128,27 @@ export function useDispatchOrderMutation() {
     })
 
     const updateTrip = useMutation({
-        mutationFn: async ({ trip_id, payload }) => {
-            const res = await DispatchOrderApi.updateTrip(trip_id, payload)
+        mutationFn: async (payload) => {
+            const res = await DispatchOrderApi.updateTrip(payload.trip_id, payload.payload)
             return res.data
         },
         onSuccess: (updated) => {
             if (updated) {
-                const tripStatus = updated.trip_status
-                const tripType = updated.trip_type
-                const key = ['dispatch', 'trips', tripType]
-                const cachedTrips = queryClient.getQueryData(key)
-                if (tripStatus === 'completed') {
-                    queryClient.setQueryData(key, removeTrips(cachedTrips, updated.id))
-                    queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
-                    queryClient.invalidateQueries({ queryKey: ['orders'] });
-                }
-                else {
-                    queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
-                }
-                queryClient.invalidateQueries({ queryKey: ['order'] });
+            //     const tripStatus = updated.trip_status
+            //     const tripType = updated.trip_type
+            //     const key = ['dispatch', 'trips', tripType]
+            //     const cachedTrips = queryClient.getQueryData(key)
+            //     if (tripStatus === 'completed') {
+            //         queryClient.setQueryData(key, removeTrips(cachedTrips, updated.id))
+            //         queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
+            //         queryClient.invalidateQueries({ queryKey: ['orders'] });
+            //     }
+            //     else {
+            //         queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
+            //     }
+            //     queryClient.invalidateQueries({ queryKey: ['order'] });
             }
-            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
+            // queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
         },
         onError: handleError

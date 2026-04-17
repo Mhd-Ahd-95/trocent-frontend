@@ -467,8 +467,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
       {openDrawer === 1 && (
         <DrawerForm customTitle={<CustomTitle number={trip.trip_number} title='Update Trip' Icon={LocalShipping} />} setOpen={setOpenDrawer} open={openDrawer}>
           <UpdateTripForm
-            // order={dispatchOrderRef.current}
-            updateTrip={(async (payload) => await updateTrip.mutateAsync({ trip_id: payload.trip_id, payload: payload.payload }))}
+            updateTrip={(async (payload) => await updateTrip.mutateAsync(payload))}
             isInterliner={Boolean(isInterliner)}
             tripData={trip}
             onClose={() => setOpenDrawer(false)}
