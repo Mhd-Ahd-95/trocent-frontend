@@ -273,9 +273,6 @@ export function useOrderMutations() {
 
     const updateOrderStatus = useMutation({
         mutationFn: async ({ did, tid, payload }) => {
-            console.log(did);
-            console.log(tid);
-            console.log(payload);
             const res = await OrderApi.updateOrderStatus(did, tid, payload)
             return res.data
         },

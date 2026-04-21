@@ -29,7 +29,6 @@ export function useDispatchScreenSync() {
         });
 
         channel.listen('.dispatch.trip.orderStatus', (trip) => {
-            console.log(trip);
             updateOrderStatus(trip)
         })
 

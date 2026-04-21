@@ -20,6 +20,8 @@ const removeOrderFromTrip = (tid, oid) => CustomAxios.put(`/api/trips/${tid}/und
 
 const getTripById = (tid) => CustomAxios.get(`/api/trips/${tid}`)
 
+const getCompletedOrders = (tid) => CustomAxios.get(`/api/dispatch-orders/dispatched-orders/trip/${tid}`)
+
 export default {
     loadTripAndUndispatched,
     getUndispatchedOrders,
@@ -31,4 +33,5 @@ export default {
     getUndispatchedDrivers,
     removeOrderFromTrip,
     getTripById,
+    getCompletedOrders
 };

@@ -52,6 +52,7 @@ const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
       </Paper>
     );
   }
+
   return (
     <>
       <Box sx={{ minHeight: 400, overflowX: 'auto', '&::-webkit-scrollbar': { height: 8, }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 4, }, }}>
@@ -60,6 +61,7 @@ const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
             <TripRow
               key={index}
               trip={trip}
+              isCompleted={trip?.trip_status === 'completed'}
               tripAction={tripAction}
               isInterliner={isInterliner}
               isToday={trip.trip_date === today}

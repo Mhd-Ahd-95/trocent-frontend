@@ -46,14 +46,15 @@ export function useTerminalsMutation() {
     });
 
     const remove = useMutation({
-        mutationFn: async (iid) => {
-            const res = await TerminalsApi.deleteTerminal(iid);
+        mutationFn: async (ter) => {
+            const res = await TerminalsApi.deleteTerminal(ter);
             return res.data
         },
-        onSuccess: (res, iid) => {
+        onSuccess: (res, ter) => {
             if (res) {
-                queryClient.setQueryData(['terminals'], (old = []) =>
-                    old.filter((item) => item.id !== iid)
+                queryClient.setQueryData(['terminals'], (old = []) => {
+                    return old.filter((item) => item.terminal !== ter)
+                }
                 );
                 enqueueSnackbar('Terminal has been deleted successfully', { variant: 'success' });
             }

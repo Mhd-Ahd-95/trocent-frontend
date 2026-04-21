@@ -7,7 +7,7 @@ import CompletedTripsList from './CompletedTripList';
 import * as _ from 'lodash'
 import moment from 'moment';
 
-const TabLoadingState = ({ textLoading }) => (
+export const TabLoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
         <CircularProgress size={20} />
         <Typography variant="body2" color="text.secondary">{textLoading ? textLoading : 'Loading trips…'}</Typography>

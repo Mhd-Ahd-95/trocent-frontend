@@ -5,7 +5,6 @@ export function useUpdateOrderStatus() {
     const queryClient = useQueryClient();
 
     return async (trip) => {
-        console.log(trip);
         const trip_type = trip?.trip_type
         const trip_id = trip?.trip_id
         const trip_status = trip?.trip_status
@@ -32,10 +31,18 @@ export function useUpdateOrderStatus() {
                             const total_orders_completed = Number(o.total_orders_completed) + 1
                             return ({ ...o, total_orders_completed, dispatched_orders: newDispatchedOrders })
                         }
+                        return o
                     }));
                 }
                 else {
                     queryClient.invalidateQueries({ queryKey: key })
+                }
+                const cachedCompletedOrder = queryClient.getQueryData(['dispatchedOrdersCompleted', Number(trip_id)])
+                if (cachedCompletedOrder) {
+                    queryClient.setQueryData(['dispatchedOrdersCompleted', Number(trip_id)], (old = []) => ([dispatchedOrder, ...old]))
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['dispatchedOrdersCompleted', Number(trip_id)], exact: true })
                 }
             }
             if (dispatchOrderStatus === 'picked up') {
@@ -45,6 +52,7 @@ export function useUpdateOrderStatus() {
                             const newDispatchedOrders = o.dispatched_orders.map(dpo => Number(dpo.id) === Number(dispatchedOrder.id) ? dispatchedOrder : dpo)
                             return ({ ...o, dispatched_orders: newDispatchedOrders })
                         }
+                        return o
                     }));
                 }
                 else {

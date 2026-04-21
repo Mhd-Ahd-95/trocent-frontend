@@ -127,13 +127,13 @@ export const useTripRowStyles = makeStyles()((theme, { isActive, isToday, expand
 
 }));
 
-export const useOrderCardStyles = makeStyles()((theme, { orderStatus }) => ({
+export const useOrderCardStyles = makeStyles()((theme, { bgColor, bordered }) => ({
 
     paper: {
         paddingBlock: 0,
         paddingInline: theme.spacing(1),
-        border: '1px solid',
-        borderColor: theme.palette.divider,
+        border: bordered ? '2px solid' : '1px solid',
+        borderColor: bordered ? bordered : theme.palette.divider,
         borderRadius: 8,
         backgroundColor: theme.palette.background.paper,
         overflowX: 'auto',

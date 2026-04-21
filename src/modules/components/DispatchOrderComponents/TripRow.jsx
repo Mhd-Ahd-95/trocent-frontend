@@ -1,21 +1,22 @@
 import React, { useState, useCallback } from 'react';
 import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Collapse, colors } from '@mui/material';
-import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt } from '@mui/icons-material';
+import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt, UploadFile } from '@mui/icons-material';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom';
 import { ConfirmModal, DrawerForm, Modal } from '..';
 import moment from 'moment';
-import { useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
+import { useDispatchedOrdersCompleted, useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 import UpdateTripForm from './UpdateTripForm';
 import UpdateOrderStatusForm from './UpdateOrderStatusForm';
 import { CustomTitle } from './CustomTitle';
 import { useTripRowStyles, useOrderCardStyles } from './DispatchOrder.styles';
+import { TabLoadingState } from './TripTabs';
 
-const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus }) => {
+const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered }) => {
 
   const [showFreight, setShowFreight] = useState(false);
 
-  const { classes } = useOrderCardStyles({ orderStatus: order.order_status });
+  const { classes } = useOrderCardStyles({ orderStatus: order.order_status, bgColor, bordered });
 
   const getServiceColor = useCallback((type) => {
     const colors = { Direct: 'primary', Rush: 'info', Regular: 'success' };
@@ -151,6 +152,11 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 <NoteAdd fontSize="small" color="warning" />
               </IconButton>
             </Tooltip>
+            {/* <Tooltip title='Upload PDF' placement='right'>
+              <IconButton size="small" className={classes.addNoteBtn} onClick={(e) => { e.stopPropagation(); actionTrip?.current?.addNote(order); }}>
+                <UploadFile fontSize="small" color="warning" />
+              </IconButton>
+            </Tooltip> */}
           </Stack>
         </Grid>
       </Grid>
@@ -169,6 +175,8 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
   const tripRef = React.useRef();
 
   const { undispatchOrder, updateTrip } = useDispatchOrderMutation();
+
+  const { data: completedOrders, isLoading: isCompletedLoading } = useDispatchedOrdersCompleted(trip.id, showCompleted)
 
   const isActive = trip.trip_status === 'active';
 
@@ -247,8 +255,8 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
               </Grid>
 
               <Grid size={{ xs: 7.5 }}>
-                <Grid container alignItems={'center'} justifyContent={'space-around'}>
-                  <Grid size>
+                <Grid container alignItems={'center'} width={'100%'}>
+                  <Grid size={5}>
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <Place sx={{ fontSize: 14, color: 'success.main' }} />
                       <Typography variant="caption" fontWeight="600" color="success.main">PICKUP</Typography>
@@ -258,10 +266,10 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
                       {firstOrder.shipper_city || '-'} | {firstOrder.shipper_province || '-'} | {firstOrder.shipper_postal_code || '-'}
                     </Typography>
                   </Grid>
-                  <Grid size>
+                  <Grid size={2}>
                     <TrendingFlat sx={{ color: 'primary.main', fontSize: 28 }} />
                   </Grid>
-                  <Grid size>
+                  <Grid size={5}>
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <Place sx={{ fontSize: 14, color: 'info.main' }} />
                       <Typography variant="caption" fontWeight="600" color="info.main">DELIVERY</Typography>
@@ -320,16 +328,19 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
                 </Box>
                 <Collapse in={showCompleted} timeout="auto">
                   <Stack spacing={1} sx={{ mt: 1.5 }}>
-                    {(trip?.dispatched_orders || []).map((order) => (
-                      <OrderCard
-                        key={order.id}
-                        order={order}
-                        actionTrip={tripAction}
-                        handleUndispatchedOrder={handleUndispatchedOrder}
-                        handleUpdateOrderStatus={handleUpdateOrderStatus}
-                        isInterliner={isInterliner}
-                      />
-                    ))}
+                    {isCompletedLoading ? <TabLoadingState textLoading={'Loading Completed Orders...'} /> :
+                      (completedOrders || []).map((order) => (
+                        <OrderCard
+                          key={order.id}
+                          order={order}
+                          bgColor={colors.green[50]}
+                          bordered={colors.green[800]}
+                          actionTrip={tripAction}
+                          handleUndispatchedOrder={handleUndispatchedOrder}
+                          handleUpdateOrderStatus={handleUpdateOrderStatus}
+                          isInterliner={isInterliner}
+                        />
+                      ))}
                   </Stack>
                 </Collapse>
               </Box>
@@ -370,6 +381,8 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
           <UpdateOrderStatusForm
             tid={trip.id}
             dispatchOrder={dispatchedOrderRef.current}
+            isPickedUp={dispatchedOrderRef.current?.order_status === 'picked up' || dispatchedOrderRef.current?.order_status === 'delivered' || dispatchedOrderRef.current?.order_status === 'completed'}
+            isDelivered={dispatchedOrderRef.current?.order_status === 'delivered' || dispatchedOrderRef.current?.order_status === 'completed'}
             handleClose={() => setOpenDrawer(false)}
           />
         </DrawerForm>

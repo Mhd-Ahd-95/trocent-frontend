@@ -182,7 +182,6 @@ function OrderForm(props) {
 
   const onSubmit = async (data, e) => {
     e.preventDefault()
-    console.log(data);
     let payload = OrderEngine.format_request(data)
     const action = e?.nativeEvent?.submitter?.id;
     if (editMode) {
@@ -198,7 +197,6 @@ function OrderForm(props) {
       payload['order_status'] = 'entered'
     }
     try {
-      console.log(payload);
       await submit(payload)
       if (action === 'save-order-action' && !editMode) {
         handleReset()
