@@ -30,5 +30,5 @@ export default {
     updateTrip,
     getUndispatchedDrivers,
     removeOrderFromTrip,
-    getTripById
+    getTripById,
 };

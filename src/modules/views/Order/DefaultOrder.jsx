@@ -10,7 +10,7 @@ export const defaultOrderValue = {
   quote: false,
   is_crossdock: false,
   order_entity: 'Order Entry',
-  order_status: 'Pending',
+  order_status: 'pending',
   internal_note: '',
 
   customer_id: '',

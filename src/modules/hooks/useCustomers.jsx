@@ -3,11 +3,13 @@ import CustomersApi from "../apis/Customers.api";
 import { useSnackbar } from "notistack";
 
 
-export function useCustomers() {
+export function useCustomers(p, ps) {
+    const pageSize = Number(ps)
+    const page = Number(p)
     return useQuery({
-        queryKey: ['customers'],
+        queryKey: ['customers', page, pageSize],
         queryFn: async () => {
-            const response = await CustomersApi.getCustomers();
+            const response = await CustomersApi.getCustomers({ page, pageSize });
             return response.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -104,7 +106,7 @@ export function useCustomerMutation() {
                     return [{ id: newCust.id, name: newCust.name, account_number: newCust.account_number }, ...old]
                 })
             }
-            queryClient.invalidateQueries({ queryKey: ['customerSearch'], exact: false })
+            queryClient.invalidateQueries({ queryKey: ['customerSearch'] })
             enqueueSnackbar('Customer has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -130,9 +132,9 @@ export function useCustomerMutation() {
                         return old.map(item => item.id === Number(updated.id) ? { id: updated.id, name: updated.name, account_number: updated.account_number } : item)
                     })
                 }
-                queryClient.invalidateQueries({ queryKey: ['customerSearch'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['customerSearch'] })
                 queryClient.invalidateQueries({ queryKey: ['customer', Number(updated.id)] })
-                queryClient.invalidateQueries({ queryKey: ['orders'] })
+                queryClient.invalidateQueries({ queryKey: ['order'] })
                 enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -154,7 +156,7 @@ export function useCustomerMutation() {
                         old.filter((item) => item.id !== iid)
                     }])
                 }
-                queryClient.invalidateQueries({ queryKey: ['customerSearch'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['customerSearch'] })
                 queryClient.invalidateQueries({ queryKey: ['customersRateSheets', Number(iid)] })
                 enqueueSnackbar('Customer has been deleted successfully', { variant: 'success' });
             }
@@ -182,7 +184,7 @@ export function useCustomerMutation() {
                     queryClient.removeQueries({ queryKey: ['customersRateSheets', Number(cid)] });
                     queryClient.removeQueries({ queryKey: ['rateSheetsCustomer', Number(cid)] });
                 }
-                queryClient.invalidateQueries({ queryKey: ['customerSearch'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['customerSearch'] })
                 enqueueSnackbar('Selected Customers been deleted successfully', { variant: 'success' });
             }
         },

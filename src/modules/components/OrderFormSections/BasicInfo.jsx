@@ -15,6 +15,7 @@ import moment from 'moment'
 import { AddressBookContext } from '../../contexts'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import globalVariables from '../../global'
 
 function BasicInfo(props) {
   const { engine } = props
@@ -28,6 +29,8 @@ function BasicInfo(props) {
 
   const { terminals, loading } = React.useContext(AddressBookContext)
   const queryClient = useQueryClient();
+
+  const { capitalizeMany } = globalVariables.methods
 
   const handleIsCrossdock = (checked) => {
     requestAnimationFrame(async () => {
@@ -246,7 +249,7 @@ function BasicInfo(props) {
                         setValue('order_entity', 'Order Entry')
                       }
                       else {
-                        setValue('order_status', 'Pending')
+                        setValue('order_status', 'pending')
                         setValue('order_entity', 'Order Entry')
                       }
                     }}
@@ -283,7 +286,7 @@ function BasicInfo(props) {
                           setValue('order_entity', 'Order Billing')
                         }
                         else {
-                          setValue('order_status', 'Pending')
+                          setValue('order_status', 'pending')
                           setValue('order_entity', 'Order Entry')
                         }
                       })
@@ -310,7 +313,7 @@ function BasicInfo(props) {
                 if (value === 'Order Billing') {
                   setValue('order_status', 'Approved')
                 }
-                else setValue('order_status', 'Pending')
+                else setValue('order_status', 'pending')
               }}
               renderInput={params => (
                 <TextInput
@@ -333,19 +336,22 @@ function BasicInfo(props) {
             <Autocomplete
               {...field}
               options={[
-                'Pending',
-                'Quote',
-                'Entered',
-                'Dispatched',
-                'On Dock',
-                'Arrived Shipper',
-                'Picked Up',
-                'Arrived Receiver',
-                'Delivered',
-                'Approved',
-                'Billed',
-                'Canceled'
+                'pending',
+                'billing',
+                'quote',
+                'entered',
+                'dispatched',
+                'on dock',
+                'arrrived shipper',
+                'picked up',
+                'arrived receiver',
+                'delivered',
+                'approved',
+                'billed',
+                'completed',
+                'canceled'
               ]}
+              getOptionLabel={(o) => capitalizeMany(o)}
               onChange={(_, value) => field.onChange(value)}
               disabled={!props.editMode}
               renderInput={params => (

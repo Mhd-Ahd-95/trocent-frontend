@@ -81,9 +81,15 @@ export function useAddressBookMutations() {
             return res.data.data;
         },
         onSuccess: (newDriver) => {
-            queryClient.setQueryData(['addressBooks'], (old = []) => {
-                return [newDriver, ...old]
-            });
+            const cachedList = queryClient.getQueryData(['addressBooks'])
+            if (cachedList) {
+                queryClient.setQueryData(['addressBooks'], (old = []) => {
+                    return [newDriver, ...old]
+                });
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['addressBooks'] })
+            }
             queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
             queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
             enqueueSnackbar('Address Book has been created successfully', { variant: 'success' });
@@ -98,12 +104,20 @@ export function useAddressBookMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['addressBooks'], (old = []) =>
-                    old.map((item) => item.id === Number(updated.id) ? updated : item)
-                );
+
+                const cachedList = queryClient.getQueryData(['addressBooks'])
+                if (cachedList) {
+                    queryClient.setQueryData(['addressBooks'], (old = []) =>
+                        old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['addressBooks'] })
+                }
                 queryClient.setQueryData(['addressBook', Number(updated.id)], updated)
                 queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
                 queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['order'] })
                 enqueueSnackbar('Address Book has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -117,10 +131,16 @@ export function useAddressBookMutations() {
                 return res.data.data;
             },
             onSuccess: (updated) => {
-                queryClient.setQueryData(['addressBooks'], (old = []) =>
-                    old.map((item) => item.id === Number(updated.id) ? updated : item)
-                );
-                queryClient.setQueryData(['addressBook', Number(updated.id)], updated)
+                const cachedList = queryClient.getQueryData(['addressBooks'])
+                if (cachedList) {
+                    queryClient.setQueryData(['addressBooks'], (old = []) =>
+                        old.map((item) => item.id === Number(updated.id) ? updated : item)
+                    );
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['addressBooks'] })
+                }
+                queryClient.invalidateQueries({ queryKey: ['addressBook'] })
                 queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
                 queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
                 // enqueueSnackbar(`${updated.name} updated`, { variant: 'success' });
@@ -144,6 +164,7 @@ export function useAddressBookMutations() {
             }
             queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
             queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
+            queryClient.invalidateQueries({ queryKey: ['order'] })
         },
         onError: handleError,
     });
@@ -161,6 +182,7 @@ export function useAddressBookMutations() {
                 enqueueSnackbar('Selected Address Books been deleted successfully', { variant: 'success' });
                 queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
                 queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
+                queryClient.invalidateQueries({ queryKey: ['order'] })
             }
         },
         onError: handleError,

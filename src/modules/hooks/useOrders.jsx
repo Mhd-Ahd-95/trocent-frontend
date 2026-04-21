@@ -85,14 +85,19 @@ export function useOrderMutations() {
 
     const uploadFile = useMutation({
         mutationFn: async (payload) => {
-            const res = await OrderApi.uploadFile(payload)
+            const res = await OrderApi.uploadFile(payload.payload)
             return res.data
         },
         onSuccess: (newFiles, payload) => {
-            const order_id = payload.get('order_id')
-            queryClient.setQueryData(['order', Number(order_id)], (old = {}) => {
-                return ({ ...old, files: newFiles })
-            })
+            const order_id = payload.payload.get('order_id')
+            if (payload.isFromDispatch) {
+                queryClient.invalidateQueries({ queryKey: ['order'] })
+            }
+            else {
+                queryClient.setQueryData(['order', Number(order_id)], (old = {}) => {
+                    return ({ ...old, files: newFiles })
+                })
+            }
             enqueueSnackbar('File has been successully uploaded', { variant: 'success' });
         },
         onError: handleError,
@@ -266,6 +271,22 @@ export function useOrderMutations() {
         onError: handleError
     })
 
-    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder, updateTerminal, addNote };
+    const updateOrderStatus = useMutation({
+        mutationFn: async ({ did, tid, payload }) => {
+            console.log(did);
+            console.log(tid);
+            console.log(payload);
+            const res = await OrderApi.updateOrderStatus(did, tid, payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            if (res) {
+                enqueueSnackbar('Order Status updated successfully', { variant: 'success' })
+            }
+        },
+        onError: handleError
+    })
+
+    return { create, uploadFile, deleteFile, update, patchStatus, duplicateOrder, updateTerminal, addNote, updateOrderStatus };
 
 }

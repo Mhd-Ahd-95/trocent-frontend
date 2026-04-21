@@ -76,7 +76,6 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
 
     const noFilterEntries = allEntries.filter(([key]) => isEmptyFilters(getKeyMeta(key).filters));
     const otherEntries = allEntries.filter(([key]) => !isEmptyFilters(getKeyMeta(key).filters));
-
     let foundInAnyPage = false;
     const updatedKeys = new Set();
 
@@ -85,7 +84,6 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
 
         const currentData = cachedPage.data ?? [];
         const matchingRows = currentData.filter((o) => Number(o.order_id) === Number(orderId));
-
         if (matchingRows.length === 0) return;
 
         foundInAnyPage = true;

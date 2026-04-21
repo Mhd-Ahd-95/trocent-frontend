@@ -32,6 +32,8 @@ const addNote = (payload) => CustomAxios.post('/api/orders/order/add-note', payl
 
 const getNotes = (oid) => CustomAxios.get(`/api/orders/order/${oid}/notes`)
 
+const updateOrderStatus = (did, tid, payload) => CustomAxios.put(`/api/orders/dispatch-order/${did}/trip/${tid}`, payload)
+
 export default {
     getOrders,
     getOrderById,
@@ -44,5 +46,6 @@ export default {
     duplicateOrder,
     updateTerminal,
     getNotes,
-    addNote
+    addNote,
+    updateOrderStatus
 }

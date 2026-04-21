@@ -8,7 +8,7 @@ import UploadPDF from '../UploadFile/UploadPDF'
 
 export default function UploadPDFFile(props) {
 
-    const { order_id } = props
+    const { order_id, isFromDispatch } = props
     const [loading, setLoading] = React.useState(false)
     const { uploadFile } = useOrderMutations()
 
@@ -23,7 +23,7 @@ export default function UploadPDFFile(props) {
         formData.append('fsize', data.fsize)
         formData.append('file', data.file)
         try {
-            const order = await uploadFile.mutateAsync(formData)
+            const order = await uploadFile.mutateAsync({ payload: formData, isFromDispatch })
             if (props.onUploadSuccess && order) {
                 props.onUploadSuccess(order)
             }

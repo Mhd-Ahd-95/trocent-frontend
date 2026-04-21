@@ -1,6 +1,6 @@
 import CustomAxios from './customAxios'
 
-const getCustomers = () => CustomAxios.get('/api/customers')
+const getCustomers = (params = {}) => CustomAxios.get('/api/customers', { params })
 
 const getCustomer = rid => CustomAxios.get(`/api/customers/${rid}`)
 

@@ -95,6 +95,7 @@ export function useAccessorialMutations() {
             if (res) {
                 queryClient.setQueryData(['accessorials'], (old = []) => old.filter((item) => item.id !== iid));
                 enqueueSnackbar('Accessorial has been deleted successfully', { variant: 'success' });
+                queryClient.invalidateQueries({ queryKey: ['customer'] });
             }
         },
         onError: handleError,
@@ -108,6 +109,7 @@ export function useAccessorialMutations() {
         onSuccess: (res, iids) => {
             if (res) {
                 queryClient.setQueryData(['accessorials'], (old = []) => old.filter((item) => !iids.includes(item.id)));
+                queryClient.invalidateQueries({ queryKey: ['customer'] });
                 enqueueSnackbar('Selected accessorials been deleted successfully', { variant: 'success' });
             }
         },

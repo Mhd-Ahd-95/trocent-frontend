@@ -14,9 +14,10 @@ import {
   NoteAdd,
   Update,
   MoreHoriz,
+  UploadFile,
 } from '@mui/icons-material';
 
-const OrderActionsMenu = ({ onUndispatch, onAddNote, onUpdateTerminal }) => {
+const OrderActionsMenu = ({ onUndispatch, onAddNote, onUpdateTerminal, onUploadFile }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -81,6 +82,12 @@ const OrderActionsMenu = ({ onUndispatch, onAddNote, onUpdateTerminal }) => {
             <NoteAdd fontSize="small" />
           </ListItemIcon>
           <ListItemText>Add Note</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={(e) => handleAction(onUploadFile, e)}>
+          <ListItemIcon>
+            <UploadFile fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Upload File</ListItemText>
         </MenuItem>
       </Menu>
     </>

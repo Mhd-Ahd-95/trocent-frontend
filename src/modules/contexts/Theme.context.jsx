@@ -72,6 +72,54 @@ const defaultTheme = {
     fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
   },
   components: {
+    MuiPickersPopper: {
+      styleOverrides: {
+        root: {
+          zIndex: '9999 !important',
+        },
+      },
+    },
+
+    MuiPopper: {
+      styleOverrides: {
+        root: {
+          zIndex: '9999 !important',
+        },
+      },
+    },
+
+    // MUI X v6+ uses this
+    MuiPickersLayout: {
+      styleOverrides: {
+        root: {
+          zIndex: '9999 !important',
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          zIndex: 9999,
+        },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        root: {
+          zIndex: 9999,
+        },
+        paper: {
+          zIndex: 9999,
+        },
+      },
+    },
+    MuiPopover: {
+      styleOverrides: {
+        root: {
+          zIndex: 9999,
+        },
+      },
+    },
     MuiDataGrid: {
       styleOverrides: {
         columnHeaders: {
@@ -96,7 +144,7 @@ const defaultTheme = {
   },
 };
 
-const isLightTheme = (theme) => theme.palette.type === "light";
+const isLightTheme = (theme) => theme.palette.mode === "light";
 const initialTheme = () => defaultTheme;
 const ThemeContext = createContext();
 

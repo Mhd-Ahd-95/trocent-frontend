@@ -7,8 +7,8 @@ const globalVariables = {
     }
   },
   apis: {
-    // baseURL: 'http://localhost:8000',
-    baseURL: 'https://mhdahd.duckdns.org',
+    baseURL: 'http://localhost:8000',
+    // baseURL: 'https://mhdahd.duckdns.org',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
@@ -44,7 +44,8 @@ const globalVariables = {
       return pattern.test(email);
     },
     avatar: org => {
-      const lst = org.split(' ')
+      const lst = org?.split(' ')
+      if (!lst) return ''
       if (lst.length === 1) {
         return lst[0].length === 2
           ? lst[0][0] + lst[0][1]

@@ -3,7 +3,6 @@ import { TextField } from '@mui/material'
 
 const TextInput = styled(TextField)(({ theme, size }) => ({
   '& .MuiInputBase-root': {
-    zIndex: 100,
     height: size === 'small' ? 40 : 45
   },
   '& .MuiOutlinedInput-input': {

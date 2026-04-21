@@ -27,6 +27,7 @@ const AlertProvider = (props) => {
         vertical: "top",
         horizontal: "right",
       }}
+      style={{ zIndex: 9999 }}
       action={(key) => (
         <IconButton size="small" aria-label="close" color="inherit" onClick={onClickDismiss(key)}>
           <CloseIcon fontSize="small" />

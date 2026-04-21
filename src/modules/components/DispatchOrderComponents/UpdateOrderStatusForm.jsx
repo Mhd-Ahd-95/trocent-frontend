@@ -6,6 +6,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import StyledButton from '../StyledButton/StyledButton';
 import SubmitButton from '../SubmitButton/SubmitButton';
 import moment from 'moment';
+import { useOrderMutations } from '../../hooks/useOrders';
 
 const SectionLabel = ({ icon: Icon, children }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2 }}>
@@ -164,10 +165,12 @@ const Dot = ({ complete, active }) => (
 );
 
 
-export default function UpdateOrderStatusForm({ order_id }) {
+export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose }) {
 
     const [tab, setTab] = useState('pickup');
     const [submitted, setSubmitted] = useState(false);
+
+    const { updateOrderStatus } = useOrderMutations()
 
     const [pickup, setPickup] = useState(defaultState());
     const [delivery, setDelivery] = useState(defaultState());
@@ -192,20 +195,19 @@ export default function UpdateOrderStatusForm({ order_id }) {
         setSubmitted(true);
         try {
             const state = tab === 'pickup' ? pickup : delivery;
-            const status = tab === 'pickup' ? 'Picked Up' : 'Delivered'
             const payload = {
                 type: tab,
-                [`${tab}_in`]: state.in ? state.in.format('HH:mm') : null,
-                [`${tab}_out`]: state.out ? state.out.format('HH:mm') : null,
-                [`${tab}_at`]: state.at ? state.at.format('YYYY-MM-DD') : null,
+                [`${tab}_in`]: state.in ? moment.utc(state.in).format('HH:mm') : null,
+                [`${tab}_out`]: state.out ? moment.utc(state.out).format('HH:mm') : null,
+                [`${tab}_at`]: state.at ? moment.utc(state.at).format('YYYY-MM-DD') : null,
                 [`${tab}_signee`]: state.signee,
-                order_status: status
             };
-            console.log(payload);
+            await updateOrderStatus.mutateAsync({ did: dispatchOrder.id, tid, payload })
         } catch (_) {
             // handle error
         } finally {
             setSubmitted(false);
+            handleClose()
         }
     };
 

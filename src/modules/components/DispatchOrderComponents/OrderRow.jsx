@@ -17,7 +17,7 @@ const cellSx = {
 
 const getServiceColor = (type) => ({ Direct: 'info', Rush: 'warning', Regular: 'secondary' }[type] || 'default');
 
-const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote, theme, onTerminalUpdate }) => (
+const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote, theme, onTerminalUpdate, onUploadFile }) => (
     <>
         <TableRow
             onClick={() => onRowClick(row)}
@@ -135,6 +135,7 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
                     onUpdate={() => console.log('Update order:', row.id)}
                     onUpdateTerminal={() => onTerminalUpdate(row)}
                     onAddNote={() => onAddNote(row)}
+                    onUploadFile={() => onUploadFile(row)}
                 />
             </TableCell>
         </TableRow>
