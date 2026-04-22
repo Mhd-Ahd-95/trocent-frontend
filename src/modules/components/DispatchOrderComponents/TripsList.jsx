@@ -4,7 +4,7 @@ import { LocalShipping } from '@mui/icons-material';
 import TripRow from './TripRow';
 import moment from 'moment';
 
-const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
+const TripsList = ({ trips, filters, isInterliner, tripAction, showAllCompleted }) => {
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -52,6 +52,7 @@ const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
       </Paper>
     );
   }
+
   return (
     <>
       <Box sx={{ minHeight: 400, overflowX: 'auto', '&::-webkit-scrollbar': { height: 8, }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 4, }, }}>
@@ -60,6 +61,8 @@ const TripsList = ({ trips, filters, isInterliner, tripAction }) => {
             <TripRow
               key={index}
               trip={trip}
+              showAllCompleted={showAllCompleted}
+              isCompleted={trip?.trip_status === 'completed'}
               tripAction={tripAction}
               isInterliner={isInterliner}
               isToday={trip.trip_date === today}

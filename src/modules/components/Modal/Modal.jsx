@@ -5,7 +5,8 @@ import { styled } from '@mui/material/styles'
 const CustomModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  zIndex: 9999
 }))
 
 const CustomPaper = styled('div')(({ theme, size }) => ({

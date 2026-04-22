@@ -22,7 +22,7 @@ export default function TripManagement() {
     return {
       totalTrips: trips?.length ?? 0,
       undispatchedOrders: trips !== null ? countDrivers : 0,
-      onRouteDrivers: trips?.filter(t => t.trip_status === 'active').length ?? 0,
+      onRouteDrivers: trips?.filter(t => t?.trip_status === 'active').length ?? 0,
     };
   }, [activeTab, driverTrips, interlinerTrips, countDrivers]);
 

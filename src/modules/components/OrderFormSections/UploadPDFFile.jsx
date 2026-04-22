@@ -8,7 +8,7 @@ import UploadPDF from '../UploadFile/UploadPDF'
 
 export default function UploadPDFFile(props) {
 
-    const { order_id } = props
+    const { order_id, isFromDispatch } = props
     const [loading, setLoading] = React.useState(false)
     const { uploadFile } = useOrderMutations()
 
@@ -23,11 +23,11 @@ export default function UploadPDFFile(props) {
         formData.append('fsize', data.fsize)
         formData.append('file', data.file)
         try {
-            const order = await uploadFile.mutateAsync(formData)
+            const order = await uploadFile.mutateAsync({ payload: formData, isFromDispatch })
             if (props.onUploadSuccess && order) {
                 props.onUploadSuccess(order)
             }
-            props.handleClose()
+            props.handleClose && props.handleClose()
         }
         catch (err) {
             //
@@ -39,20 +39,22 @@ export default function UploadPDFFile(props) {
 
     return (
         <Grid container spacing={3}>
-            <Grid size={12}>
-                <Grid container spacing={2} justifyContent={'space-between'} alignItems={'center'}>
-                    <Grid size='auto'>
-                        <Typography variant='boday1' align='center' fontWeight={600}>Upload File</Typography>
-                    </Grid>
-                    <Grid size='auto'>
-                        <IconButton
-                            onClick={() => props.handleClose()}
-                        >
-                            <Close />
-                        </IconButton>
+            {!props.noCancel &&
+                <Grid size={12}>
+                    <Grid container spacing={2} justifyContent={'space-between'} alignItems={'center'}>
+                        <Grid size='auto'>
+                            <Typography variant='boday1' align='center' fontWeight={600}>Upload File</Typography>
+                        </Grid>
+                        <Grid size='auto'>
+                            <IconButton
+                                onClick={() => props.handleClose()}
+                            >
+                                <Close />
+                            </IconButton>
+                        </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
+            }
             <Grid size={12}>
                 <UploadPDF
                     value={data}
@@ -75,18 +77,20 @@ export default function UploadPDFFile(props) {
                             Upload
                         </SubmitButton>
                     </Grid>
-                    <Grid size='auto'>
-                        <StyledButton
-                            variant='outlined'
-                            color='error'
-                            size='small'
-                            disabled={loading}
-                            textTransform='capitalize'
-                            onClick={() => props.handleClose()}
-                        >
-                            Cancel
-                        </StyledButton>
-                    </Grid>
+                    {!props.noCancel &&
+                        <Grid size='auto'>
+                            <StyledButton
+                                variant='outlined'
+                                color='error'
+                                size='small'
+                                disabled={loading}
+                                textTransform='capitalize'
+                                onClick={() => props.handleClose()}
+                            >
+                                Cancel
+                            </StyledButton>
+                        </Grid>
+                    }
                 </Grid>
             </Grid>
         </Grid>

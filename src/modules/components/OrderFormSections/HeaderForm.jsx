@@ -129,8 +129,8 @@ function HeaderForm(props) {
                             disabled={updating.loading}
                             onClick={(e) => setOpenModal(2)}
                         >
-                            {updating.action === 'Entered' && updating.loading && <CircularProgress style={{ marginRight: "10px" }} size={20} />}
-                            {updating.action === 'Entered' && updating.loading ? 'Updating' : 'Restore'}
+                            {updating.action === 'entered' && updating.loading && <CircularProgress style={{ marginRight: "10px" }} size={20} />}
+                            {updating.action === 'entered' && updating.loading ? 'Updating' : 'Restore'}
                         </Button>
                     </Grid>
                 ) : (
@@ -213,7 +213,7 @@ function HeaderForm(props) {
                     noIcon
                     title='Cancel Order Confirmation'
                     subtitle='Please confirm if you want to cancel this order.'
-                    handleSubmit={() => handleStatusChange('Canceled')}
+                    handleSubmit={() => handleStatusChange('canceled')}
                     handleClose={() => setOpenModal(false)}
                 />
             </Modal>
@@ -223,7 +223,7 @@ function HeaderForm(props) {
                     noIcon
                     title='Restore Order Confirmation'
                     subtitle='Please confirm if you want to restore this order.'
-                    handleSubmit={() => handleStatusChange('Entered')}
+                    handleSubmit={() => handleStatusChange('entered')}
                     handleClose={() => setOpenModal(false)}
                 />
             </Modal>

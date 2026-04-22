@@ -4,7 +4,7 @@ import { Inventory2, AddRoad, NoteAdd, Terminal } from '@mui/icons-material';
 import moment from 'moment';
 import OrderRow from './OrderRow';
 import FilterBar from './FilterBar';
-import { DrawerForm } from '..';
+import { DrawerForm, Modal } from '..';
 import TripForm from './TripForm';
 import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/useDispatchOrders';
 import OrderNoteForm from './NoteForm';
@@ -12,6 +12,7 @@ import UpdateTerminalForm from './UpdateTerminalForm';
 import { useOrderMutations } from '../../hooks/useOrders';
 import { CustomTitle } from './CustomTitle';
 import { createPortal } from 'react-dom';
+import UploadPDFFile from '../OrderFormSections/UploadPDFFile';
 
 const headerCellSx = {
   fontWeight: 700, fontSize: 13, color: 'text.primary',
@@ -343,7 +344,7 @@ function UndispatchedOrders(props) {
               orderData={dispatchOrderRef.current}
               onClose={() => setOpenDrawer(false)}
               updateTerminal={async (terminal) => {
-                await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.order_id, terminal, leg: dispatchOrderRef.current.leg_type });
+                await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.id, terminal });
                 dispatchOrderRef.current = null;
                 setOpenDrawer(false);
               }}

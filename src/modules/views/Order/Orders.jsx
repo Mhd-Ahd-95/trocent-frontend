@@ -124,9 +124,9 @@ export default function OrdersView() {
         renderCell: params => params.value ? (
           <CustomCell
             color={
-              params.value === 'Canceled' ? 'red' :
-                params.value === 'Entered' ? 'blue' :
-                  params.value === 'Dispatched' ? 'green' :
+              params.value === 'canceled' ? 'red' :
+                params.value === 'entered' ? 'blue' :
+                  params.value === 'dispatched' ? 'green' :
                     null
             }
           >
@@ -289,7 +289,7 @@ export default function OrdersView() {
             }}
           >
             {selectedRowRef.current?.order_status === 'Canceled' ?
-              <MenuItem onClick={(e) => setOpenModal(1)} disabled={actionLoading || downloading}>
+              <MenuItem onClick={(e) => {setOpenModal(1); setAnchorEl(null)}} disabled={actionLoading || downloading}>
                 <ListItemIcon>
                   {actionLoading ? (
                     <CircularProgress size={20} />
@@ -300,7 +300,7 @@ export default function OrdersView() {
                 <ListItemText primary="Restore" />
               </MenuItem>
               :
-              <MenuItem onClick={(e) => setOpenModal(2)} disabled={actionLoading || downloading}>
+              <MenuItem onClick={(e) => {setOpenModal(2); setAnchorEl(null)}} disabled={actionLoading || downloading}>
                 <ListItemIcon>
                   {actionLoading ? (
                     <CircularProgress size={20} />
@@ -339,7 +339,7 @@ export default function OrdersView() {
           noIcon
           title='Restore Order Confirmation'
           subtitle='Please confirm if you want to restore this order.'
-          handleSubmit={() => handleCancel('Entered')}
+          handleSubmit={() => handleCancel('entered')}
           handleClose={() => setOpenModal(false)}
         />
       </Modal>

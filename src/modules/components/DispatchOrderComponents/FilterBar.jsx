@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { TextField, Button, IconButton, Collapse, Box, InputAdornment, } from '@mui/material';
-import { Search, TuneRounded, KeyboardArrowDownRounded, CalendarTodayRounded, LocalShippingRounded, PinDropRounded, CloseRounded, } from '@mui/icons-material';
+import { Search, TuneRounded, KeyboardArrowDownRounded, CalendarTodayRounded, LocalShippingRounded, PinDropRounded, CloseRounded, CheckCircle, } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useTheme, alpha } from '@mui/material/styles';
 import moment from 'moment';
@@ -29,7 +29,7 @@ const MiniChip = ({ label, color }) => (
   </Box>
 );
 
-const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true, placeholderSearch, ftDate }) => {
+const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, defaultExpanded = true, placeholderSearch, ftDate, onShowAllCompleted, showAllCompleted}) => {
 
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -152,6 +152,25 @@ const FilterBar = ({ onSearch, showSearchButton = false, onFilterChange, default
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {onShowAllCompleted && (
+            <Box
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowAllCompleted();
+              }}
+              sx={{
+                display: 'flex', alignItems: 'center', gap: 0.6, px: 1.25, height: 26, borderRadius: '8px', border: '1.5px solid', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+                cursor: 'pointer', userSelect: 'none', transition: 'all 0.18s ease', flexShrink: 0,
+                ...(showAllCompleted ? { background: alpha('#27ae60', 0.15), borderColor: '#27ae60', color: '#27ae60', } : {
+                  background: isDark ? alpha('#fff', 0.05) : alpha(secondary, 0.06), borderColor: isDark ? alpha('#fff', 0.12) : alpha(secondary, 0.2),
+                  color: isDark ? alpha('#fff', 0.6) : alpha(secondary, 0.7), '&:hover': { background: alpha('#27ae60', 0.08), borderColor: alpha('#27ae60', 0.4), color: '#27ae60', },
+                }),
+              }}
+            >
+              <CheckCircle sx={{ fontSize: 13 }} />
+              {showAllCompleted ? 'Hide All Completed' : 'Show All Completed'}
+            </Box>
+          )}
           {!expanded && activeCount > 0 && (
             <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {filters.quickFilter && (

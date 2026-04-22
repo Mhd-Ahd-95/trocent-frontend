@@ -132,7 +132,6 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
 
             <TableCell sx={{ ...cellSx, width: 50, textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                 <OrderActionsMenu
-                    onUpdate={() => console.log('Update order:', row.id)}
                     onUpdateTerminal={() => onTerminalUpdate(row)}
                     onAddNote={() => onAddNote(row)}
                 />

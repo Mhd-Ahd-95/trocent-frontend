@@ -8,11 +8,10 @@ import { useQueryClient } from '@tanstack/react-query'
 const AddressBookContext = React.createContext()
 
 const AddressBookContextProvider = props => {
-    
+
     const [loading, setLoading] = React.useState(true)
     const { enqueueSnackbar } = useSnackbar()
     const [countAddress, setCountAddress] = React.useState(0)
-    const [terminals, setTerminals] = React.useState([])
     const { isAuthenticated } = React.useContext(AuthContext)
     const queryClient = useQueryClient();
 
@@ -21,7 +20,7 @@ const AddressBookContextProvider = props => {
             queryKey: ['addressBookByName', 'messagers'],
             queryFn: async () => {
                 const res = await AddressBooksApi.getAddressBookByName('messagers');
-                return res.data.data || {};
+                return res.data || {};
             },
             staleTime: 60 * 60 * 1000,
             gcTime: 60 * 60 * 1000,
@@ -30,12 +29,10 @@ const AddressBookContextProvider = props => {
         });
     }, [queryClient]);
 
-
     const loadCountAddress = React.useCallback(() => {
-        Promise.all([AddressBooksApi.countAddressBooks(), TerminalsApi.getTerminals()])
-            .then(([ab, ter]) => {
+        Promise.all([AddressBooksApi.countAddressBooks()])
+            .then(([ab]) => {
                 setCountAddress(ab.data)
-                setTerminals(ter.data)
             })
             .catch((error) => {
                 const message = error.response?.data.message
@@ -55,7 +52,7 @@ const AddressBookContextProvider = props => {
 
     return (
         <AddressBookContext.Provider
-            value={{ loading, setLoading, countAddress, setCountAddress, setTerminals, terminals }}
+            value={{ loading, setLoading, countAddress, setCountAddress }}
         >
             {props.children}
         </AddressBookContext.Provider>

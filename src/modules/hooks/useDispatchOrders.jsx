@@ -39,6 +39,29 @@ export function useUndispatchedDriversCount({ enabled }) {
     });
 }
 
+export function useDispatchedOrdersCompleted(tid, enabled) {
+    const { enqueueSnackbar } = useSnackbar();
+
+    return useQuery({
+        queryKey: ['dispatchedOrdersCompleted', Number(tid)],
+        queryFn: async () => {
+            const response = await DispatchOrderApi.getCompletedOrders(tid);
+            if (response.data?.status && response.data.status !== 200) {
+                enqueueSnackbar(response.data.message || 'Something went wrong', { variant: 'error' });
+            }
+            return response.data;
+        },
+        enabled: !!tid && enabled,
+        ...BASE_QUERY_CONFIG,
+        throwOnError: false,
+        meta: {
+            onError: (error) => {
+                enqueueSnackbar(error.message, { variant: 'error' });
+            }
+        }
+    });
+}
+
 export function useInterlinerTrips({ enabled = false } = {}) {
     return useQuery({
         queryKey: dispatchKeys.trips('interliner'),
@@ -134,19 +157,19 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (updated) => {
             if (updated) {
-            //     const tripStatus = updated.trip_status
-            //     const tripType = updated.trip_type
-            //     const key = ['dispatch', 'trips', tripType]
-            //     const cachedTrips = queryClient.getQueryData(key)
-            //     if (tripStatus === 'completed') {
-            //         queryClient.setQueryData(key, removeTrips(cachedTrips, updated.id))
-            //         queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
-            //         queryClient.invalidateQueries({ queryKey: ['orders'] });
-            //     }
-            //     else {
-            //         queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
-            //     }
-            //     queryClient.invalidateQueries({ queryKey: ['order'] });
+                //     const tripStatus = updated.trip_status
+                //     const tripType = updated.trip_type
+                //     const key = ['dispatch', 'trips', tripType]
+                //     const cachedTrips = queryClient.getQueryData(key)
+                //     if (tripStatus === 'completed') {
+                //         queryClient.setQueryData(key, removeTrips(cachedTrips, updated.id))
+                //         queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
+                //         queryClient.invalidateQueries({ queryKey: ['orders'] });
+                //     }
+                //     else {
+                //         queryClient.setQueryData(key, mergeTrips(cachedTrips, [updated]))
+                //     }
+                //     queryClient.invalidateQueries({ queryKey: ['order'] });
             }
             // queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
             enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })

@@ -11,30 +11,16 @@ import { useSnackbar } from 'notistack'
 export default function CustomerView() {
 
   const navigate = useNavigate()
-  const { data, isLoading, isFetching, isError, error } = useCustomers()
   const { remove } = useCustomerMutation()
   const selectedRef = React.useRef()
-  // const [selectedCustomers, setSelectedCustomers] = React.useState([])
   const [openModal, setOpenModal] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar()
-
-  // const [rowSelectionModel, setRowSelectionModel] = React.useState({
-  //   type: 'include',
-  //   ids: new Set()
-  // })
-
-  // const handleSelectionChange = newModel => {
-  //   setRowSelectionModel(newModel)
-  //   let selectedIds = Array.from(newModel.ids)
-  //   if (newModel.type === 'exclude' && selectedIds.length === 0) {
-  //     selectedIds = data.map(row => row.id)
-  //   }
-  //   setSelectedCustomers(selectedIds)
-  // }
-
+  const [page, setPage] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(30);
+  const { data, isLoading, isFetching, isError, error } = useCustomers(page + 1, pageSize)
+  
   const handleDeleteCustomers = async (cid) => {
     await remove.mutateAsync(cid)
-    // setSelectedCustomers([])
     selectedRef.current = {}
     setOpenModal(false)
   }
@@ -47,6 +33,11 @@ export default function CustomerView() {
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   }, [isError, error])
+
+  const handlePaginationChange = React.useCallback(({ page, pageSize }) => {
+    setPage(page);
+    setPageSize(pageSize);
+  }, []);
 
   return (
     <MainLayout
@@ -67,18 +58,17 @@ export default function CustomerView() {
       <Grid container spacing={2}>
         <Grid size={12}>
           <Table
-            pageSizeOptions={[10, 25, 50]}
-            pageSize={10}
+            pageSizeOptions={[30, 60, 100]}
+            pageSize={pageSize}
+            rowCount={data?.meta?.total || 0}
+            paginationMode="server"
+            onPaginationModelChange={handlePaginationChange}
             options={{
               filtering: true,
               search: true,
               sortable: true
             }}
             disableRowSelectionOnClick
-            // deleteSelected={selectedCustomers.length > 0}
-            // handleDeleteSelected={() => setOpenModal(2)}
-            // onRowSelectionModelChange={handleSelectionChange}
-            // rowSelectionModel={rowSelectionModel}
             loading={isLoading || isFetching}
             onRowClick={(rowData) => navigate(`/customer/edit/${rowData.row.id}`)}
             columns={[
@@ -137,24 +127,6 @@ export default function CustomerView() {
                       marginTop: 1
                     }}
                   >
-                    {/* <Button
-                      startIcon={<EditSquareIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/customer/edit/${params.row.id}`)
-                      }}
-                      variant='text'
-                      size='small'
-                      sx={{
-                        textTransform: 'capitalize',
-                        '& .MuiButton-startIcon': { marginRight: 0.5 },
-                        fontSize: '0.8rem',
-                        minWidth: 'unset',
-                        p: 0.5
-                      }}
-                    >
-                      Edit
-                    </Button> */}
                     <Button
                       startIcon={<DeleteForever />}
                       onClick={(e) => {
@@ -180,7 +152,7 @@ export default function CustomerView() {
                 )
               }
             ]}
-            data={data || []}
+            data={data?.data || []}
           />
         </Grid>
       </Grid>
@@ -199,19 +171,6 @@ export default function CustomerView() {
           handleSubmit={() => handleDeleteCustomers(selectedRef.current.id)}
         />
       </Modal>
-      {/* <Modal open={openModal === 2} handleClose={() => setOpenModal(false)}>
-        <ConfirmModal
-          title={
-            <>
-              Delete{' '}
-              <strong style={{ fontSize: 15, paddingInline: 5 }}>Customers</strong>
-            </>
-          }
-          subtitle='Are you sure you want to continue?'
-          handleClose={() => setOpenModal(false)}
-          handleSubmit={() => handleDeleteCustomers([...selectedCustomers])}
-        />
-      </Modal> */}
     </MainLayout>
   )
 }

@@ -33,7 +33,7 @@ export default function FuelSurchargeForm(props) {
         data['ftl_surcharge'] = Number(data['ftl_surcharge'])
         data['from_date'] = moment(data['from_date']).format('YYYY-MM-DD 00:00:00')
         data['to_date'] = moment(data['to_date']).format('YYYY-MM-DD 23:59:59')
-        
+
         try {
             await submit(data);
             if (action === 'apply-fuel-action') {
@@ -162,7 +162,7 @@ export default function FuelSurchargeForm(props) {
                     padding: '16px 24px',
                     zIndex: 1
                 }}
-                >
+            >
                 <Grid container spacing={2} justifyContent={'flex-start'}>
                     <Grid size='auto'>
                         <SubmitButton

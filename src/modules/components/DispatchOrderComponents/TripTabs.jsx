@@ -7,7 +7,7 @@ import CompletedTripsList from './CompletedTripList';
 import * as _ from 'lodash'
 import moment from 'moment';
 
-const TabLoadingState = ({ textLoading }) => (
+export const TabLoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
         <CircularProgress size={20} />
         <Typography variant="body2" color="text.secondary">{textLoading ? textLoading : 'Loading trips…'}</Typography>
@@ -21,6 +21,11 @@ const DriverTabContent = React.memo(({ tripAction, trips = [], isLoading }) => {
         setFilters(f)
     }, 500), [trips]);
 
+    const [showAllCompleted, setShowAllCompleted] = useState(false);
+    const handleToggleAllCompleted = useCallback(() => {
+        setShowAllCompleted((p) => !p);
+    }, []);
+
     if (isLoading) return <TabLoadingState textLoading={'Loading Driver Trips...'} />;
 
     return (
@@ -29,10 +34,12 @@ const DriverTabContent = React.memo(({ tripAction, trips = [], isLoading }) => {
                 <FilterBar
                     onFilterChange={handleFilterChange}
                     defaultExpanded={false}
+                    showAllCompleted={showAllCompleted}
+                    onShowAllCompleted={handleToggleAllCompleted}
                 />
             </Box>
             <Box sx={{ p: 2 }}>
-                <TripsList trips={trips ?? []} filters={filters} tripAction={tripAction} />
+                <TripsList trips={trips ?? []} filters={filters} tripAction={tripAction} showAllCompleted={showAllCompleted} />
             </Box>
         </>
     );

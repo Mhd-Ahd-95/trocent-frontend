@@ -60,7 +60,7 @@ const StatusOption = React.memo(({ status, selected, onClick }) => {
     );
 });
 
-export default function UpdateTripForm({ updateTrip, tripData, isInterliner }) {
+export default function UpdateTripForm({ updateTrip, tripData, isInterliner, onClose }) {
 
     const [form, setForm] = useState({ assignee: null, status: tripData?.trip_status ?? '', trip_date: moment(tripData.trip_date).format('YYYY-MM-DD') });
     const [submitted, setSubmitted] = useState(false);
@@ -95,6 +95,7 @@ export default function UpdateTripForm({ updateTrip, tripData, isInterliner }) {
         } catch (_) {
         } finally {
             setSubmitted(false);
+            onClose()
         }
     };
 

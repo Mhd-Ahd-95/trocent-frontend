@@ -189,12 +189,12 @@ function OrderForm(props) {
       const orderUpdates = OrderEngine.getOrderUpdates(touched, initialValues, data)
       payload['order_updates'] = orderUpdates
     }
-    if (payload['order_status'] === 'Billed') {
+    if (payload['order_status'] === 'billed') {
       enqueueSnackbar('Order is Billed unable to update', { variant: 'warning' })
       return
     }
-    if (payload['order_status'] === 'Pending') {
-      payload['order_status'] = 'Entered'
+    if (payload['order_status'] === 'pending') {
+      payload['order_status'] = 'entered'
     }
     try {
       await submit(payload)

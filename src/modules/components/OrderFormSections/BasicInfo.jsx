@@ -5,7 +5,10 @@ import {
   Autocomplete,
   FormControl,
   Switch,
-  CircularProgress
+  Box,
+  Typography,
+  CircularProgress,
+  IconButton
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller, useFormContext } from 'react-hook-form'
@@ -15,19 +18,22 @@ import moment from 'moment'
 import { AddressBookContext } from '../../contexts'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import globalVariables from '../../global'
+import { useTerminals, useTerminalsMutation } from '../../hooks/useTerminals'
+import { AddCircleOutline, DeleteOutline } from '@mui/icons-material'
 
 function BasicInfo(props) {
+
   const { engine } = props
+  const { register, control, setValue, getValues, } = useFormContext()
 
-  const {
-    register,
-    control,
-    setValue,
-    getValues,
-  } = useFormContext()
 
-  const { terminals, loading } = React.useContext(AddressBookContext)
   const queryClient = useQueryClient();
+  const { data: terminals, isLoading: loading } = useTerminals()
+  const { create, remove } = useTerminalsMutation()
+
+
+  const { capitalizeMany } = globalVariables.methods
 
   const handleIsCrossdock = (checked) => {
     requestAnimationFrame(async () => {
@@ -195,14 +201,78 @@ function BasicInfo(props) {
           render={({ field, fieldState }) => (
             <Autocomplete
               {...field}
-              loading={loading}
-              options={terminals?.map((dt => dt.terminal)) || []}
-              onChange={(_, value) => {
-                field.onChange(value)
-                setValue('pickup_terminal', value || '')
-                setValue('delivery_terminal', value || '')
+              loading={loading || create.isPending || remove.isPending}
+              options={(terminals ?? []).map(t => t.terminal) || []}
+              freeSolo
+              filterOptions={(options, params) => {
+                const filtered = options.filter(o =>
+                  o.toLowerCase().includes(params.inputValue.toLowerCase())
+                );
+                const newValue = params.inputValue.trim().toUpperCase();
+                const exists = options.some(o => o === newValue);
+                if (newValue && !exists) {
+                  filtered.push(`__ADD__${newValue}`);
+                }
+                return filtered;
               }}
-              renderInput={params => (
+              onChange={(_, value) => {
+                if (value?.startsWith('__ADD__')) return;
+                field.onChange(value);
+                setValue('pickup_terminal', value || '');
+                setValue('delivery_terminal', value || '');
+              }}
+              renderOption={(props, option) => {
+                const { key, ...rest } = props;
+                if (option.startsWith('__ADD__')) {
+                  const newTerminal = option.replace('__ADD__', '');
+                  return (
+                    <Box key={key} component="li" {...rest} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                        Add "<strong>{newTerminal}</strong>"
+                      </Typography>
+
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const res = await create.mutateAsync({ terminal: newTerminal });
+                          if (res?.terminal) {
+                            field.onChange(res.terminal)
+                          }
+                        }}
+                      >
+                        <AddCircleOutline fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  );
+                }
+                return (
+                  <Box key={key} component="li" {...rest} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}                  >
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {option}
+                    </Typography>
+
+                    <IconButton
+                      size="small"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const res = await remove.mutateAsync(option);
+                        if (res) {
+                            field.onChange('')
+                          }
+                      }}
+                      sx={{ ml: 1, '&:hover': { color: 'error.main' } }}
+                    >
+                      <DeleteOutline fontSize="small" />
+                    </IconButton>
+                  </Box>
+                );
+              }}
+              renderInput={(params) => (
                 <TextInput
                   {...params}
                   label='Terminal'
@@ -212,9 +282,7 @@ function BasicInfo(props) {
                       ...params.InputProps,
                       endAdornment: (
                         <>
-                          {loading ? (
-                            <CircularProgress color="inherit" size={20} />
-                          ) : null}
+                          {loading ? <CircularProgress color="inherit" size={20} /> : null}
                           {params.InputProps.endAdornment}
                         </>
                       ),
@@ -246,7 +314,7 @@ function BasicInfo(props) {
                         setValue('order_entity', 'Order Entry')
                       }
                       else {
-                        setValue('order_status', 'Pending')
+                        setValue('order_status', 'pending')
                         setValue('order_entity', 'Order Entry')
                       }
                     }}
@@ -283,7 +351,7 @@ function BasicInfo(props) {
                           setValue('order_entity', 'Order Billing')
                         }
                         else {
-                          setValue('order_status', 'Pending')
+                          setValue('order_status', 'pending')
                           setValue('order_entity', 'Order Entry')
                         }
                       })
@@ -310,7 +378,7 @@ function BasicInfo(props) {
                 if (value === 'Order Billing') {
                   setValue('order_status', 'Approved')
                 }
-                else setValue('order_status', 'Pending')
+                else setValue('order_status', 'pending')
               }}
               renderInput={params => (
                 <TextInput
@@ -333,19 +401,22 @@ function BasicInfo(props) {
             <Autocomplete
               {...field}
               options={[
-                'Pending',
-                'Quote',
-                'Entered',
-                'Dispatched',
-                'On Dock',
-                'Arrived Shipper',
-                'Picked Up',
-                'Arrived Receiver',
-                'Delivered',
-                'Approved',
-                'Billed',
-                'Canceled'
+                'pending',
+                'billing',
+                'quote',
+                'entered',
+                'dispatched',
+                'on dock',
+                'arrrived shipper',
+                'picked up',
+                'arrived receiver',
+                'delivered',
+                'approved',
+                'billed',
+                'completed',
+                'canceled'
               ]}
+              getOptionLabel={(o) => capitalizeMany(o)}
               onChange={(_, value) => field.onChange(value)}
               disabled={!props.editMode}
               renderInput={params => (
