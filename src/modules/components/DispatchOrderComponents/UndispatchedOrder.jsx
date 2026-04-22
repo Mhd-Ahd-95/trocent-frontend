@@ -73,7 +73,7 @@ const StickyHeader = React.memo(({ isFetching, isLoading, selectedRows, onOpenDr
   );
 });
 
-const UndispatchedOrdersTable = React.memo(({ onUploadFile, onTerminalUpdate, orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
+const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
 
   const handleRowClick = useCallback((row) => {
     onRowSelect((prev) => {
@@ -140,7 +140,6 @@ const UndispatchedOrdersTable = React.memo(({ onUploadFile, onTerminalUpdate, or
                   key={row.id}
                   row={row}
                   onAddNote={onAddNote}
-                  onUploadFile={onUploadFile}
                   theme={theme}
                   isEven={idx % 2 === 0}
                   isToday={moment.utc(row.scheduled_date).format('YYYY-MM-DD') === moment.utc().format('YYYY-MM-DD')}
@@ -177,7 +176,6 @@ function UndispatchedOrders(props) {
   const [sortConfig, setSortConfig] = useState({ key: 'order_number', direction: 'desc' });
   const [selectedRows, setSelectedRows] = useState(new Map());
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [openModal, setOpenModal] = React.useState(false)
   const dispatchOrderRef = useRef(null);
 
   const { createTrip, addOrdersToTrip } = useDispatchOrderMutation();
@@ -235,11 +233,6 @@ function UndispatchedOrders(props) {
   const handleNote = useCallback((row) => {
     dispatchOrderRef.current = row;
     setOpenDrawer(2);
-  }, []);
-
-  const handleUploadFile = useCallback((row) => {
-    dispatchOrderRef.current = row;
-    setOpenModal(true);
   }, []);
 
   const handleTerminal = useCallback((row) => {
@@ -315,7 +308,6 @@ function UndispatchedOrders(props) {
             selectedRows={selectedRows}
             onRowSelect={setSelectedRows}
             onAddNote={handleNote}
-            onUploadFile={handleUploadFile}
             onTerminalUpdate={handleTerminal}
           />
         </Box>
@@ -352,22 +344,13 @@ function UndispatchedOrders(props) {
               orderData={dispatchOrderRef.current}
               onClose={() => setOpenDrawer(false)}
               updateTerminal={async (terminal) => {
-                await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.order_id, terminal, leg: dispatchOrderRef.current.leg_type });
+                await updateTerminal.mutateAsync({ oid: dispatchOrderRef.current.id, terminal });
                 dispatchOrderRef.current = null;
                 setOpenDrawer(false);
               }}
             />
           </DrawerForm>
         )}
-        {openModal &&
-          <Modal open={openModal} handleClose={() => setOpenModal(false)}>
-            <UploadPDFFile
-              handleClose={() => setOpenModal(false)}
-              order_id={dispatchOrderRef.current?.order_id}
-              isFromDispatch
-            />
-          </Modal>
-        }
       </Paper>
     </>
   );

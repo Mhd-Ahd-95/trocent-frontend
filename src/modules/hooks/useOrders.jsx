@@ -210,44 +210,11 @@ export function useOrderMutations() {
     })
 
     const updateTerminal = useMutation({
-        mutationFn: async ({ oid, terminal, leg }) => {
-            const res = await OrderApi.updateTerminal(oid, terminal, leg)
+        mutationFn: async ({ oid, terminal}) => {
+            const res = await OrderApi.updateTerminal(oid, terminal)
             return res.data
         },
-        onSuccess: (dos, { oid, terminal, leg }) => {
-            queryClient.invalidateQueries({ queryKey: ['orders'] })
-            queryClient.invalidateQueries({ queryKey: ['order'] })
-            const cachedUndispatched = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] })
-            const cachedTripDrivers = queryClient.getQueryData(['dispatch', 'trips', 'driver'])
-            const cachedTripInterliners = queryClient.getQueryData(['dispatch', 'trips', 'interliner'])
-            for (const { id, trip_id } of dos) {
-                if (trip_id) {
-                    if (cachedTripDrivers) {
-                        queryClient.setQueryData(['dispatch', 'trips', 'driver'], (old = []) =>
-                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) && o.leg_type === leg ? { ...o, terminal } : o), } : t)
-                        )
-                    }
-                    if (cachedTripInterliners) {
-                        queryClient.setQueryData(['dispatch', 'trips', 'interliner'], (old = []) =>
-                            old.map(t => Number(t.id) === Number(trip_id) ? { ...t, dispatched_orders: t.dispatched_orders.map(o => Number(o.id) === Number(id) && o.leg_type === leg ? { ...o, terminal } : o), } : t)
-                        )
-                    }
-                    if (!cachedTripDrivers) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
-                    if (!cachedTripInterliners) queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'interliner'] })
-
-                } else {
-                    if (cachedUndispatched?.length > 0) {
-                        cachedUndispatched.forEach(([key]) => {
-                            queryClient.setQueryData(key, (prev = {}) => ({
-                                ...prev,
-                                data: (prev.data || []).map(o => Number(o.id) === Number(id) && o.leg_type === leg ? { ...o, terminal } : o),
-                            }));
-                        });
-                    } else {
-                        queryClient.invalidateQueries({ queryKey: ['dispatch', 'undispatched'] })
-                    }
-                }
-            }
+        onSuccess: (dos) => {
             enqueueSnackbar('Terminal has been updated successfully', { variant: 'success' })
         },
         onError: handleError,

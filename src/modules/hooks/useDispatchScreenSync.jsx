@@ -3,6 +3,7 @@ import { useDispatchCacheUpdate } from './useDispatchCacheUpdate';
 import { useUpdateTripUndispatchOrders } from './useUpdateTripUndispatchOrders';
 import { useDispatchScreenTripUpdated } from './useDispatchScreenTripUpdated';
 import { useUpdateOrderStatus } from './useUpdateOrderStatus';
+import { useUpdateTerminalInUndispatchOrder } from './useUpdateTerminalInUndispatchOrder';
 
 export function useDispatchScreenSync() {
 
@@ -10,6 +11,7 @@ export function useDispatchScreenSync() {
     const updateTripUndispatchOrders = useUpdateTripUndispatchOrders()
     const updateTrip = useDispatchScreenTripUpdated()
     const updateOrderStatus = useUpdateOrderStatus()
+    const updateTerminal = useUpdateTerminalInUndispatchOrder()
 
     useEffect(() => {
 
@@ -17,6 +19,7 @@ export function useDispatchScreenSync() {
 
         channel.listen('.dispatch.updated', (e) => {
             const { undispatched_orders, action, trips, orderId } = e;
+            console.log(undispatched_orders);
             updateDispatchCache({ orderId, trips, undispatchedOrders: undispatched_orders, action });
         });
 
@@ -30,6 +33,10 @@ export function useDispatchScreenSync() {
 
         channel.listen('.dispatch.trip.orderStatus', (trip) => {
             updateOrderStatus(trip)
+        })
+
+        channel.listen('.dispatch.undispatchOrder.terminal', (order) => {
+            updateTerminal(order)
         })
 
         return () => {

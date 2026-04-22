@@ -12,7 +12,7 @@ import { CustomTitle } from './CustomTitle';
 import { useTripRowStyles, useOrderCardStyles } from './DispatchOrder.styles';
 import { TabLoadingState } from './TripTabs';
 
-const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered }) => {
+const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered, isCompleted }) => {
 
   const [showFreight, setShowFreight] = useState(false);
 
@@ -63,10 +63,10 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
           <Typography variant="body2" fontWeight="600">
             {order.shipper_name}
             {order.order_status === 'picked up' && (
-              <Chip component={'span'} label={'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
+              <Chip component={'span'} label={order.pickup_out ? `Picked Up At ${order.pickup_out}` : 'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
             )}
             {order.order_status === 'arrived shipper' && (
-              <Chip component={'span'} label={'Arrived At'} color={'warning'} size="medium" className={classes.statusChipArrived} />
+              <Chip component={'span'} label={order.pickup_in ? `Arrived At ${order.pickup_in}` : 'Arrived At'} color={'warning'} size="medium" className={classes.statusChipArrived} />
             )}
           </Typography>
           <Typography component="p" className={classes.addressText}>{order.shipper_address}</Typography>
@@ -104,7 +104,10 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
           <Typography variant="body2" fontWeight="600">
             {order.receiver_name}
             {order.order_status === 'delivered' && (
-              <Chip component={'span'} label={'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
+              <Chip component={'span'} label={order.delivery_out ? `Delivered At ${order.delivery_out}` : 'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
+            )}
+            {order.order_status === 'arrived receiver' && (
+              <Chip component={'span'} label={order.delivery_in ? `Arrived At ${order.delivery_in}` : 'Arrived'} color={'warning'} size="medium" className={classes.statusChipDelivered} />
             )}
           </Typography>
           <Typography component="p" className={classes.addressText}>{order.receiver_address}</Typography>
@@ -142,11 +145,13 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 </IconButton>
               </Tooltip>
             )}
-            <Tooltip title='Update Order Status' placement='right'>
-              <IconButton size="small" className={classes.updateStatusBtn} onClick={(e) => { e.stopPropagation(); handleUpdateOrderStatus(order); }}>
-                <LocalShipping fontSize="small" sx={{ color: colors.green[700] }} />
-              </IconButton>
-            </Tooltip>
+            {!isCompleted &&
+              <Tooltip title='Update Order Status' placement='right'>
+                <IconButton size="small" className={classes.updateStatusBtn} onClick={(e) => { e.stopPropagation(); handleUpdateOrderStatus(order); }}>
+                  <LocalShipping fontSize="small" sx={{ color: colors.green[700] }} />
+                </IconButton>
+              </Tooltip>
+            }
             <Tooltip title='Add Note' placement='right'>
               <IconButton size="small" className={classes.addNoteBtn} onClick={(e) => { e.stopPropagation(); actionTrip?.current?.addNote(order); }}>
                 <NoteAdd fontSize="small" color="warning" />
@@ -164,7 +169,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
   );
 });
 
-const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
+const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAllCompleted }) => {
 
   const [expanded, setExpanded] = useState(false);
   const firstOrder = trip?.dispatched_orders[0] ?? [];
@@ -176,7 +181,9 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
 
   const { undispatchOrder, updateTrip } = useDispatchOrderMutation();
 
-  const { data: completedOrders, isLoading: isCompletedLoading } = useDispatchedOrdersCompleted(trip.id, showCompleted)
+  const toggleShowing = React.useMemo(() => showAllCompleted ? expanded : showCompleted, [showAllCompleted, showCompleted, expanded])
+
+  const { data: completedOrders, isLoading: isCompletedLoading } = useDispatchedOrdersCompleted(trip.id, toggleShowing)
 
   const isActive = trip.trip_status === 'active';
 
@@ -307,6 +314,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
               {(trip?.dispatched_orders || []).sort((a, b) => a.order_level - b.order_level).map((order, idx) => (
                 <OrderCard
                   key={order.id}
+                  isCompleted={isCompleted}
                   actionTrip={tripAction}
                   handleUndispatchedOrder={handleUndispatchedOrder}
                   handleUpdateOrderStatus={handleUpdateOrderStatus}
@@ -318,15 +326,26 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
             </Stack>
             {!isCompleted && trip.total_orders_completed > 0 && (
               <Box sx={{ mt: 1.5 }}>
-                <Box
-                  onClick={(e) => { e.stopPropagation(); setShowCompleted((p) => !p); }}
-                  className={classes.showCompletedBtn}
-                >
-                  <CheckCircle sx={{ fontSize: 13 }} />
-                  {showCompleted ? 'Hide' : 'Show'} Completed Orders
-                  <ExpandMoreRounded className={classes.expandIcon} sx={{ transform: showCompleted ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                </Box>
-                <Collapse in={showCompleted} timeout="auto">
+                {!showAllCompleted ?
+                  <Box
+                    onClick={(e) => { e.stopPropagation(); setShowCompleted((p) => !p); }}
+                    className={classes.showCompletedBtn}
+                  >
+                    <CheckCircle sx={{ fontSize: 13 }} />
+                    {toggleShowing ? 'Hide' : 'Show'} Completed Orders
+                    <ExpandMoreRounded className={classes.expandIcon} sx={{ transform: toggleShowing ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                  </Box>
+                  :
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, my: 0.5 }}>
+                    <Box sx={{ flex: 1, height: '1px', bgcolor: colors.green[200] }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: colors.green[700], fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>
+                      <CheckCircle sx={{ fontSize: 13 }} />
+                      COMPLETED ORDERS
+                    </Box>
+                    <Box sx={{ flex: 1, height: '1px', bgcolor: colors.green[200] }} />
+                  </Box>
+                }
+                <Collapse in={toggleShowing} timeout="auto">
                   <Stack spacing={1} sx={{ mt: 1.5 }}>
                     {isCompletedLoading ? <TabLoadingState textLoading={'Loading Completed Orders...'} /> :
                       (completedOrders || []).map((order) => (
@@ -336,8 +355,8 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted }) => {
                           bgColor={colors.green[50]}
                           bordered={colors.green[800]}
                           actionTrip={tripAction}
+                          isCompleted={true}
                           handleUndispatchedOrder={handleUndispatchedOrder}
-                          handleUpdateOrderStatus={handleUpdateOrderStatus}
                           isInterliner={isInterliner}
                         />
                       ))}

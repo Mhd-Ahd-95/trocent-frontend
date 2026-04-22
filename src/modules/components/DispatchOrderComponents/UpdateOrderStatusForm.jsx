@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Box, Typography, ToggleButton, ToggleButtonGroup, TextField, Grid, Paper, Fade, Divider, colors, } from '@mui/material';
-import { LocalShippingOutlined, MoveToInboxOutlined, CheckCircleOutlined, WarningAmberRounded, PersonOutline, Warning, } from '@mui/icons-material';
+import { LocalShippingOutlined, MoveToInboxOutlined, CheckCircleOutlined, WarningAmberRounded, PersonOutline, Warning, UploadFile, } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import StyledButton from '../StyledButton/StyledButton';
@@ -8,6 +8,7 @@ import SubmitButton from '../SubmitButton/SubmitButton';
 import moment from 'moment';
 import { useOrderMutations } from '../../hooks/useOrders';
 import { useSnackbar } from 'notistack';
+import UploadPDFFile from '../OrderFormSections/UploadPDFFile';
 
 const SectionLabel = ({ icon: Icon, children }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2 }}>
@@ -215,12 +216,14 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
         setSubmitted(true);
         try {
             const state = tab === 'pickup' ? pickup : delivery;
+            const orderStatus = tab === 'pickup' ? 'picked up' : 'completed'
             const payload = {
                 type: tab,
                 [`${tab}_in`]: state.in ? moment(state.in).format('HH:mm') : null,
                 [`${tab}_out`]: state.out ? moment(state.out).format('HH:mm') : null,
                 [`${tab}_at`]: state.at ? moment(state.at).format('YYYY-MM-DD') : null,
                 [`${tab}_signee`]: state.signee,
+                order_status: orderStatus
             };
             // if (tab === 'delivery' && !isPickedUp) {
             //     enqueueSnackbar('An order cannot be marked as delivered before it is picked up.', { variant: 'warning' })
@@ -278,6 +281,17 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
                                 Delivery
                                 <Dot complete={deliveryComplete} active={tab === 'delivery'} />
                             </ToggleButton>
+                            <ToggleButton
+                                value="uploadFile"
+                                sx={{
+                                    py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary',
+                                    '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', },
+                                }}
+                            >
+                                <UploadFile sx={{ fontSize: 16, mr: 0.75 }} />
+                                Upload PDF
+                                <Dot active={tab === 'uploadFile'} />
+                            </ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
                     <Fade in key={tab}>
@@ -289,7 +303,7 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
                                     isPickedUp={isPickedUp}
                                     onChange={handleChange(setPickup)}
                                 />
-                            ) : (
+                            ) : tab === 'delivery' ? (
                                 <TabPanel
                                     type="delivery"
                                     state={delivery}
@@ -297,41 +311,50 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
                                     isDelivered={isDelivered}
                                     onChange={handleChange(setDelivery)}
                                 />
-                            )}
+                            ) :
+                                <UploadPDFFile
+                                    isFromDispatch
+                                    order_id={dispatchOrder.order_id}
+                                    noCancel
+                                    handleClose={handleClose}
+                                />
+                            }
                         </Box>
                     </Fade>
                 </Box>
             </div>
-            <div style={{ flexShrink: 0, borderTop: '1px solid #e0e0e0', backgroundColor: '#fff', padding: '16px 24px', zIndex: 1 }}>
-                <Grid container spacing={2} justifyContent="flex-start">
-                    <Grid size="auto">
-                        <SubmitButton
-                            id="save-trip-action"
-                            type="submit"
-                            variant="outlined"
-                            color="secondary"
-                            size="small"
-                            textTransform="capitalize"
-                            isLoading={submitted}
-                            disabled={!activeComplete || submitted}
-                        >
-                            {tab === 'pickup' ? 'Save Pickup' : 'Save Delivery'}
-                        </SubmitButton>
+            {tab !== 'uploadFile' &&
+                <div style={{ flexShrink: 0, borderTop: '1px solid #e0e0e0', backgroundColor: '#fff', padding: '16px 24px', zIndex: 1 }}>
+                    <Grid container spacing={2} justifyContent="flex-start">
+                        <Grid size="auto">
+                            <SubmitButton
+                                id="save-trip-action"
+                                type="submit"
+                                variant="outlined"
+                                color="secondary"
+                                size="small"
+                                textTransform="capitalize"
+                                isLoading={submitted}
+                                disabled={!activeComplete || submitted}
+                            >
+                                {tab === 'pickup' ? 'Save Pickup' : 'Save Delivery'}
+                            </SubmitButton>
+                        </Grid>
+                        <Grid size="auto">
+                            <StyledButton
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                disabled={submitted}
+                                textTransform="capitalize"
+                                onClick={reset}
+                            >
+                                Reset
+                            </StyledButton>
+                        </Grid>
                     </Grid>
-                    <Grid size="auto">
-                        <StyledButton
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            disabled={submitted}
-                            textTransform="capitalize"
-                            onClick={reset}
-                        >
-                            Reset
-                        </StyledButton>
-                    </Grid>
-                </Grid>
-            </div>
+                </div>
+            }
         </form>
     );
 }
