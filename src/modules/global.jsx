@@ -7,12 +7,12 @@ const globalVariables = {
     }
   },
   apis: {
-    // baseURL: 'http://localhost:8000',
-    baseURL: 'https://mhdahd.duckdns.org',
+    baseURL: 'http://localhost:8000',
+    // baseURL: 'https://mhdahd.duckdns.org',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
-    }
+    } 
   },
   methods: {
     formatNumber: nb => (isNaN(nb) ? Number(0).toFixed : Number(nb).toFixed(2)),
