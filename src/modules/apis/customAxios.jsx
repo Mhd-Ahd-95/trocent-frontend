@@ -4,36 +4,33 @@ import global from '../global'
 const { baseURL, headers } = global.apis
 
 const CustomAxios = axios.create({
-    baseURL: `${baseURL}`,
-    headers
-});
-
-const requestHandler = request => {
-    request.headers.Authorization = 'Bearer ' + localStorage.getItem('token');
-    return request;
-};
-
-const responseHandler = response => {
-    return response;
-};
-
-const errorHandler = error => {
-    if (error.response?.status === 401) {
-        localStorage.clear()
-        // sessionStorage.clear()
-        window.location = '/login'
-    }
-    return Promise.reject(error);
-};
+    baseURL,
+    headers,
+})
 
 CustomAxios.interceptors.request.use(
-    (request) => requestHandler(request),
-    (error) => errorHandler(error)
-);
+    (request) => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            request.headers.Authorization = `Bearer ${token}`
+        }
+        return request
+    },
+    (error) => Promise.reject(error)
+)
 
 CustomAxios.interceptors.response.use(
-    (response) => responseHandler(response),
-    (error) => errorHandler(error)
-);
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.clear()
+
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login'
+            }
+        }
+        return Promise.reject(error)
+    }
+)
 
 export default CustomAxios

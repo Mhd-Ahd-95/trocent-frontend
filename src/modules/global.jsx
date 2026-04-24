@@ -12,7 +12,7 @@ const globalVariables = {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
-    }
+    } 
   },
   methods: {
     formatNumber: nb => (isNaN(nb) ? Number(0).toFixed : Number(nb).toFixed(2)),

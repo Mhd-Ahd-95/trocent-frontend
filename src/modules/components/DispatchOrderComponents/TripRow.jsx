@@ -12,7 +12,7 @@ import { CustomTitle } from './CustomTitle';
 import { useTripRowStyles, useOrderCardStyles } from './DispatchOrder.styles';
 import { TabLoadingState } from './TripTabs';
 
-const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered, isCompleted }) => {
+const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered, isCompleted, pickedUpStatus, deliveredStatus }) => {
 
   const [showFreight, setShowFreight] = useState(false);
 
@@ -62,6 +62,9 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
           </Typography>
           <Typography variant="body2" fontWeight="600">
             {order.shipper_name}
+            {pickedUpStatus &&
+              <Chip component={'span'} label={pickedUpStatus} color={'success'} size="medium" className={classes.statusChipPickedUp} />
+            }
             {order.order_status === 'picked up' && (
               <Chip component={'span'} label={order.pickup_out ? `Picked Up At ${order.pickup_out}` : 'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
             )}
@@ -103,6 +106,9 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
           </Typography>
           <Typography variant="body2" fontWeight="600">
             {order.receiver_name}
+            {deliveredStatus &&
+              <Chip component={'span'} label={deliveredStatus} color={'success'} size="medium" className={classes.statusChipPickedUp} />
+            }
             {order.order_status === 'delivered' && (
               <Chip component={'span'} label={order.delivery_out ? `Delivered At ${order.delivery_out}` : 'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
             )}
@@ -356,6 +362,8 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                           bordered={colors.green[800]}
                           actionTrip={tripAction}
                           isCompleted={true}
+                          pickedUpStatus={`Picked Up At ${order.pickup_out ?? '00:00'}`}
+                          deliveredStatus={`Delivered At ${order.delivery_out ?? '00:00'}`}
                           handleUndispatchedOrder={handleUndispatchedOrder}
                           isInterliner={isInterliner}
                         />

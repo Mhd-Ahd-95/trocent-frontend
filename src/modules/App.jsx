@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Outlet,
-  Navigate
-} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import {
   Login,
   Dashboard,
@@ -34,26 +28,54 @@ import {
   EditCustomer,
   EditRateSheet,
   EditOrder,
-  DispatchView
+  DispatchView,
+  NotAuthorized
 } from './views'
+import { LandingPage } from './DriverApp/view'
 import { ScrollToTop } from './components'
-import { AuthContext } from './contexts'
+import { AuthContext, safeParseUser } from './contexts/Auth.context'
 
-function App() {
-  const authContext = React.useContext(AuthContext)
+const ROLES = {
+  ADMIN: 'admin',
+  DRIVER: 'driver',
+}
 
-  const ProtectRoute = props => {
-    return authContext.isAuthenticated ? <Outlet /> : <Navigate to='/login' />
+const RoleProtectedRoute = ({ allowedRoles }) => {
+  const { isAuthenticated, user } = React.useContext(AuthContext)
+  if (!isAuthenticated) {
+    return <Navigate to='/login' replace />
+  }
+  const parsedUser = safeParseUser(user)
+  if (!parsedUser || !allowedRoles.includes(parsedUser.type)) {
+    return <Navigate to='/not-authorized' replace />
   }
 
+  return <Outlet />
+}
+
+const GuestOnlyRoute = () => {
+  const { isAuthenticated, user } = React.useContext(AuthContext)
+  if (!isAuthenticated) {
+    return <Outlet />
+  }
+  const parsedUser = safeParseUser(user)
+  if (parsedUser?.type === ROLES.DRIVER) {
+    return <Navigate to='/driver-dashboard' replace />
+  }
+  return <Navigate to='/' replace />
+}
+
+function App() {
   return (
     <Router>
       <ScrollToTop />
-      {/* <CssBaseline />  */}
+
       <Routes>
-        <Route path='/login' Component={Login} />
-        <Route element={<ProtectRoute />}>
-          <Route path='/' index Component={Dashboard} />
+        <Route element={<GuestOnlyRoute />}>
+          <Route path='/login' Component={Login} />
+        </Route>
+        <Route element={<RoleProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
+          <Route path='/' Component={Dashboard} />
           <Route path='/orders' Component={Orders} />
           <Route path='/dispatch' Component={DispatchView} />
           <Route path='/orders/create' Component={NewOrder} />
@@ -81,6 +103,11 @@ function App() {
           <Route path='/interliner/create' Component={CreateInterliner} />
           <Route path='/interliner/edit/:id' Component={EditInterliner} />
         </Route>
+        <Route element={<RoleProtectedRoute allowedRoles={[ROLES.DRIVER]} />}>
+          <Route path='/driver-dashboard' Component={LandingPage} />
+        </Route>
+        <Route path='/not-authorized' element={<NotAuthorized />} />
+        <Route path='*' element={<Navigate to='/' replace />} />
       </Routes>
     </Router>
   )

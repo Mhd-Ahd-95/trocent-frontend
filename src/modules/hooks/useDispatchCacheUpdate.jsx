@@ -34,7 +34,7 @@ const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
         return t;
     });
     const newTrips = updatedTrips.filter((t) => !existingIds.has(t.id));
-    return [...newTrips, ...merged];
+    return [...newTrips, ...merged].filter(t => t.trip_status !== 'completed');
 };
 
 
