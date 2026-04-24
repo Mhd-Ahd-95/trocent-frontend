@@ -19,7 +19,6 @@ export function useDispatchScreenSync() {
 
         channel.listen('.dispatch.updated', (e) => {
             const { undispatched_orders, action, trips, orderId } = e;
-            console.log(undispatched_orders);
             updateDispatchCache({ orderId, trips, undispatchedOrders: undispatched_orders, action });
         });
 

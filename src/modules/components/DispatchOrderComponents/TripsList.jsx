@@ -15,6 +15,7 @@ const TripsList = ({ trips, filters, isInterliner, tripAction, showAllCompleted 
       filtered = filtered.filter((trip) =>
         String(trip.trip_number).includes(search) ||
         trip.driver_name?.toLowerCase().includes(search) ||
+        trip.driver_number?.toLowerCase().includes(search) ||
         trip.interliner_name?.toLowerCase().includes(search) ||
         trip.dispatched_orders.some((order) => String(order.order_number).toLowerCase().includes(search))
       );
@@ -57,9 +58,9 @@ const TripsList = ({ trips, filters, isInterliner, tripAction, showAllCompleted 
     <>
       <Box sx={{ minHeight: 400, overflowX: 'auto', '&::-webkit-scrollbar': { height: 8, }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 4, }, }}>
         <Box sx={{ minWidth: 1200 }}>
-          {filteredTrips.map((trip, index) => (
+          {filteredTrips.map((trip) => (
             <TripRow
-              key={index}
+              key={trip.id}
               trip={trip}
               showAllCompleted={showAllCompleted}
               isCompleted={trip?.trip_status === 'completed'}

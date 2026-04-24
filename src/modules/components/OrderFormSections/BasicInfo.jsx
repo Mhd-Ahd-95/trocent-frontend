@@ -310,7 +310,7 @@ function BasicInfo(props) {
                       field.onChange(checked)
                       if (checked) {
                         setValue('is_crossdock', false)
-                        setValue('order_status', 'Quote')
+                        setValue('order_status', 'quote')
                         setValue('order_entity', 'Order Entry')
                       }
                       else {

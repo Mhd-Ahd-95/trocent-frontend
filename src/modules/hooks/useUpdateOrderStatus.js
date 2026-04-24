@@ -11,6 +11,7 @@ export function useUpdateOrderStatus() {
         const dispatchedOrder = trip?.dispatched_order
         const dispatchOrderStatus = dispatchedOrder?.order_status
         const orderId = dispatchedOrder.order_id
+        const updateInterliner = trip.update_interliner
         const key = dispatchKeys.trips(trip_type);
         const cachedTrips = queryClient.getQueryData(key);
         if (trip_status === 'completed') {
@@ -62,5 +63,8 @@ export function useUpdateOrderStatus() {
         }
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['order', Number(orderId)], exact: true })
+        if (updateInterliner) {
+            queryClient.invalidateQueries({ queryKey: dispatchKeys.trips('interliner') })
+        }
     };
 }
