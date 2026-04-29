@@ -5,7 +5,7 @@ export default makeStyles()((theme) => ({
     root: {
         background: theme.palette.background.default,
         color: theme.palette.secondary.main,
-        height: '100vh',
+        height: '99vh',
         overflow: 'hidden',
         position: 'relative',
     },

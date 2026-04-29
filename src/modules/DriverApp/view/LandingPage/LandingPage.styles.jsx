@@ -3,16 +3,23 @@ import { makeStyles } from "tss-react/mui";
 
 export default makeStyles()((theme, props) => {
 
-    return ({
+    const primaryColor = theme.palette.primary.main;
 
-        hero: {
-            padding: '24px 32px 0',
-            animation: '$fadeUp 0.6s 0.1s ease both',
-        },
+    return ({
 
         '@keyframes fadeUp': {
             from: { opacity: 0, transform: 'translateY(20px)' },
             to: { opacity: 1, transform: 'translateY(0)' },
+        },
+
+        '@keyframes blink': {
+            '0%, 100%': { opacity: 1 },
+            '50%': { opacity: 0.25 },
+        },
+
+        hero: {
+            padding: '24px 32px 0',
+            animation: '$fadeUp 0.6s 0.1s ease both',
         },
 
         driverName: {
@@ -24,7 +31,7 @@ export default makeStyles()((theme, props) => {
             letterSpacing: 1,
             color: theme.palette.secondary.main,
             '& em': {
-                color: theme.palette.primary.main,
+                color: primaryColor,
                 fontStyle: 'normal',
             },
         },
@@ -56,7 +63,7 @@ export default makeStyles()((theme, props) => {
         tripsCard: {
             background: theme.palette.background.default,
             border: `1px solid ${theme.palette.secondary.main}14`,
-            borderRadius: 18,
+            borderRadius: 15,
             overflow: 'hidden',
             animation: '$fadeUp 0.6s 0.15s ease both',
         },
@@ -79,7 +86,7 @@ export default makeStyles()((theme, props) => {
             width: 28,
             height: 28,
             borderRadius: 8,
-            background: `${theme.palette.primary.main}18`,
+            background: `${primaryColor}18`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -96,7 +103,7 @@ export default makeStyles()((theme, props) => {
             minWidth: 22,
             height: 22,
             borderRadius: 99,
-            background: theme.palette.primary.main,
+            background: primaryColor,
             color: '#fff',
             fontSize: 11,
             fontWeight: 900,
@@ -114,23 +121,39 @@ export default makeStyles()((theme, props) => {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            cursor: 'pointer',
+            cursor: props?.isLocked ? 'not-allowed' : 'pointer',
             padding: '11px 18px',
             borderBottom: `1px solid ${theme.palette.secondary.main}08`,
-            transition: 'background 0.15s',
-            background: props?.isSelected ? alpha(theme.palette.primary.main, 0.4) : props?.index % 2 === 0 ? colors.grey[100] : colors.grey[50],
+            transition: 'background 0.15s, opacity 0.15s',
+            background: props?.isSelected ? alpha(primaryColor, 0.4) : props?.index % 2 === 0 ? colors.grey[100] : colors.grey[50],
+            position: 'relative',
+            opacity: props?.isLocked ? 0.45 : 1,
             '&:last-child': {
                 borderBottom: 'none',
             },
             '&:hover': {
-                background: props?.isSelected ? alpha(theme.palette.primary.main, 0.6) : `${theme.palette.secondary.main}05`,
+                background: props?.isLocked
+                    ? props?.index % 2 === 0 ? colors.grey[100] : colors.grey[50]
+                    : props?.isSelected ? alpha(primaryColor, 0.6) : `${theme.palette.secondary.main}05`,
             },
         },
 
-        tripItemToday: {
-            background: `${theme.palette.primary.main}07`,
+        tripItemActive: {
+            background: `${primaryColor}09`,
+            borderBottom: `1px solid ${primaryColor}18`,
+            opacity: '1 !important',
+            cursor: 'default',
+            '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 3,
+                background: primaryColor,
+            },
             '&:hover': {
-                background: `${theme.palette.primary.main}10`,
+                background: `${primaryColor}09`,
             },
         },
 
@@ -149,9 +172,9 @@ export default makeStyles()((theme, props) => {
             fontFamily: 'Inter, sans-serif',
         },
 
-        tripIndexToday: {
-            background: `${theme.palette.primary.main}18`,
-            color: theme.palette.primary.main,
+        tripIndexActive: {
+            background: `${primaryColor}18`,
+            color: primaryColor,
         },
 
         tripInfo: {
@@ -165,7 +188,6 @@ export default makeStyles()((theme, props) => {
             fontWeight: 800,
             color: theme.palette.secondary.main,
             letterSpacing: '-0.01em',
-            marginBottom: 2,
             fontVariantNumeric: 'tabular-nums',
         },
 
@@ -178,16 +200,36 @@ export default makeStyles()((theme, props) => {
             fontWeight: 500,
         },
 
-        tripDateDot: {
-            width: 5,
-            height: 5,
-            borderRadius: '50%',
-            background: `${theme.palette.secondary.main}30`,
+        tripRight: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
             flexShrink: 0,
         },
 
-        tripDateDotToday: {
-            background: '#2ecc8d',
+        liveBadge: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            background: `${primaryColor}18`,
+            border: `1px solid ${primaryColor}55`,
+            borderRadius: 6,
+            padding: '3px 8px',
+            fontSize: 10,
+            fontWeight: 800,
+            color: theme.palette.primary.dark,
+            letterSpacing: '0.06em',
+            flexShrink: 0,
+            userSelect: 'none',
+        },
+
+        liveDot: {
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: primaryColor,
+            flexShrink: 0,
+            animation: '$blink 1.2s ease-in-out infinite',
         },
 
         tripBadge: {
@@ -205,17 +247,16 @@ export default makeStyles()((theme, props) => {
             border: '1px solid rgba(46,204,141,0.28)',
         },
 
-        selectedTrip: {
-            background: alpha(theme.palette.primary.main, 0.4),
-            '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.6)
-            }
-        },
-
         tripBadgeUpcoming: {
             background: `${theme.palette.secondary.main}0d`,
             color: theme.palette.secondary.light,
             border: `1px solid ${theme.palette.secondary.main}20`,
+        },
+
+        tripBadgeOlder: {
+            background: `${theme.palette.error.main}0d`,
+            color: theme.palette.error.light,
+            border: `1px solid ${theme.palette.error.main}20`,
         },
 
         noTrips: {
@@ -245,150 +286,43 @@ export default makeStyles()((theme, props) => {
             fontWeight: 500,
         },
 
-        statsRow: {
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: 14,
-        },
-
-        statCard: {
-            background: theme.palette.background.default,
-            border: `1px solid ${theme.palette.secondary.main}14`,
-            borderRadius: 14,
-            padding: '10px 12px',
-            textAlign: 'center',
-            transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-            cursor: 'default',
-            '&:hover': {
-                borderColor: `${theme.palette.primary.main}40`,
-                boxShadow: `0 4px 16px ${theme.palette.primary.main}18`,
-            },
-        },
-
-        statNumber: {
-            fontFamily: 'Inter, sans-serif',
-            fontSize: 32,
-            fontWeight: 800,
-            lineHeight: 1,
-            color: theme.palette.secondary.main,
-        },
-
-        statNumberGold: { color: theme.palette.primary.main },
-        statNumberGreen: { color: '#1a8a5a' },
-        statNumberBlue: { color: theme.palette.info.main },
-
-        statLabel: {
-            fontSize: 10,
-            fontWeight: 700,
-            color: theme.palette.secondary.light,
-            letterSpacing: 0.8,
-            textTransform: 'uppercase',
-            marginTop: 4,
-        },
-
-        hoursChip: {
-            background: `${theme.palette.info.main}0d`,
-            border: `1px solid ${theme.palette.info.main}30`,
-            borderRadius: 14,
-            padding: '14px 18px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            animation: '$fadeUp 0.6s 0.25s ease both',
-        },
-
-        hoursLeft: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-        },
-
-        hoursIcon: {
-            color: theme.palette.info.main
-        },
-
-        hoursTitle: {
-            fontSize: 11,
-            fontWeight: 700,
-            color: theme.palette.info.main,
-            textTransform: 'uppercase',
-            letterSpacing: 0.8,
-        },
-
-        hoursValue: {
-            fontFamily: 'Inter, sans-serif',
-            fontSize: 22,
-            fontWeight: 800,
-            lineHeight: 1.1,
-            color: theme.palette.secondary.main,
-        },
-
-        hoursBtn: {
-            fontSize: 11,
-            fontWeight: 700,
-            color: theme.palette.info.main,
-            background: `${theme.palette.info.main}14`,
-            border: `1px solid ${theme.palette.info.main}35`,
-            borderRadius: 8,
-            padding: '7px 14px',
-            cursor: 'pointer',
-            letterSpacing: 0.5,
-            transition: 'background 0.2s',
-            '&:hover': {
-                background: `${theme.palette.info.main}25`,
-            },
-        },
-
-        sectionTitle: {
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 1.5,
-            textTransform: 'uppercase',
-            color: theme.palette.secondary.light,
-            paddingTop: '10px',
-            animation: '$fadeUp 0.6s 0.25s ease both',
-        },
-
-        actionGrid: {
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 14,
-            animation: '$fadeUp 0.6s 0.3s ease both',
-        },
-
         actionBtn: {
             borderRadius: 16,
             padding: '20px 18px',
             display: 'flex',
-            // flexDirection: 'column',
             alignItems: 'center',
             gap: 10,
-            cursor: 'pointer',
-            border: 'none',
             outline: 'none',
             position: 'relative',
             overflow: 'hidden',
             width: '100%',
-            transition: 'transform 0.2s, box-shadow 0.2s',
+            transition: 'transform 0.2s, box-shadow 0.2s, opacity 0.2s, background 0.2s',
             textDecoration: 'none',
-            '&:hover': {
-                // transform: 'translateY(-3px)',
-            },
-            '&:active': {
+            '&:active:not([disabled])': {
                 transform: 'scale(0.97)',
             },
         },
 
         actionBtnPrimary: {
-            background: alpha(theme.palette.primary.main, 0.1),
-            color: theme.palette.primary.main,
-            width: '100%',
+            background: alpha(primaryColor, 0.1),
+            color: primaryColor,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            border: `1px solid ${theme.palette.primary.main}`,
-            '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.2)
+            border: `1px solid ${primaryColor}`,
+            cursor: 'pointer',
+            '&:hover:not([disabled])': {
+                background: alpha(primaryColor, 0.2),
+            },
+            '&[disabled]': {
+                opacity: 0.38,
+                cursor: 'not-allowed',
+                border: `1px solid ${theme.palette.secondary.main}30`,
+                background: `${theme.palette.secondary.main}08`,
+                color: theme.palette.secondary.light,
+                '& $btnArrow': {
+                    color: theme.palette.secondary.light,
+                },
             },
         },
 
@@ -396,8 +330,16 @@ export default makeStyles()((theme, props) => {
             background: alpha(theme.palette.info.main, 0.1),
             color: theme.palette.info.main,
             border: `1px solid ${theme.palette.info.main}`,
-            '&:hover': {
-                background: alpha(theme.palette.info.main, 0.2)
+            cursor: 'pointer',
+            '&:hover:not([disabled])': {
+                background: alpha(theme.palette.info.main, 0.2),
+            },
+            '&[disabled]': {
+                opacity: 0.38,
+                cursor: 'not-allowed',
+                border: `1px solid ${theme.palette.secondary.main}30`,
+                background: `${theme.palette.secondary.main}08`,
+                color: theme.palette.secondary.light,
             },
         },
 
@@ -405,8 +347,13 @@ export default makeStyles()((theme, props) => {
             background: '#eaf9f3',
             color: '#1a8a5a',
             border: '1px solid #1a8a5a',
-            '&:hover': {
+            cursor: 'pointer',
+            '&:hover:not([disabled])': {
                 background: '#d8f5ea',
+            },
+            '&[disabled]': {
+                opacity: 0.38,
+                cursor: 'not-allowed',
             },
         },
 
@@ -422,7 +369,7 @@ export default makeStyles()((theme, props) => {
         },
 
         btnIconPrimary: {
-            background: theme.palette.primary.main,
+            background: primaryColor,
             width: 50,
             height: 50,
         },
@@ -447,7 +394,7 @@ export default makeStyles()((theme, props) => {
 
         btnTitlePrimary: {
             fontSize: 20,
-            color: theme.palette.primary.main,
+            color: primaryColor,
         },
 
         btnSubtitle: {
@@ -461,7 +408,7 @@ export default makeStyles()((theme, props) => {
         btnArrow: {
             fontSize: 22,
             fontWeight: 700,
-            color: theme.palette.primary.main,
+            color: primaryColor,
         },
 
         btnLeftGroup: {
@@ -470,67 +417,76 @@ export default makeStyles()((theme, props) => {
             gap: 16,
         },
 
-        activitySection: {
-            animation: '$fadeUp 0.6s 0.35s ease both',
-        },
-
-        activityList: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-        },
-
-        activityItem: {
+        hoursChip: {
+            background: `${theme.palette.info.main}0d`,
+            border: `1px solid ${theme.palette.info.main}30`,
+            borderRadius: 14,
+            padding: '14px 18px',
             display: 'flex',
             alignItems: 'center',
-            gap: 14,
-            background: theme.palette.background.default,
-            border: `1px solid ${theme.palette.secondary.main}12`,
-            borderRadius: 14,
-            padding: '14px 16px',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-            '&:hover': {
-                borderColor: `${theme.palette.primary.main}35`,
-                boxShadow: `0 2px 12px ${theme.palette.primary.main}12`,
-            },
+            justifyContent: 'space-between',
+            animation: '$fadeUp 0.6s 0.25s ease both',
         },
 
-        activityDot: {
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            flexShrink: 0,
+        hoursLeft: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
         },
 
-        dotGreen: { background: '#2ecc8d' },
-        dotGold: { background: theme.palette.primary.main },
-        dotBlue: { background: theme.palette.info.main },
-
-        activityInfo: {
-            flex: 1,
-            minWidth: 0,
+        hoursIcon: {
+            color: theme.palette.info.main,
         },
 
-        activityTitle: {
-            fontSize: 13,
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+        hoursTitle: {
+            fontSize: 11,
+            fontWeight: 700,
+            color: theme.palette.info.main,
+            textTransform: 'uppercase',
+            letterSpacing: 0.8,
+        },
+
+        hoursValue: {
+            fontFamily: 'Inter, sans-serif',
+            fontSize: 22,
+            fontWeight: 800,
+            lineHeight: 1.1,
             color: theme.palette.secondary.main,
         },
 
-        activitySub: {
-            fontSize: 11,
-            color: theme.palette.secondary.light,
-            marginTop: 1,
+        statCard: {
+            background: theme.palette.background.default,
+            border: `1px solid ${theme.palette.secondary.main}14`,
+            borderRadius: 14,
+            padding: '10px 12px',
+            textAlign: 'center',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+            cursor: 'default',
+            '&:hover': {
+                borderColor: `${primaryColor}40`,
+                boxShadow: `0 4px 16px ${primaryColor}18`,
+            },
         },
 
-        activityTime: {
-            fontSize: 11,
-            color: theme.palette.secondary.light,
-            flexShrink: 0,
-            fontWeight: 600,
+        statNumber: {
+            fontFamily: 'Inter, sans-serif',
+            fontSize: 32,
+            fontWeight: 800,
+            lineHeight: 1,
+            color: theme.palette.secondary.main,
         },
-    })
+
+        statNumberGold: { color: primaryColor },
+        statNumberGreen: { color: '#1a8a5a' },
+        statNumberBlue: { color: theme.palette.info.main },
+
+        statLabel: {
+            fontSize: 10,
+            fontWeight: 700,
+            color: theme.palette.secondary.light,
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
+            marginTop: 4,
+        },
+    });
 });

@@ -12,7 +12,7 @@ const AddressBookContextProvider = props => {
     const [loading, setLoading] = React.useState(true)
     const { enqueueSnackbar } = useSnackbar()
     const [countAddress, setCountAddress] = React.useState(0)
-    const { isAuthenticated } = React.useContext(AuthContext)
+    const { isAuthenticated, parsedUser } = React.useContext(AuthContext)
     const queryClient = useQueryClient();
 
     const loadAddressBookMessagers = React.useCallback(async () => {
@@ -44,7 +44,7 @@ const AddressBookContextProvider = props => {
     }, [enqueueSnackbar])
 
     React.useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && parsedUser && parsedUser?.type !== 'driver') {
             loadCountAddress()
             loadAddressBookMessagers()
         }

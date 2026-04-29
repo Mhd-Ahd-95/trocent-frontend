@@ -123,13 +123,28 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
 };
 
 
-const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders) => {
+const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = []) => {
     if (!newUndispatchedOrders?.length) return;
     const newOrder = newUndispatchedOrders[0];
+
     const allEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'], });
     const noFilterPages = allEntries.filter(([key]) => isEmptyFilters(getKeyMeta(key).filters)).sort(([a], [b]) => getKeyMeta(a).page - getKeyMeta(b).page);
     const filteredEntries = allEntries.filter(([key]) => !isEmptyFilters(getKeyMeta(key).filters));
     filteredEntries.forEach(([key]) => { queryClient.invalidateQueries({ queryKey: key }); });
+
+    const trip = trips.length > 0 ? trips[0] : null
+    if (trip && trip?.trip_type === 'driver') {
+        const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
+        delete trip['dispatched_orders']
+        delete trip['total_orders_completed']
+        if (cachedDriverTrips){
+            queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(trip.id) ? trip : o))
+        }
+        else {
+            queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(trip.id)] });
+            queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] });
+        }
+    }
 
     let insertedIndex = -1;
     for (let i = 0; i < noFilterPages.length; i++) {
@@ -190,7 +205,7 @@ export function useDispatchCacheUpdate() {
             } else if (action === 'updated') {
                 handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
             } else if (action === 'removed') {
-                handleRemoveDispatchOrder(queryClient, undispatchedOrders);
+                handleRemoveDispatchOrder(queryClient, undispatchedOrders, trips);
                 queryClient.invalidateQueries({ queryKey: ['orders'] });
                 queryClient.invalidateQueries({ queryKey: ['order'] });
                 queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true });

@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, alpha, useTheme, Collapse, colors } from '@mui/material';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, Collapse, colors } from '@mui/material';
 import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt, UploadFile } from '@mui/icons-material';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom';
 import { ConfirmModal, DrawerForm, Modal } from '..';
@@ -11,12 +12,22 @@ import UpdateOrderStatusForm from './UpdateOrderStatusForm';
 import { CustomTitle } from './CustomTitle';
 import { useTripRowStyles, useOrderCardStyles } from './DispatchOrder.styles';
 import { TabLoadingState } from './TripTabs';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable, } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered, isCompleted, pickedUpStatus, deliveredStatus }) => {
 
   const [showFreight, setShowFreight] = useState(false);
-
   const { classes } = useOrderCardStyles({ orderStatus: order.order_status, bgColor, bordered });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, } = useSortable({ id: order.id });
+
+  const dragStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'default',
+  };
 
   const getServiceColor = useCallback((type) => {
     const colors = { Direct: 'primary', Rush: 'info', Regular: 'success' };
@@ -24,158 +35,165 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
   }, []);
 
   return (
-    <Paper elevation={0} className={classes.paper}>
-      <Grid
-        container direction="row" spacing={1} alignItems="center"
-        className={classes.gridContainer}
-        onClick={(e) => { e.stopPropagation(); setShowFreight(!showFreight); }}
-      >
-        <Grid size={1.2}>
-          <Link component={RouterLink} to={`/orders/edit/${order.order_id}`} className={classes.orderLink}>
-            <Typography variant="subtitle1" fontWeight="700"># {order.order_number}</Typography>
-          </Link>
-          <Typography variant="subtitle2">{order.customer_name}</Typography>
-          <Tooltip title={order.reference_numbers || ''}>
-            <Typography component={'p'} className={classes.referenceText} noWrap>
-              {order.reference_numbers || '-'}
+    <Paper ref={setNodeRef} style={dragStyle} elevation={0} className={classes.paper}>
+      <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
+        {!isCompleted && (
+          <Box {...attributes} {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            sx={{ display: 'flex', alignItems: 'center', px: 0.5, cursor: isDragging ? 'grabbing' : 'grab', color: 'text.disabled', flexShrink: 0, '&:hover': { color: 'text.secondary' }, }}
+          >
+            <DragIndicatorIcon fontSize="small" />
+          </Box>
+        )}
+
+        <Grid
+          container direction="row" spacing={1} alignItems="center"
+          className={classes.gridContainer}
+          onClick={(e) => { e.stopPropagation(); setShowFreight(!showFreight); }}
+          sx={{ flex: 1 }}
+        >
+          <Grid size={1.2}>
+            <Link component={RouterLink} to={`/orders/edit/${order.order_id}`} className={classes.orderLink}>
+              <Typography variant="subtitle1" fontWeight="700"># {order.order_number}</Typography>
+            </Link>
+            <Typography variant="subtitle2">{order.customer_name}</Typography>
+            <Tooltip title={order.reference_numbers || ''}>
+              <Typography component={'p'} className={classes.referenceText} noWrap>
+                {order.reference_numbers || '-'}
+              </Typography>
+            </Tooltip>
+          </Grid>
+
+          <Divider orientation="vertical" flexItem />
+
+          <Grid size={0.7}>
+            <Typography variant="caption" color="textSecondary" fontWeight="600">SERVICE</Typography>
+            <Chip
+              label={order.service_type}
+              color={getServiceColor(order.service_type)}
+              size="medium"
+              className={classes.serviceChip}
+            />
+          </Grid>
+
+          <Divider orientation="vertical" flexItem />
+
+          <Grid size={3.5}>
+            <Typography variant="caption" className={`${classes.sectionLabel} ${classes.shipperLabel}`}>
+              <Place sx={{ fontSize: 12 }} />SHIPPER
             </Typography>
-          </Tooltip>
-        </Grid>
+            <Typography variant="body2" fontWeight="600">
+              {order.shipper_name}
+              {pickedUpStatus &&
+                <Chip component={'span'} label={pickedUpStatus} color={'success'} size="medium" className={classes.statusChipPickedUp} />
+              }
+              {order.order_status === 'picked up' && (
+                <Chip component={'span'} label={order.pickup_out ? `Picked Up At ${order.pickup_out}` : 'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
+              )}
+              {order.order_status === 'arrived shipper' && (
+                <Chip component={'span'} label={order.pickup_in ? `Arrived At ${order.pickup_in}` : 'Arrived At'} color={'warning'} size="medium" className={classes.statusChipArrived} />
+              )}
+            </Typography>
+            <Typography component="p" className={classes.addressText}>{order.shipper_address}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {order.shipper_city || '-'} | {order.shipper_province || '-'} | {order.shipper_postal_code || '-'}
+            </Typography>
+          </Grid>
 
-        <Divider orientation="vertical" flexItem />
+          <Grid size={1}>
+            <Typography className={classes.timeLabel}>
+              <CalendarToday sx={{ fontSize: 12 }} />Pickup
+            </Typography>
+            <Typography variant="body2">{moment.utc(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {order.pickup_time_from} - {order.pickup_time_to}
+            </Typography>
+            {order.shipper_special_instructions && <>
+              <Divider />
+              <Tooltip title={order.shipper_special_instructions}>
+                <Typography component="p" className={classes.specialInstructions}>
+                  {order.shipper_special_instructions}
+                </Typography>
+              </Tooltip>
+            </>}
+          </Grid>
 
-        <Grid size={0.7}>
-          <Typography variant="caption" color="textSecondary" fontWeight="600">SERVICE</Typography>
-          <Chip
-            label={order.service_type}
-            color={getServiceColor(order.service_type)}
-            size="medium"
-            className={classes.serviceChip}
-          />
-        </Grid>
+          <Grid size={0.5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <TrendingFlat sx={{ color: 'primary.main' }} />
+          </Grid>
 
-        <Divider orientation="vertical" flexItem />
+          <Grid size={3.5}>
+            <Typography variant="caption" className={`${classes.sectionLabel} ${classes.receiverLabel}`}>
+              <Place sx={{ fontSize: 12 }} />RECEIVER
+            </Typography>
+            <Typography variant="body2" fontWeight="600">
+              {order.receiver_name}
+              {deliveredStatus &&
+                <Chip component={'span'} label={deliveredStatus} color={'success'} size="medium" className={classes.statusChipPickedUp} />
+              }
+              {order.order_status === 'delivered' && (
+                <Chip component={'span'} label={order.delivery_out ? `Delivered At ${order.delivery_out}` : 'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
+              )}
+              {order.order_status === 'arrived receiver' && (
+                <Chip component={'span'} label={order.delivery_in ? `Arrived At ${order.delivery_in}` : 'Arrived'} color={'warning'} size="medium" className={classes.statusChipDelivered} />
+              )}
+            </Typography>
+            <Typography component="p" className={classes.addressText}>{order.receiver_address}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {order.receiver_city || '-'} | {order.receiver_province || '-'} | {order.receiver_postal_code || '-'}
+            </Typography>
+          </Grid>
 
-        <Grid size={3.5}>
-          <Typography variant="caption" className={`${classes.sectionLabel} ${classes.shipperLabel}`}>
-            <Place sx={{ fontSize: 12 }} />SHIPPER
-          </Typography>
-          <Typography variant="body2" fontWeight="600">
-            {order.shipper_name}
-            {pickedUpStatus &&
-              <Chip component={'span'} label={pickedUpStatus} color={'success'} size="medium" className={classes.statusChipPickedUp} />
-            }
-            {order.order_status === 'picked up' && (
-              <Chip component={'span'} label={order.pickup_out ? `Picked Up At ${order.pickup_out}` : 'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
-            )}
-            {order.order_status === 'arrived shipper' && (
-              <Chip component={'span'} label={order.pickup_in ? `Arrived At ${order.pickup_in}` : 'Arrived At'} color={'warning'} size="medium" className={classes.statusChipArrived} />
-            )}
-          </Typography>
-          <Typography component="p" className={classes.addressText}>{order.shipper_address}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {order.shipper_city || '-'} | {order.shipper_province || '-'} | {order.shipper_postal_code || '-'}
-          </Typography>
-        </Grid>
+          <Grid size={1}>
+            <Typography className={classes.timeLabel}>
+              <CalendarToday sx={{ fontSize: 12 }} />Delivery
+            </Typography>
+            <Typography variant="body2">{moment.utc(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {order.delivery_time_from} - {order.delivery_time_to}
+            </Typography>
+            {order.receiver_special_instructions && <>
+              <Divider />
+              <Tooltip title={order.receiver_special_instructions}>
+                <Typography component="p" className={classes.specialInstructions}>
+                  {order.receiver_special_instructions}
+                </Typography>
+              </Tooltip>
+            </>}
+          </Grid>
 
-        <Grid size={1}>
-          <Typography className={classes.timeLabel}>
-            <CalendarToday sx={{ fontSize: 12 }} />Pickup
-          </Typography>
-          <Typography variant="body2">{moment.utc(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {order.pickup_time_from} - {order.pickup_time_to}
-          </Typography>
-          {order.shipper_special_instructions && <>
-            <Divider />
-            <Tooltip title={order.shipper_special_instructions}>
-              <Typography component="p" className={classes.specialInstructions}>
-                {order.shipper_special_instructions}
-              </Typography>
-            </Tooltip>
-          </>}
-        </Grid>
+          <Divider orientation="vertical" flexItem />
 
-        <Grid size={0.5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <TrendingFlat sx={{ color: 'primary.main' }} />
-        </Grid>
-
-        <Grid size={3.5}>
-          <Typography variant="caption" className={`${classes.sectionLabel} ${classes.receiverLabel}`}>
-            <Place sx={{ fontSize: 12 }} />RECEIVER
-          </Typography>
-          <Typography variant="body2" fontWeight="600">
-            {order.receiver_name}
-            {deliveredStatus &&
-              <Chip component={'span'} label={deliveredStatus} color={'success'} size="medium" className={classes.statusChipPickedUp} />
-            }
-            {order.order_status === 'delivered' && (
-              <Chip component={'span'} label={order.delivery_out ? `Delivered At ${order.delivery_out}` : 'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
-            )}
-            {order.order_status === 'arrived receiver' && (
-              <Chip component={'span'} label={order.delivery_in ? `Arrived At ${order.delivery_in}` : 'Arrived'} color={'warning'} size="medium" className={classes.statusChipDelivered} />
-            )}
-          </Typography>
-          <Typography component="p" className={classes.addressText}>{order.receiver_address}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {order.receiver_city || '-'} | {order.receiver_province || '-'} | {order.receiver_postal_code || '-'}
-          </Typography>
-        </Grid>
-
-        <Grid size={1}>
-          <Typography className={classes.timeLabel}>
-            <CalendarToday sx={{ fontSize: 12 }} />Delivery
-          </Typography>
-          <Typography variant="body2">{moment.utc(order.scheduled_date).format('ddd, DD/MM/YYYY')}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {order.delivery_time_from} - {order.delivery_time_to}
-          </Typography>
-          {order.receiver_special_instructions && <>
-            <Divider />
-            <Tooltip title={order.receiver_special_instructions}>
-              <Typography component="p" className={classes.specialInstructions}>
-                {order.receiver_special_instructions}
-              </Typography>
-            </Tooltip>
-          </>}
-        </Grid>
-
-        <Divider orientation="vertical" flexItem />
-
-        <Grid size={0.3}>
-          <Stack direction="column" spacing={0.2} className={classes.actionsStack}>
-            {!isInterliner && (
-              <Tooltip title='Undispatch Order' placement='right'>
-                <IconButton size="small" className={classes.undispatchBtn} onClick={(e) => { e.stopPropagation(); handleUndispatchedOrder(order); }}>
-                  <SystemUpdateAlt fontSize="small" color="error" />
+          <Grid size={0.3}>
+            <Stack direction="column" spacing={0.2} className={classes.actionsStack}>
+              {!isInterliner && (
+                <Tooltip title='Undispatch Order' placement='right'>
+                  <IconButton size="small" className={classes.undispatchBtn} onClick={(e) => { e.stopPropagation(); handleUndispatchedOrder(order); }}>
+                    <SystemUpdateAlt fontSize="small" color="error" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {!isCompleted &&
+                <Tooltip title='Update Order Status' placement='right'>
+                  <IconButton size="small" className={classes.updateStatusBtn} onClick={(e) => { e.stopPropagation(); handleUpdateOrderStatus(order); }}>
+                    <LocalShipping fontSize="small" sx={{ color: colors.green[700] }} />
+                  </IconButton>
+                </Tooltip>
+              }
+              <Tooltip title='Add Note' placement='right'>
+                <IconButton size="small" className={classes.addNoteBtn} onClick={(e) => { e.stopPropagation(); actionTrip?.current?.addNote(order); }}>
+                  <NoteAdd fontSize="small" color="warning" />
                 </IconButton>
               </Tooltip>
-            )}
-            {!isCompleted &&
-              <Tooltip title='Update Order Status' placement='right'>
-                <IconButton size="small" className={classes.updateStatusBtn} onClick={(e) => { e.stopPropagation(); handleUpdateOrderStatus(order); }}>
-                  <LocalShipping fontSize="small" sx={{ color: colors.green[700] }} />
-                </IconButton>
-              </Tooltip>
-            }
-            <Tooltip title='Add Note' placement='right'>
-              <IconButton size="small" className={classes.addNoteBtn} onClick={(e) => { e.stopPropagation(); actionTrip?.current?.addNote(order); }}>
-                <NoteAdd fontSize="small" color="warning" />
-              </IconButton>
-            </Tooltip>
-            {/* <Tooltip title='Upload PDF' placement='right'>
-              <IconButton size="small" className={classes.addNoteBtn} onClick={(e) => { e.stopPropagation(); actionTrip?.current?.addNote(order); }}>
-                <UploadFile fontSize="small" color="warning" />
-              </IconButton>
-            </Tooltip> */}
-          </Stack>
+            </Stack>
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </Paper>
   );
 });
 
-const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAllCompleted }) => {
+const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAllCompleted, onReorderOrders }) => {
 
   const [expanded, setExpanded] = useState(false);
   const firstOrder = trip?.dispatched_orders[0] ?? [];
@@ -186,14 +204,30 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
   const tripRef = React.useRef();
 
   const { undispatchOrder, updateTrip } = useDispatchOrderMutation();
-
-  const toggleShowing = React.useMemo(() => showAllCompleted ? expanded : showCompleted, [showAllCompleted, showCompleted, expanded])
-
-  const { data: completedOrders, isLoading: isCompletedLoading } = useDispatchedOrdersCompleted(trip.id, toggleShowing)
-
+  const toggleShowing = React.useMemo(() => showAllCompleted ? expanded : showCompleted, [showAllCompleted, showCompleted, expanded]);
+  const { data: completedOrders, isLoading: isCompletedLoading } = useDispatchedOrdersCompleted(trip.id, toggleShowing);
   const isActive = trip.trip_status === 'active';
-
   const { classes } = useTripRowStyles({ isActive, isToday, expanded });
+
+  const sortedByLevel = React.useMemo(() => [...(trip?.dispatched_orders || [])].sort((a, b) => a.order_level - b.order_level), [trip?.dispatched_orders]);
+
+  const [orderedList, setOrderedList] = useState(sortedByLevel);
+
+  useEffect(() => {
+    setOrderedList([...(trip?.dispatched_orders || [])].sort((a, b) => a.order_level - b.order_level));
+  }, [trip?.dispatched_orders]);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 }, }));
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = orderedList.findIndex((o) => o.id === active.id);
+    const newIndex = orderedList.findIndex((o) => o.id === over.id);
+    const reordered = arrayMove(orderedList, oldIndex, newIndex);
+    setOrderedList(reordered);
+    const result = reordered.map((order, idx) => ({ id: order.id, order_level: idx + 1, }));
+    onReorderOrders?.(trip.id, result);
+  };
 
   const handleUndispatchedOrder = (order) => {
     dispatchedOrderRef.current = order;
@@ -317,19 +351,33 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
 
           <AccordionDetails className={classes.accordionDetails}>
             <Stack spacing={1.5}>
-              {(trip?.dispatched_orders || []).sort((a, b) => a.order_level - b.order_level).map((order, idx) => (
-                <OrderCard
-                  key={order.id}
-                  isCompleted={isCompleted}
-                  actionTrip={tripAction}
-                  handleUndispatchedOrder={handleUndispatchedOrder}
-                  handleUpdateOrderStatus={handleUpdateOrderStatus}
-                  isInterliner={isInterliner}
-                  order={order}
-                  idx={idx}
-                />
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={orderedList.map((o) => o.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Stack spacing={1.5}>
+                    {orderedList.map((order, idx) => (
+                      <OrderCard
+                        key={order.id}
+                        isCompleted={isCompleted}
+                        actionTrip={tripAction}
+                        handleUndispatchedOrder={handleUndispatchedOrder}
+                        handleUpdateOrderStatus={handleUpdateOrderStatus}
+                        isInterliner={isInterliner}
+                        order={order}
+                        idx={idx}
+                      />
+                    ))}
+                  </Stack>
+                </SortableContext>
+              </DndContext>
             </Stack>
+
             {!isCompleted && trip.total_orders_completed > 0 && (
               <Box sx={{ mt: 1.5 }}>
                 {!showAllCompleted ?

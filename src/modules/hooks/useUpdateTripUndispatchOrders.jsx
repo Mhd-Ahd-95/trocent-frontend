@@ -35,6 +35,25 @@ export function useUpdateTripUndispatchOrders() {
         const cachedTrips = queryClient.getQueryData(key);
         queryClient.setQueryData(key, mergeTrips(cachedTrips, [trip]));
 
+        const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
+
+        if (cachedDriverTrips) {
+            const tripWithoutOrders = updatedTrip.data
+            delete tripWithoutOrders['dispatched_orders']
+            delete tripWithoutOrders['total_orders_completed']
+            const found = cachedDriverTrips.find(t => Number(t.id) === Number(tripWithoutOrders.id))
+            if (found) {
+                queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(tripWithoutOrders.id)) ? tripWithoutOrders : o)
+            }
+            else {
+                queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => ([tripWithoutOrders, ...old]))
+            }
+        }
+        else {
+            queryClient.invalidateQueries({ queryKey: ['driverTrips'] })
+            queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
+        }
+
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['order'] })
         queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })

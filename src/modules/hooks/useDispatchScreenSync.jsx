@@ -4,6 +4,7 @@ import { useUpdateTripUndispatchOrders } from './useUpdateTripUndispatchOrders';
 import { useDispatchScreenTripUpdated } from './useDispatchScreenTripUpdated';
 import { useUpdateOrderStatus } from './useUpdateOrderStatus';
 import { useUpdateTerminalInUndispatchOrder } from './useUpdateTerminalInUndispatchOrder';
+import { useReorderOrders } from './useReorderOrders';
 
 export function useDispatchScreenSync() {
 
@@ -12,6 +13,7 @@ export function useDispatchScreenSync() {
     const updateTrip = useDispatchScreenTripUpdated()
     const updateOrderStatus = useUpdateOrderStatus()
     const updateTerminal = useUpdateTerminalInUndispatchOrder()
+    const reorderOrders = useReorderOrders()
 
     useEffect(() => {
 
@@ -36,6 +38,10 @@ export function useDispatchScreenSync() {
 
         channel.listen('.dispatch.undispatchOrder.terminal', (order) => {
             updateTerminal(order)
+        })
+
+        channel.listen('.dispatch.reorder.orders', (trip) => {
+            reorderOrders(trip)
         })
 
         return () => {

@@ -14,6 +14,7 @@ export function useDispatchScreenTripUpdated() {
         if (trip_type) {
             const key = dispatchKeys.trips(trip_type);
             const cachedTrips = queryClient.getQueryData(key);
+            const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
             if (cachedTrips) {
                 queryClient.setQueryData(key, mergeTrips(cachedTrips, trip));
             }
@@ -22,6 +23,19 @@ export function useDispatchScreenTripUpdated() {
             }
             if (trip.trip_status === 'completed') {
                 queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] })
+            }
+            if (cachedDriverTrips) {
+                if (trip.trip_status === 'completed') {
+                    queryClient.setQueryData(['driverTrips', Number(trip.id)], (old = []) => old.filter((o) => Number(o.id) !== Number(trip.id)))
+                    queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
+                }
+                else {
+                    queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map((o) => Number(o.id) === Number(trip.id) ? trip : o))
+                }
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['driverTrips'] })
+                queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
             }
             queryClient.invalidateQueries({ queryKey: ['orders'] })
             queryClient.invalidateQueries({ queryKey: ['order'] })
@@ -32,6 +46,8 @@ export function useDispatchScreenTripUpdated() {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] })
             queryClient.invalidateQueries({ queryKey: ['orders'] })
             queryClient.invalidateQueries({ queryKey: ['order'] })
+            queryClient.invalidateQueries({ queryKey: ['driverTrips'] })
+            queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
         }
     };
 }
