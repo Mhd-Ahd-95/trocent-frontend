@@ -4,7 +4,7 @@ import { LocalShipping, Person, Tag, ExpandMore, Inventory2, CalendarToday, Chec
 import { DriverLayout } from '../../layouts';
 import moment from 'moment';
 import { useTripById } from '../../../hooks/useDispatchOrders';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
 
@@ -66,38 +66,38 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
             {freights.map((f) => (
                 <Grid container key={f.id} alignItems={'center'} sx={{ px: 1, py: 0.75, borderRadius: 1, '&:not(:last-child)': { borderBottom: '1px solid rgba(0,0,0,0.05)' } }}>
                     <Grid size={1}>
-                        <Box sx={{ width: 20, height: 20, borderRadius: '5px', background: 'rgba(44,62,80,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>
+                        <Box sx={{ width: 20, height: 20, borderRadius: '5px', background: 'rgba(44,62,80,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800 }}>
                             {f.pieces}
                         </Box>
                     </Grid>
                     <Grid size={3}>
-                        <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#2c3e50' }}>{f.type}</Typography>
+                        <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#2c3e50' }}>{f.type}</Typography>
                     </Grid>
                     <Grid size={4}>
-                        <Typography sx={{ fontSize: 11, fontWeight: 500, color: '#2c3e50', fontVariantNumeric: 'tabular-nums' }}>
+                        <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#2c3e50', fontVariantNumeric: 'tabular-nums' }}>
                             {formatDims(f) ?? '—'}
                         </Typography>
                     </Grid>
                     <Grid size={4}>
-                        <Typography sx={{ fontSize: 11, color: '#2c3e50' }}>{f.description || '—'}</Typography>
+                        <Typography sx={{ fontSize: 13, color: '#2c3e50' }}>{f.description || '—'}</Typography>
                     </Grid>
                 </Grid>
             ))}
-            <Box sx={{ display: 'flex', gap: 2, mt: 1, pt: 1, justifyContent: 'flex-end', borderTop: '1px solid rgba(44,62,80,0.08)', px: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2, mt: 1, pt: 1, justifyContent: 'flex-end', borderTop: '1px solid rgba(44,62,80,0.08)', px: 1, alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#2c3e50', fontVariantNumeric: 'tabular-nums' }}>
+                    <Typography sx={{ fontSize: 15, fontWeight: 800, color: '#2c3e50', fontVariantNumeric: 'tabular-nums' }}>
                         {totalPieces}
                     </Typography>
-                    <Typography sx={{ fontSize: 9, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         pcs
                     </Typography>
                 </Box>
                 <Box sx={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(44,62,80,0.2)', alignSelf: 'center' }} />
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#2c3e50', fontVariantNumeric: 'tabular-nums' }}>
+                    <Typography sx={{ fontSize: 15, fontWeight: 800, color: '#2c3e50', fontVariantNumeric: 'tabular-nums' }}>
                         {totalWeight}
                     </Typography>
-                    <Typography sx={{ fontSize: 9, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         {weightUnit}
                     </Typography>
                 </Box>
@@ -121,6 +121,8 @@ function LegSection({ order, legType, onAction, isLast }) {
     const timeTo = isPickup ? order.pickup_time_to : order.delivery_time_to;
     const time = formatTime(timeFrom, timeTo);
     const instructions = isPickup ? order.shipper_special_instructions : order.receiver_special_instructions;
+    const appointment = order.leg_type === 'pickup' ? Array.isArray(order.pickup_appointment_numbers) && order.pickup_appointment_numbers.length > 0 ? order.pickup_appointment_numbers[0] : null :
+                Array.isArray(order.delivery_appointment_numbers) && order.delivery_appointment_numbers.length > 0 ? order.delivery_appointment_numbers[0] : null
 
     const accentColor = isPickup ? '#27ae60' : '#2980b9';
     const accentBg = isPickup ? 'rgba(39,174,96,0.08)' : 'rgba(41,128,185,0.08)';
@@ -131,7 +133,7 @@ function LegSection({ order, legType, onAction, isLast }) {
             <Box
                 onClick={() => setOpen(o => !o)}
                 sx={{
-                    display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1, cursor: 'pointer', transition: 'background 0.15s', background: open ? accentBg : 'transparent', '&:hover': { background: accentBg },
+                    display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1.2, cursor: 'pointer', transition: 'background 0.15s', background: open ? accentBg : 'transparent', '&:hover': { background: accentBg },
                     borderTop: `1px solid rgba(44,62,80,0.07)`,
                 }}>
                 <Box
@@ -143,10 +145,10 @@ function LegSection({ order, legType, onAction, isLast }) {
                     {isPickup ? 'P' : 'D'}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0, marginLeft: 2 }}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#2c3e50', whiteSpace: 'nowrap', overflow: 'hidden', opacity: isDone ? 0.6 : 1, }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#161616', whiteSpace: 'nowrap', overflow: 'hidden', opacity: isDone ? 0.6 : 1, }}>
                         {name || '—'}
                     </Typography>
-                    <Typography sx={{ fontSize: 12, color: '#95a5a6', mt: 0.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', }}>
+                    <Typography sx={{ fontSize: 13, color: '#5b5d5e', mt: 0.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', }}>
                         {address || '—'}
                     </Typography>
                 </Box>
@@ -164,94 +166,86 @@ function LegSection({ order, legType, onAction, isLast }) {
                             component="button"
                             onClick={(e) => { e.stopPropagation(); onAction(order, legType); }}
                             sx={{
-                                display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.4, borderRadius: '6px', cursor: 'pointer', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+                                display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.4, borderRadius: '6px', cursor: 'pointer', fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
                                 border: `1px solid ${accentBorder}`, background: accentBg, color: accentColor, transition: 'background 0.15s',
                                 '&:hover': { background: isPickup ? 'rgba(39,174,96,0.16)' : 'rgba(41,128,185,0.16)' }, '&:active': { transform: 'scale(0.97)' },
                             }}
                         >
-                            {isPickup ? <><LocalShipping sx={{ fontSize: 13 }} /> Action</> : <><Inventory2 sx={{ fontSize: 11 }} /> Action</>}
+                            {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
                         </Box>
                     )}
                     <ExpandMore sx={{ fontSize: 15, color: '#95a5a6', transition: 'transform 0.25s', transform: open ? 'rotate(180deg)' : 'rotate(0)', }} />
                 </Box>
             </Box>
             <Collapse in={open} timeout="auto" unmountOnExit>
-                <Box sx={{ px: 1.5, py: 1.25, background: 'rgba(44,62,80,0.02)', borderTop: `1px dashed rgba(44,62,80,0.08)`, }}>
-                    <Box sx={{ mb: 1.5 }}>
-                        <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.4 }}>
+                <Grid container spacing={2} component={Box} px={2} py={1}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.4 }}>
                             {isPickup ? 'Pickup Time' : 'Delivery Time'}
                         </Typography>
                         <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#2c3e50' }}>
                             {time || '—'}
                         </Typography>
-                    </Box>
-                    <Box sx={{ mb: order.freights?.length ? 1.5 : 0 }}>
-                        <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.4 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.4 }}>
+                            Appointment Number
+                        </Typography>
+                        <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#2c3e50' }}>
+                            {appointment || '—'}
+                        </Typography>
+                    </Grid>
+                    <Grid size={12}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#95a5a6', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.4 }}>
                             Special Instructions
                         </Typography>
-                        <Typography sx={{ fontSize: 13, fontWeight: 500, color: instructions ? '#2c3e50' : '#bdc3c7', lineHeight: 1.5 }}>
+                        <Typography sx={{ fontSize: 14, fontWeight: 500, color: instructions ? '#2c3e50' : '#bdc3c7', lineHeight: 1.5 }}>
                             {instructions || '—'}
                         </Typography>
-                    </Box>
-                    {order.freights?.length > 0 && (
-                        <>
-                            <Typography sx={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#95a5a6', mb: 0.75, }}>
-                                Freight
-                            </Typography>
-                            <FreightTable
-                                freights={order.freights}
-                                totalPieces={order.total_pieces}
-                                totalWeight={order.total_actual_weight}
-                            />
-                        </>
-                    )}
-                </Box>
-            </Collapse>
-        </Box>
+                    </Grid>
+                    <Grid size={12}>
+                        {order.freights?.length > 0 && (
+                            <>
+                                <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#95a5a6', mb: 0.75, }}>
+                                    Freight
+                                </Typography>
+                                <FreightTable
+                                    freights={order.freights}
+                                    totalPieces={order.total_pieces}
+                                    totalWeight={order.total_actual_weight}
+                                />
+                            </>
+                        )}
+                    </Grid>
+                </Grid>
+            </Collapse >
+        </Box >
     );
 }
 
 function OrderCard({ order, index, onAction }) {
 
     const statusStyle = ORDER_STATUS_STYLES[order.order_status] ?? ORDER_STATUS_STYLES.dispatched;
-    const reference = Array.isArray(order.reference_numbers) && order.reference_numbers.length > 0
-        ? order.reference_numbers[0]
-        : null;
+    const reference = Array.isArray(order.reference_numbers) && order.reference_numbers.length > 0 ? order.reference_numbers.join(', ') : null;
     const date = moment.utc(order.scheduled_date).format('ddd, DD MMM');
 
     return (
-        <Box sx={{
-            background: '#fff',
-            border: '1px solid rgba(44,62,80,0.1)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-        }}>
-            <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 1.5,
-                py: 1,
-                background: 'rgba(44,62,80,0.025)',
-                borderBottom: '1px solid rgba(44,62,80,0.07)',
-            }}>
+        <Box sx={{ background: '#fff', border: '1px solid rgba(44,62,80,0.1)', borderRadius: '12px', overflow: 'hidden', }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1, background: 'rgba(44,62,80,0.025)', borderBottom: '1px solid rgba(44,62,80,0.07)', }}>
                 <Box sx={{
-                    width: 22, height: 22, borderRadius: '6px',
-                    background: '#2c3e50',
-                    color: '#fff', fontSize: 10, fontWeight: 800,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
+                    width: 22, height: 22, borderRadius: '6px', background: '#2c3e50', color: '#fff', fontSize: 10, fontWeight: 800,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
                     {index + 1}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0, display: 'flex', gap: 5 }}>
                     <Box sx={{ minWidth: 0 }}>
                         <Typography sx={{ fontSize: 15, fontWeight: 800, color: '#2c3e50', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                            Order #{order.order_number}
+                            # {order.order_number}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
-                            <CalendarToday sx={{ fontSize: 11, color: '#95a5a6' }} />
-                            <Typography sx={{ fontSize: 11, color: '#95a5a6', fontWeight: 500 }}>
+                            <CalendarToday sx={{ fontSize: 12, color: '#95a5a6' }} />
+                            <Typography sx={{ fontSize: 12, color: '#95a5a6', fontWeight: 500 }}>
                                 {date}
                             </Typography>
                         </Box>
@@ -259,27 +253,22 @@ function OrderCard({ order, index, onAction }) {
                     <Box sx={{ minWidth: 0 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Person sx={{ fontSize: 12, color: '#95a5a6' }} />
-                            <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#2c3e50' }}>
+                            <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#2c3e50' }}>
                                 {order.customer_name}
                             </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
-                            <Tag sx={{ fontSize: 11, color: '#95a5a6' }} />
-                            <Typography sx={{ fontSize: 11, color: '#95a5a6', fontWeight: 500 }}>
+                            <Tag sx={{ fontSize: 12, color: '#95a5a6' }} />
+                            <Typography sx={{ fontSize: 12, color: '#95a5a6', fontWeight: 500 }}>
                                 {reference || '—'}
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
-
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
                     <Box sx={{
-                        fontSize: 11, fontWeight: 800, letterSpacing: '0.07em',
-                        borderRadius: '5px', px: 1, py: 0.3,
-                        textTransform: 'capitalize', whiteSpace: 'nowrap',
-                        background: statusStyle.bg,
-                        color: statusStyle.color,
-                        border: statusStyle.border,
+                        fontSize: 13, fontWeight: 800, letterSpacing: '0.07em', borderRadius: '5px', px: 1, py: 0.3, textTransform: 'capitalize', whiteSpace: 'nowrap',
+                        background: statusStyle.bg, color: statusStyle.color, border: statusStyle.border,
                     }}>
                         {order.order_status}
                     </Box>
@@ -296,16 +285,17 @@ export default function DriverDeliveries() {
 
     const { tid } = useParams()
     const tripId = isNaN(tid) ? undefined : tid
-
+    const navigate = useNavigate()
     const { enqueueSnackbar } = useSnackbar()
     const { data: liveTrip = {}, isLoading, isError, error } = useTripById(tripId, true)
-    console.log(liveTrip);
+
     const sortedOrders = React.useMemo(() =>
         liveTrip?.dispatched_orders ? [...liveTrip.dispatched_orders].sort((a, b) => a.order_level - b.order_level) : [],
         [liveTrip]);
 
     const handleAction = (order, legType) => {
-        console.log('Action triggered', { orderId: order.id, legType });
+        console.log('Action triggered', { ...order, legType });
+        navigate('/stop-actions')
     };
 
     React.useEffect(() => {
@@ -359,7 +349,7 @@ export default function DriverDeliveries() {
                                         Trip #{liveTrip.trip_number}
                                     </Typography>
                                     <Typography sx={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.48)', mt: 0.4 }}>
-                                        {moment.utc(liveTrip.trip_date).format('ddd, DD MMM YYYY')} · {liveTrip.driver_name}
+                                        {moment.utc(liveTrip.trip_date).format('ddd, DD MMM YYYY')}
                                     </Typography>
                                 </Box>
                             </Box>
