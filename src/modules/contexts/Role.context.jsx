@@ -10,7 +10,7 @@ const RoleContextProvider = props => {
   const { enqueueSnackbar } = useSnackbar()
   const [roles, setRoles] = React.useState([])
   const [widgets, setWidgets] = React.useState([])
-  const { isAuthenticated } = React.useContext(AuthContext)
+  const { isAuthenticated, parsedUser } = React.useContext(AuthContext)
 
   const loadRoles = React.useCallback(() => {
     Promise.all([RoleApi.getRoles(), RoleApi.widgets()])
@@ -28,7 +28,7 @@ const RoleContextProvider = props => {
   }, [enqueueSnackbar])
 
   React.useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && parsedUser && parsedUser?.type !== 'driver') {
       loadRoles()
     }
   }, [loadRoles, isAuthenticated])

@@ -3,10 +3,13 @@ import { Box, Paper, Typography } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import TripRow from './TripRow';
 import moment from 'moment';
+import { useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 
 const TripsList = ({ trips, filters, isInterliner, tripAction, showAllCompleted }) => {
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const { reorderDispatchedOrders } = useDispatchOrderMutation()
 
   const filteredTrips = useMemo(() => {
     let filtered = [...trips];
@@ -67,6 +70,9 @@ const TripsList = ({ trips, filters, isInterliner, tripAction, showAllCompleted 
               tripAction={tripAction}
               isInterliner={isInterliner}
               isToday={trip.trip_date === today}
+              onReorderOrders={async (tripId, result) => {
+                await reorderDispatchedOrders.mutateAsync({tripId, payload: result})
+              }}
             />
           ))}
         </Box>
