@@ -25,7 +25,14 @@ const getCompletedOrders = (tid) => CustomAxios.get(`/api/dispatch-orders/dispat
 const reorderOrders = (tid, payload) => CustomAxios.put(`/api/trips/reorder/trip/${tid}`, payload)
 
 const getDriverTripsById = (did) => CustomAxios.get(`/api/dispatch-orders/trips/driver/${did}`)
+
+const getStopAction = (did, lt) => CustomAxios.get(`/api/dispatch-orders/driver/stop-action/${did}/${lt}`)
+
 const countDriverCompletedTrips = (did) => CustomAxios.get(`/api/dispatch-orders/completed-trips/driver/${did}`)
+
+const driverUpdateStatus = (payload) => CustomAxios.put('/api/orders/dispatched-orders/driver/update/orders', payload)
+
+const getDriverFreightOrder = (params) => CustomAxios.get('/api/dispatch-orders/freight-order/driver', { params: { ids: params } })
 
 export default {
     loadTripAndUndispatched,
@@ -41,5 +48,8 @@ export default {
     getCompletedOrders,
     reorderOrders,
     getDriverTripsById,
-    countDriverCompletedTrips
+    countDriverCompletedTrips,
+    getStopAction,
+    driverUpdateStatus,
+    getDriverFreightOrder
 };

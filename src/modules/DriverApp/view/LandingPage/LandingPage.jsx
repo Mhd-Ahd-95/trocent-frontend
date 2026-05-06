@@ -100,7 +100,7 @@ export default function DriverLanding() {
     const { updateTrip } = useDispatchOrderMutation();
     const navigate = useNavigate()
 
-    const liveTrip = React.useMemo(() => (driverTrips ?? []).find(t => t.trip_status === 'active') ?? null, [driverTrips]);
+    const liveTrip = React.useMemo(() => (driverTrips ?? [])?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
     const hasLiveTrip = Boolean(liveTrip);
     const hasAnyTrip = (driverTrips ?? []).length > 0;
 

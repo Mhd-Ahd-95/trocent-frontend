@@ -6,6 +6,7 @@ export default makeStyles()((theme) => {
     const secondary = theme.palette.secondary.main;
     const secondaryLight = theme.palette.secondary.light;
     const success = theme.palette.success.main;
+
     return {
 
         '@keyframes fadeUp': {
@@ -22,12 +23,10 @@ export default makeStyles()((theme) => {
         backRow: {
             display: 'flex',
             alignItems: 'center',
-            width: '100%',
-            justifyContent: 'flex-end',
             gap: 4,
             marginBottom: 5,
             cursor: 'pointer',
-            width: 'fit-content',
+            // width: 'fit-content',
             color: secondaryLight,
             transition: 'color 0.15s',
             '&:hover': { color: secondary },
@@ -46,7 +45,7 @@ export default makeStyles()((theme) => {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            marginBottom: 20,
+            marginBottom: 4,
         },
 
         pageTitleIcon: {
@@ -76,8 +75,16 @@ export default makeStyles()((theme) => {
             fontWeight: 500,
         },
 
+        sectionLabel: {
+            fontSize: 14,
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: secondary,
+        },
+
         accordionBadge: {
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 800,
             color: theme.palette.success.dark,
             background: alpha(success, 0.1),
@@ -87,15 +94,24 @@ export default makeStyles()((theme) => {
             letterSpacing: '0.06em',
         },
 
+        accessorialSectionLabel: {
+            fontSize: 14,
+            fontWeight: 800,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: alpha(secondary, 1),
+            padding: '12px 0 4px',
+        },
+
         accessorialList: {
-            margin: '0 -16px',
+            // margin: '0 -16px',
         },
 
         accessorialItem: {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '13px 16px',
+            padding: '13px 0px',
             borderBottom: `1px solid ${alpha(secondary, 0.06)}`,
             cursor: 'pointer',
             transition: 'background 0.12s',
@@ -196,13 +212,6 @@ export default makeStyles()((theme) => {
         },
 
         clearIcon: { fontSize: '15px !important' },
-
-        actionsWrap: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            marginTop: 6,
-        },
 
         actionBtn: {
             width: '100%',

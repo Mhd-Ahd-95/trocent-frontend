@@ -137,7 +137,7 @@ const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = [
         const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
         delete trip['dispatched_orders']
         delete trip['total_orders_completed']
-        if (cachedDriverTrips){
+        if (cachedDriverTrips) {
             queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(trip.id) ? trip : o))
         }
         else {
@@ -188,6 +188,23 @@ export function useDispatchCacheUpdate() {
                     queryClient.setQueryData(key, mergeTrips(cached, driverTrips, orderId));
                 } else {
                     queryClient.invalidateQueries({ queryKey: key });
+                }
+                if (action === 'updated') {
+                    for (let t of driverTrips) {
+                        if (t.trip_status === 'active') {
+                            const liveTrip = queryClient.getQueryData(['trip', Number(t.id)])
+                            if (liveTrip) {
+                                queryClient.setQueryData(['trip', Number(t.id)], (old) => {
+                                    const oldWithoutNewOrders = old.dispatched_orders.filter(od => od.order_id !== orderId)
+                                    const newOrders = [...t.dispatched_orders, ...oldWithoutNewOrders].sort((a, b) => a.order_level - b.order_level)
+                                    return ({ ...t, dispatched_orders: newOrders })
+                                })
+                            }
+                            else {
+                                queryClient.invalidateQueries({ queryKey: ['trip', Number(t.id)] })
+                            }
+                        }
+                    }
                 }
             }
             const interlinerTrips = trips.filter((t) => t.trip_type === 'interliner');

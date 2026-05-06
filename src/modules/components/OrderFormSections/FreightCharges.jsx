@@ -1,42 +1,16 @@
 import React from 'react'
-import {
-  Grid,
-  FormControl,
-  Switch,
-  Typography,
-  Button,
-  InputAdornment,
-  IconButton,
-  CircularProgress
-} from '@mui/material'
+import { Grid, FormControl, Switch, Typography, Button, InputAdornment, IconButton, CircularProgress } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import {
-  AccordionComponent,
-  TextInput,
-  CustomFormControlLabel,
-  OrderEngine
-} from '../../components'
+import { AccordionComponent, TextInput, CustomFormControlLabel, OrderEngine } from '../../components'
 import { useFieldArray, useWatch, Controller, useFormContext } from 'react-hook-form'
 import { Add, AttachMoney, Delete } from '@mui/icons-material'
 import global from '../../global'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useRateSheetsByCustomerAndCities } from '../../hooks/useRateSheets'
 
-const ServiceChargeRow = React.memo(function ServiceChargeRow({
-  index,
-  control,
-  getValues,
-  removeServiceCharge,
-  engine,
-  calculationRef,
-  id
-}) {
+const ServiceChargeRow = React.memo(function ServiceChargeRow({ index, control, getValues, removeServiceCharge, engine, calculationRef, id }) {
 
-  const chargeName = useWatch({
-    control,
-    name: `additional_service_charges.${index}.charge_name`
-  })
-
+  const chargeName = useWatch({ control, name: `additional_service_charges.${index}.charge_name` })
   const isDisabled = !chargeName?.trim()
 
   return (
@@ -62,7 +36,6 @@ const ServiceChargeRow = React.memo(function ServiceChargeRow({
             )}
           />
         </Grid>
-
         <Grid size={{ xs: 12, sm: 3, md: 2 }}>
           <Controller
             name={`additional_service_charges.${index}.charge_quantity`}
@@ -87,7 +60,6 @@ const ServiceChargeRow = React.memo(function ServiceChargeRow({
             )}
           />
         </Grid>
-
         <Grid size={{ xs: 12, sm: 8, md: 4 }}>
           <Controller
             name={`additional_service_charges.${index}.charge_amount`}
@@ -122,7 +94,6 @@ const ServiceChargeRow = React.memo(function ServiceChargeRow({
             )}
           />
         </Grid>
-
         <Grid size={{ xs: 12, sm: 2, md: 1 }}>
           <IconButton
             color='error'
@@ -145,7 +116,7 @@ function FreightCharges(props) {
 
   const { engine } = props
 
-  const { control, setValue, getValues, resetField } = useFormContext()
+  const { control, setValue, getValues } = useFormContext()
   const { formatAccessorial } = global.methods
   const theme = useTheme()
 
@@ -153,7 +124,7 @@ function FreightCharges(props) {
   const serviceType = useWatch({ control, name: 'service_type' })
   const [fetchRateSheet, setFetchRateSheet] = React.useState({ customer_id: getValues('customer_id'), shipper_city: getValues('shipper_city'), receiver_city: getValues('receiver_city') })
 
-  const { fields: customerAccessorials, replace: replaceCustomerAccessorials, update: updateCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
+  const { fields: customerAccessorials, replace: replaceCustomerAccessorials } = useFieldArray({ control, name: 'customer_accessorials' })
   const { fields: customerVehicleTypes, replace: replaceCustomerVehicleTypes } = useFieldArray({ control, name: 'customer_vehicle_types' })
   const { fields: additionalServiceCharges, append: appendServiceCharge, remove: removeServiceCharge } = useFieldArray({ control, name: 'additional_service_charges' })
   const { data: rateSheets, isLoading: rateSheetLoading, isFetching: rateSheetFetching } = useRateSheetsByCustomerAndCities(fetchRateSheet.customer_id, fetchRateSheet.shipper_city, fetchRateSheet.receiver_city)
@@ -361,9 +332,7 @@ function FreightCharges(props) {
               />
             }
             label='Manual Charges'
-            sx={{
-              whiteSpace: 'nowrap'
-            }}
+            sx={{ whiteSpace: 'nowrap' }}
           />
         </FormControl>
       </Grid>
@@ -431,20 +400,7 @@ function FreightCharges(props) {
                     />
                   </Grid>
                   {customerVehicleTypes.map((vtype, index) => (
-                    <Grid
-                      container
-                      spacing={2}
-                      key={vtype.id}
-                      sx={{
-                        border: `1px solid ${theme.palette.grey[200]}`,
-                        py: 1,
-                        px: 2,
-                        borderRadius: 3
-                      }}
-                      justifyContent={'center'}
-                      alignItems={'center'}
-                      width={'100%'}
-                    >
+                    <Grid container spacing={2} key={vtype.id} justifyContent={'center'} alignItems={'center'} width={'100%'} sx={{ border: `1px solid ${theme.palette.grey[200]}`, py: 1, px: 2, borderRadius: 3 }}>
                       <Grid size={{ xs: 12, sm: 6, md: 7 }}>
                         <Typography variant='caption' sx={{ fontSize: 12, fontWeight: 400 }}                        >
                           {vtype.name}
@@ -490,21 +446,9 @@ function FreightCharges(props) {
                               value={field.value || ''}
                               size="small"
                               disabled
-                              sx={{
-                                '& .MuiInputBase-input.Mui-disabled': {
-                                  color: 'black',
-                                  fontWeight: 600,
-                                  WebkitTextFillColor: 'black',
-                                },
-                              }}
+                              sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black' } }}
                               slotProps={{
-                                input: {
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      <AttachMoney />
-                                    </InputAdornment>
-                                  )
-                                }
+                                input: { endAdornment: (<InputAdornment position="end"><AttachMoney /></InputAdornment>) }
                               }}
                             />
                           )}
@@ -524,15 +468,8 @@ function FreightCharges(props) {
           </Grid>
         </Grid>
       }
-      {/* {!charges.no_charges || customerAccessorials.find(ca => ca.is_included && ca.type === 'fuel_based') ? ( */}
       <Grid size={12}>
-        <Grid
-          container
-          sx={{
-            border: `1px solid ${theme.palette.grey[200]}`,
-            borderRadius: 3
-          }}
-        >
+        <Grid container sx={{ border: `1px solid ${theme.palette.grey[200]}`, borderRadius: 3 }}        >
           <Grid size={12}>
             <Grid container spacing={2} px={3} py={2}>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -548,13 +485,6 @@ function FreightCharges(props) {
                       type='number'
                       inputProps={{ step: "any" }}
                       disabled={!charges.manual_charges}
-                      // value={field.value || ''}
-                      // onChange={e => {
-                      //   const value = e.target.value
-                      //   field.onChange(value)
-                      //   engine.override_freight_rate = Number(value)
-                      //   props.calculationRef?.current?.recalculate()
-                      // }}
                       onFocus={(e) => {
                         const value = e.target.value
                         if (Number(value) === 0 || value === '' || value === '0') {
@@ -577,27 +507,10 @@ function FreightCharges(props) {
                       }}
                       slotProps={{
                         input: {
-                          endAdornment:
-                            !rateSheetLoading && !rateSheetFetching ? (
-                              <InputAdornment position='start'>
-                                <AttachMoney />
-                              </InputAdornment>
-                            ) :
-                              (
-                                <InputAdornment position="end">
-                                  <CircularProgress size={20} />
-                                </InputAdornment>
-                              )
-
+                          endAdornment: !rateSheetLoading && !rateSheetFetching ? (<InputAdornment position='start'><AttachMoney /></InputAdornment>) : (<InputAdornment position="end"><CircularProgress size={20} /></InputAdornment>)
                         }
                       }}
-                      sx={{
-                        '& .MuiInputBase-input.Mui-disabled': {
-                          color: 'black',
-                          fontWeight: 600,
-                          WebkitTextFillColor: 'black',
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', }, }}
                     />
                   )}
                 />
@@ -614,13 +527,6 @@ function FreightCharges(props) {
                       fullWidth
                       type='number'
                       inputProps={{ step: "any" }}
-                      // value={field.value || ''}
-                      // onChange={e => {
-                      //   const value = e.target.value
-                      //   field.onChange(value)
-                      //   engine.override_fuel_surcharge = Number(value)
-                      //   props.calculationRef?.current?.recalculate()
-                      // }}
                       onFocus={(e) => {
                         const value = e.target.value
                         if (Number(value) === 0 || value === '' || value === '0') {
@@ -645,25 +551,10 @@ function FreightCharges(props) {
                       slotProps={{
                         input: {
                           endAdornment:
-                            !rateSheetLoading && !rateSheetFetching ? (
-                              <InputAdornment position='start'>
-                                <AttachMoney />
-                              </InputAdornment>
-                            ) :
-                              (
-                                <InputAdornment position="end">
-                                  <CircularProgress size={20} />
-                                </InputAdornment>
-                              )
+                            !rateSheetLoading && !rateSheetFetching ? (<InputAdornment position='start'><AttachMoney /></InputAdornment>) : (<InputAdornment position="end"><CircularProgress size={20} /></InputAdornment>)
                         }
                       }}
-                      sx={{
-                        '& .MuiInputBase-input.Mui-disabled': {
-                          color: 'black',
-                          fontWeight: 600,
-                          WebkitTextFillColor: 'black',
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', }, }}
                     />
                   )}
                 />
@@ -672,15 +563,8 @@ function FreightCharges(props) {
           </Grid>
         </Grid>
       </Grid>
-      {/* ) : null} */}
       <Grid size={12}>
-        <Grid
-          container
-          sx={{
-            border: `1px solid ${theme.palette.grey[200]}`,
-            borderRadius: 2
-          }}
-        >
+        <Grid container sx={{ border: `1px solid ${theme.palette.grey[200]}`, borderRadius: 2 }}        >
           <Grid size={12} sx={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, py: 1, px: 2 }}          >
             <Typography component={'p'} sx={{ fontSize: 16, fontWeight: 600 }}>
               Customer Accessorial Charges
@@ -773,22 +657,8 @@ function FreightCharges(props) {
                               fullWidth
                               disabled
                               size='small'
-                              sx={{
-                                '& .MuiInputBase-input.Mui-disabled': {
-                                  color: 'black',
-                                  fontWeight: 600,
-                                  WebkitTextFillColor: 'black',
-                                },
-                              }}
-                              slotProps={{
-                                input: {
-                                  endAdornment: (
-                                    <InputAdornment position='end'>
-                                      <AttachMoney />
-                                    </InputAdornment>
-                                  )
-                                }
-                              }}
+                              sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', }, }}
+                              slotProps={{ input: { endAdornment: (<InputAdornment position='end'><AttachMoney /></InputAdornment>) } }}
                             />
                           )}
                         />
@@ -832,17 +702,8 @@ function FreightCharges(props) {
                       variant='text'
                       color='primary'
                       startIcon={<Add />}
-                      sx={{
-                        textTransform: 'capitalize',
-                        fontWeight: 600
-                      }}
-                      onClick={() =>
-                        appendServiceCharge({
-                          charge_name: '',
-                          charge_quantity: 1,
-                          charge_amount: ''
-                        })
-                      }
+                      sx={{ textTransform: 'capitalize', fontWeight: 600 }}
+                      onClick={() => appendServiceCharge({ charge_name: '', charge_quantity: 1, charge_amount: '' })}
                     >
                       Add Service Charge
                     </Button>
@@ -854,13 +715,7 @@ function FreightCharges(props) {
         </Grid>
       </Grid>
       <Grid size={12}>
-        <Grid
-          container
-          sx={{
-            border: `1px solid ${theme.palette.grey[200]}`,
-            borderRadius: 2
-          }}
-        >
+        <Grid container sx={{ border: `1px solid ${theme.palette.grey[200]}`, borderRadius: 2 }}        >
           <Grid size={12} sx={{ py: 2, px: 3 }}>
             <Grid container spacing={4}>
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -876,20 +731,10 @@ function FreightCharges(props) {
                       variant='outlined'
                       size='large'
                       slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
-                              $
-                            </InputAdornment>
-                          )
-                        }
+                        input: { endAdornment: (<InputAdornment sx={{ '& p': { fontSize: 13 } }}>$</InputAdornment>) }
                       }}
                       sx={{
-                        '& .MuiInputBase-input.Mui-disabled': {
-                          color: 'black',
-                          fontWeight: 600,
-                          WebkitTextFillColor: 'black',
-                        },
+                        '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', },
                       }}
                     />
                   )}
@@ -909,21 +754,9 @@ function FreightCharges(props) {
                       value={field.value || 0}
                       size='large'
                       slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
-                              $
-                            </InputAdornment>
-                          )
-                        }
+                        input: { endAdornment: (<InputAdornment sx={{ '& p': { fontSize: 13 } }}>$</InputAdornment>) }
                       }}
-                      sx={{
-                        '& .MuiInputBase-input.Mui-disabled': {
-                          color: 'black',
-                          fontWeight: 600,
-                          WebkitTextFillColor: 'black',
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', }, }}
                     />
                   )}
                 />
@@ -942,21 +775,9 @@ function FreightCharges(props) {
                       value={field.value || 0}
                       size='large'
                       slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
-                              $
-                            </InputAdornment>
-                          )
-                        }
+                        input: { endAdornment: (<InputAdornment sx={{ '& p': { fontSize: 13 } }}>$</InputAdornment>) }
                       }}
-                      sx={{
-                        '& .MuiInputBase-input.Mui-disabled': {
-                          color: 'black',
-                          fontWeight: 600,
-                          WebkitTextFillColor: 'black',
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', }, }}
                     />
                   )}
                 />
@@ -975,21 +796,9 @@ function FreightCharges(props) {
                       size='large'
                       value={field.value || 0}
                       slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment sx={{ '& p': { fontSize: 13 } }}>
-                              $
-                            </InputAdornment>
-                          )
-                        }
+                        input: { endAdornment: (<InputAdornment sx={{ '& p': { fontSize: 13 } }}>$</InputAdornment>) }
                       }}
-                      sx={{
-                        '& .MuiInputBase-input.Mui-disabled': {
-                          color: 'black',
-                          fontWeight: 600,
-                          WebkitTextFillColor: 'black',
-                        },
-                      }}
+                      sx={{ '& .MuiInputBase-input.Mui-disabled': { color: 'black', fontWeight: 600, WebkitTextFillColor: 'black', }, }}
                     />
                   )}
                 />
@@ -1001,5 +810,4 @@ function FreightCharges(props) {
     </Grid>
   )
 }
-
 export default React.memo(FreightCharges)

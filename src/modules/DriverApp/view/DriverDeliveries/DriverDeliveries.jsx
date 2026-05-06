@@ -6,6 +6,7 @@ import moment from 'moment';
 import { useTripById } from '../../../hooks/useDispatchOrders';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { useDispatchScreenSync } from '../../../hooks/useDispatchScreenSync';
 
 
 const ORDER_STATUS_STYLES = {
@@ -121,7 +122,7 @@ function LegSection({ order, legType, onAction, isLast }) {
     const timeTo = isPickup ? order.pickup_time_to : order.delivery_time_to;
     const time = formatTime(timeFrom, timeTo);
     const instructions = isPickup ? order.shipper_special_instructions : order.receiver_special_instructions;
-    const appointment = order.leg_type === 'pickup' ? Array.isArray(order.pickup_appointment_numbers) && order.pickup_appointment_numbers.length > 0 ? order.pickup_appointment_numbers[0] : null :
+    const appointment = isPickup ? Array.isArray(order.pickup_appointment_numbers) && order.pickup_appointment_numbers.length > 0 ? order.pickup_appointment_numbers[0] : null :
                 Array.isArray(order.delivery_appointment_numbers) && order.delivery_appointment_numbers.length > 0 ? order.delivery_appointment_numbers[0] : null
 
     const accentColor = isPickup ? '#27ae60' : '#2980b9';
@@ -283,19 +284,20 @@ function OrderCard({ order, index, onAction }) {
 
 export default function DriverDeliveries() {
 
+    useDispatchScreenSync();
+
     const { tid } = useParams()
     const tripId = isNaN(tid) ? undefined : tid
     const navigate = useNavigate()
     const { enqueueSnackbar } = useSnackbar()
     const { data: liveTrip = {}, isLoading, isError, error } = useTripById(tripId, true)
-
+    
     const sortedOrders = React.useMemo(() =>
         liveTrip?.dispatched_orders ? [...liveTrip.dispatched_orders].sort((a, b) => a.order_level - b.order_level) : [],
         [liveTrip]);
 
     const handleAction = (order, legType) => {
-        console.log('Action triggered', { ...order, legType });
-        navigate('/stop-actions')
+        navigate(`/stop-actions/${order.id}/${legType}`)
     };
 
     React.useEffect(() => {

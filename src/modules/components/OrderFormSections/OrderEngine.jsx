@@ -649,7 +649,6 @@ export default class OrderEngine {
         const min = access['min'] ? Number(access['min']) : 0
         const max = access['max'] ? Number(access['max']) : 0
 
-        let { totalDelivery, totalPickup } = OrderEngine.calculateTotalWaitingTime(pickup_delivery_time, waiting_time);
         let calculated_amount = 0
 
         switch (type) {
@@ -661,6 +660,7 @@ export default class OrderEngine {
                 else calculated_amount = amount
                 break
             case 'time_based':
+                let { totalDelivery, totalPickup } = OrderEngine.calculateTotalWaitingTime(pickup_delivery_time, waiting_time);
                 let free_time_minute = timeUnit === 'minute' ? freeTime : freeTime * 60
                 let totalPickupWaitingTime = Math.max(0, (totalPickup - free_time_minute))
                 let totalDeliveryWaitingTime = Math.max(0, (totalDelivery - free_time_minute))

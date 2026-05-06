@@ -2,24 +2,23 @@ import { alpha } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 
 export default makeStyles()((theme) => {
-    const primary        = theme.palette.primary.main;
-    const secondary      = theme.palette.secondary.main;
+    const primary = theme.palette.primary.main;
+    const secondary = theme.palette.secondary.main;
     const secondaryLight = theme.palette.secondary.light;
-    const success        = theme.palette.success.main;
-    const info           = theme.palette.info.main;
-    const error          = theme.palette.error.main;
-    const warning        = theme.palette.warning.main;
+    const success = theme.palette.success.main;
+    const info = theme.palette.info.main;
+    const error = theme.palette.error.main;
+    const warning = theme.palette.warning.main;
 
     return {
-
         '@keyframes fadeUp': {
             from: { opacity: 0, transform: 'translateY(12px)' },
-            to:   { opacity: 1, transform: 'translateY(0)' },
+            to: { opacity: 1, transform: 'translateY(0)' },
         },
 
         '@keyframes slideDown': {
             from: { opacity: 0, transform: 'translateY(-6px)' },
-            to:   { opacity: 1, transform: 'translateY(0)' },
+            to: { opacity: 1, transform: 'translateY(0)' },
         },
 
         page: {
@@ -266,24 +265,6 @@ export default makeStyles()((theme) => {
             '&:disabled': { opacity: 0.4, cursor: 'not-allowed' },
         },
 
-        savedComment: {
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 8,
-            padding: '10px 14px',
-            background: alpha(primary, 0.05),
-            borderTop: `1px solid ${alpha(primary, 0.1)}`,
-        },
-
-        savedCommentIcon: { fontSize: '15px !important', color: primary, flexShrink: 0, marginTop: 1 },
-
-        savedCommentText: {
-            fontSize: 14,
-            color: secondary,
-            fontWeight: 500,
-            lineHeight: 1.5,
-        },
-
         freightBillItem: {
             display: 'flex',
             alignItems: 'center',
@@ -338,7 +319,7 @@ export default makeStyles()((theme) => {
         badge: {
             display: 'inline-flex',
             alignItems: 'center',
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: 800,
             letterSpacing: '0.08em',
             borderRadius: 5,
@@ -348,15 +329,15 @@ export default makeStyles()((theme) => {
             flexShrink: 0,
         },
 
-        statusDispatched:       { background: alpha(info, 0.1),    color: theme.palette.info.dark,    border: `1px solid ${alpha(info, 0.3)}` },
-        statusArrivedShipper:   { background: alpha(warning, 0.1), color: theme.palette.warning.dark, border: `1px solid ${alpha(warning, 0.3)}` },
-        statusPickedUp:         { background: alpha(success, 0.1), color: theme.palette.success.dark, border: `1px solid ${alpha(success, 0.3)}` },
-        statusDelivered:        { background: alpha(success, 0.15),color: theme.palette.success.dark, border: `1px solid ${alpha(success, 0.4)}` },
-        statusCompleted:        { background: alpha(success, 0.15),color: theme.palette.success.dark, border: `1px solid ${alpha(success, 0.4)}` },
+        statusDispatched: { background: alpha(info, 0.1), color: theme.palette.info.dark, border: `1px solid ${alpha(info, 0.3)}` },
+        statusArrivedShipper: { background: alpha(warning, 0.1), color: theme.palette.warning.dark, border: `1px solid ${alpha(warning, 0.3)}` },
+        statusPickedUp: { background: alpha(success, 0.1), color: theme.palette.success.dark, border: `1px solid ${alpha(success, 0.3)}` },
+        statusDelivered: { background: alpha(success, 0.15), color: theme.palette.success.dark, border: `1px solid ${alpha(success, 0.4)}` },
+        statusCompleted: { background: alpha(success, 0.15), color: theme.palette.success.dark, border: `1px solid ${alpha(success, 0.4)}` },
 
-        serviceRush:    { background: alpha(error, 0.1),        color: theme.palette.error.dark,    border: `1px solid ${alpha(error, 0.3)}` },
-        serviceRegular: { background: alpha(info, 0.1),         color: theme.palette.info.dark,     border: `1px solid ${alpha(info, 0.3)}` },
-        serviceDirect:  { background: 'rgba(142,68,173,0.1)',   color: '#6c3483',                   border: '1px solid rgba(142,68,173,0.3)' },
+        serviceRush: { background: alpha(error, 0.1), color: theme.palette.error.dark, border: `1px solid ${alpha(error, 0.3)}` },
+        serviceRegular: { background: alpha(info, 0.1), color: theme.palette.info.dark, border: `1px solid ${alpha(info, 0.3)}` },
+        serviceDirect: { background: 'rgba(142,68,173,0.1)', color: '#6c3483', border: '1px solid rgba(142,68,173,0.3)' },
 
         thisOrderTag: {
             fontSize: 10,
@@ -408,6 +389,13 @@ export default makeStyles()((theme) => {
             color: theme.palette.success.dark,
             border: `1px solid ${alpha(success, 0.3)}`,
             cursor: 'default',
+        },
+
+        actionBtnDisabled: {
+            background: alpha(secondary, 0.08),
+            color: alpha(secondary, 0.35),
+            border: `1px solid ${alpha(secondary, 0.12)}`,
+            cursor: 'not-allowed',
         },
 
         actionBtnPickup: {

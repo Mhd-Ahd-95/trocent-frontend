@@ -18,6 +18,7 @@ export default function Drivers() {
   const [selectedDrivers, setSelectedDrivers] = React.useState([])
   const { enqueueSnackbar } = useSnackbar()
   const { data, isLoading, isError, error, isFetching } = useDrivers({enabled: true})
+  
   const [openModal, setOpenModal] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { removeMany, createDriverLogin } = useDriverMutation()
@@ -141,26 +142,6 @@ export default function Drivers() {
                       }
                     }}
                   >
-                    {/* <Button
-                      startIcon={
-                        <EditSquareIcon sx={{ fontSize: '10px', padding: 0 }} />
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/driver/edit/${params.row.id}`)
-                      }}
-                      variant='text'
-                      size='small'
-                      sx={{
-                        textTransform: 'capitalize',
-                        '& .MuiButton-startIcon': { marginRight: 0.5 },
-                        fontSize: '0.8rem',
-                        minWidth: 'unset',
-                        p: 0.5
-                      }}
-                    >
-                      Edit
-                    </Button> */}
                     <Button
                       startIcon={<LockPersonOutlinedIcon />}
                       onClick={(e) => {
