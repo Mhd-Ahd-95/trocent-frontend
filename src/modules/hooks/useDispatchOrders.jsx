@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DispatchOrderApi from "../apis/DispatchOrder.api";
 import { useSnackbar } from "notistack";
+import OrderApi from "../apis/Order.api";
 
 export const dispatchKeys = {
     trips: (type) => ['dispatch', 'trips', type],
@@ -216,7 +217,6 @@ export function useDispatchOrderMutation() {
 
     const updateTrip = useMutation({
         mutationFn: async (payload) => {
-            console.log(payload);
             const res = await DispatchOrderApi.updateTrip(payload.trip_id, payload.payload)
             return res.data
         },
@@ -286,6 +286,20 @@ export function useDispatchOrderMutation() {
         onError: handleError
     })
 
-    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus }
+    const driverPickupDeliveryOrders = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DispatchOrderApi.driverPickupDeliveryOrders(payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            const tripId = res[0]?.trip_id
+            queryClient.invalidateQueries({ queryKey: ['stopAction'] })
+            queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
+            enqueueSnackbar('Order has been updated successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus, driverPickupDeliveryOrders }
 
 }

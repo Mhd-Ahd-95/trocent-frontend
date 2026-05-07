@@ -6,6 +6,7 @@ import useStyles from './StopAction.styles';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatchOrderMutation, useStopAction } from '../../../hooks/useDispatchOrders';
 import { useSnackbar } from 'notistack';
+import moment from 'moment';
 
 const STATUS_CLASS = {
     'dispatched': 'statusDispatched',
@@ -76,19 +77,15 @@ export default function StopAction() {
     const dispatchOrder = stopActionData?.dispatch_order ?? {};
     const relatedOrders = stopActionData?.related_orders ?? [];
     const orderStatus = dispatchOrder?.order_status;
-
     const isPickup = params.lt === 'pickup';
-
     const arrivedShipper = orderStatus === 'arrived shipper';
     const arrivedReceiver = orderStatus === 'arrived receiver';
+    const hideButtons = isPickup && ['arrived receiver', 'picked up', 'completed', 'delivered'].includes(orderStatus)
     const pickedUp = orderStatus === 'picked up';
     const delivered = orderStatus === 'delivered' || orderStatus === 'completed';
-
     const arriveDisabled = isPickup ? arrivedShipper || pickedUp : orderStatus === 'dispatched' || arrivedShipper || arrivedReceiver || delivered;
-
     const showArriveBtn = isPickup ? !pickedUp : !delivered;
     const showActionBtn = isPickup ? (arrivedShipper && !pickedUp) : (arrivedReceiver && !delivered);
-
     const [checkedOrders, setCheckedOrders] = React.useState(() => new Set());
     const [commentOpen, setCommentOpen] = React.useState(false);
     const [commentText, setCommentText] = React.useState('');
@@ -105,11 +102,12 @@ export default function StopAction() {
         e.preventDefault();
         e.stopPropagation();
         const status = isPickup ? 'arrived shipper' : 'arrived receiver';
-        await driverUpdateOrderStatus.mutateAsync({ dids: Array.from(checkedOrders), sts: status, lt: params.lt });
+        const arrivedTime = moment(new Date()).format('HH:mm')
+        await driverUpdateOrderStatus.mutateAsync({ dids: Array.from(checkedOrders), sts: status, lt: params.lt, arrivedTime });
     };
 
     const handlePickupOrDeliver = () => {
-        navigate(`/freight-order/${params.lt}`, { state: Array.from(checkedOrders) });
+        navigate(`/freight-order/${params.lt}/${params.tripId}`, { state: Array.from(checkedOrders) });
     };
 
     React.useEffect(() => {
@@ -255,37 +253,39 @@ export default function StopAction() {
                         />
                     ))}
                 </Box>
-                <Stack gap={1.25} className={classes.actionsCard}>
-                    {showArriveBtn && (
-                        <button
-                            className={cx(classes.actionBtn, arriveDisabled ? (arrivedShipper || arrivedReceiver) ? classes.actionBtnArrived : classes.actionBtnDisabled : classes.actionBtnArrive)}
-                            onClick={!arriveDisabled ? handleArrive : undefined}
-                            disabled={arriveDisabled || driverUpdateOrderStatus.isPending}
-                        >
-                            {(arrivedShipper && isPickup) || (arrivedReceiver && !isPickup)
-                                ? <><CheckCircle sx={{ fontSize: 18 }} />{isPickup ? 'Arrived At Shipper' : 'Arrived At Receiver'}</>
-                                : arriveDisabled
-                                    ? <><Place sx={{ fontSize: 18 }} />Awaiting Pickup</>
-                                    : <>{driverUpdateOrderStatus.isPending && <CircularProgress size={18} color="inherit" />}<Place sx={{ fontSize: 18 }} />Arrive</>
-                            }
-                        </button>
-                    )}
-                    {showActionBtn && (
-                        <button className={cx(classes.actionBtn, classes.actionBtnPickup)} onClick={handlePickupOrDeliver}>
-                            <LocalShipping sx={{ fontSize: 18 }} />{isPickup ? 'Pick Up' : 'Deliver'}
-                        </button>
-                    )}
-                    {(pickedUp && isPickup) && (
-                        <button className={cx(classes.actionBtn, classes.actionBtnDone)} disabled>
-                            <CheckCircle sx={{ fontSize: 18 }} />Picked Up ✓
-                        </button>
-                    )}
-                    {(delivered && !isPickup) && (
-                        <button className={cx(classes.actionBtn, classes.actionBtnDone)} disabled>
-                            <CheckCircle sx={{ fontSize: 18 }} />Delivered ✓
-                        </button>
-                    )}
-                </Stack>
+                {!hideButtons &&
+                    <Stack gap={1.25} className={classes.actionsCard}>
+                        {showArriveBtn && (
+                            <button
+                                className={cx(classes.actionBtn, arriveDisabled ? (arrivedShipper || arrivedReceiver) ? classes.actionBtnArrived : classes.actionBtnDisabled : classes.actionBtnArrive)}
+                                onClick={!arriveDisabled ? handleArrive : undefined}
+                                disabled={arriveDisabled || driverUpdateOrderStatus.isPending}
+                            >
+                                {(arrivedShipper && isPickup) || (arrivedReceiver && !isPickup)
+                                    ? <><CheckCircle sx={{ fontSize: 18 }} />{isPickup ? 'Arrived At Shipper' : 'Arrived At Receiver'}</>
+                                    : arriveDisabled
+                                        ? <><Place sx={{ fontSize: 18 }} />Awaiting Pickup</>
+                                        : <>{driverUpdateOrderStatus.isPending && <CircularProgress size={18} color="inherit" />}<Place sx={{ fontSize: 18 }} />Arrive</>
+                                }
+                            </button>
+                        )}
+                        {showActionBtn && (
+                            <button className={cx(classes.actionBtn, classes.actionBtnPickup)} onClick={handlePickupOrDeliver}>
+                                <LocalShipping sx={{ fontSize: 18 }} />{isPickup ? 'Pick Up' : 'Deliver'}
+                            </button>
+                        )}
+                        {(pickedUp && isPickup) && (
+                            <button className={cx(classes.actionBtn, classes.actionBtnDone)} disabled>
+                                <CheckCircle sx={{ fontSize: 18 }} />Picked Up ✓
+                            </button>
+                        )}
+                        {(delivered && !isPickup) && (
+                            <button className={cx(classes.actionBtn, classes.actionBtnDone)} disabled>
+                                <CheckCircle sx={{ fontSize: 18 }} />Delivered ✓
+                            </button>
+                        )}
+                    </Stack>
+                }
             </Box>
         </DriverLayout>
     );

@@ -10,11 +10,7 @@ function ExtraStop(props) {
 
   const { enqueueSnackbar } = props
 
-  const {
-    control,
-    setValue,
-    getValues,
-  } = useFormContext()
+  const { control, setValue, getValues } = useFormContext()
 
   const isExtraStop = useWatch({ control, name: 'is_extra_stop' });
   const [inputValue, setInputValue] = React.useState('')

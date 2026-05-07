@@ -7,6 +7,18 @@ export default makeStyles()((theme) => {
     const secondaryLight = theme.palette.secondary.light;
     const success = theme.palette.success.main;
 
+    const COLORS = {
+        green: '#27ae60',
+        greenCC: '#27ae60CC',
+        greenBg: 'rgba(39,174,96,0.08)',
+        greenBgHover: 'rgba(39,174,96,0.16)',
+        greenBorder: 'rgba(39,174,96,0.18)',
+        greenDone: '#1a5e35',
+        greenDoneBg: 'rgba(39,174,96,0.1)',
+        greenDoneBorder: 'rgba(39,174,96,0.25)',
+        greenShadow: 'rgba(39,174,96,0.4)',
+    }
+
     return {
 
         '@keyframes fadeUp': {
@@ -296,6 +308,23 @@ export default makeStyles()((theme) => {
             border: `1px solid ${alpha(success, 0.3)}`,
             borderRadius: 8,
             padding: '5px 12px',
+        },
+        actionBtnPickup: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            padding: '15px 15px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: 16,
+            fontWeight: 700,
+            // letterSpacing: '0.04em',
+            border: `1px solid ${COLORS.greenDoneBorder}`,
+            background: COLORS.greenDoneBg,
+            color: COLORS.greenDone,
+            transition: 'background 0.15s',
+            '&:hover': { background: COLORS.greenBgHover },
+            '&:active': { transform: 'scale(0.97)' },
         },
     };
 });

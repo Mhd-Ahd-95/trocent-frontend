@@ -1,12 +1,13 @@
 import React from 'react';
 import { Box, CircularProgress, Divider, Grid, MenuItem, Stack, Typography } from '@mui/material';
-import { ArrowBackIos, LocalShipping, CheckRounded, Refresh, CheckCircle, Scale, Draw } from '@mui/icons-material';
+import { ArrowBackIos, LocalShipping, CheckRounded, Refresh, CheckCircle, Scale, Draw, ArrowBack } from '@mui/icons-material';
 import { DriverLayout } from '../../layouts';
 import { AccordionComponent, TextInput } from '../../../components';
 import useStyles from './Freight.styles';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useDriverFreightOrder } from '../../../hooks/useDispatchOrders';
+import { useDispatchOrderMutation, useDriverFreightOrder } from '../../../hooks/useDispatchOrders';
 import { useSnackbar } from 'notistack';
+import moment from 'moment';
 
 
 function buildOrderState(orders) {
@@ -116,7 +117,7 @@ const SignatureCanvas = React.forwardRef(function SignatureCanvas({ onSigned }, 
 
 export default function FreightOrder() {
 
-    const { lt } = useParams();
+    const { lt, tripId } = useParams();
     const isPickup = lt === 'pickup';
     const location = useLocation();
     const navigate = useNavigate();
@@ -128,6 +129,7 @@ export default function FreightOrder() {
     const signatureRef = React.useRef(null);
     const seeded = React.useRef(false);
     const { data: SELECTED_ORDERS, isLoading, isError, error } = useDriverFreightOrder(dispatchedOrdersSelected);
+    const { driverPickupDeliveryOrders } = useDispatchOrderMutation()
 
     const updateQty = React.useCallback((orderId, field, v) => setForm(prev => ({ ...prev, orders: { ...prev.orders, [orderId]: { ...prev.orders[orderId], [field]: v } } })), []);
     const onSigned = React.useCallback((val) => { setForm(prev => ({ ...prev, hasSigned: val })); }, []);
@@ -140,31 +142,48 @@ export default function FreightOrder() {
         });
     }, []);
 
-    const handleComplete = () => {
-        const signeeName = signeeRef.current?.trim();
-        if (!signeeName) {
-            enqueueSnackbar('Please enter the signee name.', { variant: 'warning' });
-            return;
+    const handleComplete = async (e) => {
+        e.preventDefault()
+        try {
+            const signeeName = signeeRef.current?.trim();
+            if (!signeeName) {
+                enqueueSnackbar('Please enter the signee name.', { variant: 'warning' });
+                return;
+            }
+            const signature = signatureRef.current?.getDataURL();
+            if (!signature) {
+                enqueueSnackbar('Please provide a signature.', { variant: 'warning' });
+                return;
+            }
+            const time = isPickup ?
+                { pickup_in: moment(new Date()).format('HH:mm'), pickup_out: moment(new Date()).format('HH:mm'), pickup_at: moment(new Date()).format('YYYY-MM-DD') }
+                :
+                { delivery_in: moment(new Date()).format('HH:mm'), delivery_out: moment(new Date()).format('HH:mm'), delivery_at: moment(new Date()).format('YYYY-MM-DD') }
+            const orderStatus = isPickup ? 'picked up' : 'completed'
+            const payload = {
+                type: lt,
+                order_status: orderStatus,
+                trip_id: tripId,
+                orders: SELECTED_ORDERS.map(o => ({
+                    id: o.id,
+                    pieces: Number(form.orders[o.id]?.pieces) ?? 0,
+                    pallets: Number(form.orders[o.id]?.pallets) ?? 0,
+                    weight: Number(form.orders[o.id]?.weight) ?? 0,
+                    unit: form.orders[o.id]?.unit,
+                    accessorials: [...(form.orders[o.id]?.selectedAccessorialIds ?? [])],
+                })),
+                signee_name: signeeName,
+                signature,
+                ...time
+            };
+            const res = await driverPickupDeliveryOrders.mutateAsync(payload)
+            if (res && res?.length > 0) {
+                setForm(prev => ({ ...prev, done: true }));
+            }
         }
-        const signature = signatureRef.current?.getDataURL();
-        if (!signature) {
-            enqueueSnackbar('Please provide a signature.', { variant: 'warning' });
-            return;
+        catch (err) {
+            //
         }
-        const payload = {
-            orders: SELECTED_ORDERS.map(o => ({
-                id: o.id,
-                pieces: form.orders[o.id]?.pieces,
-                pallets: form.orders[o.id]?.pallets,
-                weight: form.orders[o.id]?.weight,
-                unit: form.orders[o.id]?.unit,
-                accessorials: [...(form.orders[o.id]?.selectedAccessorialIds ?? [])],
-            })),
-            signee_name: signeeName,
-            signature,
-        };
-        console.log('payload', payload);
-        // setForm(prev => ({ ...prev, done: true }));
     };
 
     React.useEffect(() => {
@@ -192,12 +211,20 @@ export default function FreightOrder() {
                         {isPickup ? 'Picked Up' : 'Delivered'} Successfully!
                     </Typography>
                     <Typography className={classes.successSub}>
-                        {SELECTED_ORDERS.length} order{SELECTED_ORDERS.length > 1 ? 's' : ''} confirmed
+                        {SELECTED_ORDERS?.length} order{SELECTED_ORDERS?.length > 1 ? 's' : ''} confirmed
                     </Typography>
                     <Box className={classes.successOrderList}>
-                        {SELECTED_ORDERS.map(o => (
+                        {SELECTED_ORDERS?.map(o => (
                             <Box key={o.id} className={classes.successOrderChip}>Order #{o.order_number}</Box>
                         ))}
+                    </Box>
+                    <Box
+                        component="button"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/driver-deliveries/${tripId}`) }}
+                        className={classes.actionBtnPickup}
+                        mt={2}
+                    >
+                        {<><ArrowBack sx={{ fontSize: 18 }} /> Back To Trip Live</>}
                     </Box>
                 </Box>
             </DriverLayout>
@@ -252,7 +279,7 @@ export default function FreightOrder() {
                                         title={
                                             <Stack direction="row" alignItems="center" gap={1} flex={1} pr={1}>
                                                 <Typography sx={{ fontSize: 16, fontWeight: 800, color: 'text.primary' }}>
-                                                    #{order.order_number}
+                                                    # {order.order_number}
                                                 </Typography>
                                                 <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 500 }}>
                                                     · {order.customer_name}
@@ -281,10 +308,10 @@ export default function FreightOrder() {
                                                             />
                                                         ))}
                                                     </Box>
-                                                ) : 
-                                                <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 14, fontWeight: 600, color: '#aaa8a8', padding: 5, letterSpacing: '.5px'}}>
-                                                    No accessorials available!
-                                                </Box>
+                                                ) :
+                                                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 14, fontWeight: 600, color: '#aaa8a8', padding: 5, letterSpacing: '.5px' }}>
+                                                        No accessorials available!
+                                                    </Box>
                                                 }
                                                 <Divider sx={{ mx: -2, mb: 4 }} />
                                                 <Grid container spacing={2} mb={2}>
@@ -292,6 +319,7 @@ export default function FreightOrder() {
                                                         <TextInput
                                                             variant="outlined" required fullWidth
                                                             label="Pieces"
+                                                            type='number'
                                                             value={q?.pieces ?? ''}
                                                             onChange={e => updateQty(order.id, 'pieces', e.target.value)}
                                                             onFocus={(e) => e.target.select()}
@@ -301,6 +329,7 @@ export default function FreightOrder() {
                                                         <TextInput
                                                             variant="outlined" required fullWidth
                                                             label="Pallets"
+                                                            type='number'
                                                             value={q?.pallets ?? ''}
                                                             onChange={e => updateQty(order.id, 'pallets', e.target.value)}
                                                             onFocus={(e) => e.target.select()}
@@ -310,6 +339,7 @@ export default function FreightOrder() {
                                                         <TextInput
                                                             variant="outlined" required fullWidth
                                                             label="Weight"
+                                                            type='number'
                                                             value={q?.weight ?? ''}
                                                             onChange={e => updateQty(order.id, 'weight', e.target.value)}
                                                             onFocus={(e) => e.target.select()}
@@ -378,6 +408,7 @@ export default function FreightOrder() {
                             disabled={!form.hasSigned}
                             onClick={handleComplete}
                         >
+                            {driverPickupDeliveryOrders.isPending && <CircularProgress size={18} color="inherit" />}
                             <CheckCircle sx={{ fontSize: 22 }} />
                             {isPickup ? 'Pick Up and Complete' : 'Delivery and Complete'}
                         </button>

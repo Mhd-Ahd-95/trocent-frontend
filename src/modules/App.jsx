@@ -106,8 +106,8 @@ function App() {
         <Route element={<RoleProtectedRoute allowedRoles={[ROLES.DRIVER]} />}>
           <Route path='/driver-dashboard' Component={LandingPage} />
           <Route path='/driver-deliveries/:tid' Component={DriverDeliveries} />
-          <Route path='/stop-actions/:id/:lt' Component={StopActions} />
-          <Route path='/freight-order/:lt' Component={FreightOrder} />
+          <Route path='/stop-actions/:id/:lt/:tripId' Component={StopActions} />
+          <Route path='/freight-order/:lt/:tripId' Component={FreightOrder} />
         </Route>
         <Route path='/not-authorized' element={<NotAuthorized />} />
         <Route path='*' element={<Navigate to='/' replace />} />

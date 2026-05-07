@@ -88,8 +88,10 @@ function HeaderForm(props) {
             case 'delivery_details':
                 return 'Section updated: Delivery Details'
             case 'freights':
+                if (value && action === 'updated') return value;
                 return 'Section updated: Freights'
             case 'freight_charges':
+                if (value && action === 'updated') return value;
                 return 'Section updated: Freight Charges'
             case 'waiting_time':
                 return 'Section updated: Waiting Time & Billing'

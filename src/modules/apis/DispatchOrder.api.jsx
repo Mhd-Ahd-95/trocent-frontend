@@ -32,6 +32,8 @@ const countDriverCompletedTrips = (did) => CustomAxios.get(`/api/dispatch-orders
 
 const driverUpdateStatus = (payload) => CustomAxios.put('/api/orders/dispatched-orders/driver/update/orders', payload)
 
+const driverPickupDeliveryOrders = (payload) => CustomAxios.put('/api/orders/dispatched-orders/driver/pickup-delivery/orders', payload)
+
 const getDriverFreightOrder = (params) => CustomAxios.get('/api/dispatch-orders/freight-order/driver', { params: { ids: params } })
 
 export default {
@@ -51,5 +53,6 @@ export default {
     countDriverCompletedTrips,
     getStopAction,
     driverUpdateStatus,
-    getDriverFreightOrder
+    getDriverFreightOrder,
+    driverPickupDeliveryOrders
 };

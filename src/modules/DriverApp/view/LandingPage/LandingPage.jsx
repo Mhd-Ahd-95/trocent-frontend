@@ -252,7 +252,8 @@ export default function DriverLanding() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <span className={classes.btnArrow}>→</span>
+                                        <span className={classes.btnArrow}>
+                                            {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}</span>
                                     </button>
                                 </span>
                             </Tooltip>

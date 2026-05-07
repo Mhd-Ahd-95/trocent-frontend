@@ -23,7 +23,6 @@ export function useDispatchScreenSync() {
 
         channel.listen('.dispatch.updated', (e) => {
             const { undispatched_orders, action, trips, orderId } = e;
-            console.log(e);
             updateDispatchCache({ orderId, trips, undispatchedOrders: undispatched_orders, action });
         });
 
@@ -35,8 +34,8 @@ export function useDispatchScreenSync() {
             updateTrip(trip)
         });
 
-        channel.listen('.dispatch.trip.orderStatus', (trip) => {
-            updateOrderStatus(trip)
+        channel.listen('.dispatch.trip.orderStatus', (trips) => {
+            updateOrderStatus(trips)
         })
 
         channel.listen('.dispatch.undispatchOrder.terminal', (order) => {
