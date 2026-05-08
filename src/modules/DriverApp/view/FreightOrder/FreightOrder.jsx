@@ -177,7 +177,7 @@ export default function FreightOrder() {
                 ...time
             };
             const res = await driverPickupDeliveryOrders.mutateAsync(payload)
-            if (res && res?.length > 0) {
+            if (res) {
                 setForm(prev => ({ ...prev, done: true }));
             }
         }
