@@ -94,15 +94,15 @@ export default function DriverLanding() {
     const { classes, cx } = useStyles();
     const authedUser = JSON.parse(localStorage.getItem('authedUser'));
     const [selectTrip, setSelectTrip] = React.useState(null);
-    const { data: driverTrips, isLoading, isError, error } = useDriverTripsById(authedUser?.driver_id);
+    const { data: driverTrips = [], isLoading, isError, error } = useDriverTripsById(authedUser?.driver_id);
     const { data: countCompleted, isLoading: loadingCompleted } = useCompletedDriverTrips(authedUser?.driver_id);
     const { enqueueSnackbar } = useSnackbar();
     const { updateTrip } = useDispatchOrderMutation();
     const navigate = useNavigate()
 
-    const liveTrip = React.useMemo(() => (driverTrips ?? [])?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
+    const liveTrip = React.useMemo(() => driverTrips?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
     const hasLiveTrip = Boolean(liveTrip);
-    const hasAnyTrip = (driverTrips ?? []).length > 0;
+    const hasAnyTrip = driverTrips?.length > 0;
 
     const startTripDisabled = hasLiveTrip || !selectTrip;
     const deliveriesDisabled = !hasLiveTrip;
@@ -128,11 +128,11 @@ export default function DriverLanding() {
 
     const totalToday = React.useMemo(() => {
         const today = moment().format('YYYY-MM-DD');
-        return (driverTrips ?? []).filter(t => moment(t.trip_date).format('YYYY-MM-DD') === today).length;
+        return driverTrips?.filter(t => moment(t.trip_date).format('YYYY-MM-DD') === today)?.length || 0;
     }, [driverTrips]);
 
     const totalPending = React.useMemo(() => {
-        return (driverTrips ?? []).filter(t => t.trip_status === 'planning').length;
+        return driverTrips?.filter(t => t.trip_status === 'planning')?.length || 0;
     }, [driverTrips]);
 
     const startTrip = async (e) => {
@@ -158,10 +158,7 @@ export default function DriverLanding() {
         setSelectTrip(null);
     };
 
-    const sortedTrips = React.useMemo(
-        () => [...(driverTrips ?? [])].sort((a, b) => b.trip_number - a.trip_number),
-        [driverTrips]
-    );
+    const sortedTrips = React.useMemo(() => driverTrips?.sort((a, b) => b.trip_number - a.trip_number), [driverTrips]);
 
     return (
         <DriverLayout
@@ -194,7 +191,7 @@ export default function DriverLanding() {
                                 <span className={classes.tripsCardTitle}>Assigned Trips</span>
                             </div>
                             {driverTrips && (
-                                <div className={classes.tripsCount}>{driverTrips.length}</div>
+                                <div className={classes.tripsCount}>{driverTrips?.length}</div>
                             )}
                         </div>
 

@@ -128,7 +128,7 @@ export default function FreightOrder() {
     const signeeRef = React.useRef('');
     const signatureRef = React.useRef(null);
     const seeded = React.useRef(false);
-    const { data: SELECTED_ORDERS, isLoading, isError, error } = useDriverFreightOrder(dispatchedOrdersSelected);
+    const { data: SELECTED_ORDERS = [], isLoading, isError, error } = useDriverFreightOrder(dispatchedOrdersSelected);
     const { driverPickupDeliveryOrders } = useDispatchOrderMutation()
 
     const updateQty = React.useCallback((orderId, field, v) => setForm(prev => ({ ...prev, orders: { ...prev.orders, [orderId]: { ...prev.orders[orderId], [field]: v } } })), []);
@@ -256,7 +256,7 @@ export default function FreightOrder() {
                                     Freight {isPickup ? 'Pick Up' : 'Delivery'}
                                 </Typography>
                                 <Typography className={classes.pageTitleSub}>
-                                    {SELECTED_ORDERS.length} order{SELECTED_ORDERS.length > 1 ? 's' : ''} selected
+                                    {SELECTED_ORDERS?.length} order{SELECTED_ORDERS?.length > 1 ? 's' : ''} selected
                                 </Typography>
                             </Box>
                         </Stack>

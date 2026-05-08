@@ -39,7 +39,7 @@ export function useUpdateOrderStatus() {
                                 oldTotalOrdersCompleted += 1
                                 invalidateCompletedOrdersTrip = true
                             }
-                            if (newOrderStatus === 'pickup') {
+                            if (newOrderStatus === 'picked up') {
                                 oldDispatchOrders = oldDispatchOrders.map(od => Number(od.id) === Number(ndo.id) ? { ...od, ...ndo } : od)
                             }
                         }
