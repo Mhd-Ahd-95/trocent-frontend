@@ -2,12 +2,7 @@ import React from 'react'
 import { Button, colors, Grid, CircularProgress, useTheme } from '@mui/material'
 import { DrawerForm, Modal, Confirmation } from '..'
 import { useFormContext } from 'react-hook-form'
-import {
-    RotateLeftOutlined,
-    HighlightOffOutlined,
-    ContentCopyOutlined,
-    HistoryOutlined
-} from '@mui/icons-material'
+import { RotateLeftOutlined, HighlightOffOutlined, ContentCopyOutlined, HistoryOutlined } from '@mui/icons-material'
 import { useOrderMutations } from '../../hooks/useOrders'
 import global from '../../global'
 import { useNavigate } from 'react-router-dom'
@@ -195,7 +190,7 @@ function HeaderForm(props) {
                                         borderRadius: 8,
                                         borderLeft: `4px solid ${theme.palette.primary.main}`
                                     }}>
-                                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+                                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, whiteSpace: 'pre-line' }}>
                                             {format_order_updates(ou)}
                                         </div>
                                         <div style={{ fontSize: 12, color: colors.grey[600] }}>
