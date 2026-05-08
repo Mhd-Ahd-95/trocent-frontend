@@ -49,6 +49,7 @@ const isTabComplete = (state) => state.in !== null && state.out !== null && stat
 const defaultState = () => ({ in: moment(), out: moment(), at: moment(), signee: '' });
 
 const StatusBanner = ({ complete, tab, isPickedUp, isDelivered }) => {
+
     const showPickedUpWarning = tab === 'pickup' && isPickedUp;
     const showDeliveredWarning = tab === 'pickup' && isDelivered;
     const showNotPickedUpWarning = tab === 'delivery' && !isPickedUp && !isDelivered;
@@ -89,7 +90,6 @@ const StatusBanner = ({ complete, tab, isPickedUp, isDelivered }) => {
     );
 };
 
-
 const TabPanel = ({ type, state, onChange, isPickedUp, isDelivered }) => {
 
     const label = type === 'pickup' ? 'Pickup' : 'Delivery';
@@ -106,11 +106,7 @@ const TabPanel = ({ type, state, onChange, isPickedUp, isDelivered }) => {
                         onChange={(val) => onChange('in', val)}
                         slotProps={{
                             ...pickerSlotProps(`${label} In`),
-                            popper: {
-                                sx: {
-                                    zIndex: 9999,
-                                },
-                            },
+                            popper: { sx: { zIndex: 9999, }, },
                         }}
                     />
                     <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.5, pl: 0.5 }}>
@@ -123,11 +119,7 @@ const TabPanel = ({ type, state, onChange, isPickedUp, isDelivered }) => {
                         onChange={(val) => onChange('out', val)}
                         slotProps={{
                             ...pickerSlotProps(`${label} Out`),
-                            popper: {
-                                sx: {
-                                    zIndex: 9999,
-                                },
-                            },
+                            popper: { sx: { zIndex: 9999, } },
                         }}
                     />
                     <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.5, pl: 0.5 }}>
@@ -140,11 +132,7 @@ const TabPanel = ({ type, state, onChange, isPickedUp, isDelivered }) => {
                         onChange={(val) => onChange('at', val)}
                         slotProps={{
                             ...pickerSlotProps(`${label} At`),
-                            popper: {
-                                sx: {
-                                    zIndex: 9999,
-                                },
-                            },
+                            popper: { sx: { zIndex: 9999 } },
                         }}
                     />
                     <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.5, pl: 0.5 }}>
@@ -166,12 +154,7 @@ const TabPanel = ({ type, state, onChange, isPickedUp, isDelivered }) => {
                     fullWidth
                     sx={{
                         '& .MuiInputLabel-root': { fontSize: '13px' },
-                        '& .MuiOutlinedInput-root': {
-                            fontSize: '13px',
-                            borderRadius: '10px',
-                            bgcolor: 'grey.50',
-                            '& fieldset': { borderColor: 'grey.200' },
-                        },
+                        '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '10px', bgcolor: 'grey.50', '& fieldset': { borderColor: 'grey.200' }, },
                     }}
                 />
             </Box>
@@ -180,14 +163,12 @@ const TabPanel = ({ type, state, onChange, isPickedUp, isDelivered }) => {
     );
 };
 
-
 const Dot = ({ complete, active }) => (
     <Box
         component="span"
         sx={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', ml: 0.75, flexShrink: 0, bgcolor: complete ? 'success.main' : active ? 'primary.main' : 'grey.300', transition: 'background-color 0.2s' }}
     />
 );
-
 
 export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose, isPickedUp, isDelivered }) {
 
@@ -199,7 +180,6 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
     const pickupComplete = useMemo(() => isTabComplete(pickup), [pickup]);
     const deliveryComplete = useMemo(() => isTabComplete(delivery), [delivery]);
     const activeComplete = tab === 'pickup' ? pickupComplete : deliveryComplete;
-    const { enqueueSnackbar } = useSnackbar()
 
     const handleTabChange = (_, val) => {
         if (!val) return;
@@ -225,10 +205,6 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
                 [`${tab}_signee`]: state.signee,
                 order_status: orderStatus
             };
-            // if (tab === 'delivery' && !isPickedUp) {
-            //     enqueueSnackbar('An order cannot be marked as delivered before it is picked up.', { variant: 'warning' })
-            //     return
-            // }
             await updateOrderStatus.mutateAsync({ did: dispatchOrder.id, tid, payload })
         } catch (_) {
             // handle error
@@ -253,17 +229,11 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
                             exclusive
                             onChange={handleTabChange}
                             fullWidth
-                            sx={{
-                                bgcolor: 'grey.100', borderRadius: '12px', p: '4px', border: 'none',
-                                '& .MuiToggleButtonGroup-grouped': { border: 'none !important', borderRadius: '9px !important', mx: '2px', transition: 'all 0.2s ease', },
-                            }}
+                            sx={{ bgcolor: 'grey.100', borderRadius: '12px', p: '4px', border: 'none', '& .MuiToggleButtonGroup-grouped': { border: 'none !important', borderRadius: '9px !important', mx: '2px', transition: 'all 0.2s ease', }, }}
                         >
                             <ToggleButton
                                 value="pickup"
-                                sx={{
-                                    py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary',
-                                    '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', },
-                                }}
+                                sx={{ py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary', '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', }, }}
                             >
                                 <MoveToInboxOutlined sx={{ fontSize: 16, mr: 0.75 }} />
                                 Pickup
@@ -272,10 +242,7 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
 
                             <ToggleButton
                                 value="delivery"
-                                sx={{
-                                    py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary',
-                                    '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', },
-                                }}
+                                sx={{ py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary', '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', }, }}
                             >
                                 <LocalShippingOutlined sx={{ fontSize: 16, mr: 0.75 }} />
                                 Delivery
@@ -283,10 +250,7 @@ export default function UpdateOrderStatusForm({ dispatchOrder, tid, handleClose,
                             </ToggleButton>
                             <ToggleButton
                                 value="uploadFile"
-                                sx={{
-                                    py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary',
-                                    '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', },
-                                }}
+                                sx={{ py: 1, fontWeight: 600, fontSize: 13, textTransform: 'none', color: 'text.secondary', '&.Mui-selected': { bgcolor: '#fff !important', color: 'primary.main', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', }, }}
                             >
                                 <UploadFile sx={{ fontSize: 16, mr: 0.75 }} />
                                 Upload PDF

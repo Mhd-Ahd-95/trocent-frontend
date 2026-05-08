@@ -27,6 +27,19 @@ export function useDriverTrips({ enabled = false }) {
     });
 }
 
+export function useDriverFreightOrder(dids = []) {
+    const ids = JSON.stringify(dids)
+    return useQuery({
+        queryKey: ['freightOrder', ids],
+        queryFn: async () => {
+            const response = await DispatchOrderApi.getDriverFreightOrder(dids);
+            return response.data;
+        },
+        enabled: dids.length > 0,
+        ...BASE_QUERY_CONFIG,
+    });
+}
+
 export function useTripById(id, isDriver = false) {
     return useQuery({
         queryKey: ['trip', Number(id)],
@@ -35,6 +48,19 @@ export function useTripById(id, isDriver = false) {
             return response.data;
         },
         enabled: !!id,
+        ...BASE_QUERY_CONFIG,
+    });
+}
+
+export function useStopAction(id, legType) {
+    const enabled = !!id && !!legType
+    return useQuery({
+        queryKey: ['stopAction', Number(id), legType],
+        queryFn: async () => {
+            const response = await DispatchOrderApi.getStopAction(id, legType);
+            return response.data;
+        },
+        enabled,
         ...BASE_QUERY_CONFIG,
     });
 }
@@ -190,7 +216,6 @@ export function useDispatchOrderMutation() {
 
     const updateTrip = useMutation({
         mutationFn: async (payload) => {
-            console.log(payload);
             const res = await DispatchOrderApi.updateTrip(payload.trip_id, payload.payload)
             return res.data
         },
@@ -213,6 +238,67 @@ export function useDispatchOrderMutation() {
         onError: handleError
     })
 
-    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders }
+    const driverUpdateOrderStatus = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DispatchOrderApi.driverUpdateStatus(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            const { trip_id, dispatched_orders } = res
+            const { dids, sts, lt } = payload
+            for (let did of dids) {
+                const cachedStopAction = queryClient.getQueryData(['stopAction', Number(did), lt])
+                if (cachedStopAction) {
+                    queryClient.setQueryData(['stopAction', Number(did), lt], (old) => ({ ...old, dispatch_order: { ...old.dispatch_order, order_status: sts } }))
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['stopAction', Number(did), lt] })
+                }
+                const legType = lt === 'pickup' ? 'delivery' : 'pickup';
+                const cachedOtherStopAction = queryClient.getQueryData(['stopAction', Number(did), legType])
+                if (cachedOtherStopAction) {
+                    queryClient.setQueryData(['stopAction', Number(did), legType], (old) => ({ ...old, dispatch_order: { ...old.dispatch_order, order_status: sts } }))
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['stopAction', Number(did), legType], exact: true })
+                }
+            }
+            const cachedTrip = queryClient.getQueryData(['trip', Number(trip_id)])
+            if (cachedTrip) {
+                queryClient.setQueryData(['trip', Number(trip_id)], (old) => {
+                    const tripOrders = old.dispatched_orders || []
+                    const updatedOrders = tripOrders.map(to => {
+                        const found = dispatched_orders.find(no => Number(no.id) === Number(to.id))
+                        if (found) {
+                            return ({ ...to, ...found })
+                        }
+                        return to
+                    }).sort((a, b) => Number(a.order_level) - Number(b.order_level))
+                    return { ...old, dispatched_orders: updatedOrders }
+                })
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['trip', Number(trip_id)], exact: true })
+            }
+            enqueueSnackbar('Order has been successufully updated', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const driverPickupDeliveryOrders = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DispatchOrderApi.driverPickupDeliveryOrders(payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            const tripId = res.trip_id
+            queryClient.invalidateQueries({ queryKey: ['stopAction'] })
+            queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
+            enqueueSnackbar('Order has been updated successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus, driverPickupDeliveryOrders }
 
 }

@@ -91,7 +91,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 <Chip component={'span'} label={order.pickup_out ? `Picked Up At ${order.pickup_out}` : 'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
               )}
               {order.order_status === 'arrived shipper' && (
-                <Chip component={'span'} label={order.pickup_in ? `Arrived At ${order.pickup_in}` : 'Arrived At'} color={'warning'} size="medium" className={classes.statusChipArrived} />
+                <Chip component={'span'} label={`Arrived At ${order.arrived_time}`} color={'warning'} size="medium" className={classes.statusChipArrived} />
               )}
             </Typography>
             <Typography component="p" className={classes.addressText}>{order.shipper_address}</Typography>
@@ -135,7 +135,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 <Chip component={'span'} label={order.delivery_out ? `Delivered At ${order.delivery_out}` : 'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
               )}
               {order.order_status === 'arrived receiver' && (
-                <Chip component={'span'} label={order.delivery_in ? `Arrived At ${order.delivery_in}` : 'Arrived'} color={'warning'} size="medium" className={classes.statusChipDelivered} />
+                <Chip component={'span'} label={`Arrived At ${order.arrived_time}`} color={'warning'} size="medium" className={classes.statusChipDelivered} />
               )}
             </Typography>
             <Typography component="p" className={classes.addressText}>{order.receiver_address}</Typography>

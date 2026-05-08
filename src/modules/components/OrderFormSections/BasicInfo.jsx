@@ -407,7 +407,7 @@ function BasicInfo(props) {
                 'entered',
                 'dispatched',
                 'on dock',
-                'arrrived shipper',
+                'arrived shipper',
                 'picked up',
                 'arrived receiver',
                 'delivered',

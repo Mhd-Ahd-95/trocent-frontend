@@ -100,7 +100,7 @@ export default function DriverLanding() {
     const { updateTrip } = useDispatchOrderMutation();
     const navigate = useNavigate()
 
-    const liveTrip = React.useMemo(() => (driverTrips ?? []).find(t => t.trip_status === 'active') ?? null, [driverTrips]);
+    const liveTrip = React.useMemo(() => (driverTrips ?? [])?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
     const hasLiveTrip = Boolean(liveTrip);
     const hasAnyTrip = (driverTrips ?? []).length > 0;
 
@@ -252,7 +252,8 @@ export default function DriverLanding() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <span className={classes.btnArrow}>→</span>
+                                        <span className={classes.btnArrow}>
+                                            {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}</span>
                                     </button>
                                 </span>
                             </Tooltip>

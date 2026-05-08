@@ -31,7 +31,7 @@ import {
   DispatchView,
   NotAuthorized
 } from './views'
-import { DriverDeliveries, FreightPickup, LandingPage, StopActions } from './DriverApp/view'
+import { DriverDeliveries, LandingPage, StopActions, FreightOrder } from './DriverApp/view'
 import { ScrollToTop } from './components'
 import { AuthContext, safeParseUser } from './contexts/Auth.context'
 
@@ -106,8 +106,8 @@ function App() {
         <Route element={<RoleProtectedRoute allowedRoles={[ROLES.DRIVER]} />}>
           <Route path='/driver-dashboard' Component={LandingPage} />
           <Route path='/driver-deliveries/:tid' Component={DriverDeliveries} />
-          <Route path='/stop-actions' Component={StopActions} />
-          <Route path='/freight-pickup' Component={FreightPickup} />
+          <Route path='/stop-actions/:id/:lt/:tripId' Component={StopActions} />
+          <Route path='/freight-order/:lt/:tripId' Component={FreightOrder} />
         </Route>
         <Route path='/not-authorized' element={<NotAuthorized />} />
         <Route path='*' element={<Navigate to='/' replace />} />

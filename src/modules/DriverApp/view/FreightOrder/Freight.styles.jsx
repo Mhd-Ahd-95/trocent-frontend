@@ -6,6 +6,19 @@ export default makeStyles()((theme) => {
     const secondary = theme.palette.secondary.main;
     const secondaryLight = theme.palette.secondary.light;
     const success = theme.palette.success.main;
+
+    const COLORS = {
+        green: '#27ae60',
+        greenCC: '#27ae60CC',
+        greenBg: 'rgba(39,174,96,0.08)',
+        greenBgHover: 'rgba(39,174,96,0.16)',
+        greenBorder: 'rgba(39,174,96,0.18)',
+        greenDone: '#1a5e35',
+        greenDoneBg: 'rgba(39,174,96,0.1)',
+        greenDoneBorder: 'rgba(39,174,96,0.25)',
+        greenShadow: 'rgba(39,174,96,0.4)',
+    }
+
     return {
 
         '@keyframes fadeUp': {
@@ -22,12 +35,10 @@ export default makeStyles()((theme) => {
         backRow: {
             display: 'flex',
             alignItems: 'center',
-            width: '100%',
-            justifyContent: 'flex-end',
             gap: 4,
             marginBottom: 5,
             cursor: 'pointer',
-            width: 'fit-content',
+            // width: 'fit-content',
             color: secondaryLight,
             transition: 'color 0.15s',
             '&:hover': { color: secondary },
@@ -46,7 +57,7 @@ export default makeStyles()((theme) => {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            marginBottom: 20,
+            marginBottom: 4,
         },
 
         pageTitleIcon: {
@@ -76,8 +87,16 @@ export default makeStyles()((theme) => {
             fontWeight: 500,
         },
 
+        sectionLabel: {
+            fontSize: 14,
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: secondary,
+        },
+
         accordionBadge: {
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 800,
             color: theme.palette.success.dark,
             background: alpha(success, 0.1),
@@ -87,15 +106,24 @@ export default makeStyles()((theme) => {
             letterSpacing: '0.06em',
         },
 
+        accessorialSectionLabel: {
+            fontSize: 14,
+            fontWeight: 800,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: alpha(secondary, 1),
+            padding: '12px 0 4px',
+        },
+
         accessorialList: {
-            margin: '0 -16px',
+            // margin: '0 -16px',
         },
 
         accessorialItem: {
             display: 'flex',
             alignItems: 'center',
             gap: 14,
-            padding: '13px 16px',
+            padding: '13px 0px',
             borderBottom: `1px solid ${alpha(secondary, 0.06)}`,
             cursor: 'pointer',
             transition: 'background 0.12s',
@@ -197,13 +225,6 @@ export default makeStyles()((theme) => {
 
         clearIcon: { fontSize: '15px !important' },
 
-        actionsWrap: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            marginTop: 6,
-        },
-
         actionBtn: {
             width: '100%',
             padding: '18px 20px',
@@ -287,6 +308,23 @@ export default makeStyles()((theme) => {
             border: `1px solid ${alpha(success, 0.3)}`,
             borderRadius: 8,
             padding: '5px 12px',
+        },
+        actionBtnPickup: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            padding: '15px 15px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: 16,
+            fontWeight: 700,
+            // letterSpacing: '0.04em',
+            border: `1px solid ${COLORS.greenDoneBorder}`,
+            background: COLORS.greenDoneBg,
+            color: COLORS.greenDone,
+            transition: 'background 0.15s',
+            '&:hover': { background: COLORS.greenBgHover },
+            '&:active': { transform: 'scale(0.97)' },
         },
     };
 });
