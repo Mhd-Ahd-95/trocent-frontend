@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DispatchOrderApi from "../apis/DispatchOrder.api";
 import { useSnackbar } from "notistack";
+import globalVariables from "../global";
 
 export const dispatchKeys = {
     trips: (type) => ['dispatch', 'trips', type],
@@ -168,7 +169,7 @@ export function useDispatchOrderMutation() {
 
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
-
+    const authedUser = globalVariables.auth.user
     const handleError = (error) => {
         const message = error.response?.data?.message;
         const status = error.response?.status;
@@ -292,8 +293,11 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (res) => {
             const tripId = res.trip_id
+            const driverId = res.driver_id
+            console.log(res);
             queryClient.invalidateQueries({ queryKey: ['stopAction'] })
             queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
+            queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(driverId)], exact: true })
             enqueueSnackbar('Order has been updated successfully', { variant: 'success' })
         },
         onError: handleError
