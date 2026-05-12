@@ -65,7 +65,6 @@ const translations = {
 export const generateBillOfLadingPDF = async (data, language = 'en') => {
     const t = translations[language] || translations.en;
     const { messagers } = data
-    console.log(data);
 
     const pdf = new jsPDF({
         orientation: 'portrait',

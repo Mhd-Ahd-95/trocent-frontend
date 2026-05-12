@@ -294,7 +294,6 @@ export function useDispatchOrderMutation() {
         onSuccess: (res) => {
             const tripId = res.trip_id
             const driverId = res.driver_id
-            console.log(res);
             queryClient.invalidateQueries({ queryKey: ['stopAction'] })
             queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
             queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(driverId)], exact: true })

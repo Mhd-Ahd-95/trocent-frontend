@@ -8,6 +8,8 @@ import moment from 'moment';
 import { useSnackbar } from 'notistack';
 import { useDispatchScreenSync } from '../../../hooks/useDispatchScreenSync';
 import { useNavigate } from 'react-router-dom';
+import DriverNotificationBanner from './DriverNotificationBanner';
+import { StopCircle } from '@mui/icons-material';
 
 const DRIVER = {
     serviceHours: '6h 42m',
@@ -135,7 +137,7 @@ export default function DriverLanding() {
         return driverTrips?.filter(t => t.trip_status === 'planning')?.length || 0;
     }, [driverTrips]);
 
-    const startTrip = async (e) => {
+    const startTrip = async (e, sts) => {
         e.preventDefault();
         if (startTripDisabled) {
             if (hasLiveTrip) {
@@ -150,12 +152,26 @@ export default function DriverLanding() {
             driver_id: selectTrip.driver_id,
             driver_number: selectTrip.driver_number,
             driver_name: selectTrip.driver_name,
-            trip_status: 'active',
+            trip_status: sts,
             interliner_id: selectTrip.interliner_id,
             interliner_name: selectTrip.interliner_name,
         };
         await updateTrip.mutateAsync({ trip_id: selectTrip.id, payload: tripPayload });
         setSelectTrip(null);
+    };
+
+    const endTrip = async (e, sts) => {
+        e.preventDefault();
+        const tripPayload = {
+            trip_date: moment.utc(liveTrip.trip_date).format('YYYY-MM-DD'),
+            driver_id: liveTrip.driver_id,
+            driver_number: liveTrip.driver_number,
+            driver_name: liveTrip.driver_name,
+            trip_status: sts,
+            interliner_id: liveTrip.interliner_id,
+            interliner_name: liveTrip.interliner_name,
+        };
+        await updateTrip.mutateAsync({ trip_id: liveTrip.id, payload: tripPayload });
     };
 
     const sortedTrips = React.useMemo(() => driverTrips?.sort((a, b) => b.trip_number - a.trip_number), [driverTrips]);
@@ -166,7 +182,11 @@ export default function DriverLanding() {
             tripId={liveTrip?.id}
         >
             <Grid container spacing={2}>
-
+                <Grid size={12}>
+                    <DriverNotificationBanner
+                        tripNumber={'1235'}
+                    />
+                </Grid>
                 <Grid size={12}>
                     <div className={classes.hero}>
                         <div className={classes.driverName}>
@@ -180,7 +200,6 @@ export default function DriverLanding() {
                         </div>
                     </div>
                 </Grid>
-
                 <Grid size={12}>
                     <div className={classes.tripsCard}>
                         <div className={classes.tripsCardHeader}>
@@ -194,7 +213,6 @@ export default function DriverLanding() {
                                 <div className={classes.tripsCount}>{driverTrips?.length}</div>
                             )}
                         </div>
-
                         {isLoading ? (
                             <div className={classes.noTrips}>
                                 <LoadingState textLoading={`Loading ${authedUser?.username} trips...`} />
@@ -222,40 +240,51 @@ export default function DriverLanding() {
                         )}
                     </div>
                 </Grid>
-
                 <Grid size={12}>
                     <Grid container spacing={2}>
-
-                        <Grid size={12}>
-                            <Tooltip
-                                title={hasLiveTrip ? 'Complete your active trip before starting a new one' : !selectTrip ? 'Select a trip first' : ''}
-                                placement="top"
-                                disableHoverListener={!startTripDisabled}
-                            >
-                                <span style={{ display: 'block', width: '100%' }}>
-                                    <button
-                                        className={cx(classes.actionBtn, classes.actionBtnPrimary)}
-                                        onClick={startTrip}
-                                        disabled={startTripDisabled}
-                                    >
-                                        <div className={classes.btnLeftGroup}>
-                                            <div className={cx(classes.btnIcon, classes.btnIconPrimary)}>
-                                                <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
-                                            </div>
-                                            <div>
-                                                <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>Start Trip</div>
-                                                <div className={classes.btnSubtitle}>
-                                                    {hasLiveTrip ? 'A trip is already live' : 'View assigned orders'}
-                                                </div>
-                                            </div>
+                        {hasLiveTrip ? (
+                            <Grid size={12}>
+                                <button
+                                    className={cx(classes.actionBtn, classes.actionBtnEndTrip)}
+                                    onClick={(e) => endTrip(e, 'planning')}
+                                >
+                                    <div className={classes.btnLeftGroup}>
+                                        <div className={cx(classes.btnIcon, classes.btnIconEndTrip)}>
+                                            <StopCircle sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
                                         </div>
-                                        <span className={classes.btnArrow}>
-                                            {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}</span>
-                                    </button>
-                                </span>
-                            </Tooltip>
+                                        <div>
+                                            <div className={cx(classes.btnTitle, classes.btnTitleEndTrip)}>End Trip</div>
+                                        </div>
+                                    </div>
+                                    <div className={classes.endTripPulse} />
+                                    <span className={classes.btnArrowEnd}>
+                                        {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '■'}
+                                    </span>
+                                </button>
+                            </Grid>
+                        ) :
+                        <Grid size={12}>
+                            <span style={{ display: 'block', width: '100%' }}>
+                                <button
+                                    className={cx(classes.actionBtn, classes.actionBtnPrimary)}
+                                    onClick={(e) => startTrip(e, 'active')}
+                                    disabled={startTripDisabled}
+                                >
+                                    <div className={classes.btnLeftGroup}>
+                                        <div className={cx(classes.btnIcon, classes.btnIconPrimary)}>
+                                            <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
+                                        </div>
+                                        <div>
+                                            <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>Start Trip</div>
+                                        </div>
+                                    </div>
+                                    <span className={classes.btnArrow}>
+                                        {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}
+                                    </span>
+                                </button>
+                            </span>
                         </Grid>
-
+                        }
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Tooltip
                                 title={deliveriesDisabled ? 'Start a trip to access deliveries' : ''}
@@ -278,7 +307,6 @@ export default function DriverLanding() {
                                 </span>
                             </Tooltip>
                         </Grid>
-
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <button
                                 className={cx(classes.actionBtn, classes.actionBtnTertiary)}
@@ -295,7 +323,6 @@ export default function DriverLanding() {
 
                     </Grid>
                 </Grid>
-
                 <Grid size={12}>
                     <div className={classes.hoursChip}>
                         <div className={classes.hoursLeft}>
@@ -307,7 +334,6 @@ export default function DriverLanding() {
                         </div>
                     </div>
                 </Grid>
-
                 <Grid size={12}>
                     <Grid container spacing={2}>
                         <Grid size={{ xs: 12, sm: 4 }}>
@@ -333,7 +359,6 @@ export default function DriverLanding() {
                         </Grid>
                     </Grid>
                 </Grid>
-
             </Grid>
         </DriverLayout>
     );

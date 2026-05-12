@@ -202,7 +202,7 @@ export default function FreightOrder() {
 
     if (form.done) {
         return (
-            <DriverLayout active="Deliveries">
+            <DriverLayout active="Deliveries" tripId={tripId}>
                 <Box className={classes.successWrap}>
                     <Box className={classes.successIcon}>
                         <CheckCircle sx={{ fontSize: 42, color: 'success.main' }} />
@@ -232,7 +232,7 @@ export default function FreightOrder() {
     }
 
     return (
-        <DriverLayout active="Deliveries">
+        <DriverLayout active="Deliveries" tripId={tripId}>
             {isLoading ? (
                 <Grid container component={Box} justifyContent="center" py={15}>
                     <CircularProgress />

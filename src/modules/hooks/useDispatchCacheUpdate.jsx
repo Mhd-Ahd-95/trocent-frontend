@@ -14,7 +14,6 @@ const getKeyMeta = (queryKey) => {
 
 const trimByOrderNumber = (rows, perPage) => [...rows].sort((a, b) => Number(b.order_number) - Number(a.order_number)).slice(0, perPage);
 
-
 const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
     if (!cachedTrips) return updatedTrips;
     const updatedMap = new Map(updatedTrips.map((t) => [t.id, t]));
@@ -23,12 +22,8 @@ const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
         if (updatedMap.has(t.id)) {
             const updatedTrip = updatedMap.get(t.id);
             const updatedDispatchedOrders = updatedTrip?.dispatched_orders ?? [];
-            const oldOrdersWithoutUpdated =
-                t?.dispatched_orders.filter((o) => o.order_id !== orderId) ?? [];
-            const newDispatchedOrders = [
-                ...oldOrdersWithoutUpdated,
-                ...updatedDispatchedOrders,
-            ].sort((a, b) => a.order_level - b.order_level);
+            const oldOrdersWithoutUpdated = t?.dispatched_orders.filter((o) => o.order_id !== orderId) ?? [];
+            const newDispatchedOrders = [...oldOrdersWithoutUpdated, ...updatedDispatchedOrders,].sort((a, b) => a.order_level - b.order_level);
             return { ...updatedTrip, dispatched_orders: newDispatchedOrders };
         }
         return t;
@@ -36,7 +31,6 @@ const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
     const newTrips = updatedTrips.filter((t) => !existingIds.has(t.id));
     return [...newTrips, ...merged].filter(t => t.trip_status !== 'completed');
 };
-
 
 const handleCreatedUndispatched = (queryClient, newUndispatchedOrders) => {
     if (!newUndispatchedOrders?.length) return;
@@ -69,7 +63,6 @@ const handleCreatedUndispatched = (queryClient, newUndispatchedOrders) => {
         queryClient.invalidateQueries({ queryKey: key });
     });
 };
-
 
 const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) => {
     const allEntries = queryClient.getQueriesData({ queryKey: ['dispatch', 'undispatched'] });
@@ -122,8 +115,7 @@ const handleUpdatedUndispatched = (queryClient, orderId, newUndispatchedOrders) 
     });
 };
 
-
-const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = []) => {
+const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = [], orderId) => {
     if (!newUndispatchedOrders?.length) return;
     const newOrder = newUndispatchedOrders[0];
 
@@ -134,6 +126,15 @@ const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = [
 
     const trip = trips.length > 0 ? trips[0] : null
     if (trip && trip?.trip_type === 'driver') {
+        const cachedTrip = queryClient.getQueryData(['trip', Number(trip.id)])
+        if (cachedTrip) {
+            const odispatchOrders = cachedTrip.dispatched_orders.filter(o => Number(o.order_id) !== Number(orderId)) ?? []
+            const ndispatchOrders = [...(trip.dispatched_orders ?? []), ...odispatchOrders]
+            queryClient.setQueryData(['trip', Number(trip.id)], {...trip, dispatched_orders: ndispatchOrders})
+        }
+        else {
+            queryClient.invalidateQueries({queryKey: ['trip', Number(trip.id)], exact: true})
+        }
         const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
         delete trip['dispatched_orders']
         delete trip['total_orders_completed']
@@ -222,7 +223,7 @@ export function useDispatchCacheUpdate() {
             } else if (action === 'updated') {
                 handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
             } else if (action === 'removed') {
-                handleRemoveDispatchOrder(queryClient, undispatchedOrders, trips);
+                handleRemoveDispatchOrder(queryClient, undispatchedOrders, driverTrips, orderId);
                 queryClient.invalidateQueries({ queryKey: ['orders'] });
                 queryClient.invalidateQueries({ queryKey: ['order'] });
                 queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true });

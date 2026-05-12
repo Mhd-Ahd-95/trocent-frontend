@@ -136,7 +136,7 @@ export default function StopAction() {
     }
 
     return (
-        <DriverLayout active="Deliveries">
+        <DriverLayout active="Deliveries" tripId={dispatchOrder?.trip_id}>
             <Box className={classes.page}>
                 <Stack direction="row" alignItems="center" className={classes.backRow} onClick={() => navigate(-1)}>
                     <ArrowBackIos className={classes.backIcon} />

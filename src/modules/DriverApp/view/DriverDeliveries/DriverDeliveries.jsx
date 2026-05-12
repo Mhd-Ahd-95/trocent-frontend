@@ -221,8 +221,8 @@ function OrderCard({ order, index, onAction }) {
 
 
 export default function DriverDeliveries() {
+    
     useDispatchScreenSync();
-
     const { classes } = useStyles();
     const { tid } = useParams();
     const tripId = isNaN(tid) ? undefined : tid;
@@ -249,7 +249,7 @@ export default function DriverDeliveries() {
     }, [isError, error]);
 
     return (
-        <DriverLayout active="Deliveries">
+        <DriverLayout active="Deliveries" tripId={tid}>
             {isLoading ? (
                 <Grid container spacing={2}>
                     <Grid size={12}><Skeleton variant="rectangular" width="100%" height={50} /></Grid>
