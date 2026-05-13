@@ -7,71 +7,6 @@ import { Add } from '@mui/icons-material'
 import TextInput from '../CustomComponents/TextInput'
 import FreightRow from './FreightRow'
 
-// const useFreightCalculations = (freights, customer, setValue, fieldsLength, engine, frate, accessorialRef) => {
-//   const calculationTimeoutRef = React.useRef(null)
-//   const [isCalculating, setIsCalculating] = React.useState(false)
-//   const previousFreightsRef = React.useRef(null)
-//   const previousLengthRef = React.useRef(0)
-
-//   React.useEffect(() => {
-//     if (!freights || freights.length === 0 || !customer) return
-
-//     const lengthChanged = fieldsLength !== previousLengthRef.current
-//     const freightsChanged = JSON.stringify(freights) !== JSON.stringify(previousFreightsRef.current)
-
-//     if (!freightsChanged && !lengthChanged) return
-
-//     previousFreightsRef.current = freights
-//     previousLengthRef.current = fieldsLength
-
-//     if (calculationTimeoutRef.current) {
-//       clearTimeout(calculationTimeoutRef.current)
-//     }
-
-//     setIsCalculating(true)
-
-//     const timeout = lengthChanged ? 100 : 300
-
-//     calculationTimeoutRef.current = setTimeout(() => {
-//       try {
-//         engine.customer = customer
-//         engine.freights = freights
-
-//         const totals = engine.calculateOrder()
-//         requestAnimationFrame(() => {
-//           setValue('total_pieces', totals?.total_pieces ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('total_pieces_skid', totals?.total_pieces_skid ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('total_actual_weight', totals?.total_actual_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('total_volume_weight', totals?.total_volume_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('total_chargeable_weight', totals?.total_chargeable_weight ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('total_weight_in_kg', totals?.total_weight_in_kg ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('freight_rate', totals?.freight_rate ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('freight_fuel_surcharge', totals?.freight_fuel_surcharge ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('sub_total', totals?.sub_totals ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('provincial_tax', totals?.provincial_tax ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('federal_tax', totals?.federal_tax ?? 0, { shouldValidate: false, shouldDirty: false })
-//           setValue('grand_total', totals?.grand_totals ?? 0, { shouldValidate: false, shouldDirty: false })
-//           if (frate !== totals?.freight_rate) {
-//             accessorialRef.current?.recalculateAccessorials()
-//           }
-//           setIsCalculating(false)
-//         })
-//       } catch (err) {
-//         console.error('Calculation error:', err)
-//         setIsCalculating(false)
-//       }
-//     }, timeout)
-
-//     return () => {
-//       if (calculationTimeoutRef.current) {
-//         clearTimeout(calculationTimeoutRef.current)
-//       }
-//     }
-//   }, [freights, customer, setValue, fieldsLength])
-
-//   return isCalculating
-// }
-
 function FreightDetails(props) {
   const { engine } = props
 
@@ -186,17 +121,6 @@ function FreightDetails(props) {
             />
           </Grid>
           <Grid size={12} pt={2}>
-            {/* <Typography
-              component='p'
-              sx={{
-                fontSize: 16,
-                fontWeight: 600,
-                paddingBlock: 2,
-                paddingLeft: 1
-              }}
-            >
-              Freights
-            </Typography> */}
             {fields.map((item, index) => (
               <FreightRow
                 key={item.id}
@@ -215,7 +139,6 @@ function FreightDetails(props) {
               container
               justifyContent={'center'}
               alignItems={'center'}
-            // pb={2}
             >
               <Grid size='auto'>
                 <Button
@@ -310,13 +233,6 @@ function FreightDetails(props) {
                       variant='outlined'
                       disabled
                       fullWidth
-                      InputProps={{
-                        // endAdornment: isCalculating && (
-                        //   <InputAdornment position="end">
-                        //     <CircularProgress size={20} />
-                        //   </InputAdornment>
-                        // )
-                      }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
                           color: '#000',
@@ -340,7 +256,6 @@ function FreightDetails(props) {
                       disabled={!mode}
                       type='number'
                       fullWidth
-                      // value={field.value || ''}
                       onFocus={(e) => {
                         const value = e.target.value
                         if (Number(value) === 0 || value === '' || value === '0') {
@@ -360,13 +275,6 @@ function FreightDetails(props) {
                       onBlur={(e) => {
                         const value = e.target.value
                         if (value === '') field.onChange(0)
-                      }}
-                      InputProps={{
-                        // endAdornment: isCalculating && (
-                        //   <InputAdornment position="end">
-                        //     <CircularProgress size={20} />
-                        //   </InputAdornment>
-                        // )
                       }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
@@ -390,13 +298,6 @@ function FreightDetails(props) {
                       variant='outlined'
                       disabled
                       fullWidth
-                      InputProps={{
-                        // endAdornment: isCalculating && (
-                        //   <InputAdornment position="end">
-                        //     <CircularProgress size={20} />
-                        //   </InputAdornment>
-                        // )
-                      }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
                           color: '#000',
@@ -419,13 +320,6 @@ function FreightDetails(props) {
                       variant='outlined'
                       disabled
                       fullWidth
-                      InputProps={{
-                        // endAdornment: isCalculating && (
-                        //   <InputAdornment position="end">
-                        //     <CircularProgress size={20} />
-                        //   </InputAdornment>
-                        // )
-                      }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
                           color: '#000',
@@ -448,13 +342,6 @@ function FreightDetails(props) {
                       variant='outlined'
                       disabled
                       fullWidth
-                      InputProps={{
-                        // endAdornment: isCalculating && (
-                        //   <InputAdornment position="end">
-                        //     <CircularProgress size={20} />
-                        //   </InputAdornment>
-                        // )
-                      }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
                           color: '#000',
@@ -477,13 +364,6 @@ function FreightDetails(props) {
                       variant='outlined'
                       disabled
                       fullWidth
-                      InputProps={{
-                        // endAdornment: isCalculating && (
-                        //   <InputAdornment position="end">
-                        //     <CircularProgress size={20} />
-                        //   </InputAdornment>
-                        // )
-                      }}
                       sx={{
                         '& .MuiInputLabel-shrink': {
                           color: '#000',

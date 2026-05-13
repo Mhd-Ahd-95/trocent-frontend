@@ -62,21 +62,18 @@ export default function OrdersView() {
     try {
       const orderId = selectedRowRef.current?.id
       if (!orderId) return
-      let currentData = queryClient.getQueryData(['order', Number(orderId)])
       const messagers = queryClient.getQueryData(['addressBookByName', 'messagers'])
-      if (!currentData) {
-        currentData = await queryClient.fetchQuery({
-          queryKey: ['order', Number(orderId)],
-          queryFn: async () => {
-            const res = await OrderApi.getOrderById(orderId)
-            return res.data
-          },
-          staleTime: 5 * 60 * 1000,
-          gcTime: 60 * 60 * 1000,
-          refetchOnWindowFocus: false,
-          retry: 0,
-        })
-      }
+      let currentData = await queryClient.fetchQuery({
+        queryKey: ['order', Number(orderId)],
+        queryFn: async () => {
+          const res = await OrderApi.getOrderById(orderId)
+          return res.data
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+      })
       currentData['customer_accessorials'] = currentData['accessorials_customer']
       currentData['customer_vehicle_types'] = currentData['vehicle_types_customer']
       const language = currentData?.customer?.language || 'en'
@@ -289,7 +286,7 @@ export default function OrdersView() {
             }}
           >
             {selectedRowRef.current?.order_status === 'Canceled' ?
-              <MenuItem onClick={(e) => {setOpenModal(1); setAnchorEl(null)}} disabled={actionLoading || downloading}>
+              <MenuItem onClick={(e) => { setOpenModal(1); setAnchorEl(null) }} disabled={actionLoading || downloading}>
                 <ListItemIcon>
                   {actionLoading ? (
                     <CircularProgress size={20} />
@@ -300,7 +297,7 @@ export default function OrdersView() {
                 <ListItemText primary="Restore" />
               </MenuItem>
               :
-              <MenuItem onClick={(e) => {setOpenModal(2); setAnchorEl(null)}} disabled={actionLoading || downloading}>
+              <MenuItem onClick={(e) => { setOpenModal(2); setAnchorEl(null) }} disabled={actionLoading || downloading}>
                 <ListItemIcon>
                   {actionLoading ? (
                     <CircularProgress size={20} />

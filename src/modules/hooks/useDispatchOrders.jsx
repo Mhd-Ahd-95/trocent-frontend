@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DispatchOrderApi from "../apis/DispatchOrder.api";
 import { useSnackbar } from "notistack";
+import globalVariables from "../global";
 
 export const dispatchKeys = {
     trips: (type) => ['dispatch', 'trips', type],
@@ -168,7 +169,7 @@ export function useDispatchOrderMutation() {
 
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
-
+    const authedUser = globalVariables.auth.user
     const handleError = (error) => {
         const message = error.response?.data?.message;
         const status = error.response?.status;
@@ -217,6 +218,19 @@ export function useDispatchOrderMutation() {
     const updateTrip = useMutation({
         mutationFn: async (payload) => {
             const res = await DispatchOrderApi.updateTrip(payload.trip_id, payload.payload)
+            return res.data
+        },
+        onSuccess: (updated) => {
+            if (updated) {
+            }
+            enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const acknowlegeTrip = useMutation({
+        mutationFn: async (tid) => {
+            const res = await DispatchOrderApi.acknowlegeTrip(tid)
             return res.data
         },
         onSuccess: (updated) => {
@@ -292,13 +306,15 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (res) => {
             const tripId = res.trip_id
+            const driverId = res.driver_id
             queryClient.invalidateQueries({ queryKey: ['stopAction'] })
             queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
+            queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(driverId)], exact: true })
             enqueueSnackbar('Order has been updated successfully', { variant: 'success' })
         },
         onError: handleError
     })
 
-    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus, driverPickupDeliveryOrders }
+    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus, driverPickupDeliveryOrders, acknowlegeTrip }
 
 }

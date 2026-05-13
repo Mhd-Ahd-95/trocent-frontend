@@ -53,6 +53,13 @@ export function useUpdateTripUndispatchOrders() {
             queryClient.invalidateQueries({ queryKey: ['driverTrips'] })
             queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
         }
+        const cachedTrip = queryClient.getQueryData(['trip', Number(trip_id)])
+        if (cachedTrip){
+            queryClient.setQueryData(['trip', Number(trip_id)], updatedTrip.data)
+        }
+        else {
+            queryClient.invalidateQueries({ queryKey: ['trip', Number(trip_id)] })
+        }
 
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['order'] })

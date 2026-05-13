@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import moment from 'moment';
 import CustomersApi from '../../apis/Customers.api';
+import OrderApi from '../../apis/Order.api';
 
 const translations = {
     en: {
@@ -492,15 +493,42 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     drawBox(margin, yPos, boxWidth, signatureHeight);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(7);
-    pdf.text(t.shippedBy, margin + 1, yPos + 4);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(data.pickup_signee || '', margin + 1, yPos + 10);
+    pdf.text(`${t.shippedBy} ${data.pickup_signee ? data.pickup_signee : ''}`, margin + 1, yPos + 4);
+    // pdf.setFont('helvetica', 'normal');
+    // pdf.text(data.pickup_signee || '', margin + 1, yPos + 10);
 
     drawBox(receiverX, yPos, boxWidth, signatureHeight);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(t.receivedBy, receiverX + 1, yPos + 4);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(data.delivery_signee || '', receiverX + 1, yPos + 10);
+    pdf.text(`${t.receivedBy} ${data.delivery_signee ? data.delivery_signee : ''}`, receiverX + 1, yPos + 4);
+
+    try {
+        const signatureRes = await OrderApi.getSignature(data.id);
+        const { pickup_signature, delivery_signature } = signatureRes.data || {};
+
+        const sigImgWidth = boxWidth - 4;
+        const sigImgHeight = 6;
+        const sigImgY = yPos + 7;
+
+        if (pickup_signature && pickup_signature.startsWith('data:image')) {
+            const pickupImg = new Image();
+            pickupImg.src = pickup_signature;
+            await new Promise((resolve, reject) => { pickupImg.onload = resolve; pickupImg.onerror = reject; });
+            pdf.addImage(pickupImg, 'PNG', margin + 2, sigImgY, sigImgWidth, sigImgHeight);
+        }
+
+        if (delivery_signature && delivery_signature.startsWith('data:image')) {
+            const deliveryImg = new Image();
+            deliveryImg.src = delivery_signature;
+            await new Promise((resolve, reject) => { deliveryImg.onload = resolve; deliveryImg.onerror = reject; });
+            pdf.addImage(deliveryImg, 'PNG', receiverX + 2, sigImgY, sigImgWidth, sigImgHeight);
+        }
+
+    } catch (error) {
+        console.error('Error loading signatures:', error);
+    }
+
+    // pdf.setFont('helvetica', 'normal');
+    // pdf.text(data.delivery_signee || '', receiverX + 1, yPos + 10);
 
     yPos += signatureHeight + 5;
 

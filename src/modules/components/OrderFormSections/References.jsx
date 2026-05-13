@@ -21,7 +21,7 @@ export default function References(props) {
           render={({ field }) => (
             <InputWrapper
               shrinkOut='true'
-              setValue={setValue}
+              setValue={(name, value) => setValue(name, value, { shouldTouch: true })}
               data={field.value || []}
               field='reference_numbers'
               placeholder='Type and Press Comma or space'

@@ -7,19 +7,59 @@ export default makeStyles()((theme, props) => {
 
     return ({
 
-        '@keyframes fadeUp': {
-            from: { opacity: 0, transform: 'translateY(20px)' },
-            to: { opacity: 1, transform: 'translateY(0)' },
+        actionBtnEndTrip: {
+            background: `${theme.palette.error.main}12`,
+            color: theme.palette.error.main,
+            border: `1.5px solid ${theme.palette.error.main}`,
+            cursor: 'pointer',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'relative',
+            overflow: 'hidden',
+            animation: '$fadeUp 0.3s ease both',
+            '&:hover:not([disabled])': {
+                background: alpha(theme.palette.error.main, 0.2),
+                boxShadow: `0 4px 20px ${theme.palette.error.main}30`,
+            },
+            '&:active:not([disabled])': {
+                transform: 'scale(0.97)',
+            },
         },
 
-        '@keyframes blink': {
-            '0%, 100%': { opacity: 1 },
-            '50%': { opacity: 0.25 },
+        btnIconEndTrip: {
+            background: theme.palette.error.main,
+            width: 40,
+            height: 40,
+            flexShrink: 0,
+        },
+
+        btnTitleEndTrip: {
+            fontSize: 20,
+            color: theme.palette.error.main,
+        },
+
+        btnArrowEnd: {
+            fontSize: 14,
+            fontWeight: 900,
+            color: theme.palette.error.main,
+            opacity: 0.7,
+        },
+
+        endTripPulse: {
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(ellipse at left center, ${theme.palette.error.main}08 0%, transparent 70%)`,
+            pointerEvents: 'none',
         },
 
         hero: {
-            padding: '24px 32px 0',
-            animation: '$fadeUp 0.6s 0.1s ease both',
+            padding: '5px 32px 0',
+            animation: 'fadeUp 0.6s 0.1s ease both',
+            '@keyframes fadeUp': {
+                from: { opacity: 0, transform: 'translateY(20px)' },
+                to: { opacity: 1, transform: 'translateY(0)' },
+            },
         },
 
         driverName: {
@@ -229,7 +269,11 @@ export default makeStyles()((theme, props) => {
             borderRadius: '50%',
             background: primaryColor,
             flexShrink: 0,
-            animation: '$blink 1.2s ease-in-out infinite',
+            animation: 'blink 1.2s ease-in-out infinite',
+            '@keyframes blink': {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.25 },
+            },
         },
 
         tripBadge: {
@@ -288,7 +332,7 @@ export default makeStyles()((theme, props) => {
 
         actionBtn: {
             borderRadius: 16,
-            padding: '20px 18px',
+            padding: '13px 18px',
             display: 'flex',
             alignItems: 'center',
             gap: 10,
@@ -370,8 +414,8 @@ export default makeStyles()((theme, props) => {
 
         btnIconPrimary: {
             background: primaryColor,
-            width: 50,
-            height: 50,
+            width: 40,
+            height: 40,
         },
 
         btnIconSecondary: {
@@ -488,5 +532,6 @@ export default makeStyles()((theme, props) => {
             textTransform: 'uppercase',
             marginTop: 4,
         },
+        
     });
 });
