@@ -216,6 +216,7 @@ function ReceiverDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -246,6 +247,7 @@ function ReceiverDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -276,6 +278,7 @@ function ReceiverDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -308,6 +311,7 @@ function ReceiverDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -339,6 +343,7 @@ function ReceiverDetails(props) {
               id='suite'
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -374,6 +379,7 @@ function ReceiverDetails(props) {
                 engine.receiver_city = value
               }}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -422,6 +428,7 @@ function ReceiverDetails(props) {
                 engine.receiverProvince = e.target.value
               }}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -457,6 +464,7 @@ function ReceiverDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {
@@ -490,6 +498,7 @@ function ReceiverDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const shipper_id = getValues('shipper_id')
                 if (shipper_id === selectedReceiver?.id) {

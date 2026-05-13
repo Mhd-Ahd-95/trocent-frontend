@@ -1,13 +1,14 @@
 import React from 'react';
 import { Box, Collapse, Grid, Skeleton, Typography } from '@mui/material';
-import { LocalShipping, Person, Tag, ExpandMore, Inventory2, CalendarToday, CheckCircle, } from '@mui/icons-material';
+import { LocalShipping, Person, Tag, ExpandMore, Inventory2, CalendarToday, CheckCircle, NotificationsActive, } from '@mui/icons-material';
 import { DriverLayout } from '../../layouts';
 import moment from 'moment';
-import { useTripById } from '../../../hooks/useDispatchOrders';
+import { useDispatchOrderMutation, useTripById } from '../../../hooks/useDispatchOrders';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useDispatchScreenSync } from '../../../hooks/useDispatchScreenSync';
 import { useStyles, ORDER_STATUS_STYLES } from './Deliveries.styles';
+import DriverNotificationBanner from '../LandingPage/DriverNotificationBanner';
 
 
 function formatTime(from, to) {
@@ -221,15 +222,20 @@ function OrderCard({ order, index, onAction }) {
 
 
 export default function DriverDeliveries() {
-    
+
     useDispatchScreenSync();
     const { classes } = useStyles();
     const { tid } = useParams();
     const tripId = isNaN(tid) ? undefined : tid;
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
+    const [notifOpen, setNotifOpen] = React.useState(false);
 
     const { data: liveTrip = {}, isLoading, isError, error } = useTripById(tripId, true);
+
+    const { acknowlegeTrip } = useDispatchOrderMutation()
+
+    const hasNotification = liveTrip?.is_trip_updated && !liveTrip?.is_acknowleged;
 
     const sortedOrders = React.useMemo(
         () => liveTrip?.dispatched_orders ? [...liveTrip.dispatched_orders].sort((a, b) => a.order_level - b.order_level) : [],
@@ -286,15 +292,39 @@ export default function DriverDeliveries() {
                         </Box>
 
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
-                            <Box className={classes.liveBadge}>
-                                <Box className={classes.liveDot} />
-                                LIVE
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                {hasNotification && (
+                                    <Box
+                                        component="button"
+                                        onClick={() => setNotifOpen(o => !o)}
+                                        className={classes.notifBtn}
+                                    >
+                                        <Box className={classes.notifDot} />
+                                        <NotificationsActive className={classes.notifIcon} />
+                                    </Box>
+                                )}
+                                <Box className={classes.liveBadge}>
+                                    <Box className={classes.liveDot} />
+                                    LIVE
+                                </Box>
                             </Box>
                             <Typography className={classes.tripProgress}>
                                 {liveTrip.total_orders_completed} / {liveTrip.total_orders} done
                             </Typography>
                         </Box>
                     </Box>
+                    <Collapse in={notifOpen && hasNotification} timeout="auto" unmountOnExit>
+                        <Box className={classes.notifCollapse}>
+                            <DriverNotificationBanner
+                                tripNumber={liveTrip.trip_number}
+                                isSubmitting={acknowlegeTrip.isPending || false}
+                                onAcknowledge={async (e) => {
+                                    e.preventDefault();
+                                    await acknowlegeTrip.mutateAsync(liveTrip.id);
+                                }}
+                            />
+                        </Box>
+                    </Collapse>
                     <Grid container spacing={3}>
                         {sortedOrders.map((order, idx) => (
                             <Grid size={12} key={idx}>

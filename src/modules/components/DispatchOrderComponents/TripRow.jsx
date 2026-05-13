@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Box, IconButton, Typography, Stack, Divider, Chip, Paper, Accordion, AccordionDetails, Grid, Link, Tooltip, Collapse, colors } from '@mui/material';
-import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, Mail, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt, UploadFile } from '@mui/icons-material';
+import { LocalShipping, CalendarToday, Place, PersonOutline, Business, TrendingFlat, MailOutline, NoteAdd, CheckCircle, ExpandMoreRounded, TagRounded, SystemUpdateAlt, DraftsOutlined } from '@mui/icons-material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import TripActionsBar from './TripActionBar';
 import { Link as RouterLink } from 'react-router-dom';
@@ -256,17 +256,21 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                   <Box className={classes.tripIconBox}>
                     <LocalShipping sx={{ fontSize: 18, color: '#fff' }} />
                   </Box>
-                  <Box>
+                  <Box sx={{display: 'flex', flexDirection: 'column', gap: 0}}>
                     <Typography variant="h6" fontWeight="bold"># {trip.trip_number}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <CalendarToday sx={{ fontSize: 12 }} />
-                      {trip.trip_date}
-                      <span style={{ marginLeft: 5 }}>
-                        {trip.has_updates && (trip.driver_active
-                          ? <Mail sx={{ fontSize: 22, color: 'primary.main' }} />
-                          : <MailOutline sx={{ fontSize: 22, color: 'text.secondary' }} />
-                        )}
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: -0.5 }}>
+                      <span style={{display: 'flex', alignItems: 'center'}}>
+                        <CalendarToday sx={{ fontSize: 12, paddingRight: 0.5 }} />
+                        {trip.trip_date}
                       </span>
+                      {trip.is_trip_updated &&
+                        <span>
+                          {trip.is_acknowleged
+                            ? <DraftsOutlined sx={{ fontSize: 22, color: 'primary.main', marginBottom: -0.5 }} />
+                            : <MailOutline sx={{ fontSize: 22, color: 'text.secondary', marginBottom: -0.5 }} />
+                          }
+                        </span>
+                      }
                     </Typography>
                   </Box>
                 </Stack>

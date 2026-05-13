@@ -8,7 +8,6 @@ import { useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 const TripsList = ({ trips, filters, isInterliner, tripAction, showAllCompleted }) => {
 
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
-
   const { reorderDispatchedOrders } = useDispatchOrderMutation()
 
   const filteredTrips = useMemo(() => {

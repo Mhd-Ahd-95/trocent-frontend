@@ -228,6 +228,19 @@ export function useDispatchOrderMutation() {
         onError: handleError
     })
 
+    const acknowlegeTrip = useMutation({
+        mutationFn: async (tid) => {
+            const res = await DispatchOrderApi.acknowlegeTrip(tid)
+            return res.data
+        },
+        onSuccess: (updated) => {
+            if (updated) {
+            }
+            enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
     const reorderDispatchedOrders = useMutation({
         mutationFn: async ({ tripId, payload }) => {
             const res = await DispatchOrderApi.reorderOrders(tripId, payload)
@@ -302,6 +315,6 @@ export function useDispatchOrderMutation() {
         onError: handleError
     })
 
-    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus, driverPickupDeliveryOrders }
+    return { createTrip, addOrdersToTrip, undispatchOrder, updateTrip, reorderDispatchedOrders, driverUpdateOrderStatus, driverPickupDeliveryOrders, acknowlegeTrip }
 
 }

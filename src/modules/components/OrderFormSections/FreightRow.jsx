@@ -150,6 +150,8 @@ const FreightRow = ({ fields, index, control, calculationRef, remove, setValue, 
             <TextInput
               {...field}
               value={field.value || ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={field.onBlur}
               label='Description'
               variant='outlined'
               fullWidth

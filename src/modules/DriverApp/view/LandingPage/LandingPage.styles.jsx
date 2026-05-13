@@ -53,19 +53,13 @@ export default makeStyles()((theme, props) => {
             pointerEvents: 'none',
         },
 
-        '@keyframes fadeUp': {
-            from: { opacity: 0, transform: 'translateY(20px)' },
-            to: { opacity: 1, transform: 'translateY(0)' },
-        },
-
-        '@keyframes blink': {
-            '0%, 100%': { opacity: 1 },
-            '50%': { opacity: 0.25 },
-        },
-
         hero: {
-            padding: '24px 32px 0',
-            animation: '$fadeUp 0.6s 0.1s ease both',
+            padding: '5px 32px 0',
+            animation: 'fadeUp 0.6s 0.1s ease both',
+            '@keyframes fadeUp': {
+                from: { opacity: 0, transform: 'translateY(20px)' },
+                to: { opacity: 1, transform: 'translateY(0)' },
+            },
         },
 
         driverName: {
@@ -275,7 +269,11 @@ export default makeStyles()((theme, props) => {
             borderRadius: '50%',
             background: primaryColor,
             flexShrink: 0,
-            animation: '$blink 1.2s ease-in-out infinite',
+            animation: 'blink 1.2s ease-in-out infinite',
+            '@keyframes blink': {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.25 },
+            },
         },
 
         tripBadge: {
@@ -534,5 +532,6 @@ export default makeStyles()((theme, props) => {
             textTransform: 'uppercase',
             marginTop: 4,
         },
+        
     });
 });

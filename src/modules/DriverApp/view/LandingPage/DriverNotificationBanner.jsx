@@ -1,5 +1,5 @@
 import React from 'react';
-import { Collapse } from '@mui/material';
+import { CircularProgress, Collapse } from '@mui/material';
 import { Notifications, Check } from '@mui/icons-material';
 import { makeStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material';
@@ -10,29 +10,7 @@ const useStyles = makeStyles()((theme) => {
     const secondary = theme.palette.secondary.main;
 
     return {
-        '@keyframes pulseRing': {
-            '0%': { transform: 'scale(0.95)', boxShadow: `0 0 0 0 ${alpha(primary, 0.7)}` },
-            '70%': { transform: 'scale(1)', boxShadow: `0 0 0 10px ${alpha(primary, 0)}` },
-            '100%': { transform: 'scale(0.95)', boxShadow: `0 0 0 0 ${alpha(primary, 0)}` },
-        },
-
-        '@keyframes shimmer': {
-            '0%': { backgroundPosition: '-200% center' },
-            '100%': { backgroundPosition: '200% center' },
-        },
-
-        '@keyframes slideDown': {
-            from: { opacity: 0, transform: 'translateY(-16px)' },
-            to: { opacity: 1, transform: 'translateY(0)' },
-        },
-
-        '@keyframes dotBlink': {
-            '0%, 100%': { opacity: 1 },
-            '50%': { opacity: 0.2 },
-        },
-
         wrapper: {
-            animation: '$slideDown 0.45s cubic-bezier(0.22, 1, 0.36, 1) both',
             marginBottom: theme.spacing(2),
         },
 
@@ -46,7 +24,6 @@ const useStyles = makeStyles()((theme) => {
             background: secondary,
             border: `1.5px solid ${primary}`,
             boxShadow: `0 0 0 0 ${alpha(primary, 0.5)}, 0 4px 24px ${alpha(secondary, 0.35)}`,
-            animation: '$pulseRing 2s ease-in-out infinite',
             overflow: 'hidden',
         },
 
@@ -55,7 +32,6 @@ const useStyles = makeStyles()((theme) => {
             inset: 0,
             background: `linear-gradient(105deg, transparent 40%, ${alpha(primary, 0.08)} 50%, transparent 60%)`,
             backgroundSize: '200% 100%',
-            animation: '$shimmer 3s linear infinite',
             borderRadius: 'inherit',
             pointerEvents: 'none',
         },
@@ -82,7 +58,25 @@ const useStyles = makeStyles()((theme) => {
             borderRadius: '50%',
             background: primary,
             border: `1.5px solid ${secondary}`,
-            animation: '$dotBlink 1.4s ease-in-out infinite',
+            // animation: 'dotBlink 1.4s ease-in-out infinite',
+            // '@keyframes dotBlink': {
+            //     '0%, 100%': { opacity: 1 },
+            //     '50%': { opacity: 0.2 },
+            // },
+        },
+
+        notifIcon: {
+            animation: 'bellShake 1s ease-in-out infinite',
+            '@keyframes bellShake': {
+                '0%, 100%': { transform: 'rotate(0deg)' },
+                '10%': { transform: 'rotate(-18deg)' },
+                '20%': { transform: 'rotate(18deg)' },
+                '30%': { transform: 'rotate(-12deg)' },
+                '40%': { transform: 'rotate(12deg)' },
+                '50%': { transform: 'rotate(-6deg)' },
+                '60%': { transform: 'rotate(6deg)' },
+                '70%': { transform: 'rotate(0deg)' },
+            },
         },
 
         label: {
@@ -149,10 +143,10 @@ const useStyles = makeStyles()((theme) => {
 });
 
 
-export default function DriverNotificationBanner({ tripNumber, message, onAcknowledge, visible = true }) {
+export default function DriverNotificationBanner({ tripNumber, message, onAcknowledge, visible = true, isSubmitting = false }) {
 
     const { classes } = useStyles();
-    const defaultMessage = (<>Your trip (<span className={classes.tripRef}>#{tripNumber}</span>) has been updated with new orders.</>);
+    const defaultMessage = (<>Your trip (<span className={classes.tripRef}># {tripNumber}</span>) has been updated with new orders.</>);
 
     return (
         <Collapse in={visible} unmountOnExit>
@@ -160,7 +154,7 @@ export default function DriverNotificationBanner({ tripNumber, message, onAcknow
                 <div className={classes.banner}>
                     <div className={classes.shimmerOverlay} />
                     <div className={classes.iconWrap}>
-                        <Notifications sx={{ fontSize: 20, color: '#DD9100' }} />
+                        <Notifications sx={{ fontSize: 20, color: '#DD9100' }} className={classes.notifIcon} />
                         <span className={classes.dot} />
                     </div>
                     <div className={classes.textGroup}>
@@ -170,7 +164,9 @@ export default function DriverNotificationBanner({ tripNumber, message, onAcknow
                         </div>
                     </div>
                     <button className={classes.ackButton} onClick={onAcknowledge}>
-                        <Check className={classes.ackIcon} />
+                        {isSubmitting ? <CircularProgress size={18} color='inherit' /> :
+                            <Check className={classes.ackIcon} />
+                        }
                         Acknowledge
                     </button>
                 </div>

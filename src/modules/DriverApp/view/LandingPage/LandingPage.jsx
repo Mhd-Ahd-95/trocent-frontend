@@ -99,7 +99,7 @@ export default function DriverLanding() {
     const { data: driverTrips = [], isLoading, isError, error } = useDriverTripsById(authedUser?.driver_id);
     const { data: countCompleted, isLoading: loadingCompleted } = useCompletedDriverTrips(authedUser?.driver_id);
     const { enqueueSnackbar } = useSnackbar();
-    const { updateTrip } = useDispatchOrderMutation();
+    const { updateTrip, acknowlegeTrip } = useDispatchOrderMutation();
     const navigate = useNavigate()
 
     const liveTrip = React.useMemo(() => driverTrips?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
@@ -182,11 +182,20 @@ export default function DriverLanding() {
             tripId={liveTrip?.id}
         >
             <Grid container spacing={2}>
-                <Grid size={12}>
-                    <DriverNotificationBanner
-                        tripNumber={'1235'}
-                    />
-                </Grid>
+                {hasLiveTrip &&
+                    <Grid size={12}>
+                        {liveTrip && liveTrip?.is_trip_updated && !liveTrip?.is_acknowleged &&
+                            <DriverNotificationBanner
+                                tripNumber={liveTrip.trip_number}
+                                isSubmitting={acknowlegeTrip.isPending || false}
+                                onAcknowledge={async (e) => {
+                                    e.preventDefault()
+                                    await acknowlegeTrip.mutateAsync(liveTrip.id)
+                                }}
+                            />
+                        }
+                    </Grid>
+                }
                 <Grid size={12}>
                     <div className={classes.hero}>
                         <div className={classes.driverName}>
@@ -263,27 +272,27 @@ export default function DriverLanding() {
                                 </button>
                             </Grid>
                         ) :
-                        <Grid size={12}>
-                            <span style={{ display: 'block', width: '100%' }}>
-                                <button
-                                    className={cx(classes.actionBtn, classes.actionBtnPrimary)}
-                                    onClick={(e) => startTrip(e, 'active')}
-                                    disabled={startTripDisabled}
-                                >
-                                    <div className={classes.btnLeftGroup}>
-                                        <div className={cx(classes.btnIcon, classes.btnIconPrimary)}>
-                                            <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
+                            <Grid size={12}>
+                                <span style={{ display: 'block', width: '100%' }}>
+                                    <button
+                                        className={cx(classes.actionBtn, classes.actionBtnPrimary)}
+                                        onClick={(e) => startTrip(e, 'active')}
+                                        disabled={startTripDisabled}
+                                    >
+                                        <div className={classes.btnLeftGroup}>
+                                            <div className={cx(classes.btnIcon, classes.btnIconPrimary)}>
+                                                <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
+                                            </div>
+                                            <div>
+                                                <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>Start Trip</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>Start Trip</div>
-                                        </div>
-                                    </div>
-                                    <span className={classes.btnArrow}>
-                                        {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}
-                                    </span>
-                                </button>
-                            </span>
-                        </Grid>
+                                        <span className={classes.btnArrow}>
+                                            {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}
+                                        </span>
+                                    </button>
+                                </span>
+                            </Grid>
                         }
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Tooltip

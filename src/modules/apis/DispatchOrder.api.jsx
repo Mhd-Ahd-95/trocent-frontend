@@ -16,6 +16,8 @@ const addOrdersToTrip = (tid, payload) => CustomAxios.put(`/api/trips/${tid}`, p
 
 const updateTrip = (tid, payload) => CustomAxios.put(`/api/trips/update/${tid}/trip`, payload)
 
+const acknowlegeTrip = (tid) => CustomAxios.put(`/api/trips/acknowlege-trip/${tid}`)
+
 const removeOrderFromTrip = (tid, oid) => CustomAxios.put(`/api/trips/${tid}/undispatch-order/${oid}`)
 
 const getTripById = (tid, isDriver = false) => CustomAxios.get(`/api/trips/${tid}/${isDriver}`)
@@ -54,5 +56,6 @@ export default {
     getStopAction,
     driverUpdateStatus,
     getDriverFreightOrder,
-    driverPickupDeliveryOrders
+    driverPickupDeliveryOrders,
+    acknowlegeTrip
 };

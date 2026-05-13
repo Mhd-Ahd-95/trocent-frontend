@@ -212,7 +212,7 @@ function PickupDetails(props) {
               <InputWrapper
                 noSpace
                 shrinkOut='true'
-                setValue={setValue}
+                setValue={(name, value) => setValue(name, value, { shouldTouch: true })}
                 data={field.value || []}
                 field='pickup_appointment_numbers'
                 placeholder='Type and Press Comma'

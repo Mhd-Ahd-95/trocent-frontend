@@ -965,7 +965,13 @@ export default class OrderEngine {
         }
 
         let sections_changed = new Set()
-        const fieldsTouched = Object.keys(touchedFields).filter(tf => tf !== 'freights' || tf !== 'customer_accessorials' || tf !== 'customer_vehicle_types' || tf !== 'additional_service_charges' || tf !== 'freight_rate' || tf !== 'freight_fuel_surcharge')
+        const fieldsTouched = Object.keys(touchedFields).filter(tf =>
+            tf !== 'freights' &&
+            tf !== 'customer_accessorials' &&
+            tf !== 'customer_vehicle_types' &&
+            tf !== 'additional_service_charges' &&
+            tf !== 'freight_rate' &&
+            tf !== 'freight_fuel_surcharge')
 
         for (let field of fieldsTouched) {
             if (!sections_changed.has(orderFields[field])) {

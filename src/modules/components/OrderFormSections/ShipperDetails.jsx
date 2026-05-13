@@ -215,6 +215,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -245,6 +246,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -275,6 +277,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -307,6 +310,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -338,6 +342,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -373,6 +378,7 @@ function ShipperDetails(props) {
                 engine.shipper_city = value
               }}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -418,6 +424,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -452,6 +459,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {
@@ -485,6 +493,7 @@ function ShipperDetails(props) {
               value={field.value || ''}
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={(e) => {
+                field.onBlur()
                 const { id: key, value } = e.target
                 const receiver_id = getValues('receiver_id')
                 if (receiver_id === selectedShipper?.id) {

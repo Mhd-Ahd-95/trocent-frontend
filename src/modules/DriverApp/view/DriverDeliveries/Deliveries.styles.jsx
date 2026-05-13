@@ -66,6 +66,63 @@ export const ORDER_STATUS_STYLES = {
 
 export const useStyles = makeStyles()(() => ({
 
+    notifBtn: {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        background: 'rgba(227, 200, 197, 0.15)',
+        border: '1px solid rgba(223, 198, 195, 0.35)',
+        cursor: 'pointer',
+        padding: 0,
+        transition: 'background 0.15s',
+        '&:hover': {
+            background: 'rgba(226, 197, 193, 0.25)',
+        },
+        '&:active': {
+            transform: 'scale(0.95)',
+        },
+    },
+    notifIcon: {
+        fontSize: 17,
+        color: '#fff',
+        animation: 'bellShake 1s ease-in-out infinite',
+        '@keyframes bellShake': {
+            '0%, 100%': { transform: 'rotate(0deg)' },
+            '10%': { transform: 'rotate(-18deg)' },
+            '20%': { transform: 'rotate(18deg)' },
+            '30%': { transform: 'rotate(-12deg)' },
+            '40%': { transform: 'rotate(12deg)' },
+            '50%': { transform: 'rotate(-6deg)' },
+            '60%': { transform: 'rotate(6deg)' },
+            '70%': { transform: 'rotate(0deg)' },
+        },
+    },
+    notifDot: {
+        position: 'absolute',
+        top: 5,
+        right: 5,
+        width: 7,
+        height: 7,
+        borderRadius: '50%',
+        background: '#fff',
+        border: '1.5px solid #2c3e50',
+        // animation: 'pulseDot 1.4s ease-in-out infinite',
+        // '@keyframes pulseDot': {
+        // '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+        // '50%': { opacity: 0.4, transform: 'scale(0.7)' },
+        // },
+    },
+    notifCollapse: {
+        marginTop: 8,
+        marginBottom: 8,
+        borderRadius: 10,
+        overflow: 'hidden',
+    },
+
     freightHeaderRow: {
         padding: '4px 8px',
         marginBottom: 4,
@@ -422,12 +479,13 @@ export const useStyles = makeStyles()(() => ({
         height: 5,
         borderRadius: '50%',
         background: COLORS.amber,
-        animation: '$blink 1.2s ease-in-out infinite',
+        animation: 'blink 1.2s ease-in-out infinite',
+        '@keyframes blink': {
+            '0%, 100%': { opacity: 1 },
+            '50%': { opacity: 0.2 },
+        },
     },
-    '@keyframes blink': {
-        '0%, 100%': { opacity: 1 },
-        '50%': { opacity: 0.2 },
-    },
+
     tripProgress: {
         fontSize: 11,
         color: COLORS.whiteAlpha42,

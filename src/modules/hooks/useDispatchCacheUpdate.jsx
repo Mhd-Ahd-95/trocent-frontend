@@ -22,7 +22,7 @@ const mergeTrips = (cachedTrips = [], updatedTrips = [], orderId) => {
         if (updatedMap.has(t.id)) {
             const updatedTrip = updatedMap.get(t.id);
             const updatedDispatchedOrders = updatedTrip?.dispatched_orders ?? [];
-            const oldOrdersWithoutUpdated = t?.dispatched_orders.filter((o) => o.order_id !== orderId) ?? [];
+            const oldOrdersWithoutUpdated = t?.dispatched_orders?.filter((o) => o.order_id !== orderId) ?? [];
             const newDispatchedOrders = [...oldOrdersWithoutUpdated, ...updatedDispatchedOrders,].sort((a, b) => a.order_level - b.order_level);
             return { ...updatedTrip, dispatched_orders: newDispatchedOrders };
         }
@@ -130,10 +130,10 @@ const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = [
         if (cachedTrip) {
             const odispatchOrders = cachedTrip.dispatched_orders.filter(o => Number(o.order_id) !== Number(orderId)) ?? []
             const ndispatchOrders = [...(trip.dispatched_orders ?? []), ...odispatchOrders]
-            queryClient.setQueryData(['trip', Number(trip.id)], {...trip, dispatched_orders: ndispatchOrders})
+            queryClient.setQueryData(['trip', Number(trip.id)], { ...trip, dispatched_orders: ndispatchOrders })
         }
         else {
-            queryClient.invalidateQueries({queryKey: ['trip', Number(trip.id)], exact: true})
+            queryClient.invalidateQueries({ queryKey: ['trip', Number(trip.id)], exact: true })
         }
         const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
         delete trip['dispatched_orders']
@@ -142,7 +142,7 @@ const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = [
             queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(trip.id) ? trip : o))
         }
         else {
-            queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(trip.id)] });
+            queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(trip.driver_id)], exact: true });
             queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] });
         }
     }
@@ -203,6 +203,16 @@ export function useDispatchCacheUpdate() {
                             }
                             else {
                                 queryClient.invalidateQueries({ queryKey: ['trip', Number(t.id)] })
+                            }
+                            const driverTripsCached = queryClient.getQueryData(['driverTrips', Number(t.driver_id)])
+                            if (driverTripsCached) {
+                                const ntrip = t
+                                delete ntrip['dispatched_orders']
+                                delete ntrip['total_orders_completed']
+                                queryClient.setQueryData(['driverTrips', Number(t.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(t.id) ? ntrip : o))
+                            }
+                            else {
+                                queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(t.driver_id)], exact: true })
                             }
                         }
                     }
