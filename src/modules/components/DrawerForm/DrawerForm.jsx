@@ -1,14 +1,6 @@
 import React from 'react'
 import { styled, useTheme } from '@mui/material/styles'
-import {
-  Drawer,
-  Grid,
-  IconButton,
-  Typography,
-  colors,
-  useMediaQuery,
-  Box
-} from '@mui/material'
+import { Drawer, Grid, IconButton, Typography, colors, useMediaQuery, Box } from '@mui/material'
 import { Close } from '@mui/icons-material'
 
 const CustomDrawer = styled(Drawer)(({ theme, ismddown }) => ({
@@ -44,6 +36,7 @@ const DrawerContent = styled(Box)(({ theme }) => ({
 }))
 
 export default function DrawerComponent(props) {
+
   const { open, setOpen, children } = props
   const theme = useTheme()
   const isMdDown = useMediaQuery(theme.breakpoints.down('md'))

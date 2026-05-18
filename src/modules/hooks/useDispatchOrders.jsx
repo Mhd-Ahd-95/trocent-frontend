@@ -28,6 +28,18 @@ export function useDriverTrips({ enabled = false }) {
     });
 }
 
+export function useTripActivities(tid) {
+    return useQuery({
+        queryKey: ['tripActivities', Number(tid)],
+        queryFn: async () => {
+            const response = await DispatchOrderApi.getTripActivities(tid);
+            return response.data;
+        },
+        enabled: !!tid,
+        ...BASE_QUERY_CONFIG,
+    });
+}
+
 export function useDriverFreightOrder(dids = []) {
     const ids = JSON.stringify(dids)
     return useQuery({

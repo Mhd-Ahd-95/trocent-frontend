@@ -155,6 +155,7 @@ export default function DriverLanding() {
             trip_status: sts,
             interliner_id: selectTrip.interliner_id,
             interliner_name: selectTrip.interliner_name,
+            isDriverApp: true
         };
         await updateTrip.mutateAsync({ trip_id: selectTrip.id, payload: tripPayload });
         setSelectTrip(null);
@@ -170,6 +171,7 @@ export default function DriverLanding() {
             trip_status: sts,
             interliner_id: liveTrip.interliner_id,
             interliner_name: liveTrip.interliner_name,
+            isDriverApp: true
         };
         await updateTrip.mutateAsync({ trip_id: liveTrip.id, payload: tripPayload });
     };

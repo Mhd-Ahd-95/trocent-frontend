@@ -52,6 +52,7 @@ export function useUpdateOrderStatus() {
                 queryClient.invalidateQueries({ queryKey: dispatchKeys.trips('driver') })
             }
         }
+        queryClient.invalidateQueries({ queryKey: ['tripActivities', Number(trip_id)] })
         if (invalidateInterliners) {
             queryClient.invalidateQueries({ queryKey: dispatchKeys.trips('interliner') })
         }

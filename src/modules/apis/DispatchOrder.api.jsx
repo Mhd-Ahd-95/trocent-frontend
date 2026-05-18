@@ -38,6 +38,8 @@ const driverPickupDeliveryOrders = (payload) => CustomAxios.put('/api/orders/dis
 
 const getDriverFreightOrder = (params) => CustomAxios.get('/api/dispatch-orders/freight-order/driver', { params: { ids: params } })
 
+const getTripActivities = (tid) => CustomAxios.get(`/api/trips/driver-activities/${tid}` )
+
 export default {
     loadTripAndUndispatched,
     getUndispatchedOrders,
@@ -57,5 +59,6 @@ export default {
     driverUpdateStatus,
     getDriverFreightOrder,
     driverPickupDeliveryOrders,
-    acknowlegeTrip
+    acknowlegeTrip,
+    getTripActivities
 };
