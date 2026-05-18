@@ -46,6 +46,7 @@ export function useDispatchScreenTripUpdated() {
             }
             queryClient.invalidateQueries({ queryKey: ['orders'] })
             queryClient.invalidateQueries({ queryKey: ['order'] })
+            queryClient.invalidateQueries({ queryKey: ['tripActivities', Number(trip.id)] })
         }
         else {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })

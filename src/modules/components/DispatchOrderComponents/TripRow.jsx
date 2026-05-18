@@ -15,6 +15,7 @@ import { TabLoadingState } from './TripTabs';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable, } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import TripActivities from './TripActivities';
 
 const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isInterliner, handleUpdateOrderStatus, bgColor, bordered, isCompleted, pickedUpStatus, deliveredStatus }) => {
 
@@ -256,10 +257,10 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                   <Box className={classes.tripIconBox}>
                     <LocalShipping sx={{ fontSize: 18, color: '#fff' }} />
                   </Box>
-                  <Box sx={{display: 'flex', flexDirection: 'column', gap: 0}}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     <Typography variant="h6" fontWeight="bold"># {trip.trip_number}</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: -0.5 }}>
-                      <span style={{display: 'flex', alignItems: 'center'}}>
+                      <span style={{ display: 'flex', alignItems: 'center' }}>
                         <CalendarToday sx={{ fontSize: 12, paddingRight: 0.5 }} />
                         {trip.trip_date}
                       </span>
@@ -344,7 +345,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                   <Grid size={5}>
                     <TripActionsBar
                       onUpdateStatus={() => { tripRef.current = trip; setOpenDrawer(1); }}
-                      onShowTimeline={() => console.log('Show timeline:', trip.id)}
+                      onShowTimeline={() => { tripRef.current = trip; setOpenDrawer(3) }}
                     />
                   </Grid>
                 </Grid>
@@ -463,6 +464,14 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
             isPickedUp={dispatchedOrderRef.current?.order_status === 'picked up' || dispatchedOrderRef.current?.order_status === 'delivered' || dispatchedOrderRef.current?.order_status === 'completed'}
             isDelivered={dispatchedOrderRef.current?.order_status === 'delivered' || dispatchedOrderRef.current?.order_status === 'completed'}
             handleClose={() => setOpenDrawer(false)}
+          />
+        </DrawerForm>
+      )}
+
+      {openDrawer === 3 && (
+        <DrawerForm customTitle={<CustomTitle number={trip.trip_number} title='Driver Activities for Trip' Icon={LocalShipping} />} setOpen={setOpenDrawer} open={openDrawer}>
+          <TripActivities 
+            trip={trip}
           />
         </DrawerForm>
       )}

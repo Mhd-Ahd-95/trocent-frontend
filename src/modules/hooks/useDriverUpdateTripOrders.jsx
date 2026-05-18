@@ -28,6 +28,7 @@ export function useDriverUpdateTripOrders() {
         else {
             queryClient.invalidateQueries({ queryKey: key })
         }
+        queryClient.invalidateQueries({ queryKey: ['tripActivities', Number(trip_id)] })
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['order'] })
     };
