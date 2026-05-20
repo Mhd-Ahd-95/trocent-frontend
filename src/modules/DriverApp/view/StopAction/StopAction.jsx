@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Collapse, CircularProgress, Grid, Stack, Typography } from '@mui/material';
+import { Box, Collapse, CircularProgress, Grid, Stack, Typography, IconButton } from '@mui/material';
 import { ArrowBackIos, LocalShipping, Business, Person, Phone, ReceiptLong, CheckRounded, EditNote, ExpandMore, Place, CheckCircle } from '@mui/icons-material';
 import { DriverLayout } from '../../layouts';
 import useStyles from './StopAction.styles';
@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatchOrderMutation, useStopAction } from '../../../hooks/useDispatchOrders';
 import { useSnackbar } from 'notistack';
 import moment from 'moment';
+import { useOrderMutations } from '../../../hooks/useOrders';
 
 const STATUS_CLASS = {
     'dispatched': 'statusDispatched',
@@ -41,28 +42,188 @@ function ServiceBadge({ type }) {
     );
 }
 
-function FreightBillItem({ order, checked, onToggle, isCurrentOrder }) {
-    const { classes, cx } = useStyles();
+function formatDims(f) {
+    if (!f.width && !f.length && !f.height) return null;
+    const unit = f.dim_unit === 'in' ? 'IN' : 'LBS';
+    return `${f.width}×${f.length}×${f.height} ${unit}`;
+}
+
+function FreightTable({ freights, totalPieces, totalWeight }) {
+    const { classes } = useStyles();
+
+    if (!freights || freights.length === 0) return null;
+    const weightUnit = freights[0]?.unit ?? 'lbs';
+
     return (
-        <Box className={classes.freightBillItem} onClick={onToggle}>
-            <Box className={cx(classes.freightBillCheck, checked && classes.freightBillCheckActive)}>
-                {checked && <CheckRounded className={classes.freightBillCheckIcon} />}
-            </Box>
-            <Box className={classes.freightBillInfo}>
-                <Box className={classes.freightBillOrderNum}>
-                    # {order.order_number}
-                    {isCurrentOrder && (
-                        <Box component="span" className={classes.thisOrderTag}>THIS ORDER</Box>
-                    )}
+        <Box>
+            <Grid container className={classes.freightHeaderRow}>
+                <Grid size={1}>
+                    <Typography variant="caption" className={classes.freightHeaderText}>PCS</Typography>
+                </Grid>
+                <Grid size={3}>
+                    <Typography variant="caption" className={classes.freightHeaderText}>Type</Typography>
+                </Grid>
+                <Grid size={4}>
+                    <Typography variant="caption" className={classes.freightHeaderText}>Dims (W×L×H)</Typography>
+                </Grid>
+                <Grid size={4}>
+                    <Typography variant="caption" className={classes.freightHeaderText}>Desc</Typography>
+                </Grid>
+            </Grid>
+            {freights.map((f) => (
+                <Grid container key={f.id} alignItems="center" className={classes.freightRow}>
+                    <Grid size={1}>
+                        <Box className={classes.freightPieceBadge}>{f.pieces}</Box>
+                    </Grid>
+                    <Grid size={3}>
+                        <Typography className={classes.freightType}>{f.type}</Typography>
+                    </Grid>
+                    <Grid size={4}>
+                        <Typography className={classes.freightDims}>{formatDims(f) ?? '—'}</Typography>
+                    </Grid>
+                    <Grid size={4}>
+                        <Typography className={classes.freightDesc}>{f.description || '—'}</Typography>
+                    </Grid>
+                </Grid>
+            ))}
+            <Box className={classes.freightTotalsRow}>
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
+                    <Typography className={classes.freightTotalNumber}>{totalPieces}</Typography>
+                    <Typography className={classes.freightTotalUnit}>pcs</Typography>
                 </Box>
-                <Typography className={classes.freightBillSub}>
-                    {order.customer_name} · {order.total_pieces} pcs
-                </Typography>
+                <Box className={classes.freightTotalDot} />
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
+                    <Typography className={classes.freightTotalNumber}>{totalWeight}</Typography>
+                    <Typography className={classes.freightTotalUnit}>{weightUnit}</Typography>
+                </Box>
             </Box>
-            <ServiceBadge type={order.service_type} />
         </Box>
     );
 }
+
+function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup }) {
+    const { classes, cx } = useStyles();
+    const [open, setOpen] = React.useState(false)
+    const appointment = Array.isArray(order.appointment_numbers) && order.appointment_numbers.length > 0 ? order.appointment_numbers.join(', ') : null
+    const references = Array.isArray(order.references) && order.references.length > 0 ? order.references.join(', ') : null
+    const unit = Array.isArray(order.freight_details) && order.freight_details > 0 ? order.freight_details[0]?.unit : 'lbs'
+    return (
+        <Box className={classes.freightBillItemCollapse}>
+            <Box className={cx(classes.freightBillItem, open && classes.freightBillItemOpen)} onClick={onToggle}>
+                <Box className={cx(classes.freightBillCheck, checked && classes.freightBillCheckActive)}>
+                    {checked && <CheckRounded className={classes.freightBillCheckIcon} />}
+                </Box>
+                <Box className={classes.freightBillInfo}>
+                    <Box className={classes.freightBillOrderNum}>
+                        # {order.order_number}
+                        {isCurrentOrder && (<Box component="span" className={classes.thisOrderTag}>THIS ORDER</Box>)}
+                    </Box>
+                    <Typography className={classes.freightBillSub}>
+                        {order.customer_name} · {order.total_pieces} pcs . {order.total_actual_weight} {unit}
+                    </Typography>
+                </Box>
+                <ServiceBadge type={order.service_type} />
+                <IconButton
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setOpen((o) => !o)
+                    }}
+                ><ExpandMore /></IconButton>
+            </Box>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+                <Grid container spacing={2} component={Box} px={2} py={1}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography className={classes.legDetailLabel}>
+                            {isPickup ? 'Pickup Time' : 'Delivery Time'}
+                        </Typography>
+                        <Typography className={classes.legDetailValue}>{order.time || '—'}</Typography>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <Typography className={classes.legDetailLabel}>Appointment Number</Typography>
+                        <Typography className={classes.legDetailValue}>{appointment || '—'}</Typography>
+                    </Grid>
+                    <Grid size={6}>
+                        <Typography className={classes.legDetailLabel}>Special Instructions</Typography>
+                        <Typography className={cx(classes.legDetailInstructions, order.special_instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,)}>
+                            {order.special_instructions || '—'}
+                        </Typography>
+                    </Grid>
+                    <Grid size={6}>
+                        <Typography className={classes.legDetailLabel}>Reference Numbers</Typography>
+                        <Typography className={classes.legDetailValue}>{references || '—'}</Typography>
+                    </Grid>
+                    {order.freight_details?.length > 0 && (
+                        <Grid size={12}>
+                            <Typography className={classes.legDetailLabel}>Freight</Typography>
+                            <FreightTable
+                                freights={order.freight_details}
+                                totalPieces={order.total_pieces}
+                                totalWeight={order.total_actual_weight}
+                            />
+                        </Grid>
+                    )}
+                </Grid>
+            </Collapse>
+        </Box>
+    );
+}
+
+const OrderNoteSection = React.memo(({ order_id, legType }) => {
+
+    const { classes, cx } = useStyles()
+    const [commentOpen, setCommentOpen] = React.useState(false);
+    const [commentText, setCommentText] = React.useState('');
+    const { addNote } = useOrderMutations()
+
+    const handleCreateNote = async (e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        if (commentText.length === 0) return
+        const payload = { order_id: order_id, note_type: legType, note: commentText }
+        await addNote.mutateAsync(payload)
+        setCommentText('')
+        setCommentOpen(false)
+    }
+
+    return (
+        <Box className={classes.card}>
+            <button
+                className={cx(classes.commentToggleBtn, commentOpen && classes.commentToggleBtnBordered)}
+                onClick={() => setCommentOpen(o => !o)}
+            >
+                <Box className={classes.commentToggleIcon}>
+                    <EditNote sx={{ fontSize: 16, color: 'primary.main' }} />
+                </Box>
+                <Typography className={classes.commentToggleLabel}>Write a Comment</Typography>
+                <ExpandMore className={cx(classes.commentChevron, commentOpen && classes.commentChevronOpen)} />
+            </button>
+            <Collapse in={commentOpen} timeout="auto" unmountOnExit>
+                <Box className={classes.commentBody}>
+                    <textarea
+                        className={classes.commentInput}
+                        placeholder="Write your comment here…"
+                        value={commentText}
+                        onChange={e => setCommentText(e.target.value)}
+                        maxLength={500}
+                    />
+                    <Stack direction="row" alignItems="center" gap={1} mt={1}>
+                        <Typography className={classes.commentCharCount} flex={1}>
+                            {commentText.length} / 500
+                        </Typography>
+                        <button className={classes.commentCancelBtn} onClick={() => { setCommentOpen(false); setCommentText(''); }}>
+                            Cancel
+                        </button>
+                        <button className={classes.commentSaveBtn} disabled={!commentText.trim()} onClick={handleCreateNote}>
+                            {addNote.isPending && <CircularProgress color='inherit' size={18} style={{ marginRight: 10, marginBottom: -3 }} />}
+                            Save Comment
+                        </button>
+                    </Stack>
+                </Box>
+            </Collapse>
+        </Box>
+    )
+})
+
 
 export default function StopAction() {
 
@@ -71,7 +232,7 @@ export default function StopAction() {
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
 
-    const { data: stopActionData = {}, isLoading, isFetching, isError, error } = useStopAction(params.id, params.lt);
+    const { data: stopActionData = {}, isLoading, isError, error } = useStopAction(params.id, params.lt);
     const { driverUpdateOrderStatus } = useDispatchOrderMutation();
 
     const dispatchOrder = stopActionData?.dispatch_order ?? {};
@@ -87,8 +248,6 @@ export default function StopAction() {
     const showArriveBtn = isPickup ? !pickedUp : !delivered;
     const showActionBtn = isPickup ? (arrivedShipper && !pickedUp) : (arrivedReceiver && !delivered);
     const [checkedOrders, setCheckedOrders] = React.useState(() => new Set());
-    const [commentOpen, setCommentOpen] = React.useState(false);
-    const [commentText, setCommentText] = React.useState('');
 
     const toggleOrder = (id) => {
         setCheckedOrders(prev => {
@@ -106,9 +265,7 @@ export default function StopAction() {
         await driverUpdateOrderStatus.mutateAsync({ dids: Array.from(checkedOrders), sts: status, lt: params.lt, arrivedTime });
     };
 
-    const handlePickupOrDeliver = () => {
-        navigate(`/freight-order/${params.lt}/${params.tripId}`, { state: Array.from(checkedOrders) });
-    };
+    const handlePickupOrDeliver = () => navigate(`/freight-order/${params.lt}/${params.tripId}`, { state: Array.from(checkedOrders) });
 
     React.useEffect(() => {
         if (isError && error) {
@@ -116,16 +273,20 @@ export default function StopAction() {
             const status = error.response?.status;
             enqueueSnackbar(message ? `${message} - ${status}` : error.message, { variant: 'error' });
         }
+    }, [isError, error]);
+
+    React.useEffect(() => {
         if (dispatchOrder?.id) {
             setCheckedOrders(prev => {
+                if (prev.has(dispatchOrder.id)) return prev;
                 const next = new Set(prev);
                 next.add(dispatchOrder.id);
                 return next;
             });
         }
-    }, [stopActionData, isError, error]);
+    }, [dispatchOrder?.id]);
 
-    if (isLoading || isFetching) {
+    if (isLoading) {
         return (
             <DriverLayout active="Deliveries">
                 <Stack alignItems="center" justifyContent="center" minHeight="60vh">
@@ -155,40 +316,10 @@ export default function StopAction() {
                     </Box>
                     <StatusBadge status={orderStatus} />
                 </Stack>
-                <Box className={classes.card}>
-                    <button
-                        className={cx(classes.commentToggleBtn, commentOpen && classes.commentToggleBtnBordered)}
-                        onClick={() => setCommentOpen(o => !o)}
-                    >
-                        <Box className={classes.commentToggleIcon}>
-                            <EditNote sx={{ fontSize: 16, color: 'primary.main' }} />
-                        </Box>
-                        <Typography className={classes.commentToggleLabel}>Write a Comment</Typography>
-                        <ExpandMore className={cx(classes.commentChevron, commentOpen && classes.commentChevronOpen)} />
-                    </button>
-                    <Collapse in={commentOpen} timeout="auto" unmountOnExit>
-                        <Box className={classes.commentBody}>
-                            <textarea
-                                className={classes.commentInput}
-                                placeholder="Write your comment here…"
-                                value={commentText}
-                                onChange={e => setCommentText(e.target.value)}
-                                maxLength={500}
-                            />
-                            <Stack direction="row" alignItems="center" gap={1} mt={1}>
-                                <Typography className={classes.commentCharCount} flex={1}>
-                                    {commentText.length} / 500
-                                </Typography>
-                                <button className={classes.commentCancelBtn} onClick={() => { setCommentOpen(false); setCommentText(''); }}>
-                                    Cancel
-                                </button>
-                                <button className={classes.commentSaveBtn} disabled={!commentText.trim()}>
-                                    Save Comment
-                                </button>
-                            </Stack>
-                        </Box>
-                    </Collapse>
-                </Box>
+                <OrderNoteSection
+                    order_id={dispatchOrder?.order_id}
+                    legType={params.lt}
+                />
                 <Box className={classes.card}>
                     <Stack direction="row" alignItems="center" gap={1} className={classes.cardHeader}>
                         <Business className={classes.cardHeaderIcon} />
@@ -250,6 +381,7 @@ export default function StopAction() {
                             checked={checkedOrders.has(order.id)}
                             onToggle={() => toggleOrder(order.id)}
                             isCurrentOrder={order.id === dispatchOrder.id}
+                            isPickup={params.lt === 'pickup'}
                         />
                     ))}
                 </Box>

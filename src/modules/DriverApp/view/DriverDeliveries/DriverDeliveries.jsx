@@ -89,7 +89,6 @@ function LegSection({ order, legType, onAction, isLast }) {
     const [open, setOpen] = React.useState(false);
     const isPickup = legType === 'pickup';
     const isDone = isPickup ? ['picked up', 'delivered', 'completed', 'arrived receiver'].includes(order.order_status) : ['delivered', 'completed'].includes(order.order_status);
-
     const name = isPickup ? order.shipper_name : order.receiver_name;
     const address = isPickup
         ? formatAddress(order.shipper_address, order.shipper_city, order.shipper_province, order.shipper_postal_code)
@@ -113,25 +112,15 @@ function LegSection({ order, legType, onAction, isLast }) {
                     {isPickup ? 'P' : 'D'}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0, marginLeft: 2 }}>
-                    <Typography
-                        className={cx(classes.legName, isDone && classes.legNameDone)}
-                    >
-                        {name || '—'}
+                    <Typography className={cx(classes.legName, isDone && classes.legNameDone)}>
+                        {name || '—'} <span style={{paddingInline: 5}}>—</span> <span style={{fontWeight: 500, fontSize: 13}}>{time}</span>
                     </Typography>
                     <Typography className={classes.legAddress}>{address || '—'}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
-                    {isDone ? (
-                        <Box className={classes.doneBadge}>
-                            <CheckCircle sx={{ fontSize: 16 }} />
-                            DONE
-                        </Box>
+                    {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />DONE</Box>
                     ) : (
-                        <Box
-                            component="button"
-                            onClick={(e) => { e.stopPropagation(); onAction(order, legType); }}
-                            className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}
-                        >
+                        <Box component="button" onClick={(e) => { e.stopPropagation(); onAction(order, legType); }} className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}>
                             {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
                         </Box>
                     )}
@@ -152,12 +141,7 @@ function LegSection({ order, legType, onAction, isLast }) {
                     </Grid>
                     <Grid size={12}>
                         <Typography className={classes.legDetailLabel}>Special Instructions</Typography>
-                        <Typography
-                            className={cx(
-                                classes.legDetailInstructions,
-                                instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,
-                            )}
-                        >
+                        <Typography className={cx(classes.legDetailInstructions, instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,)}>
                             {instructions || '—'}
                         </Typography>
                     </Grid>
@@ -220,7 +204,6 @@ function OrderCard({ order, index, onAction }) {
     );
 }
 
-
 export default function DriverDeliveries() {
 
     useDispatchScreenSync();
@@ -230,21 +213,11 @@ export default function DriverDeliveries() {
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
     const [notifOpen, setNotifOpen] = React.useState(false);
-
     const { data: liveTrip = {}, isLoading, isError, error } = useTripById(tripId, true);
-
     const { acknowlegeTrip } = useDispatchOrderMutation()
-
     const hasNotification = liveTrip?.is_trip_updated && !liveTrip?.is_acknowleged;
-
-    const sortedOrders = React.useMemo(
-        () => liveTrip?.dispatched_orders ? [...liveTrip.dispatched_orders].sort((a, b) => a.order_level - b.order_level) : [],
-        [liveTrip],
-    );
-
-    const handleAction = (order, legType) => {
-        navigate(`/stop-actions/${order.id}/${legType}/${tid}`);
-    };
+    const sortedOrders = React.useMemo(() => liveTrip?.dispatched_orders ? [...liveTrip.dispatched_orders].sort((a, b) => a.order_level - b.order_level) : [], [liveTrip],);
+    const handleAction = (order, legType) => navigate(`/stop-actions/${order.id}/${legType}/${tid}`);
 
     React.useEffect(() => {
         if (isError && error) {
@@ -290,7 +263,6 @@ export default function DriverDeliveries() {
                                 </Typography>
                             </Box>
                         </Box>
-
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {hasNotification && (

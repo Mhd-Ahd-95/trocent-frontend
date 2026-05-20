@@ -252,7 +252,7 @@ export const useStyles = makeStyles()(() => ({
     legAddress: {
         fontSize: 13,
         color: COLORS.textSecondary,
-        marginTop: 1.6,
+        marginTop: 2,
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',

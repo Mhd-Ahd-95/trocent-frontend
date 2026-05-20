@@ -1,6 +1,63 @@
 import { alpha } from "@mui/material";
 import { makeStyles } from "tss-react/mui";
 
+const COLORS = {
+    dark: '#2c3e50',
+    darkLight: 'rgba(44,62,80,0.09)',
+    darkBorder: 'rgba(44,62,80,0.07)',
+    darkBorderMd: 'rgba(44,62,80,0.08)',
+    darkBorderSm: 'rgba(44,62,80,0.05)',
+    darkOverlay: 'rgba(44,62,80,0.025)',
+    darkIcon: 'rgba(44,62,80,0.2)',
+
+    textPrimary: '#161616',
+    textSecondary: '#5b5d5e',
+    textMuted: '#95a5a6',
+    textLight: '#bdc3c7',
+    white: '#fff',
+    whiteAlpha48: 'rgba(255,255,255,0.48)',
+    whiteAlpha42: 'rgba(255,255,255,0.42)',
+
+    dispatchedBg: 'rgba(41,128,185,0.1)',
+    dispatchedColor: '#1a5276',
+    dispatchedBorder: 'rgba(41,128,185,0.3)',
+
+    pickedUpBg: 'rgba(221,145,0,0.1)',
+    pickedUpColor: '#7d5200',
+    pickedUpBorder: 'rgba(221,145,0,0.3)',
+
+    deliveredBg: 'rgba(39,174,96,0.1)',
+    deliveredColor: '#1a5e35',
+    deliveredBorder: 'rgba(39,174,96,0.3)',
+
+    completedBg: 'rgba(39,174,96,0.15)',
+    completedColor: '#1a5e35',
+    completedBorder: 'rgba(39,174,96,0.4)',
+
+    green: '#27ae60',
+    greenCC: '#27ae60CC',
+    greenBg: 'rgba(39,174,96,0.08)',
+    greenBgHover: 'rgba(39,174,96,0.16)',
+    greenBorder: 'rgba(39,174,96,0.18)',
+    greenDone: '#1a5e35',
+    greenDoneBg: 'rgba(39,174,96,0.1)',
+    greenDoneBorder: 'rgba(39,174,96,0.25)',
+    greenShadow: 'rgba(39,174,96,0.4)',
+
+    blue: '#2980b9',
+    blueCC: '#2980b9CC',
+    blueBg: 'rgba(41,128,185,0.08)',
+    blueBgHover: 'rgba(41,128,185,0.16)',
+    blueBorder: 'rgba(41,128,185,0.18)',
+    blueShadow: 'rgba(41,128,185,0.4)',
+
+    amber: '#DD9100',
+    amberBg: 'rgba(221,145,0,0.18)',
+    amberBorder: 'rgba(221,145,0,0.45)',
+
+    emptyIconBg: 'rgba(44,62,80,0.08)',
+};
+
 export default makeStyles()((theme) => {
     const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
@@ -277,6 +334,14 @@ export default makeStyles()((theme) => {
             '&:hover': { background: alpha(secondary, 0.03) },
         },
 
+        freightBillItemOpen: {
+           background: alpha(secondary, 0.1)
+        },
+
+        freightBillItemCollapse: {
+            borderBottom: `1px solid ${alpha(secondary, 0.06)}`,
+        },
+
         freightBillCheck: {
             width: 22,
             height: 22,
@@ -411,5 +476,97 @@ export default makeStyles()((theme) => {
             border: `1px solid ${alpha(success, 0.3)}`,
             cursor: 'default',
         },
+        freightHeaderRow: {
+            padding: '4px 8px',
+            marginBottom: 4,
+            background: COLORS.darkLight,
+        },
+        freightHeaderText: {
+            fontWeight: 700,
+        },
+        freightRow: {
+            padding: '6px 8px',
+            borderRadius: 4,
+            '&:not(:last-child)': {
+                borderBottom: `1px solid ${COLORS.darkBorderSm}`,
+            },
+        },
+        freightPieceBadge: {
+            width: 20,
+            height: 20,
+            borderRadius: 5,
+            background: COLORS.darkLight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 13,
+            fontWeight: 800,
+        },
+        freightType: {
+            fontSize: 13,
+            fontWeight: 700,
+            color: COLORS.dark,
+        },
+        freightDims: {
+            fontSize: 13,
+            fontWeight: 500,
+            color: COLORS.dark,
+            fontVariantNumeric: 'tabular-nums',
+        },
+        freightDesc: {
+            fontSize: 13,
+            color: COLORS.dark,
+        },
+        freightTotalsRow: {
+            display: 'flex',
+            gap: 16,
+            marginTop: 8,
+            paddingTop: 8,
+            justifyContent: 'flex-end',
+            borderTop: `1px solid ${COLORS.darkBorderMd}`,
+            paddingLeft: 8,
+            paddingRight: 8,
+            alignItems: 'center',
+        },
+        freightTotalNumber: {
+            fontSize: 15,
+            fontWeight: 800,
+            color: COLORS.dark,
+            fontVariantNumeric: 'tabular-nums',
+        },
+        freightTotalUnit: {
+            fontSize: 11,
+            fontWeight: 700,
+            color: COLORS.textMuted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+        },
+        freightTotalDot: {
+            width: 3,
+            height: 3,
+            borderRadius: '50%',
+            background: COLORS.darkIcon,
+            alignSelf: 'center',
+        },
+        legDetailLabel: {
+            fontSize: 12,
+            fontWeight: 700,
+            color: COLORS.textMuted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            marginBottom: 3.2,
+        },
+        legDetailValue: {
+            fontSize: 14,
+            fontWeight: 600,
+            color: COLORS.dark,
+        },
+        legDetailInstructions: {
+            fontSize: 14,
+            fontWeight: 500,
+            lineHeight: 1.5,
+        },
+        legDetailInstructionsText: { color: COLORS.dark },
+        legDetailInstructionsEmpty: { color: COLORS.textLight },
     };
 });

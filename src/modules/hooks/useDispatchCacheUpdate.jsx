@@ -176,73 +176,73 @@ const handleRemoveDispatchOrder = (queryClient, newUndispatchedOrders, trips = [
 };
 
 export function useDispatchCacheUpdate() {
+
     const queryClient = useQueryClient();
 
-    const updateCache = useCallback(
-        ({ orderId, trips = [], undispatchedOrders = [], action = 'created' }) => {
-            if (!orderId) return;
-            const driverTrips = trips.filter((t) => t.trip_type === 'driver');
-            if (driverTrips.length > 0) {
-                const key = dispatchKeys.trips('driver');
-                const cached = queryClient.getQueryData(key);
-                if (cached !== undefined) {
-                    queryClient.setQueryData(key, mergeTrips(cached, driverTrips, orderId));
-                } else {
-                    queryClient.invalidateQueries({ queryKey: key });
-                }
-                if (action === 'updated') {
-                    for (let t of driverTrips) {
-                        if (t.trip_status === 'active') {
-                            const liveTrip = queryClient.getQueryData(['trip', Number(t.id)])
-                            if (liveTrip) {
-                                queryClient.setQueryData(['trip', Number(t.id)], (old) => {
-                                    const oldWithoutNewOrders = old.dispatched_orders.filter(od => od.order_id !== orderId)
-                                    const newOrders = [...t.dispatched_orders, ...oldWithoutNewOrders].sort((a, b) => a.order_level - b.order_level)
-                                    return ({ ...t, dispatched_orders: newOrders })
-                                })
-                            }
-                            else {
-                                queryClient.invalidateQueries({ queryKey: ['trip', Number(t.id)] })
-                            }
-                            const driverTripsCached = queryClient.getQueryData(['driverTrips', Number(t.driver_id)])
-                            if (driverTripsCached) {
-                                const ntrip = t
-                                delete ntrip['dispatched_orders']
-                                delete ntrip['total_orders_completed']
-                                queryClient.setQueryData(['driverTrips', Number(t.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(t.id) ? ntrip : o))
-                            }
-                            else {
-                                queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(t.driver_id)], exact: true })
-                            }
+    const updateCache = useCallback(({ orderId, trips = [], undispatchedOrders = [], action = 'created' }) => {
+        if (!orderId) return;
+        const driverTrips = trips.filter((t) => t.trip_type === 'driver');
+        if (driverTrips.length > 0) {
+            const key = dispatchKeys.trips('driver');
+            const cached = queryClient.getQueryData(key);
+            if (cached !== undefined) {
+                queryClient.setQueryData(key, mergeTrips(cached, driverTrips, orderId));
+            } else {
+                queryClient.invalidateQueries({ queryKey: key });
+            }
+            if (action === 'updated') {
+                for (let t of driverTrips) {
+                    if (t.trip_status === 'active') {
+                        const liveTrip = queryClient.getQueryData(['trip', Number(t.id)])
+                        if (liveTrip) {
+                            queryClient.setQueryData(['trip', Number(t.id)], (old) => {
+                                const oldWithoutNewOrders = old.dispatched_orders.filter(od => od.order_id !== orderId)
+                                const newOrders = [...t.dispatched_orders, ...oldWithoutNewOrders].sort((a, b) => a.order_level - b.order_level)
+                                return ({ ...t, dispatched_orders: newOrders })
+                            })
+                        }
+                        else {
+                            queryClient.invalidateQueries({ queryKey: ['trip', Number(t.id)] })
+                        }
+                        const driverTripsCached = queryClient.getQueryData(['driverTrips', Number(t.driver_id)])
+                        if (driverTripsCached) {
+                            const ntrip = t
+                            delete ntrip['dispatched_orders']
+                            delete ntrip['total_orders_completed']
+                            queryClient.setQueryData(['driverTrips', Number(t.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(t.id) ? ntrip : o))
+                        }
+                        else {
+                            queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(t.driver_id)], exact: true })
                         }
                     }
                 }
             }
-            const interlinerTrips = trips.filter((t) => t.trip_type === 'interliner');
-            if (interlinerTrips.length > 0) {
-                const key = dispatchKeys.trips('interliner');
-                const cached = queryClient.getQueryData(key);
-                if (cached !== undefined) {
-                    queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips, orderId));
-                } else {
-                    queryClient.invalidateQueries({ queryKey: key });
-                }
+        }
+        const interlinerTrips = trips.filter((t) => t.trip_type === 'interliner');
+        if (interlinerTrips.length > 0) {
+            const key = dispatchKeys.trips('interliner');
+            const cached = queryClient.getQueryData(key);
+            if (cached !== undefined) {
+                queryClient.setQueryData(key, mergeTrips(cached, interlinerTrips, orderId));
+            } else {
+                queryClient.invalidateQueries({ queryKey: key });
             }
-            if (action === 'created') {
-                handleCreatedUndispatched(queryClient, undispatchedOrders);
-            } else if (action === 'updated') {
-                handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
-            } else if (action === 'removed') {
-                handleRemoveDispatchOrder(queryClient, undispatchedOrders, driverTrips, orderId);
-                queryClient.invalidateQueries({ queryKey: ['orders'] });
-                queryClient.invalidateQueries({ queryKey: ['order'] });
-                queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true });
-            }
+        }
+        if (action === 'created') {
+            handleCreatedUndispatched(queryClient, undispatchedOrders);
+        } else if (action === 'updated') {
+            handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
+        } else if (action === 'removed') {
+            handleRemoveDispatchOrder(queryClient, undispatchedOrders, driverTrips, orderId);
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['order'] });
+            queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true });
+        }
 
-            if (trips.length > 0) {
-                queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
-            }
-        },
+        if (trips.length > 0) {
+            queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] });
+        }
+    },
         [queryClient]
     );
 

@@ -201,7 +201,7 @@ export default function DriverLanding() {
                 <Grid size={12}>
                     <div className={classes.hero}>
                         <div className={classes.driverName}>
-                            WELCOME,&nbsp;<em>{authedUser?.username}</em>
+                            WELCOME,&nbsp;<em>{authedUser?.fname}</em>
                         </div>
                         <div className={classes.driverMeta}>
                             <span className={cx(classes.badge, classes.badgeId)}>

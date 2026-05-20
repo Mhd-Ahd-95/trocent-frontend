@@ -92,6 +92,8 @@ function HeaderForm(props) {
                 return 'Section updated: Waiting Time & Billing'
             case 'duplicated':
                 return value
+            case 'signature':
+                return value
             case 'terminal':
                 return value
             default:
