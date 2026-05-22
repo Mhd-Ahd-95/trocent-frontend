@@ -103,30 +103,38 @@ function LegSection({ order, legType, onAction, isLast }) {
         : Array.isArray(order.delivery_appointment_numbers) && order.delivery_appointment_numbers.length > 0 ? order.delivery_appointment_numbers[0] : null;
 
     return (
-        <Box sx={{ borderTop: isLast ? 'none' : undefined }}>
-            <Box
+        <Box sx={{ borderTop: isLast ? 'none' : undefined, width: '100%' }}>
+            <Grid container spacing={2} justifyContent={'space-between'} alignItems={'center'}
                 onClick={() => setOpen((o) => !o)}
                 className={cx(classes.legRow, open ? isPickup ? classes.legRowPickupOpen : classes.legRowDeliveryOpen : isPickup ? classes.legRowPickupHover : classes.legRowDeliveryHover)}
             >
-                <Box className={isPickup ? classes.legCirclePickup : classes.legCircleDelivery}>
-                    {isPickup ? 'P' : 'D'}
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0, marginLeft: 2 }}>
-                    <Typography className={cx(classes.legName, isDone && classes.legNameDone)}>
-                        {name || '—'} <span style={{paddingInline: 5}}>—</span> <span style={{fontWeight: 500, fontSize: 13}}>{time}</span>
-                    </Typography>
-                    <Typography className={classes.legAddress}>{address || '—'}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
-                    {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />DONE</Box>
-                    ) : (
-                        <Box component="button" onClick={(e) => { e.stopPropagation(); onAction(order, legType); }} className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}>
-                            {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
-                        </Box>
-                    )}
-                    <ExpandMore className={cx(classes.expandIcon, open ? classes.expandIconOpen : classes.expandIconClosed,)} />
-                </Box>
-            </Box>
+                <Grid size={{xs: 12, sm: 10}}>
+                    <Grid container alignItems={'center'}>
+                        <Grid size={12} sx={{display: 'flex', alignItems: 'center'}}>
+                            <Box className={isPickup ? classes.legCirclePickup : classes.legCircleDelivery}>
+                                {isPickup ? 'P' : 'D'}
+                            </Box>
+                            <Box sx={{ marginLeft: 2 }}>
+                                <Typography className={cx(classes.legName, isDone && classes.legNameDone)}>
+                                    {name || '—'} <span style={{ paddingInline: 5 }}>—</span> <span style={{ fontWeight: 500, fontSize: 13 }}>{time}</span>
+                                </Typography>
+                                <Typography className={classes.legAddress}>{address || '—'}</Typography>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid size={{xs: 12, sm: 2}}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                        {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />DONE</Box>
+                        ) : (
+                            <Box component="button" onClick={(e) => { e.stopPropagation(); onAction(order, legType); }} className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}>
+                                {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
+                            </Box>
+                        )}
+                        <ExpandMore className={cx(classes.expandIcon, open ? classes.expandIconOpen : classes.expandIconClosed,)} />
+                    </Box>
+                </Grid>
+            </Grid>
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <Grid container spacing={2} component={Box} px={2} py={1}>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -170,34 +178,40 @@ function OrderCard({ order, index, onAction }) {
 
     return (
         <Box className={classes.orderCard}>
-            <Box className={classes.orderCardHeader}>
-                <Box className={classes.orderIndexBadge}>{index + 1}</Box>
-                <Box sx={{ flex: 1, minWidth: 0, display: 'flex', gap: 5 }}>
-                    <Box sx={{ minWidth: 0 }}>
-                        <Typography className={classes.orderNumber}># {order.order_number}</Typography>
-                        <Box className={classes.orderDateRow}>
-                            <CalendarToday className={classes.orderDateIcon} />
-                            <Typography className={classes.orderDate}>{date}</Typography>
-                        </Box>
-                    </Box>
-                    <Box sx={{ minWidth: 0 }}>
-                        <Box className={classes.orderCustomerRow}>
-                            <Person className={classes.orderCustomerIcon} />
-                            <Typography className={classes.orderCustomer}>{order.customer_name}</Typography>
-                        </Box>
-                        <Box className={classes.orderRefRow}>
-                            <Tag className={classes.orderRefIcon} />
-                            <Typography className={classes.orderRef}>{reference || '—'}</Typography>
-                        </Box>
-                    </Box>
-                </Box>
-                <Box
-                    className={classes.orderStatusBadge}
-                    sx={{ background: statusStyle.bg, color: statusStyle.color, border: statusStyle.border, }}
-                >
+            <Grid container spacing={2} className={classes.orderCardHeader} alignItems={'center'} justifyContent={'space-between'}>
+                <Grid size={9.5}>
+                    <Grid container spacing={2} alignItems={'center'}>
+                        <Grid size={{ xs: 12, sm: 3 }}>
+                            <Grid container spacing={1} alignItems={'center'}>
+                                <Grid size='auto'><Box className={classes.orderIndexBadge}>{index + 1}</Box></Grid>
+                                <Grid size='auto'>
+                                    <Typography className={classes.orderNumber}># {order.order_number}</Typography>
+                                    <Box className={classes.orderDateRow}>
+                                        <CalendarToday className={classes.orderDateIcon} />
+                                        <Typography className={classes.orderDate}>{date}</Typography>
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                            <Box sx={{ minWidth: 0 }}>
+                                <Box className={classes.orderCustomerRow}>
+                                    <Person className={classes.orderCustomerIcon} />
+                                    <Typography className={classes.orderCustomer}>{order.customer_name}</Typography>
+                                </Box>
+                                <Box className={classes.orderRefRow}>
+                                    <Tag className={classes.orderRefIcon} />
+                                    <Typography className={classes.orderRef}>{reference || '—'} dehdhed deedhe dehddhede dhedhedededededede</Typography>
+                                </Box>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid size={{ xs: 'auto', sm: 'auto' }} className={classes.orderStatusBadge}
+                    sx={{ background: statusStyle.bg, color: statusStyle.color, border: statusStyle.border, }}>
                     {order.order_status}
-                </Box>
-            </Box>
+                </Grid>
+            </Grid>
             <LegSection order={order} legType="pickup" onAction={onAction} />
             <LegSection order={order} legType="delivery" onAction={onAction} isLast />
         </Box>
@@ -212,7 +226,6 @@ export default function DriverDeliveries() {
     const tripId = isNaN(tid) ? undefined : tid;
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
-    const [notifOpen, setNotifOpen] = React.useState(false);
     const { data: liveTrip = {}, isLoading, isError, error } = useTripById(tripId, true);
     const { acknowlegeTrip } = useDispatchOrderMutation()
     const hasNotification = liveTrip?.is_trip_updated && !liveTrip?.is_acknowleged;
@@ -265,16 +278,6 @@ export default function DriverDeliveries() {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                {hasNotification && (
-                                    <Box
-                                        component="button"
-                                        onClick={() => setNotifOpen(o => !o)}
-                                        className={classes.notifBtn}
-                                    >
-                                        <Box className={classes.notifDot} />
-                                        <NotificationsActive className={classes.notifIcon} />
-                                    </Box>
-                                )}
                                 <Box className={classes.liveBadge}>
                                     <Box className={classes.liveDot} />
                                     LIVE
@@ -285,7 +288,7 @@ export default function DriverDeliveries() {
                             </Typography>
                         </Box>
                     </Box>
-                    <Collapse in={notifOpen && hasNotification} timeout="auto" unmountOnExit>
+                    {hasNotification &&
                         <Box className={classes.notifCollapse}>
                             <DriverNotificationBanner
                                 tripNumber={liveTrip.trip_number}
@@ -296,7 +299,7 @@ export default function DriverDeliveries() {
                                 }}
                             />
                         </Box>
-                    </Collapse>
+                    }
                     <Grid container spacing={3}>
                         {sortedOrders.map((order, idx) => (
                             <Grid size={12} key={idx}>

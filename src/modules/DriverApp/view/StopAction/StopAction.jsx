@@ -105,7 +105,7 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
     const { classes, cx } = useStyles();
     const [open, setOpen] = React.useState(false)
     const appointment = Array.isArray(order.appointment_numbers) && order.appointment_numbers.length > 0 ? order.appointment_numbers.join(', ') : null
-    const references = Array.isArray(order.references) && order.references.length > 0 ? order.references.join(', ') : null
+    const references = Array.isArray(order.reference_numbers) && order.reference_numbers.length > 0 ? order.reference_numbers.join(', ') : null
     const unit = Array.isArray(order.freight_details) && order.freight_details > 0 ? order.freight_details[0]?.unit : 'lbs'
     return (
         <Box className={classes.freightBillItemCollapse}>
@@ -119,7 +119,7 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
                         {isCurrentOrder && (<Box component="span" className={classes.thisOrderTag}>THIS ORDER</Box>)}
                     </Box>
                     <Typography className={classes.freightBillSub}>
-                        {order.customer_name} · {order.total_pieces} pcs . {order.total_actual_weight} {unit}
+                        {order.customer_name} · {order.total_pieces} pcs · {order.total_actual_weight} {unit}
                     </Typography>
                 </Box>
                 <ServiceBadge type={order.service_type} />
@@ -142,13 +142,13 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
                         <Typography className={classes.legDetailLabel}>Appointment Number</Typography>
                         <Typography className={classes.legDetailValue}>{appointment || '—'}</Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography className={classes.legDetailLabel}>Special Instructions</Typography>
                         <Typography className={cx(classes.legDetailInstructions, order.special_instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,)}>
                             {order.special_instructions || '—'}
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography className={classes.legDetailLabel}>Reference Numbers</Typography>
                         <Typography className={classes.legDetailValue}>{references || '—'}</Typography>
                     </Grid>
@@ -237,6 +237,17 @@ export default function StopAction() {
 
     const dispatchOrder = stopActionData?.dispatch_order ?? {};
     const relatedOrders = stopActionData?.related_orders ?? [];
+
+    const totalBills = React.useMemo(() => {
+        const { totalPieces, totalWeight, unit } = relatedOrders.reduce((a, r) => {
+            a['totalPieces'] += Number(r.total_pieces ?? 0)
+            a['totalWeight'] += Number(r.total_actual_weight ?? 0)
+            a['unit'] = r.freight_details && r.freight_details?.length > 0 ? r.freight_details[0].unit : 'lbs'
+            return a
+        }, { totalPieces: 0, totalWeight: 0, unit: 'lbs' })
+        return { totalPieces, totalWeight, unit }
+    }, [relatedOrders])
+
     const orderStatus = dispatchOrder?.order_status;
     const isPickup = params.lt === 'pickup';
     const arrivedShipper = orderStatus === 'arrived shipper';
@@ -368,11 +379,23 @@ export default function StopAction() {
                 </Box>
                 <Box className={classes.card}>
                     <Stack direction="row" alignItems="center" gap={1} className={classes.cardHeader}>
-                        <ReceiptLong className={classes.cardHeaderIcon} />
-                        <Typography className={classes.cardHeaderTitle}>Freight Bills</Typography>
-                        <Typography sx={{ ml: 'auto', fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
-                            {checkedOrders.size} / {relatedOrders.length} selected
-                        </Typography>
+                        <Grid container spacing={1} width={'100%'} justifyContent={'space-between'}>
+                            <Grid size={{ xs: 12, sm: 10 }} sx={{display: 'flex', gap: 1}}>
+                                <ReceiptLong className={classes.cardHeaderIcon} />
+                                <Typography className={classes.cardHeaderTitle}>Freight Bills
+                                    <span style={{ textTransform: 'lowercase', paddingInline: 5 }} className={classes.freightBillSub}>
+                                        · {totalBills.totalPieces} pcs · {totalBills.totalWeight} {totalBills.unit}
+                                    </span>
+                                </Typography>
+                            </Grid>
+                            <Grid size={'auto'}>
+                                <Typography sx={{ ml: 'auto', fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
+                                    {checkedOrders.size} / {relatedOrders.length} selected
+                                </Typography>
+                            </Grid>
+                        </Grid>
+
+
                     </Stack>
                     {relatedOrders.map(order => (
                         <FreightBillItem

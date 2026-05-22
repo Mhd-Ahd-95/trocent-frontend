@@ -140,6 +140,7 @@ function ShipperDetails(props) {
                   }
                 }}
                 onBlur={async () => {
+                  field.onBlur()
                   if (inputValue && !selectedShipper) {
                     try {
                       const existingShipper = data?.find(c => c.name?.trim().toLowerCase() === inputValue.trim().toLowerCase())
