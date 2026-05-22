@@ -141,6 +141,7 @@ function ReceiverDetails(props) {
                   }
                 }}
                 onBlur={async () => {
+                  field.onBlur()
                   if (inputValue && !selectedReceiver) {
                     try {
                       const existingReceiver = data?.find(c => c.name?.trim().toLowerCase() === inputValue.trim().toLowerCase())

@@ -136,11 +136,27 @@ export default function FreightOrder() {
 
     const toggleAccessorial = React.useCallback((orderId, pivotId) => {
         setForm(prev => {
-            const next = new Set(prev.orders[orderId].selectedAccessorialIds);
-            next.has(pivotId) ? next.delete(pivotId) : next.add(pivotId);
-            return { ...prev, orders: { ...prev.orders, [orderId]: { ...prev.orders[orderId], selectedAccessorialIds: next }, }, };
+            const currentSet = prev.orders[orderId].selectedAccessorialIds;
+            const willBeChecked = !currentSet.has(pivotId);
+            const toggledOrder = SELECTED_ORDERS.find(o => o.id === orderId);
+            const toggledAcc = toggledOrder?.accessorials?.find(a => a.id === pivotId);
+            const toggledName = toggledAcc?.access_name;
+            const updatedOrders = { ...prev.orders };
+            SELECTED_ORDERS.forEach(order => {
+                const orderSet = new Set(updatedOrders[order.id].selectedAccessorialIds);
+                if (order.id === orderId) {
+                    willBeChecked ? orderSet.add(pivotId) : orderSet.delete(pivotId);
+                } else if (toggledName) {
+                    const matchingAcc = order.accessorials?.find(a => a.access_name === toggledName);
+                    if (matchingAcc) {
+                        willBeChecked ? orderSet.add(matchingAcc.id) : orderSet.delete(matchingAcc.id);
+                    }
+                }
+                updatedOrders[order.id] = { ...updatedOrders[order.id], selectedAccessorialIds: orderSet, };
+            });
+            return { ...prev, orders: updatedOrders };
         });
-    }, []);
+    }, [SELECTED_ORDERS]);
 
     const handleComplete = async (e) => {
         e.preventDefault()

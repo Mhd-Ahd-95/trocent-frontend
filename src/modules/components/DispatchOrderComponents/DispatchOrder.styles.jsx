@@ -1,6 +1,6 @@
 import { makeStyles } from 'tss-react/mui';
 
-export const useTripRowStyles = makeStyles()((theme, { isActive, isToday, expanded }) => ({
+export const useTripRowStyles = makeStyles()((theme, { isActive = false, isToday = false, expanded = false }) => ({
 
     accordion: {
         overflow: 'hidden',

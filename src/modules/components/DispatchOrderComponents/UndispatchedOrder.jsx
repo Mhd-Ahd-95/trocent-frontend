@@ -186,15 +186,25 @@ function UndispatchedOrders(props) {
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;
 
+  const SERVICE_TYPE_PRIORITY = { Direct: 0, Rush: 1, Regular: 2 };
+
   const sortedOrders = useMemo(() => {
-    if (!sortConfig.key) return orders;
     return [...orders].sort((a, b) => {
+      const isDefaultSort = !sortConfig.key || sortConfig.key === 'service_type' || sortConfig.key === 'order_number';
+      if (isDefaultSort) {
+        const aPriority = SERVICE_TYPE_PRIORITY[a.service_type] ?? 99;
+        const bPriority = SERVICE_TYPE_PRIORITY[b.service_type] ?? 99;
+        if (aPriority !== bPriority) {
+          return sortConfig.key === 'service_type' && sortConfig.direction === 'desc' ? bPriority - aPriority : aPriority - bPriority;
+        }
+        const aNum = Number(a.order_number) || 0;
+        const bNum = Number(b.order_number) || 0;
+        return bNum - aNum;
+      }
+
       let aVal = a[sortConfig.key] ?? '';
       let bVal = b[sortConfig.key] ?? '';
-      if (sortConfig.key === 'order_number') {
-        aVal = Number(aVal)
-        bVal = Number(bVal)
-      }
+
       if (sortConfig.key === 'scheduled_date') {
         const aTime = aVal ? new Date(aVal).getTime() : 0;
         const bTime = bVal ? new Date(bVal).getTime() : 0;

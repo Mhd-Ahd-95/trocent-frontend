@@ -197,9 +197,7 @@ export const useStyles = makeStyles()(() => ({
     },
 
     legRow: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
+        width: '100%',
         padding: '9.6px 12px',
         cursor: 'pointer',
         transition: 'background 0.15s',
@@ -245,17 +243,17 @@ export const useStyles = makeStyles()(() => ({
         fontSize: 14,
         fontWeight: 700,
         color: COLORS.textPrimary,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
+        // whiteSpace: 'nowrap',
+        // overflow: 'hidden',
     },
     legNameDone: { opacity: 0.6 },
     legAddress: {
         fontSize: 13,
         color: COLORS.textSecondary,
         marginTop: 2,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
+        // whiteSpace: 'nowrap',
+        // overflow: 'hidden',
+        // textOverflow: 'ellipsis',
     },
 
     doneBadge: {
@@ -343,9 +341,9 @@ export const useStyles = makeStyles()(() => ({
         overflow: 'hidden',
     },
     orderCardHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
+        // display: 'flex',
+        // alignItems: 'center',
+        // gap: 8,
         padding: '8px 12px',
         background: COLORS.darkOverlay,
         borderBottom: `1px solid ${COLORS.darkBorder}`,

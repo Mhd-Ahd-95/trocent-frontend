@@ -143,6 +143,7 @@ export default makeStyles()((theme) => {
             border: `1px solid ${alpha(secondary, 0.1)}`,
             borderRadius: 14,
             overflow: 'hidden',
+            width: '100%',
             marginBottom: 12,
         },
 
