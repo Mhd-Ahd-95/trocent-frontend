@@ -201,7 +201,7 @@ function OrderCard({ order, index, onAction }) {
                                 </Box>
                                 <Box className={classes.orderRefRow}>
                                     <Tag className={classes.orderRefIcon} />
-                                    <Typography className={classes.orderRef}>{reference || '—'} dehdhed deedhe dehddhede dhedhedededededede</Typography>
+                                    <Typography className={classes.orderRef}>{reference || '—'}</Typography>
                                 </Box>
                             </Box>
                         </Grid>
