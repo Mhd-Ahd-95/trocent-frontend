@@ -83,7 +83,7 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
     );
 }
 
-function LegSection({ order, legType, onAction, isLast }) {
+function LegSection({ order, legType, onAction, isLast, isNoAction }) {
 
     const { classes, cx } = useStyles();
     const [open, setOpen] = React.useState(false);
@@ -102,35 +102,47 @@ function LegSection({ order, legType, onAction, isLast }) {
         ? Array.isArray(order.pickup_appointment_numbers) && order.pickup_appointment_numbers.length > 0 ? order.pickup_appointment_numbers[0] : null
         : Array.isArray(order.delivery_appointment_numbers) && order.delivery_appointment_numbers.length > 0 ? order.delivery_appointment_numbers[0] : null;
 
+    const hasAppointment = isDone ? false : isPickup ? !!order.pickup_appointment : !!order.delivery_appointment;
+
     return (
         <Box sx={{ borderTop: isLast ? 'none' : undefined, width: '100%' }}>
             <Grid container spacing={2} justifyContent={'space-between'} alignItems={'center'}
                 onClick={() => setOpen((o) => !o)}
-                className={cx(classes.legRow, open ? isPickup ? classes.legRowPickupOpen : classes.legRowDeliveryOpen : isPickup ? classes.legRowPickupHover : classes.legRowDeliveryHover)}
+                className={cx(classes.legRow, isDone && classes.legRowDone, open ? isPickup ? classes.legRowPickupOpen : classes.legRowDeliveryOpen : isPickup ? classes.legRowPickupHover : classes.legRowDeliveryHover)}
             >
-                <Grid size={{xs: 12, sm: 10}}>
+                <Grid size={{ xs: 12, sm: 9.5 }}>
                     <Grid container alignItems={'center'}>
-                        <Grid size={12} sx={{display: 'flex', alignItems: 'center'}}>
-                            <Box className={isPickup ? classes.legCirclePickup : classes.legCircleDelivery}>
+                        <Grid size={12} sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box
+                                className={cx(
+                                    isPickup ? classes.legCirclePickup : classes.legCircleDelivery,
+                                    isDone && classes.legCircleDone,
+                                    hasAppointment && (isPickup ? classes.pulseCirclePickup : classes.pulseCircleDelivery)
+                                )}
+                            >
                                 {isPickup ? 'P' : 'D'}
                             </Box>
                             <Box sx={{ marginLeft: 2 }}>
                                 <Typography className={cx(classes.legName, isDone && classes.legNameDone)}>
-                                    {name || '—'} <span style={{ paddingInline: 5 }}>—</span> <span style={{ fontWeight: 500, fontSize: 13 }}>{time}</span>
+                                    {name || '—'} <span style={{ paddingInline: 5 }}>—</span> <span style={{ fontWeight: 500, fontSize: 13, whiteSpace: 'nowrap' }}>{time}</span>
                                 </Typography>
                                 <Typography className={classes.legAddress}>{address || '—'}</Typography>
                             </Box>
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid size={{xs: 12, sm: 2}}>
+                <Grid size={{ xs: 12, sm: isNoAction ? 'auto' : 2.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
-                        {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />DONE</Box>
-                        ) : (
-                            <Box component="button" onClick={(e) => { e.stopPropagation(); onAction(order, legType); }} className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}>
-                                {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
-                            </Box>
-                        )}
+                        {!isNoAction &&
+                            <>
+                                {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />DONE</Box>
+                                ) : (
+                                    <Box component="button" onClick={(e) => { e.stopPropagation(); onAction(order, legType); }} className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}>
+                                        {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
+                                    </Box>
+                                )}
+                            </>
+                        }
                         <ExpandMore className={cx(classes.expandIcon, open ? classes.expandIconOpen : classes.expandIconClosed,)} />
                     </Box>
                 </Grid>
@@ -138,16 +150,10 @@ function LegSection({ order, legType, onAction, isLast }) {
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <Grid container spacing={2} component={Box} px={2} py={1}>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                        <Typography className={classes.legDetailLabel}>
-                            {isPickup ? 'Pickup Time' : 'Delivery Time'}
-                        </Typography>
-                        <Typography className={classes.legDetailValue}>{time || '—'}</Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography className={classes.legDetailLabel}>Appointment Number</Typography>
                         <Typography className={classes.legDetailValue}>{appointment || '—'}</Typography>
                     </Grid>
-                    <Grid size={12}>
+                    <Grid size={6}>
                         <Typography className={classes.legDetailLabel}>Special Instructions</Typography>
                         <Typography className={cx(classes.legDetailInstructions, instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,)}>
                             {instructions || '—'}
@@ -169,7 +175,7 @@ function LegSection({ order, legType, onAction, isLast }) {
     );
 }
 
-function OrderCard({ order, index, onAction }) {
+function OrderCard({ order, index, onAction, isNoAction }) {
 
     const { classes } = useStyles();
     const statusStyle = ORDER_STATUS_STYLES[order.order_status] ?? ORDER_STATUS_STYLES.dispatched;
@@ -212,8 +218,8 @@ function OrderCard({ order, index, onAction }) {
                     {order.order_status}
                 </Grid>
             </Grid>
-            <LegSection order={order} legType="pickup" onAction={onAction} />
-            <LegSection order={order} legType="delivery" onAction={onAction} isLast />
+            <LegSection order={order} legType="pickup" onAction={onAction} isNoAction={isNoAction} />
+            <LegSection order={order} legType="delivery" onAction={onAction} isLast isNoAction={isNoAction} />
         </Box>
     );
 }
@@ -222,7 +228,8 @@ export default function DriverDeliveries() {
 
     useDispatchScreenSync();
     const { classes } = useStyles();
-    const { tid } = useParams();
+    const { tid, action } = useParams();
+    const isNoAction = action === 'no-action'
     const tripId = isNaN(tid) ? undefined : tid;
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
@@ -241,7 +248,7 @@ export default function DriverDeliveries() {
     }, [isError, error]);
 
     return (
-        <DriverLayout active="Deliveries" tripId={tid}>
+        <DriverLayout active="Deliveries" tripId={tid} isNoAction={isNoAction}>
             {isLoading ? (
                 <Grid container spacing={2}>
                     <Grid size={12}><Skeleton variant="rectangular" width="100%" height={50} /></Grid>
@@ -279,8 +286,10 @@ export default function DriverDeliveries() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Box className={classes.liveBadge}>
-                                    <Box className={classes.liveDot} />
-                                    LIVE
+                                    {isNoAction ? 'PENDING' : <>
+                                        <Box className={classes.liveDot} />
+                                        LIVE
+                                    </>}
                                 </Box>
                             </Box>
                             <Typography className={classes.tripProgress}>
@@ -303,7 +312,7 @@ export default function DriverDeliveries() {
                     <Grid container spacing={3}>
                         {sortedOrders.map((order, idx) => (
                             <Grid size={12} key={idx}>
-                                <OrderCard order={order} index={idx} onAction={handleAction} />
+                                <OrderCard order={order} index={idx} onAction={handleAction} isNoAction={isNoAction} />
                             </Grid>
                         ))}
                     </Grid>

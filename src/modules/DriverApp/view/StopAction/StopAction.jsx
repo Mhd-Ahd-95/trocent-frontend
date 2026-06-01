@@ -37,7 +37,7 @@ function ServiceBadge({ type }) {
     const { classes, cx } = useStyles();
     return (
         <Box className={cx(classes.badge, classes[SERVICE_CLASS[type] ?? 'serviceRegular'])}>
-            {type}
+            {type[0]}
         </Box>
     );
 }
@@ -118,17 +118,21 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
                         # {order.order_number}
                         {isCurrentOrder && (<Box component="span" className={classes.thisOrderTag}>THIS ORDER</Box>)}
                     </Box>
-                    <Typography className={classes.freightBillSub}>
-                        {order.customer_name} · {order.total_pieces} pcs · {order.total_actual_weight} {unit}
-                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0 6px', marginTop: '3px' }}>
+                        <Typography className={classes.freightBillSub}>
+                            {order.customer_name}
+                        </Typography>
+                        <Typography className={classes.freightBillTotals}>
+                            · {order.total_pieces} pcs · {order.total_actual_weight} {unit}
+                        </Typography>
+                    </Box>
                 </Box>
-                <ServiceBadge type={order.service_type} />
-                <IconButton
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        setOpen((o) => !o)
-                    }}
-                ><ExpandMore /></IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, '@media (max-width: 360px)': { width: '100%' } }}>
+                    {order.service_type !== 'Regular' &&
+                        <ServiceBadge type={order.service_type} />
+                    }
+                    <IconButton onClick={(e) => { e.stopPropagation(); setOpen((o) => !o) }}><ExpandMore /></IconButton>
+                </Box>
             </Box>
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <Grid container spacing={2} component={Box} px={2} py={1}>
@@ -315,18 +319,25 @@ export default function StopAction() {
                     <Typography className={classes.backLabel}>Back to Trip</Typography>
                 </Stack>
 
-                <Stack direction="row" alignItems="center" gap={1.25} mb={2} className={classes.pageTitle}>
-                    <Box className={classes.pageTitleIcon}>
-                        <LocalShipping sx={{ fontSize: 20, color: 'success.main' }} />
-                    </Box>
-                    <Box flex={1}>
-                        <Typography className={classes.pageTitleText}>Stop Actions</Typography>
-                        <Typography className={classes.pageTitleSub}>
-                            {isPickup ? 'Pickup' : 'Delivery'} · {dispatchOrder?.name}
-                        </Typography>
-                    </Box>
-                    <StatusBadge status={orderStatus} />
-                </Stack>
+                <Grid container spacing={1} mb={2} className={classes.pageTitle} justifyContent={'space-between'}>
+                    <Grid size={'auto'}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                            <Box className={classes.pageTitleIcon} sx={{ flexShrink: 0 }}>
+                                {isPickup ? 'P' : 'D'}
+                            </Box>
+                            <Box>
+                                <Typography className={classes.pageTitleText}>Stop Actions</Typography>
+                                <Typography className={classes.pageTitleSub}>
+                                    {dispatchOrder?.name}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Grid>
+                    <Grid size={'auto'}>
+                        <StatusBadge status={orderStatus} />
+                    </Grid>
+                </Grid>
+
                 <OrderNoteSection
                     order_id={dispatchOrder?.order_id}
                     legType={params.lt}
@@ -378,25 +389,26 @@ export default function StopAction() {
                     </Grid>
                 </Box>
                 <Box className={classes.card}>
-                    <Stack direction="row" alignItems="center" gap={1} className={classes.cardHeader}>
-                        <Grid container spacing={1} width={'100%'} justifyContent={'space-between'}>
-                            <Grid size={{ xs: 12, sm: 10 }} sx={{display: 'flex', gap: 1}}>
-                                <ReceiptLong className={classes.cardHeaderIcon} />
-                                <Typography className={classes.cardHeaderTitle}>Freight Bills
-                                    <span style={{ textTransform: 'lowercase', paddingInline: 5 }} className={classes.freightBillSub}>
-                                        · {totalBills.totalPieces} pcs · {totalBills.totalWeight} {totalBills.unit}
-                                    </span>
-                                </Typography>
-                            </Grid>
-                            <Grid size={'auto'}>
-                                <Typography sx={{ ml: 'auto', fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
-                                    {checkedOrders.size} / {relatedOrders.length} selected
-                                </Typography>
-                            </Grid>
+                    <Grid container spacing={1} width={'100%'} justifyContent={'space-between'} alignItems={'center'} className={classes.cardHeader}>
+                        <Grid size="auto" sx={{ minWidth: 0 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <ReceiptLong className={classes.cardHeaderIcon} sx={{ flexShrink: 0 }} />
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0 6px', minWidth: 0 }}>
+                                    <Typography className={classes.cardHeaderTitle}>
+                                        Freight Bills
+                                    </Typography>
+                                    <Typography className={classes.freightBillTotals}>
+                                        {totalBills.totalPieces} pcs · {totalBills.totalWeight} {totalBills.unit}
+                                    </Typography>
+                                </Box>
+                            </Box>
                         </Grid>
-
-
-                    </Stack>
+                        <Grid size={'auto'} sx={{ flexShrink: 0 }}>
+                            <Typography sx={{ ml: 'auto', fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
+                                {checkedOrders.size} / {relatedOrders.length} selected
+                            </Typography>
+                        </Grid>
+                    </Grid>
                     {relatedOrders.map(order => (
                         <FreightBillItem
                             key={order.id}

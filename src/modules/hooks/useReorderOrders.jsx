@@ -3,6 +3,7 @@ import { dispatchKeys } from "./useDispatchOrders";
 
 
 export function useReorderOrders() {
+
     const queryClient = useQueryClient();
 
     return async (trip) => {
@@ -32,10 +33,30 @@ export function useReorderOrders() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', trip_type] })
             }
+
+            const cachedTrip = queryClient.getQueryData(['trip', Number(tripId)])
+            if (cachedTrip) {
+                queryClient.setQueryData(['trip', Number(tripId)], (old = {}) => {
+                    return ({
+                        ...old,
+                        dispatched_orders: old.dispatched_orders.map(d => {
+                            const found = orders.find(no => Number(no.id) === Number(d.id))
+                            if (found) {
+                                return ({ ...d, ...found })
+                            }
+                            return d
+                        })
+                    })
+                })
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
+            }
         }
         else {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'interliner'] })
         }
+
     };
 }

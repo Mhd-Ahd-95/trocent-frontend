@@ -105,22 +105,24 @@ export default makeStyles()((theme) => {
         },
 
         pageTitle: {
-            display: 'flex',
+            // display: 'flex',
             alignItems: 'center',
-            gap: 10,
+            // gap: 10,
             marginBottom: 16,
         },
 
         pageTitleIcon: {
-            width: 46,
-            height: 46,
+            width: 40,
+            height: 40,
+            fontSize: 25,
+            fontWeight: 800,
             borderRadius: 13,
+            color: theme.palette.success.main,
             background: alpha(success, 0.1),
             border: `1px solid ${alpha(success, 0.22)}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flexShrink: 0,
         },
 
         pageTitleText: {
@@ -148,9 +150,6 @@ export default makeStyles()((theme) => {
         },
 
         cardHeader: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
             padding: '12px 14px',
             borderBottom: `1px solid ${alpha(secondary, 0.07)}`,
             background: alpha(secondary, 0.025),
@@ -159,11 +158,12 @@ export default makeStyles()((theme) => {
         cardHeaderIcon: { fontSize: '16px !important', color: secondaryLight },
 
         cardHeaderTitle: {
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 800,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             color: secondary,
+            whiteSpace: 'nowrap',
         },
 
         infoRow: {
@@ -204,6 +204,7 @@ export default makeStyles()((theme) => {
             fontWeight: 600,
             color: secondary,
             lineHeight: 1.4,
+            whiteSpace: 'nowrap',
         },
 
         infoValueMuted: {
@@ -214,6 +215,7 @@ export default makeStyles()((theme) => {
         },
 
         infoValuePhone: {
+            whiteSpace: 'nowrap',
             fontSize: 15,
             fontWeight: 700,
             color: info,
@@ -327,6 +329,7 @@ export default makeStyles()((theme) => {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
+            flexWrap: 'wrap',
             padding: '12px 14px',
             borderBottom: `1px solid ${alpha(secondary, 0.06)}`,
             cursor: 'pointer',
@@ -336,7 +339,7 @@ export default makeStyles()((theme) => {
         },
 
         freightBillItemOpen: {
-           background: alpha(secondary, 0.1)
+            background: alpha(secondary, 0.1)
         },
 
         freightBillItemCollapse: {
@@ -379,7 +382,14 @@ export default makeStyles()((theme) => {
             fontSize: 13,
             color: secondaryLight,
             fontWeight: 500,
-            marginTop: 3,
+            whiteSpace: 'nowrap',
+        },
+
+        freightBillTotals: {
+            fontSize: 13,
+            color: secondaryLight,
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
         },
 
         badge: {
@@ -567,6 +577,7 @@ export default makeStyles()((theme) => {
             fontWeight: 500,
             lineHeight: 1.5,
         },
+        
         legDetailInstructionsText: { color: COLORS.dark },
         legDetailInstructionsEmpty: { color: COLORS.textLight },
     };

@@ -32,6 +32,21 @@ export function useOrder(oid) {
     });
 }
 
+export function useOrderUpdates(oid) {
+    return useQuery({
+        queryKey: ['orderUpdates', Number(oid)],
+        queryFn: async () => {
+            const res = await OrderApi.getOrderUpdates(oid)
+            return res.data;
+        },
+        enabled: !!oid,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 export function useOrderNotes(oid) {
     return useQuery({
         queryKey: ['orderNotes', Number(oid)],
@@ -210,7 +225,7 @@ export function useOrderMutations() {
     })
 
     const updateTerminal = useMutation({
-        mutationFn: async ({ oid, terminal}) => {
+        mutationFn: async ({ oid, terminal }) => {
             const res = await OrderApi.updateTerminal(oid, terminal)
             return res.data
         },

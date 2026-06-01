@@ -11,7 +11,7 @@ const cellSx = { py: 0.5, px: 1.5, borderBottom: '1px solid', borderColor: 'divi
 
 const getServiceColor = (type) => ({ Direct: 'info', Rush: 'warning', Regular: 'secondary' }[type] || 'default');
 
-const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote, theme, onTerminalUpdate }) => {
+const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onAddNote, theme, onTerminalUpdate, onOrderUpdates }) => {
     return (
         <>
             <TableRow
@@ -35,10 +35,15 @@ const OrderRow = React.memo(({ row, isEven, isToday, isSelected, onRowClick, onA
                 <TableCell sx={{ ...cellSx, minWidth: 180, borderRight: '1px solid #ccc', position: 'relative', overflow: 'hidden' }}>
                     {row.order_updated && (
                         <Box sx={{
-                            position: 'absolute', top: -6, right: -6, width: 28, height: 28, backgroundColor: 'primary.main', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                            position: 'absolute', top: -6, right: -6, width: 30, height: 30, backgroundColor: 'primary.main', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
                             '@keyframes ringPop': { '0%': { boxShadow: '0 0 0 0px rgba(25,118,210,0.5)' }, '70%': { boxShadow: '0 0 0 6px rgba(25,118,210,0)' }, '100%': { boxShadow: '0 0 0 0px rgba(25,118,210,0)' }, },
                             animation: 'ringPop 1.6s ease-out infinite',
-                        }} />
+                        }} 
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                onOrderUpdates(row)
+                            }}
+                        />
                     )}
                     <Link component={RouterLink} to={`/orders/edit/${row.order_id}`}>
                         <Typography fontWeight={700} fontSize={14} lineHeight={1.3}># {row.order_number}</Typography>

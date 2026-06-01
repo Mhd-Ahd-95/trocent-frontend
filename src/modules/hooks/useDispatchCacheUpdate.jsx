@@ -179,7 +179,7 @@ export function useDispatchCacheUpdate() {
 
     const queryClient = useQueryClient();
 
-    const updateCache = useCallback(({ orderId, trips = [], undispatchedOrders = [], action = 'created' }) => {
+    const updateCache = useCallback(({ orderId, trips = [], undispatchedOrders = [], action = 'created', freights = [] }) => {
         if (!orderId) return;
         const driverTrips = trips.filter((t) => t.trip_type === 'driver');
         if (driverTrips.length > 0) {
@@ -198,7 +198,13 @@ export function useDispatchCacheUpdate() {
                             queryClient.setQueryData(['trip', Number(t.id)], (old) => {
                                 const oldWithoutNewOrders = old.dispatched_orders.filter(od => od.order_id !== orderId)
                                 const newOrders = [...t.dispatched_orders, ...oldWithoutNewOrders].sort((a, b) => a.order_level - b.order_level)
-                                return ({ ...t, dispatched_orders: newOrders })
+                                const newWithFreights = newOrders.map(no => {
+                                    if (Number(no.order_id) === Number(orderId)) {
+                                        return ({ ...no, freights })
+                                    }
+                                    return no
+                                })
+                                return ({ ...t, dispatched_orders: newWithFreights })
                             })
                         }
                         else {
@@ -232,6 +238,7 @@ export function useDispatchCacheUpdate() {
             handleCreatedUndispatched(queryClient, undispatchedOrders);
         } else if (action === 'updated') {
             handleUpdatedUndispatched(queryClient, orderId, undispatchedOrders);
+            queryClient.invalidateQueries({ queryKey: ['orderUpdates', Number(orderId)] })
         } else if (action === 'removed') {
             handleRemoveDispatchOrder(queryClient, undispatchedOrders, driverTrips, orderId);
             queryClient.invalidateQueries({ queryKey: ['orders'] });
