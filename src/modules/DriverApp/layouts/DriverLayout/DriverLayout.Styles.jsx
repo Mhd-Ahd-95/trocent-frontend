@@ -5,7 +5,7 @@ export default makeStyles()((theme) => ({
     root: {
         background: theme.palette.background.default,
         color: theme.palette.secondary.main,
-        height: '99vh',
+        height: '100dvh', 
         overflow: 'hidden',
         position: 'relative',
     },
@@ -52,7 +52,7 @@ export default makeStyles()((theme) => ({
         zIndex: 1,
         maxWidth: 800,
         margin: '0 auto',
-        height: '100vh',
+        height: '100dvh',        
         display: 'flex',
         overflow: 'hidden',
         flexDirection: 'column',
@@ -61,36 +61,44 @@ export default makeStyles()((theme) => ({
     },
     content: {
         width: '100%',
-        height: '100%',
+        flex: 1,                  
         overflow: 'hidden auto',
-        padding: '10px 20px'
+        padding: '10px 20px',
+        [theme.breakpoints.down('sm')]: {
+            padding: '8px 14px',
+        },
     },
     bottomNav: {
+        flexShrink: 0,
         position: 'sticky',
         bottom: 0,
-        background: 'rgba(255,255,255,0.94)',
+        background: 'rgba(255,255,255,0.97)',
         backdropFilter: 'blur(20px)',
-        borderTop: `1px solid ${theme.palette.secondary.main}14`,
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: `1.5px solid ${theme.palette.secondary.main}20`,
         display: 'flex',
-        padding: '5px 0 20px',
+        alignItems: 'flex-start',
+        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+        paddingTop: 6,
         animation: '$slideUp 0.5s 0.4s ease both',
+        zIndex: 100,
     },
-
     '@keyframes slideUp': {
         from: { opacity: 0, transform: 'translateY(20px)' },
         to: { opacity: 1, transform: 'translateY(0)' },
     },
-
     navItem: {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent:'center',
+        justifyContent: 'center',
         alignItems: 'center',
-        gap: 4,
+        gap: 3,
         cursor: 'pointer',
-        padding: '6px 0',
+        minHeight: 56,
+        padding: '8px 4px',
         transition: 'opacity 0.2s',
+        WebkitTapHighlightColor: 'transparent',
         '&:not($navItemActive):hover': {
             opacity: 0.65,
         },
@@ -99,20 +107,32 @@ export default makeStyles()((theme) => ({
     navItemActive: {},
 
     navIcon: {
-        fontSize: 20,
         lineHeight: 1,
         color: theme.palette.secondary.light,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        '& svg': {
+            fontSize: '26px !important',
+            [theme.breakpoints.down('sm')]: {
+                fontSize: '28px !important',
+            },
+        },
     },
 
     navIconActive: {
         color: `${theme.palette.primary.main} !important`,
     },
-
     navLabel: {
-        fontSize: 15,
+        fontSize: 12,
         fontWeight: 700,
-        letterSpacing: 0.5,
+        letterSpacing: 0.4,
         color: theme.palette.secondary.light,
+        whiteSpace: 'nowrap',
+        [theme.breakpoints.down('sm')]: {
+            fontSize: 13,
+            letterSpacing: 0.3,
+        },
     },
 
     navLabelActive: {

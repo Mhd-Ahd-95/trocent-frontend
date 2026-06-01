@@ -1,3 +1,4 @@
+import { colors } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 
 const COLORS = {
@@ -8,6 +9,7 @@ const COLORS = {
     darkBorderSm: 'rgba(44,62,80,0.05)',
     darkOverlay: 'rgba(44,62,80,0.025)',
     darkIcon: 'rgba(44,62,80,0.2)',
+    darkDone: 'rgba(120, 120, 120, 0.2)',
 
     textPrimary: '#161616',
     textSecondary: '#5b5d5e',
@@ -203,12 +205,21 @@ export const useStyles = makeStyles()(() => ({
         transition: 'background 0.15s',
         borderTop: `1px solid ${COLORS.darkBorder}`,
     },
+    legRowDone: {
+        background: COLORS.darkLight,
+    },
     legRowPickupOpen: { background: COLORS.greenBg },
     legRowDeliveryOpen: { background: COLORS.blueBg },
     legRowPickupHover: { '&:hover': { background: COLORS.greenBg } },
     legRowDeliveryHover: { '&:hover': { background: COLORS.blueBg } },
 
+    legCircleDone: {
+        background: `${colors.grey['500']} !important`,
+        boxShadow: 'none !important',
+    },
+
     legCirclePickup: {
+        position: 'relative',
         width: 32,
         height: 32,
         borderRadius: '50%',
@@ -223,7 +234,39 @@ export const useStyles = makeStyles()(() => ({
         flexShrink: 0,
         boxShadow: `0 4px 10px ${COLORS.greenShadow}`,
     },
+    pulseCirclePickup: {
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: -1,
+            borderRadius: '50%',
+            border: `2px solid ${COLORS.green}`,
+            opacity: 0,
+            animation: 'pulseRingGreen 2s ease-out infinite',
+        },
+        '@keyframes pulseRingGreen': {
+            '0%': { transform: 'scale(1)', opacity: 0.6 },
+            '100%': { transform: 'scale(1.5)', opacity: 0 },
+        },
+    },
+
+    pulseCircleDelivery: {
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: -1,
+            borderRadius: '50%',
+            border: `2px solid ${COLORS.blue}`,
+            opacity: 0,
+            animation: 'pulseRingBlue 2s ease-out infinite',
+        },
+        '@keyframes pulseRingBlue': {
+            '0%': { transform: 'scale(1)', opacity: 0.6 },
+            '100%': { transform: 'scale(1.5)', opacity: 0 },
+        },
+    },
     legCircleDelivery: {
+        position: 'relative',
         width: 32,
         height: 32,
         borderRadius: '50%',
@@ -277,7 +320,7 @@ export const useStyles = makeStyles()(() => ({
         padding: '3.2px 8px',
         borderRadius: '6px',
         cursor: 'pointer',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 700,
         letterSpacing: '0.04em',
         border: `1px solid ${COLORS.greenBorder}`,
@@ -294,7 +337,7 @@ export const useStyles = makeStyles()(() => ({
         padding: '3.2px 8px',
         borderRadius: '6px',
         cursor: 'pointer',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 700,
         letterSpacing: '0.04em',
         border: `1px solid ${COLORS.blueBorder}`,
@@ -306,7 +349,7 @@ export const useStyles = makeStyles()(() => ({
     },
 
     expandIcon: {
-        fontSize: 15,
+        fontSize: 25,
         color: COLORS.textMuted,
         transition: 'transform 0.25s',
     },
@@ -336,7 +379,7 @@ export const useStyles = makeStyles()(() => ({
 
     orderCard: {
         background: COLORS.white,
-        border: `1px solid rgba(44,62,80,0.1)`,
+        border: `1px solid #9f9e9e`,
         borderRadius: 12,
         overflow: 'hidden',
     },
@@ -443,7 +486,7 @@ export const useStyles = makeStyles()(() => ({
         flexShrink: 0,
     },
     tripIcon: {
-        fontSize: 18,
+        fontSize: 22,
         color: COLORS.amber,
     },
     tripNumber: {
@@ -454,7 +497,7 @@ export const useStyles = makeStyles()(() => ({
         lineHeight: 1,
     },
     tripDate: {
-        fontSize: 11,
+        fontSize: 13,
         fontWeight: 500,
         color: COLORS.whiteAlpha48,
         marginTop: 3.2,
@@ -467,14 +510,14 @@ export const useStyles = makeStyles()(() => ({
         border: `1px solid ${COLORS.amberBorder}`,
         borderRadius: 6,
         padding: '3.2px 8px',
-        fontSize: 10,
+        fontSize: 13,
         fontWeight: 800,
         color: COLORS.amber,
         letterSpacing: '0.08em',
     },
     liveDot: {
-        width: 5,
-        height: 5,
+        width: 7,
+        height: 7,
         borderRadius: '50%',
         background: COLORS.amber,
         animation: 'blink 1.2s ease-in-out infinite',
@@ -485,7 +528,7 @@ export const useStyles = makeStyles()(() => ({
     },
 
     tripProgress: {
-        fontSize: 11,
+        fontSize: 13,
         color: COLORS.whiteAlpha42,
         fontWeight: 600,
     },

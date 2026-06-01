@@ -133,7 +133,7 @@ export default makeStyles()((theme, props) => {
         },
 
         tripsCardTitle: {
-            fontSize: 13,
+            fontSize: 16,
             fontWeight: 700,
             color: theme.palette.secondary.main,
             letterSpacing: 0.2,
@@ -141,11 +141,11 @@ export default makeStyles()((theme, props) => {
 
         tripsCount: {
             minWidth: 22,
-            height: 22,
+            height: 25,
             borderRadius: 99,
             background: primaryColor,
             color: '#fff',
-            fontSize: 11,
+            fontSize: 15,
             fontWeight: 900,
             display: 'flex',
             alignItems: 'center',
@@ -161,13 +161,13 @@ export default makeStyles()((theme, props) => {
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            cursor: props?.isLocked ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             padding: '11px 18px',
-            borderBottom: `1px solid ${theme.palette.secondary.main}08`,
+            borderBottom: `1px solid #ccc`,
             transition: 'background 0.15s, opacity 0.15s',
             background: props?.isSelected ? alpha(primaryColor, 0.4) : props?.index % 2 === 0 ? colors.grey[100] : colors.grey[50],
             position: 'relative',
-            opacity: props?.isLocked ? 0.45 : 1,
+            // opacity: props?.isLocked ? 0.45 : 1,
             '&:last-child': {
                 borderBottom: 'none',
             },
@@ -198,12 +198,12 @@ export default makeStyles()((theme, props) => {
         },
 
         tripIndex: {
-            width: 28,
-            height: 28,
+            width: 30,
+            height: 30,
             borderRadius: 8,
             background: `${theme.palette.secondary.main}0d`,
             color: theme.palette.secondary.light,
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: 800,
             display: 'flex',
             alignItems: 'center',
@@ -224,7 +224,7 @@ export default makeStyles()((theme, props) => {
 
         tripNumber: {
             fontFamily: 'Inter, sans-serif',
-            fontSize: 14,
+            fontSize: 17,
             fontWeight: 800,
             color: theme.palette.secondary.main,
             letterSpacing: '-0.01em',
@@ -235,7 +235,7 @@ export default makeStyles()((theme, props) => {
             display: 'flex',
             alignItems: 'center',
             gap: 5,
-            fontSize: 11,
+            fontSize: 15,
             color: props?.isToday ? '#2ecc8d' : theme.palette.secondary.light,
             fontWeight: 500,
         },
@@ -255,7 +255,7 @@ export default makeStyles()((theme, props) => {
             border: `1px solid ${primaryColor}55`,
             borderRadius: 6,
             padding: '3px 8px',
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: 800,
             color: theme.palette.primary.dark,
             letterSpacing: '0.06em',
@@ -277,7 +277,7 @@ export default makeStyles()((theme, props) => {
         },
 
         tripBadge: {
-            fontSize: 9,
+            fontSize: 15,
             fontWeight: 800,
             letterSpacing: '0.1em',
             borderRadius: 6,
@@ -319,13 +319,13 @@ export default makeStyles()((theme, props) => {
         },
 
         noTripsText: {
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: 700,
             color: theme.palette.secondary.light,
         },
 
         noTripsSub: {
-            fontSize: 12,
+            fontSize: 14,
             color: `${theme.palette.secondary.light}99`,
             fontWeight: 500,
         },

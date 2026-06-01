@@ -10,10 +10,11 @@ export default function DriverLayout(props) {
     const { classes, cx } = useStyles();
     const active = props.active || 'Home'
     const tid = props.tripId
+    const isNoAction = props.isNoAction
 
     const navItems = [
         { url: '/driver-dashboard', icon: <Home sx={{ fontSize: 22 }} />, label: 'Home' },
-        { url: `/driver-deliveries/${tid}`, icon: <LocalShipping sx={{ fontSize: 22 }} />, label: 'Deliveries' },
+        { url: isNoAction ? `/driver-deliveries/${tid}/${'no-action'}` : `/driver-deliveries/${tid}`, icon: <LocalShipping sx={{ fontSize: 22 }} />, label: 'Deliveries' },
         { url: '/driver-dashboard', icon: <Menu sx={{ fontSize: 22 }} />, label: 'Menu' },
     ];
 

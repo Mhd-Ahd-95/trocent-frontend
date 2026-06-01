@@ -18,7 +18,7 @@ export default function CustomerView() {
   const [page, setPage] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(30);
   const { data, isLoading, isFetching, isError, error } = useCustomers(page + 1, pageSize)
-  
+
   const handleDeleteCustomers = async (cid) => {
     await remove.mutateAsync(cid)
     selectedRef.current = {}

@@ -197,7 +197,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
 const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAllCompleted, onReorderOrders }) => {
 
   const [expanded, setExpanded] = useState(false);
-  const firstOrder = trip?.dispatched_orders[0] ?? [];
+  const firstOrder = trip?.dispatched_orders && trip?.dispatched_orders.length > 0 ? trip.dispatched_orders.sort((a,b) => a.order_level - b.order_level)[0] : {};
   const dispatchedOrderRef = React.useRef(null);
   const [openModal, setOpenModal] = React.useState(false);
   const [showCompleted, setShowCompleted] = React.useState(false);
@@ -303,7 +303,7 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <TagRounded sx={{ fontSize: 14 }} />Order
                 </Typography>
-                <Typography variant="body2" fontWeight="600"># {firstOrder.order_number}</Typography>
+                <Typography variant="body2" fontWeight="600"># {firstOrder?.order_number}</Typography>
               </Grid>
 
               <Grid size={{ xs: 7.5 }}>
@@ -313,9 +313,9 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                       <Place sx={{ fontSize: 14, color: 'success.main' }} />
                       <Typography variant="caption" fontWeight="600" color="success.main">PICKUP</Typography>
                     </Stack>
-                    <Typography variant="body2" fontWeight="600" noWrap>{firstOrder.shipper_address}</Typography>
+                    <Typography variant="body2" fontWeight="600" noWrap>{firstOrder?.shipper_address}</Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
-                      {firstOrder.shipper_city || '-'} | {firstOrder.shipper_province || '-'} | {firstOrder.shipper_postal_code || '-'}
+                      {firstOrder?.shipper_city || '-'} | {firstOrder?.shipper_province || '-'} | {firstOrder?.shipper_postal_code || '-'}
                     </Typography>
                   </Grid>
                   <Grid size={2}>
@@ -326,9 +326,9 @@ const TripRow = ({ trip, isToday, isInterliner, tripAction, isCompleted, showAll
                       <Place sx={{ fontSize: 14, color: 'info.main' }} />
                       <Typography variant="caption" fontWeight="600" color="info.main">DELIVERY</Typography>
                     </Stack>
-                    <Typography variant="body2" fontWeight="600" noWrap>{firstOrder.receiver_address}</Typography>
+                    <Typography variant="body2" fontWeight="600" noWrap>{firstOrder?.receiver_address}</Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
-                      {firstOrder.receiver_city || '-'} | {firstOrder.receiver_province || '-'} | {firstOrder.receiver_postal_code || '-'}
+                      {firstOrder?.receiver_city || '-'} | {firstOrder?.receiver_province || '-'} | {firstOrder?.receiver_postal_code || '-'}
                     </Typography>
                   </Grid>
                 </Grid>

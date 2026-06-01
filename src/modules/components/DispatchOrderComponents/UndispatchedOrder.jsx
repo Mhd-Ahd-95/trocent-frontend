@@ -1,18 +1,17 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, useTheme } from '@mui/material';
-import { Inventory2, AddRoad, NoteAdd, Terminal } from '@mui/icons-material';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TablePagination, TableSortLabel, Button, CircularProgress, Skeleton, useTheme, Grid, colors } from '@mui/material';
+import { Inventory2, AddRoad, NoteAdd, Terminal, Timeline } from '@mui/icons-material';
 import moment from 'moment';
 import OrderRow from './OrderRow';
 import FilterBar from './FilterBar';
-import { DrawerForm, Modal } from '..';
+import { DrawerForm } from '..';
 import TripForm from './TripForm';
 import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/useDispatchOrders';
 import OrderNoteForm from './NoteForm';
 import UpdateTerminalForm from './UpdateTerminalForm';
-import { useOrderMutations } from '../../hooks/useOrders';
+import { useOrderMutations, useOrderUpdates } from '../../hooks/useOrders';
 import { CustomTitle } from './CustomTitle';
 import { createPortal } from 'react-dom';
-import UploadPDFFile from '../OrderFormSections/UploadPDFFile';
 
 const headerCellSx = {
   fontWeight: 700, fontSize: 13, color: 'text.primary',
@@ -73,7 +72,55 @@ const StickyHeader = React.memo(({ isFetching, isLoading, selectedRows, onOpenDr
   );
 });
 
-const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote }) => {
+const format_order_updates = (orderUpdate) => {
+
+  const section = orderUpdate.section
+  const action = orderUpdate.action
+  const value = orderUpdate.value
+
+  switch (section) {
+    case 'order_status':
+      if (action === 'created')
+        return 'Order created with status ' + value
+      return 'Order updated with status ' + value
+    case 'client_info':
+      return 'Section updated: Client Information'
+    case 'basic_info':
+      return 'Section updated: Basic Information'
+    case 'references':
+      return 'Section updated: References'
+    case 'shipper_details':
+      return 'Section updated: Shipper Details'
+    case 'receiver_details':
+      return 'Section updated: Receiver Details'
+    case 'extra_stop':
+      return 'Section updated: Extra Stop'
+    case 'pickup_details':
+      return 'Section updated: Pickup Details'
+    case 'interliner_carrier':
+      return 'Section updated: Interliner Carrier'
+    case 'delivery_details':
+      return 'Section updated: Delivery Details'
+    case 'freights':
+      if (value && action === 'updated') return value;
+      return 'Section updated: Freights'
+    case 'freight_charges':
+      if (value && action === 'updated') return value;
+      return 'Section updated: Freight Charges'
+    case 'waiting_time':
+      return 'Section updated: Waiting Time & Billing'
+    case 'duplicated':
+      return value
+    case 'signature':
+      return value
+    case 'terminal':
+      return value
+    default:
+      return ''
+  }
+}
+
+const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, page, rowsPerPage, onPageChange, onRowsPerPageChange, sortConfig, onSort, isLoading, isFetching, selectedRows, onRowSelect, onAddNote, onOrderUpdates }) => {
 
   const handleRowClick = useCallback((row) => {
     onRowSelect((prev) => {
@@ -146,6 +193,7 @@ const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, p
                   isSelected={selectedRows.has(row.id)}
                   onRowClick={handleRowClick}
                   onTerminalUpdate={onTerminalUpdate}
+                  onOrderUpdates={onOrderUpdates}
                 />
               ))
             }
@@ -181,7 +229,9 @@ function UndispatchedOrders(props) {
   const { createTrip, addOrdersToTrip } = useDispatchOrderMutation();
   const { updateTerminal } = useOrderMutations();
 
-  const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters }, page + 1, rowsPerPage,);
+  const { data, isLoading, isFetching } = useUndispatchedOrders({ ...appliedFilters }, page + 1, rowsPerPage);
+
+  const { data: orderUpdates = [], isLoading: isOrderUpdates } = useOrderUpdates(openDrawer === 4 ? dispatchOrderRef.current.id : false)
 
   const orders = data?.data ?? [];
   const total = data?.total ?? 0;
@@ -250,6 +300,11 @@ function UndispatchedOrders(props) {
     setOpenDrawer(3);
   }, []);
 
+  const handleOrderUpdates = useCallback((row) => {
+    dispatchOrderRef.current = row;
+    setOpenDrawer(4);
+  }, []);
+
   const handleOpenTripDrawer = useCallback(() => setOpenDrawer(1), []);
   const handleClearSelection = useCallback(() => setSelectedRows(new Map()), []);
 
@@ -271,6 +326,8 @@ function UndispatchedOrders(props) {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const theme = useTheme()
 
   return (
     <>
@@ -319,6 +376,7 @@ function UndispatchedOrders(props) {
             onRowSelect={setSelectedRows}
             onAddNote={handleNote}
             onTerminalUpdate={handleTerminal}
+            onOrderUpdates={handleOrderUpdates}
           />
         </Box>
 
@@ -359,6 +417,35 @@ function UndispatchedOrders(props) {
                 setOpenDrawer(false);
               }}
             />
+          </DrawerForm>
+        )}
+        {openDrawer === 4 && (
+          <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Order Updates' isOrder Icon={Timeline} />} setOpen={setOpenDrawer} open={openDrawer} >
+            {isOrderUpdates ? <Grid container component={Box} justifyContent='center' py={15}>
+              <CircularProgress />
+            </Grid>
+              :
+              <div style={{ flexGrow: 1, overflow: 'auto', padding: 15 }}>
+                {orderUpdates?.map((ou, index) => (
+                  <div key={index} style={{ display: "flex", marginBottom: 16 }}>
+                    <div style={{
+                      width: "100%",
+                      background: colors.grey[100],
+                      padding: 12,
+                      borderRadius: 8,
+                      borderLeft: `4px solid ${theme.palette.primary.main}`
+                    }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4, whiteSpace: 'pre-line' }}>
+                        {format_order_updates(ou)}
+                      </div>
+                      <div style={{ fontSize: 12, color: colors.grey[600] }}>
+                        By <b>{ou.username}</b> — {new Date(ou.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }
           </DrawerForm>
         )}
       </Paper>

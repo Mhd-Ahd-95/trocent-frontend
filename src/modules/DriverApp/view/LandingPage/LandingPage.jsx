@@ -1,7 +1,7 @@
 import React from 'react';
-import { PlayArrow, Inventory2, AccessTime, Speed, DirectionsCar, QueryBuilder } from '@mui/icons-material';
+import { PlayArrow, Inventory2, AccessTime, Speed, DirectionsCar, QueryBuilder, Visibility } from '@mui/icons-material';
 import useStyles from './LandingPage.styles'
-import { Box, CircularProgress, Grid, Skeleton, Tooltip, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
 import { DriverLayout } from '../../layouts';
 import { useCompletedDriverTrips, useDispatchOrderMutation, useDriverTripsById } from '../../../hooks/useDispatchOrders'
 import moment from 'moment';
@@ -37,10 +37,12 @@ function formatTripDate(dateStr) {
 }
 
 function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) {
+
     const dateLabel = formatTripDate(trip.trip_date);
     const isToday = dateLabel === 'Today';
     const isPast = dateLabel === 'Older';
     const isLocked = !isActive && hasLiveTrip;
+    const naviagte = useNavigate()
 
     const { classes, cx } = useStyles({ isSelected, isToday, index, isLocked });
 
@@ -51,42 +53,36 @@ function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) 
     };
 
     return (
-        <Tooltip
-            title={isActive ? 'This trip is currently live' : isLocked ? 'Complete the active trip before selecting another' : ''}
-            placement="top"
-            disableHoverListener={!isLocked && !isActive}
-        >
-            <div
-                className={cx(classes.tripItem, isActive && classes.tripItemActive)}
-                onClick={handleClick}
-            >
-                <div className={cx(classes.tripIndex, isActive && classes.tripIndexActive)}>
-                    {index + 1}
-                </div>
+        <div className={cx(classes.tripItem, isActive && classes.tripItemActive)} onClick={handleClick}>
+            <div className={cx(classes.tripIndex, isActive && classes.tripIndexActive)}>
+                {index + 1}
+            </div>
 
-                <div className={classes.tripInfo}>
-                    <div className={classes.tripNumber}>Trip #{trip.trip_number}</div>
-                    <div className={classes.tripDate}>
-                        {trip.total_orders ?? 0} orders
-                    </div>
-                </div>
-
-                <div className={classes.tripRight}>
-                    {isActive && (
-                        <div className={classes.liveBadge}>
-                            <div className={classes.liveDot} />
-                            LIVE
-                        </div>
-                    )}
-                    <div className={cx(
-                        classes.tripBadge,
-                        isToday ? classes.tripBadgeToday : isPast ? classes.tripBadgeOlder : classes.tripBadgeUpcoming
-                    )}>
-                        {isToday ? 'TODAY' : isPast ? 'PAST' : 'UPCOMING'}
-                    </div>
+            <div className={classes.tripInfo}>
+                <div className={classes.tripNumber}>Trip #{trip.trip_number}</div>
+                <div className={classes.tripDate}>
+                    {trip.total_orders ?? 0} orders
                 </div>
             </div>
-        </Tooltip>
+
+            <div className={classes.tripRight}>
+                {isActive && (
+                    <div className={classes.liveBadge}>
+                        <div className={classes.liveDot} />
+                        LIVE
+                    </div>
+                )}
+                <div className={cx(
+                    classes.tripBadge,
+                    isToday ? classes.tripBadgeToday : isPast ? classes.tripBadgeOlder : classes.tripBadgeUpcoming
+                )}>
+                    {isToday ? 'TODAY' : isPast ? 'PAST' : 'UPCOMING'}
+                </div>
+                {!isActive &&
+                    <IconButton color='secondary' onClick={(e) => naviagte(`/driver-deliveries/${trip.id}/${'no-action'}`)}><Visibility sx={{ fontSize: 30 }} /></IconButton>
+                }
+            </div>
+        </div>
     );
 }
 
@@ -216,7 +212,7 @@ export default function DriverLanding() {
                         <div className={classes.tripsCardHeader}>
                             <div className={classes.tripsCardLeft}>
                                 <div className={classes.tripsCardIcon}>
-                                    <DirectionsCar sx={{ fontSize: 16, color: '#f59e0b' }} />
+                                    <DirectionsCar sx={{ fontSize: 25, color: '#f59e0b' }} />
                                 </div>
                                 <span className={classes.tripsCardTitle}>Assigned Trips</span>
                             </div>
