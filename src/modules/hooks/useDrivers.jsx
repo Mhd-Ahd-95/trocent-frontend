@@ -20,6 +20,23 @@ export function useDrivers({ enabled = false }) {
     });
 }
 
+export function useDriverClock(did) {
+    return useQuery({
+        queryKey: ['driverClock', Number(did)],
+        queryFn: async () => {
+            const response = await DriversApi.getDriverTimeToday(did);
+            return response.data;
+        },
+        enabled: !!did,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+        // refetchOnReconnect: false,
+        // refetchOnMount: false,
+    });
+}
+
 
 export function useDriver(cid) {
     return useQuery({
@@ -146,6 +163,22 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove, createDriverLogin };
+    const driverClockInOut = useMutation({
+        mutationFn: async ({ did, cid }) => {
+            const res = await DriversApi.driverClockInOut(did, cid);
+            return res.data;
+        },
+        onSuccess: (res, { did, cid }) => {
+            if (res) {
+                queryClient.invalidateQueries(['driverClock', Number(did)]);
+                const message = cid ? 'You have successfully clocked out. Have a great rest of your day!' : 'You are now clocked in. Have a safe shift!';
+                const variant = cid ? 'info' : 'success';
+                enqueueSnackbar(message, { variant });
+            }
+        },
+        onError: handleError,
+    });
+
+    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut };
 
 }

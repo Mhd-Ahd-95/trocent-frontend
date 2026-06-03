@@ -37,7 +37,12 @@ export default function DriverLayout(props) {
                             <div
                                 key={item.label}
                                 className={cx(classes.navItem, isActive && classes.navItemActive)}
-                                onClick={() => navigate(item.url)}
+                                onClick={() => {
+                                    if (item.label === 'Deliveries') {
+                                        if (props.clockedInRef?.current === false) return
+                                    }
+                                    navigate(item.url)
+                                }}
                             >
                                 <span className={cx(classes.navIcon, isActive && classes.navIconActive)}>
                                     {item.icon}

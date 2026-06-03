@@ -337,6 +337,7 @@ export default makeStyles()((theme, props) => {
             alignItems: 'center',
             gap: 10,
             outline: 'none',
+            cursor: 'pointer',
             position: 'relative',
             overflow: 'hidden',
             width: '100%',
@@ -428,7 +429,7 @@ export default makeStyles()((theme, props) => {
 
         btnTitle: {
             fontFamily: 'Inter, sans-serif',
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: 700,
             letterSpacing: 0.5,
             textTransform: 'uppercase',
@@ -439,6 +440,16 @@ export default makeStyles()((theme, props) => {
         btnTitlePrimary: {
             fontSize: 20,
             color: primaryColor,
+        },
+
+        btnTitleClockIn: {
+            fontSize: 20,
+            // color: primaryColor,
+        },
+
+        btnTitleClockOut: {
+            fontSize: 20,
+            // color: primaryColor,
         },
 
         btnSubtitle: {
@@ -483,7 +494,7 @@ export default makeStyles()((theme, props) => {
         },
 
         hoursTitle: {
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 700,
             color: theme.palette.info.main,
             textTransform: 'uppercase',
@@ -495,6 +506,7 @@ export default makeStyles()((theme, props) => {
             fontSize: 22,
             fontWeight: 800,
             lineHeight: 1.1,
+            paddingTop: 3,
             color: theme.palette.secondary.main,
         },
 
@@ -532,6 +544,141 @@ export default makeStyles()((theme, props) => {
             textTransform: 'uppercase',
             marginTop: 4,
         },
-        
+        clockRow: {
+            display: 'flex',
+            gap: 10,
+            // paddingTop: 14,
+            [theme.breakpoints.down('sm')]: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start'
+            }
+        },
+
+        clockStatus: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            flex: 1,
+        },
+
+        clockDot: {
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: theme.palette.secondary.light,
+            opacity: 0.4,
+            flexShrink: 0,
+        },
+
+        clockDotActive: {
+            background: '#1a8a5a',
+            opacity: 1,
+            animation: '$blink 1.4s ease-in-out infinite',
+            '@keyframes blink': {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.3 },
+            },
+        },
+
+        clockStatusText: {
+            fontSize: 15,
+            fontWeight: 700,
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+            color: theme.palette.secondary.light,
+        },
+
+        clockStatusTextActive: {
+            color: '#1a8a5a',
+        },
+
+        clockElapsed: {
+            fontSize: 18,
+            border: '1px solid ' + theme.palette.primary.main,
+            padding: '5px 10px',
+            borderRadius: '5px',
+            fontWeight: 800,
+            background: `${theme.palette.primary.main}0d`,
+            color: theme.palette.primary.main,
+            fontVariantNumeric: 'tabular-nums',
+            marginLeft: 4,
+        },
+
+        clockButtons: {
+            display: 'flex',
+            gap: 8,
+            [theme.breakpoints.down(420)]: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                width: '100%',
+            }
+        },
+
+        clockBtn: {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 8,
+            borderRadius: 10,
+            padding: '10px 16px',
+            fontSize: 16,
+            fontWeight: 800,
+            letterSpacing: 0.2,
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            outline: 'none',
+            transition: 'transform 0.15s, background 0.15s',
+            '&:active:not([disabled])': {
+                transform: 'scale(0.96)',
+            },
+            '&[disabled]': {
+                opacity: 0.38,
+                cursor: 'not-allowed',
+            },
+            [theme.breakpoints.down(420)]: {
+                width: '100%'
+            }
+        },
+
+        clockBtnIn: {
+            background: 'rgba(26,138,90,0.1)',
+            color: '#1a8a5a',
+            border: '1.5px solid rgba(26,138,90,0.5)',
+            '&:hover:not([disabled])': {
+                background: 'rgba(26,138,90,0.18)',
+            },
+        },
+
+        clockBtnOut: {
+            background: `${theme.palette.error.main}0d`,
+            color: theme.palette.error.main,
+            border: `1.5px solid ${theme.palette.error.main}`,
+            '&:hover:not([disabled])': {
+                background: `${theme.palette.error.main}18`,
+            },
+        },
+
+        clockBtnIcon: {
+            width: 26,
+            height: 26,
+            borderRadius: 7,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+        },
+
+        clockBtnIconIn: {
+            background: '#1a8a5a',
+        },
+
+        clockBtnIconOut: {
+            background: theme.palette.error.main,
+        },
     });
+
 });

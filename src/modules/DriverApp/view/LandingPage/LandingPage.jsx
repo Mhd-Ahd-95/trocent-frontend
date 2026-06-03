@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlayArrow, Inventory2, AccessTime, Speed, DirectionsCar, QueryBuilder, Visibility } from '@mui/icons-material';
 import useStyles from './LandingPage.styles'
-import { Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
+import { Box, CircularProgress, Divider, Grid, IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
 import { DriverLayout } from '../../layouts';
 import { useCompletedDriverTrips, useDispatchOrderMutation, useDriverTripsById } from '../../../hooks/useDispatchOrders'
 import moment from 'moment';
@@ -10,10 +10,8 @@ import { useDispatchScreenSync } from '../../../hooks/useDispatchScreenSync';
 import { useNavigate } from 'react-router-dom';
 import DriverNotificationBanner from './DriverNotificationBanner';
 import { StopCircle } from '@mui/icons-material';
+import ClockInOut from './ClockInOut';
 
-const DRIVER = {
-    serviceHours: '6h 42m',
-};
 
 export const LoadingState = ({ textLoading }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
@@ -79,7 +77,10 @@ function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) 
                     {isToday ? 'TODAY' : isPast ? 'PAST' : 'UPCOMING'}
                 </div>
                 {!isActive &&
-                    <IconButton color='secondary' onClick={(e) => naviagte(`/driver-deliveries/${trip.id}/${'no-action'}`)}><Visibility sx={{ fontSize: 30 }} /></IconButton>
+                    <IconButton color='secondary' onClick={(e) => {
+                        e.stopPropagation()
+                        naviagte(`/driver-deliveries/${trip.id}/${'no-action'}`)
+                    }}><Visibility sx={{ fontSize: 30 }} /></IconButton>
                 }
             </div>
         </div>
@@ -97,16 +98,19 @@ export default function DriverLanding() {
     const { enqueueSnackbar } = useSnackbar();
     const { updateTrip, acknowlegeTrip } = useDispatchOrderMutation();
     const navigate = useNavigate()
+    const clockedInRef = React.useRef(true)
 
     const liveTrip = React.useMemo(() => driverTrips?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
     const hasLiveTrip = Boolean(liveTrip);
-    const hasAnyTrip = driverTrips?.length > 0;
 
     const startTripDisabled = hasLiveTrip || !selectTrip;
     const deliveriesDisabled = !hasLiveTrip;
-    const hoursDisabled = !hasAnyTrip;
 
     const onSelect = React.useCallback((trip) => {
+        if (!clockedInRef.current) {
+            enqueueSnackbar('Please clock in before make any action.', { variant: 'warning' })
+            return
+        }
         setSelectTrip((prev) => prev?.id === trip.id ? null : trip);
     }, []);
 
@@ -178,8 +182,9 @@ export default function DriverLanding() {
         <DriverLayout
             active='Home'
             tripId={liveTrip?.id}
+            clockedInRef={clockedInRef}
         >
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
                 {hasLiveTrip &&
                     <Grid size={12}>
                         {liveTrip && liveTrip?.is_trip_updated && !liveTrip?.is_acknowleged &&
@@ -206,6 +211,9 @@ export default function DriverLanding() {
                             </span>
                         </div>
                     </div>
+                </Grid>
+                <Grid size={12}>
+                    <Divider />
                 </Grid>
                 <Grid size={12}>
                     <div className={classes.tripsCard}>
@@ -250,14 +258,14 @@ export default function DriverLanding() {
                 <Grid size={12}>
                     <Grid container spacing={2}>
                         {hasLiveTrip ? (
-                            <Grid size={12}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <button
                                     className={cx(classes.actionBtn, classes.actionBtnEndTrip)}
                                     onClick={(e) => endTrip(e, 'planning')}
                                 >
                                     <div className={classes.btnLeftGroup}>
                                         <div className={cx(classes.btnIcon, classes.btnIconEndTrip)}>
-                                            <StopCircle sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
+                                            {updateTrip.isPending ? <CircularProgress size={20} sx={{ color: 'rgba(255,255,255,0.9)' }} /> : <StopCircle sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />}
                                         </div>
                                         <div>
                                             <div className={cx(classes.btnTitle, classes.btnTitleEndTrip)}>End Trip</div>
@@ -265,12 +273,12 @@ export default function DriverLanding() {
                                     </div>
                                     <div className={classes.endTripPulse} />
                                     <span className={classes.btnArrowEnd}>
-                                        {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '■'}
+                                        ■
                                     </span>
                                 </button>
                             </Grid>
                         ) :
-                            <Grid size={12}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <span style={{ display: 'block', width: '100%' }}>
                                     <button
                                         className={cx(classes.actionBtn, classes.actionBtnPrimary)}
@@ -279,14 +287,14 @@ export default function DriverLanding() {
                                     >
                                         <div className={classes.btnLeftGroup}>
                                             <div className={cx(classes.btnIcon, classes.btnIconPrimary)}>
-                                                <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />
+                                                {updateTrip.isPending ? <CircularProgress size={20} sx={{ color: 'rgba(255,255,255,0.9)' }} /> : <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />}
                                             </div>
                                             <div>
                                                 <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>Start Trip</div>
                                             </div>
                                         </div>
                                         <span className={classes.btnArrow}>
-                                            {updateTrip.isPending ? <CircularProgress size={18} color='inherit' /> : '→'}
+                                            →
                                         </span>
                                     </button>
                                 </span>
@@ -302,7 +310,13 @@ export default function DriverLanding() {
                                     <button
                                         className={cx(classes.actionBtn, classes.actionBtnSecondary)}
                                         disabled={deliveriesDisabled}
-                                        onClick={() => navigate(`/driver-deliveries/${liveTrip.id}`)}
+                                        onClick={() => {
+                                            if (!clockedInRef.current) {
+                                                enqueueSnackbar('Please clock in before make any action.', { variant: 'warning' })
+                                                return
+                                            }
+                                            navigate(`/driver-deliveries/${liveTrip.id}`)
+                                        }}
                                     >
                                         <div className={cx(classes.btnIcon, classes.btnIconSecondary)}>
                                             <Inventory2 sx={{ fontSize: 20, color: '#95a5a6' }} />
@@ -314,33 +328,15 @@ export default function DriverLanding() {
                                 </span>
                             </Tooltip>
                         </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <button
-                                className={cx(classes.actionBtn, classes.actionBtnTertiary)}
-                                disabled={hoursDisabled}
-                            >
-                                <div className={cx(classes.btnIcon, classes.btnIconTertiary)}>
-                                    <AccessTime sx={{ fontSize: 20, color: '#1a8a5a' }} />
-                                </div>
-                                <div>
-                                    <div className={classes.btnTitle}>Hours</div>
-                                </div>
-                            </button>
+                        <Grid size={12}>
+                            <ClockInOut
+                                hasTrips={driverTrips.length > 0 ?? 0}
+                                clockedInRef={clockedInRef}
+                            />
                         </Grid>
-
                     </Grid>
                 </Grid>
-                <Grid size={12}>
-                    <div className={classes.hoursChip}>
-                        <div className={classes.hoursLeft}>
-                            <span className={classes.hoursIcon}><QueryBuilder fontSize="medium" /></span>
-                            <div>
-                                <div className={classes.hoursTitle}>Service Hours</div>
-                                <div className={classes.hoursValue}>{DRIVER.serviceHours}</div>
-                            </div>
-                        </div>
-                    </div>
-                </Grid>
+
                 <Grid size={12}>
                     <Grid container spacing={2}>
                         <Grid size={{ xs: 12, sm: 4 }}>
