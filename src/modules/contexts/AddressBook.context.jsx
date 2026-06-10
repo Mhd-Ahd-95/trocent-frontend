@@ -4,6 +4,7 @@ import AddressBooksApi from '../apis/AddressBooks.api'
 import { AuthContext } from './Auth.context'
 import TerminalsApi from '../apis/Terminals.api'
 import { useQueryClient } from '@tanstack/react-query'
+import QuestionsApi from '../apis/Questions.api'
 
 const AddressBookContext = React.createContext()
 
@@ -29,6 +30,21 @@ const AddressBookContextProvider = props => {
         });
     }, [queryClient]);
 
+    const loadDriverQuestions = React.useCallback(async () => {
+        await queryClient.prefetchQuery({
+            queryKey: ['questions'],
+            queryFn: async () => {
+                const res = await QuestionsApi.getSectionWithQuestions();
+                console.log(res.data);
+                return res.data || {};
+            },
+            staleTime: 60 * 60 * 1000,
+            gcTime: 60 * 60 * 1000,
+            refetchOnWindowFocus: false,
+            retry: 0,
+        });
+    }, [queryClient]);
+
     const loadCountAddress = React.useCallback(() => {
         Promise.all([AddressBooksApi.countAddressBooks()])
             .then(([ab]) => {
@@ -43,10 +59,15 @@ const AddressBookContextProvider = props => {
             .finally(() => setLoading(false))
     }, [enqueueSnackbar])
 
+    
+
     React.useEffect(() => {
         if (isAuthenticated && parsedUser && parsedUser?.type !== 'driver') {
             loadCountAddress()
             loadAddressBookMessagers()
+        }
+        if (isAuthenticated && parsedUser && parsedUser?.type === 'driver') {
+            loadDriverQuestions()
         }
     }, [loadCountAddress, isAuthenticated, loadAddressBookMessagers])
 
