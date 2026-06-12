@@ -6,15 +6,23 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
-import { Grid } from '@mui/material'
+import { Grid, useMediaQuery } from '@mui/material'
 
-const Appbar = styled(AppBar)(({ theme }) => ({
+const Appbar = styled(AppBar)(({ theme, size }) => ({
   minWidth: 300,
-  maxWidth: 400,
+  maxWidth: size === 'large' ? 550 : 420,
   borderRadius: 10,
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
   color: theme.palette.grey[600],
   backgroundColor: '#fff',
-  boxShadow: 'rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;'
+  boxShadow: 'rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;',
+  [theme.breakpoints.down('sm')]: {
+    minWidth: '100%',
+    maxWidth: '100%',
+    borderRadius: 7,
+  }
 }))
 
 function TabPanel(props) {
@@ -51,10 +59,10 @@ function a11yProps(index) {
 }
 
 export default function CustomTabs(props) {
-  const { labels, contents, icons } = props
+  const { labels, contents, icons, size } = props
   const theme = useTheme()
   const [value, setValue] = React.useState(0)
-
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const handleChange = (event, newValue) => {
     setValue(newValue)
     props?.onTabChange?.(newValue)
@@ -71,28 +79,31 @@ export default function CustomTabs(props) {
             justifyContent: 'center'
           }}
         >
-          <Appbar position='static'>
+          <Appbar position='static' size={size}>
             <Tabs
               value={value}
               onChange={handleChange}
               indicatorColor='inherits'
               // centered
               textColor='primary'
-              variant={icons ? 'fullWidth' : 'scrollable'}
+              variant={isMobile ? 'scrollable' : icons ? 'fullWidth' : 'scrollable'}
               aria-label='full width tabs example'
+              scrollButtons={false}
             >
               {labels.map((label, index) => (
                 <Tab
                   key={index}
                   onMouseEnter={() => props?.onTabHover?.(index)}
                   iconPosition="start"
-                  icon={icons ? icons[index] : <></>}
+                  icon={icons ? icons[index] : undefined}
                   label={label}
                   {...a11yProps(index)}
                   sx={{
                     fontSize: 14,
                     textTransform: 'capitalize',
-                    fontWeight: 600
+                    fontWeight: 600,
+                    minWidth: { xs: 'auto', sm: undefined },
+                    px: { xs: 1, sm: 2 },
                   }}
                 />
               ))}
