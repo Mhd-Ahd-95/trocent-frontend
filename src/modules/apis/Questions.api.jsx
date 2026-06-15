@@ -22,6 +22,8 @@ const answerQuestion = (cid, qid, an) => CustomAxios.post(`/api/questions/checkl
 
 const completeQuestionTrip = (tid, did) => CustomAxios.put(`/api/questions/complete-question-trip/${tid}/driver/${did}`)
 
+const deactivateQuestion = (qid) => CustomAxios.put(`/api/questions/deactivate/${qid}`)
+
 export default {
     getSectionWithQuestions,
     createSection,
@@ -33,5 +35,6 @@ export default {
     checkTripInChecklist,
     reorderQuestions,
     answerQuestion,
-    completeQuestionTrip
+    completeQuestionTrip,
+    deactivateQuestion
 }

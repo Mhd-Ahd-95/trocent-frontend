@@ -35,7 +35,6 @@ const AddressBookContextProvider = props => {
             queryKey: ['questions'],
             queryFn: async () => {
                 const res = await QuestionsApi.getSectionWithQuestions();
-                console.log(res.data);
                 return res.data || {};
             },
             staleTime: 60 * 60 * 1000,

@@ -49,3 +49,4 @@ export { default as UndispatchedOrders } from './DispatchOrderComponents/Undispa
 export { default as OrderActionsMenu } from './DispatchOrderComponents/OrderActionMenu';
 export { default as TripActionsBar } from './DispatchOrderComponents/TripActionBar';
 export { default as TripTabs } from './DispatchOrderComponents/TripTabs'
+export { default as UploadDefaultLogo } from './UploadFile/UploadDefaultLogo'

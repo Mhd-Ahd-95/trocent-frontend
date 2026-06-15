@@ -11,18 +11,11 @@ import { useTerminals } from '../../hooks/useTerminals'
 
 function PickupDetails(props) {
 
-  const {
-    control,
-    setValue,
-    getValues
-  } = useFormContext()
+  const {    control,    setValue,    getValues  } = useFormContext()
 
-  const { data } = useTerminals()
+  const { data } = useTerminals({enabled: true})
 
-  const isAppointment = useWatch({
-    control: control,
-    name: 'pickup_appointment',
-  })
+  const isAppointment = useWatch({    control: control,    name: 'pickup_appointment',  })
 
   const pickupNotes = React.useCallback(() => {
     const orderNotes = getValues('order_notes')

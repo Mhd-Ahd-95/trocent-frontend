@@ -4,6 +4,7 @@ import { SideMenu, Tabs } from "../../components";
 import { Grid } from "@mui/material";
 import TerminalTab from "./TerminalTab";
 import QuestionTab from './QuestionTab'
+import LogoTab from "./LogoTab";
 
 export default function SetUp() {
 
@@ -28,7 +29,7 @@ export default function SetUp() {
                             <>Address</>,
                             <QuestionTab enabled={tab === 2} />,
                             <>Emails</>,
-                            <>Logo</>,
+                            <LogoTab />,
                         ]}
                     />
                 </Grid>

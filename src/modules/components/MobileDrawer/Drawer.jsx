@@ -169,6 +169,7 @@ export default function MobileDrawer(props) {
         { text: "Accessorials", url: "/accessorials" },
         { text: "Vehicle Types", url: "/vehicle-types" },
         { text: "Address Book", url: "/address-books", chip: addressContext?.addressBooks?.length ?? 0 },
+        { text: "Set Up", url: "/setup" },
       ],
     },
     {

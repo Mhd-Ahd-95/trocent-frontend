@@ -68,7 +68,6 @@ function CompletionScreen({ onConfirm, loading }) {
 export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId }) {
     const { classes } = useStyles();
     const queue = React.useMemo(() => buildQueue(sections), [sections]);
-console.log(queue);
     const [idx, setIdx] = React.useState(0);
     const [answering, setAnswering] = React.useState(false);
     const [completing, setCompleting] = React.useState(false);

@@ -29,7 +29,7 @@ function BasicInfo(props) {
 
 
   const queryClient = useQueryClient();
-  const { data: terminals, isLoading: loading } = useTerminals()
+  const { data: terminals, isLoading: loading } = useTerminals({ enabled: true })
   const { create, remove } = useTerminalsMutation()
 
 
@@ -262,8 +262,8 @@ function BasicInfo(props) {
                         e.stopPropagation();
                         const res = await remove.mutateAsync(option);
                         if (res) {
-                            field.onChange('')
-                          }
+                          field.onChange('')
+                        }
                       }}
                       sx={{ ml: 1, '&:hover': { color: 'error.main' } }}
                     >
