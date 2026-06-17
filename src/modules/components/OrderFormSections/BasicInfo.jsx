@@ -15,31 +15,26 @@ import { Controller, useFormContext } from 'react-hook-form'
 import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import moment from 'moment'
-import { AddressBookContext } from '../../contexts'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import globalVariables from '../../global'
-import { useTerminals, useTerminalsMutation } from '../../hooks/useTerminals'
-import { AddCircleOutline, DeleteOutline } from '@mui/icons-material'
+import { useAddressBookByTerminals } from '../../hooks/useAddressBooks'
 
 function BasicInfo(props) {
 
   const { engine } = props
   const { register, control, setValue, getValues, } = useFormContext()
 
-
   const queryClient = useQueryClient();
-  const { data: terminals, isLoading: loading } = useTerminals({ enabled: true })
-  const { create, remove } = useTerminalsMutation()
-
-
+  const { data: terminals = [], isLoading: loading } = useAddressBookByTerminals({ enabled: true })
+  
   const { capitalizeMany } = globalVariables.methods
 
   const handleIsCrossdock = (checked) => {
     requestAnimationFrame(async () => {
       if (checked) {
         const value = queryClient.getQueryData(['addressBookByName', 'messagers'])
-
+        console.log(value);
         props.shipperSelectValue.current = value ? value : null
         props.receiverSelectValue.current = value ? value : null
 
@@ -124,6 +119,22 @@ function BasicInfo(props) {
     })
   }
 
+  const handleExtraStop = (value) => {
+    const isExtraStop = getValues('is_extra_stop')
+    if (isExtraStop) {
+      setValue('extra_stop_name', value?.name || '')
+      setValue('extra_stop_email', value?.email || '')
+      setValue('extra_stop_contact_name', value?.contact_name || '')
+      setValue('extra_stop_phone_number', value?.phone_number || '')
+      setValue('extra_stop_address', value?.address || '')
+      setValue('extra_stop_suite', value?.suite || '')
+      setValue('extra_stop_city', value?.city || '')
+      setValue('extra_stop_province', value?.province || '')
+      setValue('extra_stop_postal_code', value?.postal_code || '')
+      setValue('extra_stop_special_instructions', value?.special_instructions || '')
+    }
+  }
+
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -197,86 +208,29 @@ function BasicInfo(props) {
       <Grid size={{ xs: 12, sm: 12, md: 6 }}>
         <Controller
           name='terminal'
+          rules={{ required: 'Terminal is a required field' }}
           control={control}
           render={({ field, fieldState }) => (
             <Autocomplete
-              {...field}
-              loading={loading || create.isPending || remove.isPending}
-              options={(terminals ?? []).map(t => t.terminal) || []}
-              freeSolo
-              filterOptions={(options, params) => {
-                const filtered = options.filter(o =>
-                  o.toLowerCase().includes(params.inputValue.toLowerCase())
-                );
-                const newValue = params.inputValue.trim().toUpperCase();
-                const exists = options.some(o => o === newValue);
-                if (newValue && !exists) {
-                  filtered.push(`__ADD__${newValue}`);
-                }
-                return filtered;
-              }}
+              loading={loading}
+              options={terminals || []}
+              getOptionLabel={(op) => op?.terminal || ''}
+              isOptionEqualToValue={(option, value) => option.terminal === value?.terminal}
+              value={terminals?.find(t => t.terminal === field.value) || null}
               onChange={(_, value) => {
-                if (value?.startsWith('__ADD__')) return;
-                field.onChange(value);
-                setValue('pickup_terminal', value || '');
-                setValue('delivery_terminal', value || '');
+                field.onChange(value?.terminal || '')
+                setValue('pickup_terminal', value?.terminal || '')
+                setValue('delivery_terminal', value?.terminal || '')
+                handleExtraStop(value)
               }}
-              renderOption={(props, option) => {
-                const { key, ...rest } = props;
-                if (option.startsWith('__ADD__')) {
-                  const newTerminal = option.replace('__ADD__', '');
-                  return (
-                    <Box key={key} component="li" {...rest} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                        Add "<strong>{newTerminal}</strong>"
-                      </Typography>
-
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const res = await create.mutateAsync({ terminal: newTerminal });
-                          if (res?.terminal) {
-                            field.onChange(res.terminal)
-                          }
-                        }}
-                      >
-                        <AddCircleOutline fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  );
-                }
-                return (
-                  <Box key={key} component="li" {...rest} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}                  >
-                    <Typography variant="body2" sx={{ flex: 1 }}>
-                      {option}
-                    </Typography>
-
-                    <IconButton
-                      size="small"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const res = await remove.mutateAsync(option);
-                        if (res) {
-                          field.onChange('')
-                        }
-                      }}
-                      sx={{ ml: 1, '&:hover': { color: 'error.main' } }}
-                    >
-                      <DeleteOutline fontSize="small" />
-                    </IconButton>
-                  </Box>
-                );
-              }}
+              onBlur={field.onBlur}
               renderInput={(params) => (
                 <TextInput
                   {...params}
-                  label='Terminal'
-                  fullWidth
+                  label='Terminal*'
+                  name='terminal'
+                  error={!!fieldState?.error}
+                  helperText={fieldState?.error?.message}
                   slotProps={{
                     input: {
                       ...params.InputProps,

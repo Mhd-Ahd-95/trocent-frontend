@@ -41,6 +41,7 @@ export function useTerminalsMutation() {
             queryClient.setQueryData(['terminals'], (old = []) => {
                 return [newValue, ...old]
             });
+            queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
             enqueueSnackbar('Terminals has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -57,6 +58,7 @@ export function useTerminalsMutation() {
                     return old.filter((item) => item.terminal !== ter)
                 }
                 );
+                queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
                 enqueueSnackbar('Terminal has been deleted successfully', { variant: 'success' });
             }
         },

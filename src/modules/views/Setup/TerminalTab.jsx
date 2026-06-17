@@ -69,7 +69,7 @@ function TerminalTab({ enabled }) {
                                     <Typography className={classes.emptyText}>No terminals added yet</Typography>
                                 </Box>
                             )}
-                            {terminals.map((terminal, index) => (
+                            {terminals.sort((a,b) => a.terminal.localeCompare(b.terminal)).map((terminal, index) => (
                                 <Box key={terminal.terminal ?? index} className={classes.bookRow}>
                                     <Typography className={classes.bookIndex}>{index + 1}</Typography>
                                     <Typography className={classes.bookName}>{terminal.terminal}</Typography>

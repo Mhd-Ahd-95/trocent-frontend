@@ -30,18 +30,34 @@ function ExtraStop(props) {
   const handleChange = checked => {
     requestAnimationFrame(async () => {
       if (checked) {
-        const address_book = queryClient.getQueryData(['addressBookByName', 'messagers'])
+        const terminal = getValues('terminal')
+        const address_book = queryClient.getQueryData(['addressBookByTerminals'])
         if (!address_book) return
-        setValue('extra_stop_name', address_book?.name || '')
-        setValue('extra_stop_email', address_book?.email || '')
-        setValue('extra_stop_contact_name', address_book?.contact_name || '')
-        setValue('extra_stop_phone_number', address_book?.phone_number || '')
-        setValue('extra_stop_province', address_book?.province || '')
-        setValue('extra_stop_city', address_book?.city || '')
-        setValue('extra_stop_postal_code', address_book?.postal_code || '')
-        setValue('extra_stop_address', address_book?.address || '')
-        setValue('extra_stop_suite', address_book?.suite || '')
-        setValue('extra_stop_special_instructions', address_book?.special_instructions || '')
+        const defaultAddressBook = address_book.find(ab => ab.terminal === terminal)
+        if (defaultAddressBook) {
+          setValue('extra_stop_name', defaultAddressBook?.name || '')
+          setValue('extra_stop_email', defaultAddressBook?.email || '')
+          setValue('extra_stop_contact_name', defaultAddressBook?.contact_name || '')
+          setValue('extra_stop_phone_number', defaultAddressBook?.phone_number || '')
+          setValue('extra_stop_province', defaultAddressBook?.province || '')
+          setValue('extra_stop_city', defaultAddressBook?.city || '')
+          setValue('extra_stop_postal_code', defaultAddressBook?.postal_code || '')
+          setValue('extra_stop_address', defaultAddressBook?.address || '')
+          setValue('extra_stop_suite', defaultAddressBook?.suite || '')
+          setValue('extra_stop_special_instructions', defaultAddressBook?.special_instructions || '')
+        }
+        else {
+          setValue('extra_stop_name', '')
+          setValue('extra_stop_email', '')
+          setValue('extra_stop_contact_name', '')
+          setValue('extra_stop_phone_number', '')
+          setValue('extra_stop_province', '')
+          setValue('extra_stop_city', '')
+          setValue('extra_stop_postal_code', '')
+          setValue('extra_stop_suite', '')
+          setValue('extra_stop_special_instructions', '')
+          setValue('extra_stop_address', '')
+        }
       } else {
         setValue('extra_stop_name', '')
         setValue('extra_stop_email', '')

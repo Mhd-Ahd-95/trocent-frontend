@@ -5,11 +5,12 @@ import { Grid } from "@mui/material";
 import TerminalTab from "./TerminalTab";
 import QuestionTab from './QuestionTab'
 import LogoTab from "./LogoTab";
+import AddressTab from "./AddressTab";
 
 export default function SetUp() {
 
     const [tab, setTab] = React.useState(0)
-    
+
     return (
         <MainLayout
             title='Set Up'
@@ -26,7 +27,7 @@ export default function SetUp() {
                             <TerminalTab
                                 enabled={tab === 0}
                             />,
-                            <>Address</>,
+                            <AddressTab enabled={tab === 1} />,
                             <QuestionTab enabled={tab === 2} />,
                             <>Emails</>,
                             <LogoTab />,

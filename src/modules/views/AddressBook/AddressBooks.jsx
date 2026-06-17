@@ -76,6 +76,7 @@ export default function AddressBook() {
           <Table
             pageSizeOptions={[10, 25, 50]}
             pageSize={10}
+            isAddressBook={true}
             checkboxSelection
             deleteSelected={selectedBooks.length > 0}
             handleDeleteSelected={() => setOpenModal(2)}
