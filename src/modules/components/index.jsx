@@ -50,3 +50,4 @@ export { default as OrderActionsMenu } from './DispatchOrderComponents/OrderActi
 export { default as TripActionsBar } from './DispatchOrderComponents/TripActionBar';
 export { default as TripTabs } from './DispatchOrderComponents/TripTabs'
 export { default as UploadDefaultLogo } from './UploadFile/UploadDefaultLogo'
+export {default as CustomTitle } from './DispatchOrderComponents/CustomTitle'

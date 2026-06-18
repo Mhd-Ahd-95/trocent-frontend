@@ -1,24 +1,8 @@
 import React from 'react'
-import { colors, Grid } from '@mui/material'
+import { Grid } from '@mui/material'
 import {
-  StyledButton,
-  SubmitButton,
-  BasicInfo,
-  ClientInfo,
-  References,
-  ShipperDetails,
-  WizardCard,
-  ExtraStop,
-  ReceiverDetails,
-  PickupDetails,
-  InterlineCarrier,
-  DeliveryDetails,
-  FreightDetails,
-  FreightCharges,
-  TimeAndBilling,
-  OrderEngine,
-  Consignment,
-  HeaderForm,
+  StyledButton, SubmitButton, BasicInfo, ClientInfo, References, ShipperDetails, WizardCard, ExtraStop, ReceiverDetails, PickupDetails, InterlineCarrier, DeliveryDetails, FreightDetails, FreightCharges,
+  TimeAndBilling, OrderEngine, Consignment, HeaderForm,
 } from '../../components'
 import { useForm, FormProvider } from 'react-hook-form'
 import { defaultOrderValue } from './DefaultOrder'
@@ -223,6 +207,7 @@ function OrderForm(props) {
         }
       }
       const field = document.querySelector(`[name="${firstErrorField}"]`)
+      console.log(field);
       if (field) {
         field.scrollIntoView({ behavior: 'smooth', block: 'center' })
         field.focus({ preventScroll: true })
@@ -232,13 +217,7 @@ function OrderForm(props) {
 
   return (
     <FormProvider {...methods}>
-      <Grid
-        container
-        component={'form'}
-        spacing={3}
-        onSubmit={methods.handleSubmit(onSubmit, onError)}
-        position={'relative'}
-      >
+      <Grid container component={'form'} spacing={3} onSubmit={methods.handleSubmit(onSubmit, onError)} position={'relative'}      >
         {editMode &&
           <Grid size={12}>
             <HeaderForm

@@ -14,8 +14,21 @@ export function useAddressBooks() {
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 0,
-        // refetchOnReconnect: false,
-        // refetchOnMount: false,
+    });
+}
+
+export function useAddressBookByTerminals({ enabled = false }) {
+    return useQuery({
+        queryKey: ['addressBookByTerminals'],
+        queryFn: async () => {
+            const response = await AddressBooksApi.getAddressBookByTerminals();
+            return response.data.data;
+        },
+        enabled,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
     });
 }
 
@@ -80,15 +93,22 @@ export function useAddressBookMutations() {
             const res = await AddressBooksApi.createAddressBook(payload);
             return res.data.data;
         },
-        onSuccess: (newDriver) => {
+        onSuccess: (created) => {
             const cachedList = queryClient.getQueryData(['addressBooks'])
             if (cachedList) {
                 queryClient.setQueryData(['addressBooks'], (old = []) => {
-                    return [newDriver, ...old]
+                    return [created, ...old]
                 });
             }
             else {
                 queryClient.invalidateQueries({ queryKey: ['addressBooks'] })
+            }
+            if (created.terminal) {
+                const cachedTerminalList = queryClient.getQueryData(['addressBookByTerminals'])
+                if (cachedTerminalList) {
+                    queryClient.setQueryData(['addressBookByTerminals'], (old = []) => old.map(o => o.terminal === created.terminal ? created : o));
+                }
+                else queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
             }
             queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
             queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
@@ -113,6 +133,13 @@ export function useAddressBookMutations() {
                 }
                 else {
                     queryClient.invalidateQueries({ queryKey: ['addressBooks'] })
+                }
+                if (updated.terminal) {
+                    const cachedTerminalList = queryClient.getQueryData(['addressBookByTerminals'])
+                    if (cachedTerminalList) {
+                        queryClient.setQueryData(['addressBookByTerminals'], (old = []) => old.map(o => o.terminal === updated.terminal ? updated : o));
+                    }
+                    else queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
                 }
                 queryClient.setQueryData(['addressBook', Number(updated.id)], updated)
                 queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
@@ -140,6 +167,13 @@ export function useAddressBookMutations() {
                 else {
                     queryClient.invalidateQueries({ queryKey: ['addressBooks'] })
                 }
+                if (updated.terminal) {
+                    const cachedTerminalList = queryClient.getQueryData(['addressBookByTerminals'])
+                    if (cachedTerminalList) {
+                        queryClient.setQueryData(['addressBookByTerminals'], (old = []) => old.map(o => o.terminal === updated.terminal ? updated : o));
+                    }
+                    else queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
+                }
                 queryClient.invalidateQueries({ queryKey: ['addressBook'] })
                 queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
                 queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
@@ -162,6 +196,7 @@ export function useAddressBookMutations() {
                 );
                 enqueueSnackbar('Address Book has been deleted successfully', { variant: 'success' });
             }
+            queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
             queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
             queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
             queryClient.invalidateQueries({ queryKey: ['order'] })
@@ -180,6 +215,7 @@ export function useAddressBookMutations() {
                     old.filter((item) => !iids.includes(item.id))
                 );
                 enqueueSnackbar('Selected Address Books been deleted successfully', { variant: 'success' });
+                queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
                 queryClient.invalidateQueries({ queryKey: ['addressBookByName'], exact: false })
                 queryClient.invalidateQueries({ queryKey: ['addressBookSearch'], exact: false })
                 queryClient.invalidateQueries({ queryKey: ['order'] })

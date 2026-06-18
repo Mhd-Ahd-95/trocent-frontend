@@ -2,7 +2,10 @@ import CustomAxios from './customAxios'
 
 const getAddressBooks = () => CustomAxios.get('/api/address-books')
 
+const getAddressBookByTerminals = () => CustomAxios.get('/api/address-books/terminals')
+
 const getAddressBook = rid => CustomAxios.get(`/api/address-books/${rid}`)
+
 const getAddressBookByName = name => CustomAxios.get(`/api/address-books/name/${name}`)
 
 const updateAddressBook = (rid, ab) => CustomAxios.put(`/api/address-books/${rid}`, ab)
@@ -29,5 +32,6 @@ export default {
     countAddressBooks,
     patchABook,
     getAddressBookByName,
-    searchAddressBooks
+    searchAddressBooks,
+    getAddressBookByTerminals
 }

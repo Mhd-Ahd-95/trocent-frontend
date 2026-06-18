@@ -6,6 +6,7 @@ import TerminalTab from "./TerminalTab";
 import QuestionTab from './QuestionTab'
 import LogoTab from "./LogoTab";
 import AddressTab from "./AddressTab";
+import EmailTab from "./EmailTab";
 
 export default function SetUp() {
 
@@ -29,7 +30,7 @@ export default function SetUp() {
                             />,
                             <AddressTab enabled={tab === 1} />,
                             <QuestionTab enabled={tab === 2} />,
-                            <>Emails</>,
+                            <EmailTab enabled={tab === 3} />,
                             <LogoTab />,
                         ]}
                     />

@@ -9,7 +9,7 @@ import moment from 'moment';
 import { useDispatchedOrdersCompleted, useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 import UpdateTripForm from './UpdateTripForm';
 import UpdateOrderStatusForm from './UpdateOrderStatusForm';
-import { CustomTitle } from './CustomTitle';
+import CustomTitle  from './CustomTitle';
 import { useTripRowStyles, useOrderCardStyles } from './DispatchOrder.styles';
 import { TabLoadingState } from './TripTabs';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, } from '@dnd-kit/core';
