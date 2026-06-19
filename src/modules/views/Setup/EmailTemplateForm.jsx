@@ -32,12 +32,8 @@ const RECIPIENT_TYPES = [
 
 const EMPTY_FORM = {
     trigger_key: "",
-    label: "",
-    recipient_type: "receiver",
     subject_template: "",
     body_template: "",
-    is_active: true,
-    has_attachment: false,
 };
 
 function EmailTemplateForm({ onClose, onSave, initialValues = {}, editMode }) {
@@ -46,6 +42,7 @@ function EmailTemplateForm({ onClose, onSave, initialValues = {}, editMode }) {
     const [form, setForm] = useState({ ...EMPTY_FORM, ...initialValues });
     const [activeField, setActiveField] = useState(null);
     const [copied, setCopied] = useState(null);
+    const [submitting, setSubmitting] = React.useState(false)
 
     const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }));
 
@@ -60,6 +57,20 @@ function EmailTemplateForm({ onClose, onSave, initialValues = {}, editMode }) {
         }
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setSubmitting(true)
+        try {
+            const payload = { ...form }
+            await onSave(payload)
+            setSubmitting(false)
+            onClose()
+        }
+        catch (err) {
+            setSubmitting(false)
+        }
+    }
+
     const reset = () => {
         setForm({ ...EMPTY_FORM, ...initialValues })
         setCopied(null)
@@ -67,12 +78,12 @@ function EmailTemplateForm({ onClose, onSave, initialValues = {}, editMode }) {
     }
 
     return (
-        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }} onSubmit={handleSubmit}>
             <div style={{ flexGrow: 1, overflow: 'auto', padding: '24px' }}>
                 <Grid container spacing={2.5}>
                     <Grid size={12}>
                         <Grid container spacing={2}>
-                            <Grid size={{ xs: 12, sm: 6 }}>
+                            <Grid size={{ xs: 12 }}>
                                 <FormControl fullWidth required>
                                     <InputLabel>Trigger Key</InputLabel>
                                     <Select
@@ -83,21 +94,6 @@ function EmailTemplateForm({ onClose, onSave, initialValues = {}, editMode }) {
                                     >
                                         {ORDER_STATUSES.map((s) => (
                                             <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <FormControl fullWidth required>
-                                    <InputLabel>Send to</InputLabel>
-                                    <Select
-                                        value={form.recipient_type}
-                                        onChange={set("recipient_type")}
-                                        label="Send to"
-                                        required
-                                    >
-                                        {RECIPIENT_TYPES.map((r) => (
-                                            <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
@@ -178,7 +174,8 @@ function EmailTemplateForm({ onClose, onSave, initialValues = {}, editMode }) {
                             color="secondary"
                             size="small"
                             textTransform="capitalize"
-                            disabled={!form.body_template || !form.subject_template || !form.recipient_type || !form.trigger_key}
+                            isLoading={submitting}
+                            disabled={!form.body_template || !form.subject_template || !form.trigger_key}
                         >
                             {editMode ? 'Edit Template' : "Create template"}
                         </SubmitButton>
