@@ -276,7 +276,7 @@ export default function StopAction() {
         e.preventDefault();
         e.stopPropagation();
         const status = isPickup ? 'arrived shipper' : 'arrived receiver';
-        const arrivedTime = moment(new Date()).format('YYYY-MM-DD HH:mm')
+        const arrivedTime = moment().format('YYYY-MM-DD HH:mm')
         await driverUpdateOrderStatus.mutateAsync({ dids: Array.from(checkedOrders), sts: status, lt: params.lt, arrivedTime });
     };
 
