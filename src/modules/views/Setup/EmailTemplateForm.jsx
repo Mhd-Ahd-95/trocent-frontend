@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Grid, Typography, Button, IconButton, TextField, MenuItem, Select, FormControl, InputLabel, Tooltip, Divider, Alert, } from "@mui/material";
+import { Box, Grid, Typography, IconButton, TextField, MenuItem, Select, FormControl, InputLabel, Tooltip, Divider, Alert, } from "@mui/material";
 import { ContentCopy as CopyIcon, InfoOutlined as InfoIcon, } from "@mui/icons-material";
 import { useStyles } from "./Email.styles";
 import { StyledButton, SubmitButton } from "../../components";
@@ -8,26 +8,25 @@ import { StyledButton, SubmitButton } from "../../components";
 const ORDER_STATUSES = [
     { value: "arrived_shipper", label: "Arrived at Shipper" },
     { value: "picked_up", label: "Picked Up" },
+    { value: "departure_from_shipper", label: "Departure From Shipper" },
     { value: "arrived_receiver", label: "Arrived at Receiver" },
     { value: "delivered", label: "Delivered" },
+    { value: "departure_from_receiver", label: "Departure From Receiver" },
     { value: "pod", label: "POD (Proof of Delivery)" },
 ];
 
 const PLACEHOLDERS = [
-    { key: "order_number", description: "Order Number", example: "ORD-1042" },
-    { key: "reference_number", description: "Reference Number of order", example: "REF-ABC" },
-    { key: "shipper_address", description: "Pickup address", example: "123 Main St, Toronto" },
-    { key: "receiver_address", description: "Delivery address", example: "456 Queen St, Toronto" },
-    { key: "arrived_at", description: "Arrival time at shipper", example: "2025-06-18 09:30" },
-    { key: "pickup_out", description: "Departure from shipper", example: "2025-06-18 10:00" },
-    { key: "delivery_in", description: "Arrival at receiver", example: "2025-06-18 14:00" },
-    { key: "delivery_out", description: "Departure from receiver", example: "2025-06-18 14:30" },
-];
-
-const RECIPIENT_TYPES = [
-    { value: "shipper", label: "Shipper" },
-    { value: "receiver", label: "Receiver" },
-    { value: "both", label: "Both" },
+    { key: "order_number", description: "Order Number" },
+    { key: "reference_numbers", description: "Reference Number of order" },
+    { key: "shipper_address", description: "Pickup address" },
+    { key: "receiver_address", description: "Delivery address" },
+    { key: "arrived_time", description: "Arrival time at shipper or receiver" },
+    { key: "pickup_at", description: "Pickup Date" },
+    { key: "pickup_in", description: "Pickup Start Time" },
+    { key: "pickup_out", description: "Pickup Departure Time" },
+    { key: "delivery_at", description: "Delivery Date" },
+    { key: "delivery_in", description: "Delivery Start Time" },
+    { key: "delivery_out", description: "Delivery Departure Time" },
 ];
 
 const EMPTY_FORM = {
