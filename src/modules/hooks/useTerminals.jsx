@@ -3,13 +3,14 @@ import { useSnackbar } from "notistack";
 import TerminalsApi from "../apis/Terminals.api";
 
 
-export function useTerminals() {
+export function useTerminals({ enabled = false }) {
     return useQuery({
         queryKey: ['terminals'],
         queryFn: async () => {
             const response = await TerminalsApi.getTerminals();
             return response.data;
         },
+        enabled,
         staleTime: 20 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -40,6 +41,7 @@ export function useTerminalsMutation() {
             queryClient.setQueryData(['terminals'], (old = []) => {
                 return [newValue, ...old]
             });
+            queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
             enqueueSnackbar('Terminals has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -56,6 +58,7 @@ export function useTerminalsMutation() {
                     return old.filter((item) => item.terminal !== ter)
                 }
                 );
+                queryClient.invalidateQueries({ queryKey: ['addressBookByTerminals'], exact: true })
                 enqueueSnackbar('Terminal has been deleted successfully', { variant: 'success' });
             }
         },

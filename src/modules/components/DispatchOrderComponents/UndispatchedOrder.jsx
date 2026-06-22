@@ -10,7 +10,7 @@ import { useDispatchOrderMutation, useUndispatchedOrders } from '../../hooks/use
 import OrderNoteForm from './NoteForm';
 import UpdateTerminalForm from './UpdateTerminalForm';
 import { useOrderMutations, useOrderUpdates } from '../../hooks/useOrders';
-import { CustomTitle } from './CustomTitle';
+import CustomTitle from './CustomTitle';
 import { createPortal } from 'react-dom';
 
 const headerCellSx = {

@@ -9,7 +9,7 @@ import moment from 'moment';
 import { useDispatchedOrdersCompleted, useDispatchOrderMutation } from '../../hooks/useDispatchOrders';
 import UpdateTripForm from './UpdateTripForm';
 import UpdateOrderStatusForm from './UpdateOrderStatusForm';
-import { CustomTitle } from './CustomTitle';
+import CustomTitle  from './CustomTitle';
 import { useTripRowStyles, useOrderCardStyles } from './DispatchOrder.styles';
 import { TabLoadingState } from './TripTabs';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, } from '@dnd-kit/core';
@@ -22,7 +22,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
   const [showFreight, setShowFreight] = useState(false);
   const { classes } = useOrderCardStyles({ orderStatus: order.order_status, bgColor, bordered });
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, } = useSortable({ id: order.id });
-
+  
   const dragStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -92,7 +92,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 <Chip component={'span'} label={order.pickup_out ? `Picked Up At ${order.pickup_out}` : 'Picked Up'} color={'success'} size="medium" className={classes.statusChipPickedUp} />
               )}
               {order.order_status === 'arrived shipper' && (
-                <Chip component={'span'} label={`Arrived At ${order.arrived_time}`} color={'warning'} size="medium" className={classes.statusChipArrived} />
+                <Chip component={'span'} label={`Arrived At ${moment.utc(order.arrived_time).format('HH:mm')}`} color={'warning'} size="medium" className={classes.statusChipArrived} />
               )}
             </Typography>
             <Typography component="p" className={classes.addressText}>{order.shipper_address}</Typography>
@@ -136,7 +136,7 @@ const OrderCard = React.memo(({ order, actionTrip, handleUndispatchedOrder, isIn
                 <Chip component={'span'} label={order.delivery_out ? `Delivered At ${order.delivery_out}` : 'Delivered'} color={'info'} size="medium" className={classes.statusChipDelivered} />
               )}
               {order.order_status === 'arrived receiver' && (
-                <Chip component={'span'} label={`Arrived At ${order.arrived_time}`} color={'warning'} size="medium" className={classes.statusChipDelivered} />
+                <Chip component={'span'} label={`Arrived At ${moment.utc(order.arrived_time).format('HH:mm')}`} color={'warning'} size="medium" className={classes.statusChipDelivered} />
               )}
             </Typography>
             <Typography component="p" className={classes.addressText}>{order.receiver_address}</Typography>

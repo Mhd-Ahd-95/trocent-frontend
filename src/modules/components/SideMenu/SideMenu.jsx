@@ -134,6 +134,7 @@ const ListItem = styled('ul')(({ theme, active }) => ({
 }))
 
 function SideMenu(props) {
+
   const theme = useTheme()
 
   const roleContext = React.useContext(RoleContext)
@@ -178,7 +179,8 @@ function SideMenu(props) {
           text: 'Address Book',
           url: '/address-books',
           chip: addressContext?.countAddress?.count ?? 0
-        }
+        },
+        { text: 'Set Up', url: '/setup' },
       ]
     },
     {

@@ -7,22 +7,15 @@ import TextInput from '../CustomComponents/TextInput'
 import CustomFormControlLabel from '../CustomComponents/FormControlLabel'
 import InputWrapper from '../CustomComponents/InputWrapper'
 import moment from 'moment'
-import { useTerminals } from '../../hooks/useTerminals'
+import { useAddressBookByTerminals } from '../../hooks/useAddressBooks'
 
 function PickupDetails(props) {
 
-  const {
-    control,
-    setValue,
-    getValues
-  } = useFormContext()
+  const { control, setValue, getValues } = useFormContext()
 
-  const { data } = useTerminals()
+  const { data = [] } = useAddressBookByTerminals({ enabled: true })
 
-  const isAppointment = useWatch({
-    control: control,
-    name: 'pickup_appointment',
-  })
+  const isAppointment = useWatch({ control: control, name: 'pickup_appointment', })
 
   const pickupNotes = React.useCallback(() => {
     const orderNotes = getValues('order_notes')
@@ -54,13 +47,8 @@ function PickupDetails(props) {
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
-                    '& .MuiPickersOutlinedInput-root': { height: 45 },
-                    '& .MuiOutlinedInput-input': {
-                      fontSize: '14px',
-                      padding: '10px 14px'
-                    },
-                    '& .MuiInputLabel-root': { fontSize: '13px' },
-                    '& .MuiInputLabel-shrink': { fontSize: '14px' }
+                    '& .MuiPickersOutlinedInput-root': { height: 45 }, '& .MuiOutlinedInput-input': { fontSize: '14px', padding: '10px 14px' },
+                    '& .MuiInputLabel-root': { fontSize: '13px' }, '& .MuiInputLabel-shrink': { fontSize: '14px' }
                   }
                 }
               }}
@@ -86,13 +74,8 @@ function PickupDetails(props) {
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
-                    '& .MuiPickersOutlinedInput-root': { height: 45 },
-                    '& .MuiOutlinedInput-input': {
-                      fontSize: '14px',
-                      padding: '10px 14px'
-                    },
-                    '& .MuiInputLabel-root': { fontSize: '13px' },
-                    '& .MuiInputLabel-shrink': { fontSize: '14px' }
+                    '& .MuiPickersOutlinedInput-root': { height: 45 }, '& .MuiOutlinedInput-input': { fontSize: '14px', padding: '10px 14px' },
+                    '& .MuiInputLabel-root': { fontSize: '13px' }, '& .MuiInputLabel-shrink': { fontSize: '14px' }
                   }
                 }
               }}
@@ -118,13 +101,8 @@ function PickupDetails(props) {
                   error: !!fieldState?.error,
                   helperText: fieldState?.error?.message,
                   sx: {
-                    '& .MuiPickersOutlinedInput-root': { height: 45 },
-                    '& .MuiOutlinedInput-input': {
-                      fontSize: '14px',
-                      padding: '10px 14px'
-                    },
-                    '& .MuiInputLabel-root': { fontSize: '13px' },
-                    '& .MuiInputLabel-shrink': { fontSize: '14px' }
+                    '& .MuiPickersOutlinedInput-root': { height: 45 }, '& .MuiOutlinedInput-input': { fontSize: '14px', padding: '10px 14px' },
+                    '& .MuiInputLabel-root': { fontSize: '13px' }, '& .MuiInputLabel-shrink': { fontSize: '14px' }
                   }
                 }
               }}
@@ -144,21 +122,8 @@ function PickupDetails(props) {
               variant='outlined'
               disabled
               fullWidth
-              sx={{
-                '& .MuiInputBase-input.Mui-disabled': {
-                  WebkitTextFillColor: '#000',
-                  color: '#000'
-                },
-                '& .MuiInputLabel-root.Mui-disabled': {
-                  color: '#000'
-                }
-              }}
-              FormHelperTextProps={{
-                sx: {
-                  whiteSpace: 'pre-line',
-                  color: '#000 !important'
-                }
-              }}
+              sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#000', color: '#000' }, '& .MuiInputLabel-root.Mui-disabled': { color: '#000' } }}
+              FormHelperTextProps={{ sx: { whiteSpace: 'pre-line', color: '#000 !important' } }}
               helperText={props.editMode ? pickupNotes() : null}
             />
           )}

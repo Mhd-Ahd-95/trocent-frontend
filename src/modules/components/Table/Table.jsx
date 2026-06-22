@@ -3,6 +3,7 @@ import { DataGrid, gridClasses, useGridApiContext, useGridSelector, gridPageCoun
 import { styled } from '@mui/material/styles'
 import CustomToolbar from './Toolbar'
 import CustomNoRows from './NoRows'
+import { alpha, useTheme } from '@mui/material'
 import CustomNoResultsOverlay from './NoResultFound'
 import MuiPagination from '@mui/material/Pagination';
 
@@ -69,7 +70,7 @@ const DataGridTable = styled(DataGrid)(({ theme }) => ({
 
 export default function Table(props) {
   let { columns, data, options, tableType, title, actions } = props
-
+  const theme = useTheme()
   return (
     <TableLayout>
       <DataGridTable
@@ -82,6 +83,12 @@ export default function Table(props) {
         paginationModel={props.paginationModel}
         onPaginationModelChange={props.onPaginationModelChange}
         sx={{
+          '& .has-terminal': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.09),
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.2)
+            }
+          },
           width: '100%',
           overflowX: 'auto',
           borderRadius: 3,
@@ -114,12 +121,14 @@ export default function Table(props) {
         rowSelectionModel={props.rowSelectionModel}
         checkboxSelection={props.checkboxSelection}
         onRowClick={props.onRowClick}
+        getRowId={props.getRowId}
         // isRowSelectable={(params) => params.row.quantity > 50000}
         disableRowSelectionOnClick={props.disableRowSelectionOnClick || true}
         // disableMultipleRowSelection
-        getRowClassName={params =>
-          params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
-        }
+        getRowClassName={params => {
+          if (params.row.terminal && props.isAddressBook) return 'has-terminal'
+          return params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
+        }}
         initialState={{
           ...data.initialState,
           sorting: {

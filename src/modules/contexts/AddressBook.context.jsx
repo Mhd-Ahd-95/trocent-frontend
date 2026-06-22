@@ -2,11 +2,12 @@ import React from 'react'
 import { useSnackbar } from 'notistack'
 import AddressBooksApi from '../apis/AddressBooks.api'
 import { AuthContext } from './Auth.context'
-import TerminalsApi from '../apis/Terminals.api'
 import { useQueryClient } from '@tanstack/react-query'
 import QuestionsApi from '../apis/Questions.api'
 
 const AddressBookContext = React.createContext()
+
+const HOUR = 60 * 60 * 1000
 
 const AddressBookContextProvider = props => {
 
@@ -16,17 +17,27 @@ const AddressBookContextProvider = props => {
     const { isAuthenticated, parsedUser } = React.useContext(AuthContext)
     const queryClient = useQueryClient();
 
+    const loadAddressBookByTerminals = React.useCallback(async () => {
+        await queryClient.prefetchQuery({
+            queryKey: ['addressBookByTerminals'],
+            queryFn: async () => {
+                const res = await AddressBooksApi.getAddressBookByTerminals();
+                return res.data.data;
+            },
+            staleTime: HOUR,
+            gcTime: HOUR,
+        });
+    }, [queryClient]);
+
     const loadAddressBookMessagers = React.useCallback(async () => {
         await queryClient.prefetchQuery({
             queryKey: ['addressBookByName', 'messagers'],
             queryFn: async () => {
                 const res = await AddressBooksApi.getAddressBookByName('messagers');
-                return res.data || {};
+                return res.data;
             },
-            staleTime: 60 * 60 * 1000,
-            gcTime: 60 * 60 * 1000,
-            refetchOnWindowFocus: false,
-            retry: 0,
+            staleTime: HOUR,
+            gcTime: HOUR,
         });
     }, [queryClient]);
 
@@ -35,19 +46,16 @@ const AddressBookContextProvider = props => {
             queryKey: ['questions'],
             queryFn: async () => {
                 const res = await QuestionsApi.getSectionWithQuestions();
-                console.log(res.data);
                 return res.data || {};
             },
-            staleTime: 60 * 60 * 1000,
-            gcTime: 60 * 60 * 1000,
-            refetchOnWindowFocus: false,
-            retry: 0,
+            staleTime: HOUR,
+            gcTime: HOUR,
         });
     }, [queryClient]);
 
     const loadCountAddress = React.useCallback(() => {
-        Promise.all([AddressBooksApi.countAddressBooks()])
-            .then(([ab]) => {
+        AddressBooksApi.countAddressBooks()
+            .then((ab) => {
                 setCountAddress(ab.data)
             })
             .catch((error) => {
@@ -59,17 +67,18 @@ const AddressBookContextProvider = props => {
             .finally(() => setLoading(false))
     }, [enqueueSnackbar])
 
-    
+
 
     React.useEffect(() => {
-        if (isAuthenticated && parsedUser && parsedUser?.type !== 'driver') {
+        if (!isAuthenticated || !parsedUser) return
+        if (parsedUser.type !== 'driver') {
             loadCountAddress()
+            loadAddressBookByTerminals()
             loadAddressBookMessagers()
-        }
-        if (isAuthenticated && parsedUser && parsedUser?.type === 'driver') {
+        } else {
             loadDriverQuestions()
         }
-    }, [loadCountAddress, isAuthenticated, loadAddressBookMessagers])
+    }, [loadCountAddress, isAuthenticated, loadAddressBookByTerminals, loadDriverQuestions, loadAddressBookMessagers])
 
     return (
         <AddressBookContext.Provider
