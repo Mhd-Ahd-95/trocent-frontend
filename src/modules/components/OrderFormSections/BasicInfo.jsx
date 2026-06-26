@@ -34,7 +34,6 @@ function BasicInfo(props) {
     requestAnimationFrame(async () => {
       if (checked) {
         const value = queryClient.getQueryData(['addressBookByName', 'messagers'])
-        console.log(value);
         props.shipperSelectValue.current = value ? value : null
         props.receiverSelectValue.current = value ? value : null
 

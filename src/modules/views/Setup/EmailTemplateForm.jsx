@@ -6,10 +6,10 @@ import { StyledButton, SubmitButton } from "../../components";
 
 
 const ORDER_STATUSES = [
-    { value: "arrived_shipper", label: "Arrived at Shipper" },
-    { value: "picked_up", label: "Picked Up" },
+    { value: "arrived shipper", label: "Arrived at Shipper" },
+    { value: "picked up", label: "Picked Up" },
     { value: "departure_from_shipper", label: "Departure From Shipper" },
-    { value: "arrived_receiver", label: "Arrived at Receiver" },
+    { value: "arrived receiver", label: "Arrived at Receiver" },
     { value: "delivered", label: "Delivered" },
     { value: "departure_from_receiver", label: "Departure From Receiver" },
     { value: "pod", label: "POD (Proof of Delivery)" },

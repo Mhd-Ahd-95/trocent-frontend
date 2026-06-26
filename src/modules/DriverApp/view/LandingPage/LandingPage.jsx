@@ -104,7 +104,7 @@ export default function DriverLanding() {
     const queryClient = useQueryClient();
 
     const sections = queryClient.getQueryData(['questions']) ?? [];
-
+    
     const liveTrip = React.useMemo(() => driverTrips?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
     const hasLiveTrip = Boolean(liveTrip);
     const startTripDisabled = hasLiveTrip || !selectTrip;
