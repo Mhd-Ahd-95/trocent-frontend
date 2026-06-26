@@ -277,7 +277,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.text(t.specialInstructions, margin + 1, yPos + 3);
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(7);
-    const pickupInst = pdf.splitTextToSize(data.pickup_special_instructions || '', boxWidth - 2);
+    const pickupInst = pdf.splitTextToSize(data.shipper_special_instructions || '', boxWidth - 2);
     pdf.text(pickupInst, margin + 1, yPos + 7);
 
     drawBox(receiverX, yPos, boxWidth, instructionHeight);
@@ -285,7 +285,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.setFont('helvetica', 'bold');
     pdf.text(t.specialInstructions, receiverX + 1, yPos + 3);
     pdf.setFont('helvetica', 'normal');
-    const deliveryInst = pdf.splitTextToSize(data.delivery_special_instructions || '', boxWidth - 2);
+    const deliveryInst = pdf.splitTextToSize(data.receiver_special_instructions || '', boxWidth - 2);
     pdf.text(deliveryInst, receiverX + 1, yPos + 7);
 
     yPos += instructionHeight + 3;
@@ -401,7 +401,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(8);
-    pdf.setCharSpace(0.2);
+    pdf.setCharSpace(0.1);
     let accY = accessorialBoxStartY + headerHeight + 3;
 
     if (accessorials.length > 0) {

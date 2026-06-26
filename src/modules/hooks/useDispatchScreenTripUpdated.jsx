@@ -12,25 +12,37 @@ export function useDispatchScreenTripUpdated() {
     return async (trip) => {
         const trip_type = trip?.trip_type
         if (trip_type) {
+            let isAlreadyExists = false
             const key = dispatchKeys.trips(trip_type);
             const cachedTrips = queryClient.getQueryData(key);
             const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
             if (cachedTrips) {
-                queryClient.setQueryData(key, mergeTrips(cachedTrips, trip));
+                const alreadyExist = cachedTrips.find(t => Number(t.id) === Number(trip.id))
+                if (alreadyExist) {
+                    if (trip.trip_status === 'completed') {
+                        queryClient.setQueryData(key, old => old.filter(t => Number(t.id) !== Number(trip.id)))
+                    }
+                    else {
+                        queryClient.setQueryData(key, mergeTrips(cachedTrips, trip));
+                    }
+                }
+                else isAlreadyExists = true
             }
-            else {
+            if (isAlreadyExists || !cachedTrips) {
                 queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', trip_type] })
             }
-            if (trip.trip_status === 'completed') {
-                queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] })
-            }
-            if (cachedDriverTrips) {
+            if (cachedDriverTrips && trip_type === 'driver') {
                 if (trip.trip_status === 'completed') {
-                    queryClient.setQueryData(['driverTrips', Number(trip.id)], (old = []) => old.filter((o) => Number(o.id) !== Number(trip.id)))
-                    queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
+                    queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.filter((o) => Number(o.id) !== Number(trip.id)))
                 }
                 else {
-                    queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map((o) => Number(o.id) === Number(trip.id) ? trip : o))
+                    const alreadyExist = cachedDriverTrips.find(t => Number(t.id) === Number(trip.id))
+                    if (!alreadyExist) {
+                        queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => [trip, ...old])
+                    }
+                    else {
+                        queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map((o) => Number(o.id) === Number(trip.id) ? trip : o))
+                    }
                 }
             }
             else {
@@ -42,11 +54,13 @@ export function useDispatchScreenTripUpdated() {
                 queryClient.setQueryData(['trip', Number(trip.id)], (old = {}) => ({ ...old, ...trip }))
             }
             else {
-                queryClient.invalidateQueries({queryKey: ['trip', Number(trip.id)], exact: true})
+                queryClient.invalidateQueries({ queryKey: ['trip', Number(trip.id)], exact: true })
             }
+            queryClient.invalidateQueries({ queryKey: ['dispatch', 'completed'] })
             queryClient.invalidateQueries({ queryKey: ['orders'] })
             queryClient.invalidateQueries({ queryKey: ['order'] })
             queryClient.invalidateQueries({ queryKey: ['tripActivities', Number(trip.id)] })
+            queryClient.invalidateQueries({ queryKey: ['driverCompletedTrips'] })
         }
         else {
             queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })

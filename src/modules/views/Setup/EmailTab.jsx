@@ -9,20 +9,20 @@ import { useSnackbar } from "notistack";
 
 
 const ORDER_STATUSES = [
-    { value: "arrived_shipper", label: "Arrived at Shipper" },
-    { value: "picked_up", label: "Picked Up" },
+    { value: "arrived shipper", label: "Arrived at Shipper" },
+    { value: "picked up", label: "Picked Up" },
     { value: "departure_from_shipper", label: "Departure From Shipper" },
-    { value: "arrived_receiver", label: "Arrived at Receiver" },
+    { value: "arrived receiver", label: "Arrived at Receiver" },
     { value: "delivered", label: "Delivered" },
     { value: "departure_from_receiver", label: "Departure From Receiver" },
     { value: "pod", label: "POD (Proof of Delivery)" },
 ];
 
 const STATUS_COLORS = {
-    arrived_shipper: { bg: "#E6F1FB", color: "#185FA5", label: "Arrived Shipper" },
-    picked_up: { bg: "#EAF3DE", color: "#3B6D11", label: "Picked Up" },
+    'arrived shipper': { bg: "#E6F1FB", color: "#185FA5", label: "Arrived Shipper" },
+    'picked up': { bg: "#EAF3DE", color: "#3B6D11", label: "Picked Up" },
     departure_from_shipper: { bg: "#EAF3DE", color: "#08a045", label: "Departure From Shipper" },
-    arrived_receiver: { bg: "#EEEDFE", color: "#534AB7", label: "Arrived Receiver" },
+    'arrived receiver': { bg: "#EEEDFE", color: "#534AB7", label: "Arrived Receiver" },
     delivered: { bg: "#E1F5EE", color: "#0F6E56", label: "Delivered" },
     departure_from_receiver: { bg: "#E1F5EE", color: "#2aa914", label: "Departure From Receiver" },
     pod: { bg: "#FAEEDA", color: "#854F0B", label: "POD" },
