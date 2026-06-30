@@ -9,7 +9,7 @@ import OrderApi from '../../apis/Order.api'
 import { saveAs } from 'file-saver'
 import { useOrderMutations } from '../../hooks/useOrders'
 import { useSnackbar } from 'notistack'
-import { useQueryClient } from '@tanstack/react-query'
+import LogoApi from '../../apis/Logo.api'
 
 function CardFile(props) {
 
@@ -111,24 +111,19 @@ function CardFile(props) {
 
 function Consignment(props) {
 
-    const {
-        getValues,
-        control,
-        setValue
-    } = useFormContext()
+    const { getValues, control, setValue } = useFormContext()
 
     const [downloading, setDownloading] = React.useState(false)
     const [openModal, setOpenModal] = React.useState(false)
     const { enqueueSnackbar } = useSnackbar()
-    const queryClient = useQueryClient()
 
     const downloadBillAsPDF = async () => {
         setDownloading(true)
         const currentData = getValues();
         const language = getValues('customer_language') ?? 'en'
         try {
-            const messagers = queryClient.getQueryData(['addressBookByName', 'messagers'])
-            currentData['messagers'] = messagers
+            const messagers = await LogoApi.getDefaultAddress() || {}
+            currentData['messagers'] = messagers.data
             const pdf = await generateBillOfLadingPDF(currentData, language);
             pdf.save(`${language === 'en' ? 'BOL' : 'Connaissement'}_${currentData.order_number}.pdf`);
         } catch (error) {

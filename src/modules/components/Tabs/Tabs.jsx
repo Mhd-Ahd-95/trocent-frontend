@@ -9,7 +9,7 @@ import { Grid, useMediaQuery } from '@mui/material'
 
 const Appbar = styled(AppBar)(({ theme, size }) => ({
   minWidth: 300,
-  maxWidth: size === 'large' ? 550 : 420,
+  maxWidth: size === 'large' ? 630 : 420,
   borderRadius: 10,
   display: 'flex',
   justifyContent: 'center',
