@@ -207,7 +207,6 @@ function OrderForm(props) {
         }
       }
       const field = document.querySelector(`[name="${firstErrorField}"]`)
-      console.log(field);
       if (field) {
         field.scrollIntoView({ behavior: 'smooth', block: 'center' })
         field.focus({ preventScroll: true })

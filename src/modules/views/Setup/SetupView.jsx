@@ -7,6 +7,7 @@ import QuestionTab from './QuestionTab'
 import LogoTab from "./LogoTab";
 import AddressTab from "./AddressTab";
 import EmailTab from "./EmailTab";
+import SmtpConfiguration from "./SmtpConfiguration";
 
 export default function SetUp() {
 
@@ -23,7 +24,7 @@ export default function SetUp() {
                     <Tabs
                         onTabChange={setTab}
                         size={'large'}
-                        labels={['Terminal', 'Address', 'Questions', 'Emails', 'Logo']}
+                        labels={['Terminal', 'Address', 'Questions', 'Emails', 'Logo', 'SMTP Configuration']}
                         contents={[
                             <TerminalTab
                                 enabled={tab === 0}
@@ -31,7 +32,8 @@ export default function SetUp() {
                             <AddressTab enabled={tab === 1} />,
                             <QuestionTab enabled={tab === 2} />,
                             <EmailTab enabled={tab === 3} />,
-                            <LogoTab />,
+                            <LogoTab enabled={tab === 4} />,
+                            <SmtpConfiguration enabled={tab === 5} />,
                         ]}
                     />
                 </Grid>

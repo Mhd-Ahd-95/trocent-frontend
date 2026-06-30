@@ -1,71 +1,29 @@
 import React from 'react'
 import { Box, Grid, Button, CircularProgress, Typography, alpha } from '@mui/material'
-import { useSnackbar } from 'notistack'
 import { useTheme } from '@mui/material/styles'
 import { Delete, CloudUpload, CheckCircle, Image as ImageIcon } from '@mui/icons-material'
 import { useDropzone } from 'react-dropzone'
-import LogoApi from '../../apis/Logo.api'
+import { useDefaultLogo, useLogoAddressMutation } from '../../hooks/useDefaultLogoAndAddress'
 
-function UploadDefaultLogo() {
+function UploadDefaultLogo({ enabled }) {
 
-    const { enqueueSnackbar } = useSnackbar()
     const theme = useTheme()
-    const [image, setImage] = React.useState(null)
-    const [loading, setLoading] = React.useState(true)
-    const [uploading, setUploading] = React.useState(false)
-    const [deleting, setDeleting] = React.useState(false)
 
-    const loadDefaultLogo = React.useCallback(() => {
-        setLoading(true)
-        LogoApi.loadDefaultLogo()
-            .then(res => {
-                const result = res.data
-                setImage(typeof result === 'string' ? result : null)
-            })
-            .catch(error => {
-                const message = error.response?.data?.message
-                const status = error.response?.status
-                enqueueSnackbar(message ? `${message} - ${status}` : error.message, { variant: 'error' })
-            })
-            .finally(() => setLoading(false))
-    }, [])
+    const { data: image, isLoading: loading } = useDefaultLogo({ enabled })
+    const { uploadLogo, removeDefaultLogo } = useLogoAddressMutation()
 
-    React.useEffect(() => { loadDefaultLogo() }, [loadDefaultLogo])
-
-    const handleUpload = React.useCallback((base64) => {
-        setUploading(true)
-        LogoApi.uploadDefaultLogo({ image: base64 })
-            .then(() => {
-                setImage(base64)
-                enqueueSnackbar('Logo uploaded successfully', { variant: 'success' })
-            })
-            .catch(error => {
-                const message = error.response?.data?.message
-                const status = error.response?.status
-                enqueueSnackbar(message ? `${message} - ${status}` : error.message, { variant: 'error' })
-            })
-            .finally(() => setUploading(false))
+    const handleUpload = React.useCallback(async (base64) => {
+        await uploadLogo.mutateAsync({ image: base64 })
     }, [])
 
     const readAndUpload = React.useCallback((file) => {
         const reader = new FileReader()
-        reader.onload = (e) => handleUpload(e.target.result)
+        reader.onload = async (e) => await handleUpload(e.target.result)
         reader.readAsDataURL(file)
     }, [handleUpload])
 
-    const handleRemove = React.useCallback(() => {
-        setDeleting(true)
-        LogoApi.removeLogo()
-            .then(() => {
-                setImage(null)
-                enqueueSnackbar('Logo removed successfully', { variant: 'info' })
-            })
-            .catch(error => {
-                const message = error.response?.data?.message
-                const status = error.response?.status
-                enqueueSnackbar(message ? `${message} - ${status}` : error.message, { variant: 'error' })
-            })
-            .finally(() => setDeleting(false))
+    const handleRemove = React.useCallback(async () => {
+        await removeDefaultLogo.mutateAsync()
     }, [])
 
     const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -74,7 +32,7 @@ function UploadDefaultLogo() {
         multiple: false,
         noClick: true,
         noKeyboard: true,
-        disabled: uploading || deleting,
+        disabled: uploadLogo.isPending || removeDefaultLogo.isPending
     })
 
     if (loading) return (
@@ -114,23 +72,23 @@ function UploadDefaultLogo() {
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Button
                                 fullWidth variant='outlined' color='error'
-                                startIcon={deleting ? <CircularProgress size={14} color='inherit' /> : <Delete />}
-                                disabled={deleting || uploading}
+                                startIcon={removeDefaultLogo.isPending ? <CircularProgress size={14} color='inherit' /> : <Delete />}
+                                disabled={removeDefaultLogo.isPending || uploadLogo.isPending}
                                 onClick={handleRemove}
                                 sx={{ textTransform: 'none', fontWeight: 700, fontSize: 15, borderRadius: 2, height: 43, borderStyle: 'dashed', }}
                             >
-                                {deleting ? 'Removing...' : 'Remove Logo'}
+                                {removeDefaultLogo.isPending ? 'Removing...' : 'Remove Logo'}
                             </Button>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Button
                                 fullWidth variant='outlined'
-                                startIcon={uploading ? <CircularProgress size={14} color='inherit' /> : <CloudUpload />}
-                                disabled={deleting || uploading}
+                                startIcon={uploadLogo.isPending ? <CircularProgress size={14} color='inherit' /> : <CloudUpload />}
+                                disabled={removeDefaultLogo.isPending || uploadLogo.isPending}
                                 onClick={open}
                                 sx={{ textTransform: 'none', fontWeight: 700, fontSize: 15, borderRadius: 2, height: 43, }}
                             >
-                                {uploading ? 'Uploading...' : 'Replace Logo'}
+                                {uploadLogo.isPending ? 'Uploading...' : 'Replace Logo'}
                             </Button>
                         </Grid>
                     </Grid>
@@ -141,11 +99,11 @@ function UploadDefaultLogo() {
                     sx={{
                         border: `2px dashed ${isDragActive ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.25)}`,
                         borderRadius: 3, minHeight: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
-                        cursor: uploading ? 'not-allowed' : 'pointer', background: isDragActive ? alpha(theme.palette.primary.main, 0.04) : alpha(theme.palette.primary.main, 0.01),
-                        transition: 'all 0.2s ease', px: 3, '&:hover': !uploading ? { borderColor: theme.palette.primary.main, background: alpha(theme.palette.primary.main, 0.03), } : {},
+                        cursor: uploadLogo.isPending ? 'not-allowed' : 'pointer', background: isDragActive ? alpha(theme.palette.primary.main, 0.04) : alpha(theme.palette.primary.main, 0.01),
+                        transition: 'all 0.2s ease', px: 3, '&:hover': !uploadLogo.isPending ? { borderColor: theme.palette.primary.main, background: alpha(theme.palette.primary.main, 0.03), } : {},
                     }}
                 >
-                    {uploading ? (
+                    {uploadLogo.isPending ? (
                         <>
                             <CircularProgress size={36} sx={{ color: theme.palette.primary.main }} />
                             <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>

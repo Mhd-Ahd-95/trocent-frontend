@@ -27,7 +27,7 @@ function BasicInfo(props) {
 
   const queryClient = useQueryClient();
   const { data: terminals = [], isLoading: loading } = useAddressBookByTerminals({ enabled: true })
-  
+
   const { capitalizeMany } = globalVariables.methods
 
   const handleIsCrossdock = (checked) => {

@@ -12,6 +12,7 @@ import OrderApi from '../../apis/Order.api'
 import { generateBillOfLadingPDF } from '../../components/OrderFormSections/generateBillOfLadingPDF'
 import { useSnackbar } from 'notistack'
 import { useDispatchScreenSync } from '../../hooks/useDispatchScreenSync'
+import LogoApi from '../../apis/Logo.api'
 
 export default function OrdersView() {
 
@@ -62,7 +63,7 @@ export default function OrdersView() {
     try {
       const orderId = selectedRowRef.current?.id
       if (!orderId) return
-      const messagers = queryClient.getQueryData(['addressBookByName', 'messagers'])
+      const messagers = await LogoApi.getDefaultAddress() || {}
       let currentData = await queryClient.fetchQuery({
         queryKey: ['order', Number(orderId)],
         queryFn: async () => {
@@ -77,7 +78,7 @@ export default function OrdersView() {
       currentData['customer_accessorials'] = currentData['accessorials_customer']
       currentData['customer_vehicle_types'] = currentData['vehicle_types_customer']
       const language = currentData?.customer?.language || 'en'
-      currentData['messagers'] = messagers
+      currentData['messagers'] = messagers.data
       currentData['customer_number'] = currentData['customer']['account_number']
       const pdf = await generateBillOfLadingPDF(currentData, language);
       pdf.save(`${language === 'en' ? 'BOL' : 'Connaissement'}_${currentData.order_number}.pdf`);
