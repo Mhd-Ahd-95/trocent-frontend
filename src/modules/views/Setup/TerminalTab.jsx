@@ -8,7 +8,7 @@ import { useTerminals, useTerminalsMutation } from '../../hooks/useTerminals.jsx
 function TerminalTab({ enabled }) {
 
     const { classes } = useStyles()
-    const { data: terminals, isLoading } = useTerminals({ enabled })
+    const { data: terminals = [], isLoading } = useTerminals({ enabled })
     const [inputValue, setInputValue] = useState('')
     const [showInput, setShowInput] = useState(false)
     const [deletingTerminal, setDeletingTerminal] = React.useState(null)
@@ -41,11 +41,11 @@ function TerminalTab({ enabled }) {
                     {isLoading ? <Grid container component={Box} justifyContent={'center'} py={10}>
                         <CircularProgress />
                     </Grid> :
-                        <Box className={classes.listCard}> 
+                        <Box className={classes.listCard}>
                             <Box className={classes.listHeader}>
                                 <Box className={classes.listHeaderLeft}>
-                                    <Typography className={classes.listTitle}>Terminals</Typography> 
-                                    {terminals.length > 0 && (
+                                    <Typography className={classes.listTitle}>Terminals</Typography>
+                                    {terminals && terminals?.length > 0 && (
                                         <Typography className={classes.listCount}>
                                             {terminals?.length}
                                         </Typography>
@@ -63,13 +63,13 @@ function TerminalTab({ enabled }) {
                                     Add terminals
                                 </button>
                             </Box>
-                            {terminals.length === 0 && !showInput && (
+                            {terminals && terminals?.length === 0 && !showInput && (
                                 <Box className={classes.emptyState}>
                                     <MenuBook style={{ fontSize: 24, color: '#CBD5E1' }} />
                                     <Typography className={classes.emptyText}>No terminals added yet</Typography>
                                 </Box>
                             )}
-                            {terminals.sort((a,b) => a.terminal.localeCompare(b.terminal)).map((terminal, index) => (
+                            {terminals.sort((a, b) => a.terminal.localeCompare(b.terminal)).map((terminal, index) => (
                                 <Box key={terminal.terminal ?? index} className={classes.bookRow}>
                                     <Typography className={classes.bookIndex}>{index + 1}</Typography>
                                     <Typography className={classes.bookName}>{terminal.terminal}</Typography>

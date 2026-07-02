@@ -220,7 +220,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     yPos += 10;
 
     const boxWidth = (pageWidth - 2 * margin - 5) / 2;
-    const boxHeight = 15;
+    const boxHeight = 28;
 
     checkAddPage(boxHeight + 5);
 
@@ -232,16 +232,19 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     pdf.setFontSize(7);
     let tempY = yPos + 8;
-    pdf.setFont('helvetica', 'normal');
 
     const addressShipperLine = [
-        data.shipper_name || '',
-        data.shipper_address || '',
         data.shipper_city || '',
         data.shipper_province || '',
         data.shipper_postal_code || ''
     ].filter(Boolean).join(', ');
 
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(data.shipper_name, margin + 1, tempY)
+    tempY += 3.5
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(data.shipper_address, margin + 1, tempY)
+    tempY += 3.5
     const maxTextWidth = boxWidth - 2;
     const wrappedText = pdf.splitTextToSize(addressShipperLine, maxTextWidth);
     pdf.text(wrappedText, margin + 1, tempY);
@@ -254,11 +257,17 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     pdf.text(t.receiver, receiverX + 1, yPos + 3.5);
 
     tempY = yPos + 8;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(data.receiver_name, receiverX + 1, tempY)
+    tempY += 3.5
+
     pdf.setFont('helvetica', 'normal');
 
+    pdf.text(data.receiver_address, receiverX + 1, tempY)
+
+    tempY += 3.5
+
     const addressReceiverLine = [
-        data.receiver_name || '',
-        data.receiver_address || '',
         data.receiver_city || '',
         data.receiver_province || '',
         data.receiver_postal_code || ''
