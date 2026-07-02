@@ -10,6 +10,7 @@ import { Grid, useMediaQuery } from '@mui/material'
 const Appbar = styled(AppBar)(({ theme, size }) => ({
   minWidth: 300,
   maxWidth: size === 'large' ? 630 : 420,
+  width: '100%',
   borderRadius: 10,
   display: 'flex',
   justifyContent: 'center',
@@ -17,6 +18,7 @@ const Appbar = styled(AppBar)(({ theme, size }) => ({
   color: theme.palette.grey[600],
   backgroundColor: '#fff',
   boxShadow: 'rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;',
+  overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     minWidth: '100%',
     maxWidth: '100%',
@@ -25,8 +27,7 @@ const Appbar = styled(AppBar)(({ theme, size }) => ({
 }))
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props
-
+  const { children, value, isMobile, index, ...other } = props
   return (
     <div
       role='tabpanel'
@@ -35,7 +36,7 @@ function TabPanel(props) {
       aria-labelledby={`full-width-tab-${index}`}
       {...other}
     >
-      {value === index && (<Box sx={{ p: 3 }}><Box>{children}</Box></Box>)}
+      {value === index && (<Box sx={{ p: isMobile ? 0.5: 3 }}><Box>{children}</Box></Box>)}
     </div>
   )
 }
@@ -55,6 +56,7 @@ export default function CustomTabs(props) {
   const theme = useTheme()
   const [value, setValue] = React.useState(0)
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
   const handleChange = (event, newValue) => {
     setValue(newValue)
     props?.onTabChange?.(newValue)
@@ -62,17 +64,30 @@ export default function CustomTabs(props) {
 
   return (
     <Grid container sx={{ width: '100%' }}>
-      <Grid size={12}>
-        <Box sx={{ bgcolor: 'transparent', width: '100%', display: 'flex', justifyContent: 'center' }}        >
+      <Grid size={12} sx={{ width: '100%', overflow: 'hidden' }}>
+        <Box sx={{ bgcolor: 'transparent', width: '100%', display: 'flex', justifyContent: 'center' }}>
           <Appbar position='static' size={size}>
             <Tabs
               value={value}
               onChange={handleChange}
               indicatorColor='inherits'
               textColor='primary'
-              variant={isMobile ? 'scrollable' : icons ? 'fullWidth' : 'scrollable'}
+              variant='scrollable'
+              scrollButtons={isMobile ? 'auto' : false}
+              allowScrollButtonsMobile
               aria-label='full width tabs example'
-              scrollButtons={false}
+              sx={{
+                width: '100%',
+                minWidth: 0,
+                maxWidth: '100%',
+                '& .MuiTabs-scroller': {
+                  overflowX: 'auto !important',
+                  WebkitOverflowScrolling: 'touch',
+                },
+                '& .MuiTabs-flexContainer': {
+                  width: 'max-content',
+                },
+              }}
             >
               {labels.map((label, index) => (
                 <Tab
@@ -82,7 +97,14 @@ export default function CustomTabs(props) {
                   icon={icons ? icons[index] : undefined}
                   label={label}
                   {...a11yProps(index)}
-                  sx={{ fontSize: 15, textTransform: 'capitalize', fontWeight: 700, minWidth: { xs: 'auto', sm: undefined }, px: { xs: 1, sm: 2 }, }}
+                  sx={{
+                    fontSize: 15,
+                    textTransform: 'capitalize',
+                    fontWeight: 700,
+                    minWidth: 'auto',
+                    whiteSpace: 'nowrap',
+                    px: { xs: 1.25, sm: 2 },
+                  }}
                 />
               ))}
             </Tabs>
@@ -91,7 +113,7 @@ export default function CustomTabs(props) {
       </Grid>
       <Grid size={12}>
         {contents.map((content, index) => (
-          <TabPanel value={value} index={index} key={index} dir={theme.direction}>
+          <TabPanel value={value} index={index} key={index} dir={theme.direction} isMobile={isMobile}>
             {content}
           </TabPanel>
         ))}

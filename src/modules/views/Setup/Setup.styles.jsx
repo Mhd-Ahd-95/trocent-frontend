@@ -10,7 +10,9 @@ export default makeStyles()((theme) => ({
     scrollArea: {
         flex: 1,
         overflow: 'hidden auto',
-        padding: '16px 20px',
+        [theme.breakpoints.up('sm')]: {
+            padding: '16px 20px',
+        }
     },
     listCard: {
         border: `1.5px solid #ccc`,
@@ -25,6 +27,9 @@ export default makeStyles()((theme) => ({
         padding: '13px 14px',
         borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
         background: alpha(theme.palette.primary.main, 0.03),
+        [theme.breakpoints.down('sm')]: {
+            padding: '13px 5px',
+        }
     },
     listHeaderLeft: {
         display: 'flex',

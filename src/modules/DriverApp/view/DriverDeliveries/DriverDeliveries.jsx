@@ -9,6 +9,7 @@ import { useSnackbar } from 'notistack';
 import { useDispatchScreenSync } from '../../../hooks/useDispatchScreenSync';
 import { useStyles, ORDER_STATUS_STYLES } from './Deliveries.styles';
 import DriverNotificationBanner from '../LandingPage/DriverNotificationBanner';
+import { useTranslation } from 'react-i18next';
 
 
 function formatTime(from, to) {
@@ -32,6 +33,7 @@ function formatAddress(address, city, province, postal) {
 
 function FreightTable({ freights, totalPieces, totalWeight }) {
     const { classes } = useStyles();
+    const { t } = useTranslation();
 
     if (!freights || freights.length === 0) return null;
     const weightUnit = freights[0]?.unit ?? 'lbs';
@@ -40,16 +42,16 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
         <Box>
             <Grid container className={classes.freightHeaderRow}>
                 <Grid size={1}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>PCS</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.pcs')}</Typography>
                 </Grid>
                 <Grid size={3}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>Type</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.type')}</Typography>
                 </Grid>
                 <Grid size={4}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>Dims (W×L×H)</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.dims')}</Typography>
                 </Grid>
                 <Grid size={4}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>Desc</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.desc')}</Typography>
                 </Grid>
             </Grid>
             {freights.map((f) => (
@@ -71,7 +73,7 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
             <Box className={classes.freightTotalsRow}>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
                     <Typography className={classes.freightTotalNumber}>{totalPieces}</Typography>
-                    <Typography className={classes.freightTotalUnit}>pcs</Typography>
+                    <Typography className={classes.freightTotalUnit}>{t('freightTable.pcsShort')}</Typography>
                 </Box>
                 <Box className={classes.freightTotalDot} />
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
@@ -86,6 +88,7 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
 function LegSection({ order, legType, onAction, isLast, isNoAction }) {
 
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
     const isPickup = legType === 'pickup';
     const isDone = isPickup ? ['picked up', 'delivered', 'completed', 'arrived receiver'].includes(order.order_status) : ['delivered', 'completed'].includes(order.order_status);
@@ -135,10 +138,10 @@ function LegSection({ order, legType, onAction, isLast, isNoAction }) {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
                         {!isNoAction &&
                             <>
-                                {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />DONE</Box>
+                                {isDone ? (<Box className={classes.doneBadge}><CheckCircle sx={{ fontSize: 16 }} />{t('deliveries.done')}</Box>
                                 ) : (
                                     <Box component="button" onClick={(e) => { e.stopPropagation(); onAction(order, legType); }} className={isPickup ? classes.actionBtnPickup : classes.actionBtnDelivery}>
-                                        {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> Action</> : <><Inventory2 sx={{ fontSize: 16 }} /> Action</>}
+                                        {isPickup ? <><LocalShipping sx={{ fontSize: 16 }} /> {t('deliveries.action')}</> : <><Inventory2 sx={{ fontSize: 16 }} /> {t('deliveries.action')}</>}
                                     </Box>
                                 )}
                             </>
@@ -150,18 +153,18 @@ function LegSection({ order, legType, onAction, isLast, isNoAction }) {
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <Grid container spacing={2} component={Box} px={2} py={1}>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                        <Typography className={classes.legDetailLabel}>Appointment Number</Typography>
+                        <Typography className={classes.legDetailLabel}>{t('stopAction.appointmentNumber')}</Typography>
                         <Typography className={classes.legDetailValue}>{appointment || '—'}</Typography>
                     </Grid>
                     <Grid size={6}>
-                        <Typography className={classes.legDetailLabel}>Special Instructions</Typography>
+                        <Typography className={classes.legDetailLabel}>{t('stopAction.specialInstructions')}</Typography>
                         <Typography className={cx(classes.legDetailInstructions, instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,)}>
                             {instructions || '—'}
                         </Typography>
                     </Grid>
                     {order.freights?.length > 0 && (
                         <Grid size={12}>
-                            <Typography className={classes.legDetailLabel}>Freight</Typography>
+                            <Typography className={classes.legDetailLabel}>{t('stopAction.freight')}</Typography>
                             <FreightTable
                                 freights={order.freights}
                                 totalPieces={order.total_pieces}
@@ -178,6 +181,7 @@ function LegSection({ order, legType, onAction, isLast, isNoAction }) {
 function OrderCard({ order, index, onAction, isNoAction }) {
 
     const { classes } = useStyles();
+    const { t } = useTranslation();
     const statusStyle = ORDER_STATUS_STYLES[order.order_status] ?? ORDER_STATUS_STYLES.dispatched;
     const reference = Array.isArray(order.reference_numbers) && order.reference_numbers.length > 0 ? order.reference_numbers.join(', ') : null;
     const date = moment.utc(order.scheduled_date).format('ddd, DD MMM');
@@ -215,7 +219,7 @@ function OrderCard({ order, index, onAction, isNoAction }) {
                 </Grid>
                 <Grid size={{ xs: 'auto', sm: 'auto' }} className={classes.orderStatusBadge}
                     sx={{ background: statusStyle.bg, color: statusStyle.color, border: statusStyle.border, }}>
-                    {order.order_status}
+                    {t(`stopAction.status.${order.order_status}`, order.order_status)}
                 </Grid>
             </Grid>
             <LegSection order={order} legType="pickup" onAction={onAction} isNoAction={isNoAction} />
@@ -228,6 +232,7 @@ export default function DriverDeliveries() {
 
     useDispatchScreenSync();
     const { classes } = useStyles();
+    const { t } = useTranslation();
     const { tid, action } = useParams();
     const isNoAction = action === 'no-action'
     const tripId = isNaN(tid) ? undefined : tid;
@@ -260,10 +265,9 @@ export default function DriverDeliveries() {
                         <Box className={classes.emptyIconWrap}>
                             <LocalShipping className={classes.emptyIcon} />
                         </Box>
-                        <Typography className={classes.emptyTitle}>No Active Trip</Typography>
+                        <Typography className={classes.emptyTitle}>{t('deliveries.noActiveTrip')}</Typography>
                         <Typography className={classes.emptySubtitle}>
-                            You don't have any live trip right now.
-                            Once you have a live trip, it will appear here.
+                            {t('deliveries.noActiveTripDesc')}
                         </Typography>
                     </Box>
                 </Box>
@@ -276,7 +280,7 @@ export default function DriverDeliveries() {
                             </Box>
                             <Box>
                                 <Typography className={classes.tripNumber}>
-                                    Trip #{liveTrip.trip_number}
+                                    {t('landing.tripNumber', { number: liveTrip.trip_number })}
                                 </Typography>
                                 <Typography className={classes.tripDate}>
                                     {moment.utc(liveTrip.trip_date).format('ddd, DD MMM YYYY')}
@@ -286,14 +290,14 @@ export default function DriverDeliveries() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Box className={classes.liveBadge}>
-                                    {isNoAction ? 'PENDING' : <>
+                                    {isNoAction ? t('deliveries.pending') : <>
                                         <Box className={classes.liveDot} />
-                                        LIVE
+                                        {t('landing.live')}
                                     </>}
                                 </Box>
                             </Box>
                             <Typography className={classes.tripProgress}>
-                                {liveTrip.total_orders_completed} / {liveTrip.total_orders} done
+                                {t('deliveries.doneProgress', { completed: liveTrip.total_orders_completed, total: liveTrip.total_orders })}
                             </Typography>
                         </Box>
                     </Box>

@@ -3,6 +3,7 @@ import { CircularProgress, Grid } from '@mui/material';
 import { Notifications, Check } from '@mui/icons-material';
 import { makeStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material';
+import { Trans, useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles()((theme) => {
 
@@ -116,36 +117,41 @@ const useStyles = makeStyles()((theme) => {
     };
 });
 
-
 export default function DriverNotificationBanner({ tripNumber, message, onAcknowledge, isSubmitting = false }) {
 
     const { classes } = useStyles();
-    const defaultMessage = (<>Your trip (<span className={classes.tripRef}># {tripNumber}</span>) has been modified.</>);
+    const { t } = useTranslation();
+
+    const defaultMessage = (
+        <Trans i18nKey="notification.tripModified" values={{ tripNumber }}>
+            Your trip (<span className={classes.tripRef}>#{{ tripNumber }}</span>) has been modified.
+        </Trans>
+    );
 
     return (
-            <div className={classes.wrapper}>
-                <Grid container spacing={2} className={classes.banner}>
-                    <Grid size={{ xs: 12, sm: 9 }} style={{display: 'flex', gap: 10}}>
-                        <div className={classes.iconWrap}>
-                            <Notifications sx={{ fontSize: 20, color: '#DD9100' }} className={classes.notifIcon} />
-                            <span className={classes.dot} />
+        <div className={classes.wrapper}>
+            <Grid container spacing={2} className={classes.banner}>
+                <Grid size={{ xs: 12, sm: 9 }} style={{ display: 'flex', gap: 10 }}>
+                    <div className={classes.iconWrap}>
+                        <Notifications sx={{ fontSize: 20, color: '#DD9100' }} className={classes.notifIcon} />
+                        <span className={classes.dot} />
+                    </div>
+                    <div className={classes.textGroup}>
+                        <div className={classes.label}>● {t('notification.newNotification')}</div>
+                        <div className={classes.message}>
+                            {message ?? defaultMessage}
                         </div>
-                        <div className={classes.textGroup}>
-                            <div className={classes.label}>● New Notification</div>
-                            <div className={classes.message}>
-                                {message ?? defaultMessage}
-                            </div>
-                        </div>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 3 }}>
-                        <button className={classes.ackButton} onClick={onAcknowledge}>
-                            {isSubmitting ? <CircularProgress size={18} color='inherit' /> :
-                                <Check className={classes.ackIcon} />
-                            }
-                            Acknowledge
-                        </button>
-                    </Grid>
+                    </div>
                 </Grid>
-            </div>
+                <Grid size={{ xs: 12, sm: 3 }}>
+                    <button className={classes.ackButton} onClick={onAcknowledge}>
+                        {isSubmitting ? <CircularProgress size={18} color='inherit' /> :
+                            <Check className={classes.ackIcon} />
+                        }
+                        {t('notification.acknowledge')}
+                    </button>
+                </Grid>
+            </Grid>
+        </div>
     );
 }

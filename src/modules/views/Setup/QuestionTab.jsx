@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { Box, Typography, TextField, IconButton, Tooltip, Collapse, CircularProgress, Grid, Checkbox, FormControlLabel, Chip, } from '@mui/material'
+import { Box, Typography, TextField, IconButton, Tooltip, Collapse, CircularProgress, Grid, Checkbox, FormControlLabel, Chip, useMediaQuery, useTheme, } from '@mui/material'
 import { Add, Delete, Edit, Check, Close, KeyboardArrowUp, KeyboardArrowDown, HelpOutline, PowerSettingsNew, QuestionAnswer, AddCircleOutline, } from '@mui/icons-material'
 import { useQuestionMutation, useSectionsWithQuestions } from '../../hooks/useQuestion'
 import { useSectionHeaderStyles, useQuestionRowStyles, useAddQuestionRowStyles, useQuestionTabStyles, } from './Question.styles'
@@ -109,6 +109,9 @@ function QuestionRow({ question, index, total, onDelete, onDeactivate, onReorder
     const handleDeactivate = useCallback(async () => await onDeactivate(question.id, question.section_id), [question.id, question.is_activated, onDeactivate])
     const handleStartEdit = useCallback(() => setEditing(true), [])
 
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
     return (
         <Box className={classes.root}>
             <Grid container alignItems='flex-start' spacing={1}>
@@ -167,13 +170,13 @@ function QuestionRow({ question, index, total, onDelete, onDeactivate, onReorder
                     )}
                 </Grid>
                 {!editing && (
-                    <Grid size='auto'>
+                    <Grid size={isMobile ? 12 : 'auto'}>
                         <Box className={`${classes.actions} .actions`}>
                             <Tooltip title='Move up'>
                                 <span>
                                     <IconButton size='small' disabled={index === 0}
                                         className={classes.actionBtn} onClick={handleMoveUp}>
-                                        <KeyboardArrowUp sx={{fontSize: 30}} />
+                                        <KeyboardArrowUp sx={{ fontSize: 30 }} />
                                     </IconButton>
                                 </span>
                             </Tooltip>
@@ -181,7 +184,7 @@ function QuestionRow({ question, index, total, onDelete, onDeactivate, onReorder
                                 <span>
                                     <IconButton size='small' disabled={index === total - 1}
                                         className={classes.actionBtn} onClick={handleMoveDown}>
-                                        <KeyboardArrowDown sx={{fontSize: 30}} />
+                                        <KeyboardArrowDown sx={{ fontSize: 30 }} />
                                     </IconButton>
                                 </span>
                             </Tooltip>
@@ -296,7 +299,7 @@ const QuestionTab = ({ enabled }) => {
 
     const { classes } = useQuestionTabStyles()
     const { data: sections = [], isLoading } = useSectionsWithQuestions({ enabled })
-    
+
     const { createSection, updateSection, deleteSection, createQuestion, updateQuestion, deleteQuestion, reorderQuestion, deactivateQuestion, } = useQuestionMutation()
     const sectionRef = React.useRef('')
     const [showAddSection, setShowAddSection] = useState(false)

@@ -6,6 +6,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import QuestionApi from "../../../apis/Questions.api";
 import { useStyles } from "./TripChecklist.styles";
+import { useTranslation } from 'react-i18next';
 
 function buildQueue(sections) {
     return sections
@@ -34,6 +35,7 @@ function SectionPill({ name }) {
 
 function CompletionScreen({ onConfirm, loading }) {
     const { classes } = useStyles();
+    const { t } = useTranslation();
     return (
         <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" gap={2.5} py={2}>
             <Box className={classes.completionIcon}>
@@ -41,12 +43,10 @@ function CompletionScreen({ onConfirm, loading }) {
             </Box>
             <Box>
                 <Typography variant="h6" fontWeight={800} gutterBottom>
-                    All Questions Completed
+                    {t('checklist.allCompleted')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    You've answered all required checklist questions.
-                    <br />
-                    Confirm below to start your trip.
+                    {t('checklist.completedDesc')}
                 </Typography>
             </Box>
             <Button
@@ -59,7 +59,7 @@ function CompletionScreen({ onConfirm, loading }) {
                 startIcon={loading ? <CircularProgress size={18} color="success" /> : <CheckCircleIcon />}
                 sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
-                Confirm &amp; Start Trip
+                {t('checklist.confirmStartTrip')}
             </Button>
         </Box>
     );
@@ -67,6 +67,7 @@ function CompletionScreen({ onConfirm, loading }) {
 
 export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId }) {
     const { classes } = useStyles();
+    const { t } = useTranslation();
     const queue = React.useMemo(() => buildQueue(sections), [sections]);
     const [idx, setIdx] = React.useState(0);
     const [answering, setAnswering] = React.useState(false);
@@ -120,12 +121,12 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                     }
                     title={
                         <Typography variant="h6" fontWeight={800}>
-                            Pre-Trip Checklist
+                            {t('checklist.preTripChecklist')}
                         </Typography>
                     }
                     subheader={
                         <Typography variant="caption" fontSize={'14px'} color="text.secondary">
-                            Complete before starting your trip
+                            {t('checklist.completeBeforeStart')}
                         </Typography>
                     }
                     action={
@@ -148,7 +149,7 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                             {current.question.gate && (
                                 <Paper className={classes.gateWarning} elevation={0}>
                                     <WarningAmberIcon sx={{ fontSize: 20, color: "warning.main" }} />
-                                    Answering No will skip to the next section
+                                    {t('checklist.gateWarning')}
                                 </Paper>
                             )}
                             <Grid container spacing={2} justifyContent={'center'} mt={5}>
@@ -163,7 +164,7 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                                         startIcon={answering === 'y' ? <CircularProgress size={16} color="success" /> : <CheckIcon />}
                                         sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, textTransform: "uppercase" }}
                                     >
-                                        Yes
+                                        {t('checklist.yes')}
                                     </Button>
                                 </Grid>
                                 <Grid item xs={6}>
@@ -177,7 +178,7 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                                         startIcon={answering === 'n' ? <CircularProgress size={16} color="error" /> : <CloseIcon />}
                                         sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, textTransform: "uppercase" }}
                                     >
-                                        No
+                                        {t('checklist.no')}
                                     </Button>
                                 </Grid>
                             </Grid>

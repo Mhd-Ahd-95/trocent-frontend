@@ -179,6 +179,23 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut };
+    const updateDriverLanguage = useMutation({
+        mutationFn: async ({ did, lang }) => {
+            const res = await DriversApi.updateDriverLanguage(did, lang);
+            return res.data;
+        },
+        onSuccess: (res, { did, lang }) => {
+            if (res) {
+                const authedUser = JSON.parse(localStorage.getItem('authedUser'))
+                enqueueSnackbar('Language has been successfully changed', { variant: 'success' });
+                const updatedUser = { ...authedUser, language: lang };
+                localStorage.setItem('authedUser', JSON.stringify(updatedUser));
+                window.location.reload();
+            }
+        },
+        onError: handleError,
+    });
+
+    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut, updateDriverLanguage };
 
 }

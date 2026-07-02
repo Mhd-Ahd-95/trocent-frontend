@@ -44,7 +44,7 @@ function UploadDefaultLogo({ enabled }) {
     return (
         <Box {...getRootProps()}>
             <input {...getInputProps()} />
-            {image ? (
+            {Boolean(image) ? (
                 <Box>
                     <Box sx={{ border: `1.5px solid #ccc`, borderRadius: 3, overflow: 'hidden', background: '#fff', mb: 2, }}>
                         <Box sx={{ background: `repeating-conic-gradient(${alpha('#000', 0.04)} 0% 25%, transparent 0% 50%) 0 0 / 16px 16px`, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200, p: 4, position: 'relative', }}>

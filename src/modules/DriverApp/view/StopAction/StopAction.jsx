@@ -8,6 +8,7 @@ import { useDispatchOrderMutation, useStopAction } from '../../../hooks/useDispa
 import { useSnackbar } from 'notistack';
 import moment from 'moment';
 import { useOrderMutations } from '../../../hooks/useOrders';
+import { useTranslation } from 'react-i18next';
 
 const STATUS_CLASS = {
     'dispatched': 'statusDispatched',
@@ -26,9 +27,10 @@ const SERVICE_CLASS = {
 
 function StatusBadge({ status }) {
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     return (
         <Box className={cx(classes.badge, classes[STATUS_CLASS[status] ?? 'statusDispatched'])}>
-            {status}
+            {t(`stopAction.status.${status}`, status)}
         </Box>
     );
 }
@@ -50,6 +52,7 @@ function formatDims(f) {
 
 function FreightTable({ freights, totalPieces, totalWeight }) {
     const { classes } = useStyles();
+    const { t } = useTranslation();
 
     if (!freights || freights.length === 0) return null;
     const weightUnit = freights[0]?.unit ?? 'lbs';
@@ -58,16 +61,16 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
         <Box>
             <Grid container className={classes.freightHeaderRow}>
                 <Grid size={1}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>PCS</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.pcs')}</Typography>
                 </Grid>
                 <Grid size={3}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>Type</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.type')}</Typography>
                 </Grid>
                 <Grid size={4}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>Dims (W×L×H)</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.dims')}</Typography>
                 </Grid>
                 <Grid size={4}>
-                    <Typography variant="caption" className={classes.freightHeaderText}>Desc</Typography>
+                    <Typography variant="caption" className={classes.freightHeaderText}>{t('freightTable.desc')}</Typography>
                 </Grid>
             </Grid>
             {freights.map((f) => (
@@ -89,7 +92,7 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
             <Box className={classes.freightTotalsRow}>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
                     <Typography className={classes.freightTotalNumber}>{totalPieces}</Typography>
-                    <Typography className={classes.freightTotalUnit}>pcs</Typography>
+                    <Typography className={classes.freightTotalUnit}>{t('freightTable.pcsShort')}</Typography>
                 </Box>
                 <Box className={classes.freightTotalDot} />
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
@@ -103,6 +106,7 @@ function FreightTable({ freights, totalPieces, totalWeight }) {
 
 function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup }) {
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const [open, setOpen] = React.useState(false)
     const appointment = Array.isArray(order.appointment_numbers) && order.appointment_numbers.length > 0 ? order.appointment_numbers.join(', ') : null
     const references = Array.isArray(order.reference_numbers) && order.reference_numbers.length > 0 ? order.reference_numbers.join(', ') : null
@@ -116,14 +120,14 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
                 <Box className={classes.freightBillInfo}>
                     <Box className={classes.freightBillOrderNum}>
                         # {order.order_number}
-                        {isCurrentOrder && (<Box component="span" className={classes.thisOrderTag}>THIS ORDER</Box>)}
+                        {isCurrentOrder && (<Box component="span" className={classes.thisOrderTag}>{t('stopAction.thisOrder')}</Box>)}
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0 6px', marginTop: '3px' }}>
                         <Typography className={classes.freightBillSub}>
                             {order.customer_name}
                         </Typography>
                         <Typography className={classes.freightBillTotals}>
-                            · {order.total_pieces} pcs · {order.total_actual_weight} {unit}
+                            · {t('stopAction.pcsWeight', { pieces: order.total_pieces, weight: order.total_actual_weight, unit })}
                         </Typography>
                     </Box>
                 </Box>
@@ -138,27 +142,27 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
                 <Grid container spacing={2} component={Box} px={2} py={1}>
                     <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography className={classes.legDetailLabel}>
-                            {isPickup ? 'Pickup Time' : 'Delivery Time'}
+                            {isPickup ? t('stopAction.pickupTime') : t('stopAction.deliveryTime')}
                         </Typography>
                         <Typography className={classes.legDetailValue}>{order.time || '—'}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                        <Typography className={classes.legDetailLabel}>Appointment Number</Typography>
+                        <Typography className={classes.legDetailLabel}>{t('stopAction.appointmentNumber')}</Typography>
                         <Typography className={classes.legDetailValue}>{appointment || '—'}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                        <Typography className={classes.legDetailLabel}>Special Instructions</Typography>
+                        <Typography className={classes.legDetailLabel}>{t('stopAction.specialInstructions')}</Typography>
                         <Typography className={cx(classes.legDetailInstructions, order.special_instructions ? classes.legDetailInstructionsText : classes.legDetailInstructionsEmpty,)}>
                             {order.special_instructions || '—'}
                         </Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                        <Typography className={classes.legDetailLabel}>Reference Numbers</Typography>
+                        <Typography className={classes.legDetailLabel}>{t('stopAction.referenceNumbers')}</Typography>
                         <Typography className={classes.legDetailValue}>{references || '—'}</Typography>
                     </Grid>
                     {order.freight_details?.length > 0 && (
                         <Grid size={12}>
-                            <Typography className={classes.legDetailLabel}>Freight</Typography>
+                            <Typography className={classes.legDetailLabel}>{t('stopAction.freight')}</Typography>
                             <FreightTable
                                 freights={order.freight_details}
                                 totalPieces={order.total_pieces}
@@ -175,6 +179,7 @@ function FreightBillItem({ order, checked, onToggle, isCurrentOrder, isPickup })
 const OrderNoteSection = React.memo(({ order_id, legType }) => {
 
     const { classes, cx } = useStyles()
+    const { t } = useTranslation();
     const [commentOpen, setCommentOpen] = React.useState(false);
     const [commentText, setCommentText] = React.useState('');
     const { addNote } = useOrderMutations()
@@ -198,14 +203,14 @@ const OrderNoteSection = React.memo(({ order_id, legType }) => {
                 <Box className={classes.commentToggleIcon}>
                     <EditNote sx={{ fontSize: 16, color: 'primary.main' }} />
                 </Box>
-                <Typography className={classes.commentToggleLabel}>Write a Comment</Typography>
+                <Typography className={classes.commentToggleLabel}>{t('stopAction.writeComment')}</Typography>
                 <ExpandMore className={cx(classes.commentChevron, commentOpen && classes.commentChevronOpen)} />
             </button>
             <Collapse in={commentOpen} timeout="auto" unmountOnExit>
                 <Box className={classes.commentBody}>
                     <textarea
                         className={classes.commentInput}
-                        placeholder="Write your comment here…"
+                        placeholder={t('stopAction.writeCommentPlaceholder')}
                         value={commentText}
                         onChange={e => setCommentText(e.target.value)}
                         maxLength={500}
@@ -215,11 +220,11 @@ const OrderNoteSection = React.memo(({ order_id, legType }) => {
                             {commentText.length} / 500
                         </Typography>
                         <button className={classes.commentCancelBtn} onClick={() => { setCommentOpen(false); setCommentText(''); }}>
-                            Cancel
+                            {t('stopAction.cancel')}
                         </button>
                         <button className={classes.commentSaveBtn} disabled={!commentText.trim()} onClick={handleCreateNote}>
                             {addNote.isPending && <CircularProgress color='inherit' size={18} style={{ marginRight: 10, marginBottom: -3 }} />}
-                            Save Comment
+                            {t('stopAction.saveComment')}
                         </button>
                     </Stack>
                 </Box>
@@ -233,6 +238,7 @@ export default function StopAction() {
 
     const params = useParams();
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
 
@@ -316,7 +322,7 @@ export default function StopAction() {
             <Box className={classes.page}>
                 <Stack direction="row" alignItems="center" className={classes.backRow} onClick={() => navigate(-1)}>
                     <ArrowBackIos className={classes.backIcon} />
-                    <Typography className={classes.backLabel}>Back to Trip</Typography>
+                    <Typography className={classes.backLabel}>{t('stopAction.backToTrip')}</Typography>
                 </Stack>
 
                 <Grid container spacing={1} mb={2} className={classes.pageTitle} justifyContent={'space-between'}>
@@ -326,7 +332,7 @@ export default function StopAction() {
                                 {isPickup ? 'P' : 'D'}
                             </Box>
                             <Box>
-                                <Typography className={classes.pageTitleText}>Stop Actions</Typography>
+                                <Typography className={classes.pageTitleText}>{t('stopAction.stopActions')}</Typography>
                                 <Typography className={classes.pageTitleSub}>
                                     {dispatchOrder?.name}
                                 </Typography>
@@ -346,7 +352,7 @@ export default function StopAction() {
                     <Stack direction="row" alignItems="center" gap={1} className={classes.cardHeader}>
                         <Business className={classes.cardHeaderIcon} />
                         <Typography className={classes.cardHeaderTitle}>
-                            {isPickup ? 'Shipper Info' : 'Receiver Info'}
+                            {isPickup ? t('stopAction.shipperInfo') : t('stopAction.receiverInfo')}
                         </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="flex-start" gap={1.25} className={classes.infoRow}>
@@ -354,7 +360,7 @@ export default function StopAction() {
                             <Place className={classes.infoIcon} />
                         </Box>
                         <Box>
-                            <Typography className={classes.infoLabel}>Location</Typography>
+                            <Typography className={classes.infoLabel}>{t('stopAction.location')}</Typography>
                             <Typography className={classes.infoValue}>{dispatchOrder?.name}</Typography>
                             <Typography className={classes.infoValueMuted}>
                                 {`${dispatchOrder?.address}, ${dispatchOrder?.city}, ${dispatchOrder?.province}, ${dispatchOrder?.postal_code}`}
@@ -368,7 +374,7 @@ export default function StopAction() {
                                     <Person className={classes.infoIcon} />
                                 </Box>
                                 <Box>
-                                    <Typography className={classes.infoLabel}>Contact</Typography>
+                                    <Typography className={classes.infoLabel}>{t('stopAction.contact')}</Typography>
                                     <Typography className={classes.infoValue}>{dispatchOrder.contact_name}</Typography>
                                 </Box>
                             </Stack>
@@ -379,7 +385,7 @@ export default function StopAction() {
                                     <Phone className={classes.infoIcon} />
                                 </Box>
                                 <Box>
-                                    <Typography className={classes.infoLabel}>Phone</Typography>
+                                    <Typography className={classes.infoLabel}>{t('stopAction.phone')}</Typography>
                                     <Typography component="a" href={`tel:${dispatchOrder.phone_number}`} className={classes.infoValuePhone}>
                                         {dispatchOrder.phone_number}
                                     </Typography>
@@ -395,17 +401,17 @@ export default function StopAction() {
                                 <ReceiptLong className={classes.cardHeaderIcon} sx={{ flexShrink: 0 }} />
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0 6px', minWidth: 0 }}>
                                     <Typography className={classes.cardHeaderTitle}>
-                                        Freight Bills
+                                        {t('stopAction.freightBills')}
                                     </Typography>
                                     <Typography className={classes.freightBillTotals}>
-                                        {totalBills.totalPieces} pcs · {totalBills.totalWeight} {totalBills.unit}
+                                        {t('stopAction.pcsWeight', { pieces: totalBills.totalPieces, weight: totalBills.totalWeight, unit: totalBills.unit })}
                                     </Typography>
                                 </Box>
                             </Box>
                         </Grid>
                         <Grid size={'auto'} sx={{ flexShrink: 0 }}>
                             <Typography sx={{ ml: 'auto', fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
-                                {checkedOrders.size} / {relatedOrders.length} selected
+                                {t('stopAction.selectedCount', { checked: checkedOrders.size, total: relatedOrders.length })}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -429,26 +435,26 @@ export default function StopAction() {
                                 disabled={arriveDisabled || driverUpdateOrderStatus.isPending}
                             >
                                 {(arrivedShipper && isPickup) || (arrivedReceiver && !isPickup)
-                                    ? <><CheckCircle sx={{ fontSize: 18 }} />{isPickup ? 'Arrived At Shipper' : 'Arrived At Receiver'}</>
+                                    ? <><CheckCircle sx={{ fontSize: 18 }} />{isPickup ? t('stopAction.arrivedAtShipper') : t('stopAction.arrivedAtReceiver')}</>
                                     : arriveDisabled
-                                        ? <><Place sx={{ fontSize: 18 }} />Awaiting Pickup</>
-                                        : <>{driverUpdateOrderStatus.isPending && <CircularProgress size={18} color="inherit" />}<Place sx={{ fontSize: 18 }} />Arrive</>
+                                        ? <><Place sx={{ fontSize: 18 }} />{t('stopAction.awaitingPickup')}</>
+                                        : <>{driverUpdateOrderStatus.isPending && <CircularProgress size={18} color="inherit" />}<Place sx={{ fontSize: 18 }} />{t('stopAction.arrive')}</>
                                 }
                             </button>
                         )}
                         {showActionBtn && (
                             <button className={cx(classes.actionBtn, classes.actionBtnPickup)} onClick={handlePickupOrDeliver}>
-                                <LocalShipping sx={{ fontSize: 18 }} />{isPickup ? 'Pick Up' : 'Deliver'}
+                                <LocalShipping sx={{ fontSize: 18 }} />{isPickup ? t('stopAction.pickUp') : t('stopAction.deliver')}
                             </button>
                         )}
                         {(pickedUp && isPickup) && (
                             <button className={cx(classes.actionBtn, classes.actionBtnDone)} disabled>
-                                <CheckCircle sx={{ fontSize: 18 }} />Picked Up ✓
+                                <CheckCircle sx={{ fontSize: 18 }} />{t('stopAction.pickedUpDone')}
                             </button>
                         )}
                         {(delivered && !isPickup) && (
                             <button className={cx(classes.actionBtn, classes.actionBtnDone)} disabled>
-                                <CheckCircle sx={{ fontSize: 18 }} />Delivered ✓
+                                <CheckCircle sx={{ fontSize: 18 }} />{t('stopAction.deliveredDone')}
                             </button>
                         )}
                     </Stack>

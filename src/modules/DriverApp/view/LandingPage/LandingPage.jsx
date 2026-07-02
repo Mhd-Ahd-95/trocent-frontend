@@ -14,15 +14,19 @@ import ClockInOut from './ClockInOut';
 import { useQueryClient } from '@tanstack/react-query';
 import QuestionApi from '../../../apis/Questions.api';
 import { TripChecklist } from '../../components';
+import { useTranslation } from 'react-i18next';
 
-export const LoadingState = ({ textLoading }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
-        <CircularProgress size={20} />
-        <Typography variant="body2" color="text.secondary">
-            {textLoading ? textLoading : 'Loading trips…'}
-        </Typography>
-    </Box>
-);
+export const LoadingState = ({ textLoading }) => {
+    const { t } = useTranslation();
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+            <CircularProgress size={20} />
+            <Typography variant="body2" color="text.secondary">
+                {textLoading ? textLoading : t('landing.loadingTrips')}
+            </Typography>
+        </Box>
+    );
+};
 
 function formatTripDate(dateStr) {
     const date = new Date(dateStr + 'T00:00:00');
@@ -37,6 +41,7 @@ function formatTripDate(dateStr) {
 }
 
 function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) {
+    const { t } = useTranslation();
     const dateLabel = formatTripDate(trip.trip_date);
     const isToday = dateLabel === 'Today';
     const isPast = dateLabel === 'Older';
@@ -56,21 +61,21 @@ function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) 
                 {index + 1}
             </div>
             <div className={classes.tripInfo}>
-                <div className={classes.tripNumber}>Trip #{trip.trip_number}</div>
-                <div className={classes.tripDate}>{trip.total_orders ?? 0} orders</div>
+                <div className={classes.tripNumber}>{t('landing.tripNumber', { number: trip.trip_number })}</div>
+                <div className={classes.tripDate}>{t('landing.ordersCount', { count: trip.total_orders ?? 0 })}</div>
             </div>
             <div className={classes.tripRight}>
                 {isActive && (
                     <div className={classes.liveBadge}>
                         <div className={classes.liveDot} />
-                        LIVE
+                        {t('landing.live')}
                     </div>
                 )}
                 <div className={cx(
                     classes.tripBadge,
                     isToday ? classes.tripBadgeToday : isPast ? classes.tripBadgeOlder : classes.tripBadgeUpcoming
                 )}>
-                    {isToday ? 'TODAY' : isPast ? 'PAST' : 'UPCOMING'}
+                    {isToday ? t('landing.today') : isPast ? t('landing.past') : t('landing.upcoming')}
                 </div>
                 {!isActive && (
                     <IconButton color="secondary" onClick={(e) => {
@@ -86,9 +91,11 @@ function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) 
 }
 
 export default function DriverLanding() {
+    
     useDispatchScreenSync();
 
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const authedUser = JSON.parse(localStorage.getItem('authedUser'));
     const [selectTrip, setSelectTrip] = React.useState(null);
     const [checklistOpen, setChecklistOpen] = React.useState(false);
@@ -104,7 +111,7 @@ export default function DriverLanding() {
     const queryClient = useQueryClient();
 
     const sections = queryClient.getQueryData(['questions']) ?? [];
-    
+
     const liveTrip = React.useMemo(() => driverTrips?.find(t => t.trip_status === 'active') ?? null, [driverTrips]);
     const hasLiveTrip = Boolean(liveTrip);
     const startTripDisabled = hasLiveTrip || !selectTrip;
@@ -112,11 +119,11 @@ export default function DriverLanding() {
 
     const onSelect = React.useCallback((trip) => {
         if (!clockedInRef.current) {
-            enqueueSnackbar('Please clock in before making any action.', { variant: 'warning' });
+            enqueueSnackbar(t('landing.clockInWarning'), { variant: 'warning' });
             return;
         }
         setSelectTrip(prev => prev?.id === trip.id ? null : trip);
-    }, []);
+    }, [t]);
 
     React.useEffect(() => {
         if (isError && error) {
@@ -141,14 +148,14 @@ export default function DriverLanding() {
         e.preventDefault();
         if (startTripDisabled) {
             if (hasLiveTrip) {
-                enqueueSnackbar('You already have an active trip. Complete it first.', { variant: 'warning' });
+                enqueueSnackbar(t('landing.activeTripWarning'), { variant: 'warning' });
             } else {
-                enqueueSnackbar('Please select a trip before proceeding.', { variant: 'info' });
+                enqueueSnackbar(t('landing.selectTripInfo'), { variant: 'info' });
             }
             return;
         }
         if (!clockedInRef.current) {
-            enqueueSnackbar('Please clock in before making any action.', { variant: 'warning' });
+            enqueueSnackbar(t('landing.clockInWarning'), { variant: 'warning' });
             return;
         }
         setChecklistLoading(true);
@@ -162,7 +169,7 @@ export default function DriverLanding() {
                 setChecklistOpen(true);
             }
         } catch (err) {
-            enqueueSnackbar('Could not load trip checklist. Please try again.', { variant: 'error' });
+            enqueueSnackbar(t('landing.checklistError'), { variant: 'error' });
         } finally {
             setChecklistLoading(false);
         }
@@ -235,12 +242,12 @@ export default function DriverLanding() {
                 <Grid size={12}>
                     <div className={classes.hero}>
                         <div className={classes.driverName}>
-                            WELCOME,&nbsp;<em>{authedUser?.fname}</em>
+                            {t('landing.welcome')}&nbsp;<em>{authedUser?.fname}</em>
                         </div>
                         <div className={classes.driverMeta}>
                             <span className={cx(classes.badge, classes.badgeId)}>
                                 <Speed sx={{ fontSize: 12 }} />
-                                ID: {authedUser.driver_number ?? '-'}
+                                {t('landing.driverId', { id: authedUser.driver_number ?? '-' })}
                             </span>
                         </div>
                     </div>
@@ -253,20 +260,20 @@ export default function DriverLanding() {
                                 <div className={classes.tripsCardIcon}>
                                     <DirectionsCar sx={{ fontSize: 25, color: '#f59e0b' }} />
                                 </div>
-                                <span className={classes.tripsCardTitle}>Assigned Trips</span>
+                                <span className={classes.tripsCardTitle}>{t('landing.assignedTrips')}</span>
                             </div>
                             {driverTrips && <div className={classes.tripsCount}>{driverTrips.length}</div>}
                         </div>
 
                         {isLoading ? (
                             <div className={classes.noTrips}>
-                                <LoadingState textLoading={`Loading ${authedUser?.username} trips...`} />
+                                <LoadingState textLoading={t('landing.loadingUserTrips', { username: authedUser?.username })} />
                             </div>
                         ) : sortedTrips.length === 0 ? (
                             <div className={classes.noTrips}>
                                 <div className={classes.noTripsIcon}>🚚</div>
-                                <div className={classes.noTripsText}>No trips assigned</div>
-                                <div className={classes.noTripsSub}>Waiting for dispatch assignment</div>
+                                <div className={classes.noTripsText}>{t('landing.noTripsAssigned')}</div>
+                                <div className={classes.noTripsSub}>{t('landing.noTripsSub')}</div>
                             </div>
                         ) : (
                             <div className={classes.tripsList}>
@@ -300,7 +307,7 @@ export default function DriverLanding() {
                                                 : <StopCircle sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />}
                                         </div>
                                         <div>
-                                            <div className={cx(classes.btnTitle, classes.btnTitleEndTrip)}>End Trip</div>
+                                            <div className={cx(classes.btnTitle, classes.btnTitleEndTrip)}>{t('landing.endTrip')}</div>
                                         </div>
                                     </div>
                                     <div className={classes.endTripPulse} />
@@ -322,7 +329,7 @@ export default function DriverLanding() {
                                                     : <PlayArrow sx={{ fontSize: 26, color: 'rgba(255,255,255,0.9)' }} />}
                                             </div>
                                             <div>
-                                                <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>Start Trip</div>
+                                                <div className={cx(classes.btnTitle, classes.btnTitlePrimary)}>{t('landing.startTrip')}</div>
                                             </div>
                                         </div>
                                         <span className={classes.btnArrow}>→</span>
@@ -332,7 +339,7 @@ export default function DriverLanding() {
                         )}
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Tooltip
-                                title={deliveriesDisabled ? 'Start a trip to access deliveries' : ''}
+                                title={deliveriesDisabled ? t('landing.startTripToAccessDeliveries') : ''}
                                 placement="top"
                                 disableHoverListener={!deliveriesDisabled}
                             >
@@ -342,7 +349,7 @@ export default function DriverLanding() {
                                         disabled={deliveriesDisabled}
                                         onClick={() => {
                                             if (!clockedInRef.current) {
-                                                enqueueSnackbar('Please clock in before making any action.', { variant: 'warning' });
+                                                enqueueSnackbar(t('landing.clockInWarning'), { variant: 'warning' });
                                                 return;
                                             }
                                             navigate(`/driver-deliveries/${liveTrip.id}`);
@@ -352,7 +359,7 @@ export default function DriverLanding() {
                                             <Inventory2 sx={{ fontSize: 20, color: '#95a5a6' }} />
                                         </div>
                                         <div>
-                                            <div className={classes.btnTitle}>Deliveries</div>
+                                            <div className={classes.btnTitle}>{t('landing.deliveries')}</div>
                                         </div>
                                     </button>
                                 </span>
@@ -371,7 +378,7 @@ export default function DriverLanding() {
                         <Grid size={{ xs: 12, sm: 4 }}>
                             <div className={classes.statCard}>
                                 <div className={cx(classes.statNumber, classes.statNumberGold)}>{totalToday}</div>
-                                <div className={classes.statLabel}>Today</div>
+                                <div className={classes.statLabel}>{t('landing.statToday')}</div>
                             </div>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 4 }}>
@@ -380,13 +387,13 @@ export default function DriverLanding() {
                                     ? <Skeleton variant="rectangular" width="100%" height={20} />
                                     : <div className={cx(classes.statNumber, classes.statNumberGreen)}>{countCompleted}</div>
                                 }
-                                <div className={classes.statLabel}>Done</div>
+                                <div className={classes.statLabel}>{t('landing.statDone')}</div>
                             </div>
                         </Grid>
                         <Grid size={{ xs: 12, sm: 4 }}>
                             <div className={classes.statCard}>
                                 <div className={cx(classes.statNumber, classes.statNumberBlue)}>{totalPending}</div>
-                                <div className={classes.statLabel}>Pending</div>
+                                <div className={classes.statLabel}>{t('landing.statPending')}</div>
                             </div>
                         </Grid>
                     </Grid>

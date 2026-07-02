@@ -42,7 +42,7 @@ function AddressTab({ enabled }) {
                         {
                             headerName: 'Terminal',
                             field: 'terminal',
-                            minWidth: 100,
+                            minWidth: 120,
                             flex: 1,
                             renderCell: rowData => (
                                 <Chip

@@ -5,6 +5,7 @@ import { CircularProgress, Grid, Skeleton } from '@mui/material';
 import globalVariables from '../../../global';
 import { useDriverClock, useDriverMutation } from '../../../hooks/useDrivers';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 function formatDuration(totalSeconds) {
     const h = Math.floor(totalSeconds / 3600);
@@ -19,9 +20,11 @@ function formatDuration(totalSeconds) {
 function ClockInOut({ hasTrips, clockedInRef }) {
 
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const authUser = globalVariables.auth.user;
 
     const { data, isLoading, isFetching } = useDriverClock(authUser?.driver_id);
+    
     const { driverClockInOut } = useDriverMutation();
     const [tickSeconds, setTickSeconds] = React.useState(0);
 
@@ -37,7 +40,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
             setTickSeconds(0);
             return;
         }
-        if (data?.active_clock_in){
+        if (data?.active_clock_in) {
             clockedInRef.current = true
         }
         const base = moment.utc(data.active_clock_in).valueOf();
@@ -85,7 +88,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
                             {isPending ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <Logout sx={{ fontSize: 20, color: '#fff' }} />}
                         </div>
                         <div>
-                            <div className={classes.btnTitle}>Clock Out</div>
+                            <div className={classes.btnTitle}>{t('clock.clockOut')}</div>
                         </div>
                     </button>
                 ) : (
@@ -98,7 +101,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
                             {isPending ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <Login sx={{ fontSize: 20, color: '#fff' }} />}
                         </div>
                         <div>
-                            <div className={classes.btnTitle} >Clock In</div>
+                            <div className={classes.btnTitle} >{t('clock.clockIn')}</div>
                         </div>
                     </button>
                 )}
@@ -108,7 +111,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
                     <div className={classes.hoursLeft}>
                         <span className={classes.hoursIcon}><QueryBuilder fontSize="medium" /></span>
                         <div>
-                            <div className={classes.hoursTitle}>Service Hours Today</div>
+                            <div className={classes.hoursTitle}>{t('clock.serviceHoursToday')}</div>
                             <div className={classes.hoursValue}>
                                 {isLoading || driverClockInOut.isPending || isFetching ? <Skeleton variant='rectangular' width='120px' height={25} /> : totalSeconds > 0 ? formatDuration(totalSeconds) : '—'}
                             </div>
