@@ -65,7 +65,7 @@ function CompletionScreen({ onConfirm, loading }) {
     );
 }
 
-export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId }) {
+export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId, language = 'en' }) {
     const { classes } = useStyles();
     const { t } = useTranslation();
     const queue = React.useMemo(() => buildQueue(sections), [sections]);
@@ -144,7 +144,7 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                         <Box key={animKey}>
                             <SectionPill name={current.section.name} />
                             <Typography className={classes.questionText} color="text.primary">
-                                {current.question.question_en}
+                                {current.question[`question_${language}`]}
                             </Typography>
                             {current.question.gate && (
                                 <Paper className={classes.gateWarning} elevation={0}>

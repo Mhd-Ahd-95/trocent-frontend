@@ -217,6 +217,7 @@ export default function DriverLanding() {
         <DriverLayout active="Home" tripId={liveTrip?.id} clockedInRef={clockedInRef}>
             {checklistOpen && sections.length > 0 && (
                 <TripChecklist
+                    language={authedUser?.language || 'en'}
                     sections={sections}
                     tripId={selectTrip?.id}
                     checklistId={checklistId}
