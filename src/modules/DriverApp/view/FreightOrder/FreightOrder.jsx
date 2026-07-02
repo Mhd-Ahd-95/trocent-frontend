@@ -8,7 +8,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useDispatchOrderMutation, useDriverFreightOrder } from '../../../hooks/useDispatchOrders';
 import { useSnackbar } from 'notistack';
 import moment from 'moment';
-
+import { useTranslation } from 'react-i18next';
 
 function buildOrderState(orders) {
     const state = {};
@@ -43,6 +43,7 @@ function AccessorialItem({ label, checked, onToggle }) {
 
 const SignatureCanvas = React.forwardRef(function SignatureCanvas({ onSigned }, ref) {
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const canvasRef = React.useRef(null);
     const drawing = React.useRef(false);
     const hasMark = React.useRef(false);
@@ -104,11 +105,11 @@ const SignatureCanvas = React.forwardRef(function SignatureCanvas({ onSigned }, 
                     onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
                     onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw}
                 />
-                {!active && <Box className={classes.signatureHint}>Sign here</Box>}
+                {!active && <Box className={classes.signatureHint}>{t('freight.signHere')}</Box>}
             </Box>
             <Box className={classes.signatureFooter}>
                 <button className={classes.clearBtn} onClick={clear}>
-                    <Refresh className={classes.clearIcon} /> Clear
+                    <Refresh className={classes.clearIcon} /> {t('freight.clear')}
                 </button>
             </Box>
         </Box>
@@ -123,6 +124,7 @@ export default function FreightOrder() {
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
     const { classes, cx } = useStyles();
+    const { t } = useTranslation();
     const dispatchedOrdersSelected = location.state;
     const [form, setForm] = React.useState({ orders: {}, hasSigned: false, done: false });
     const signeeRef = React.useRef('');
@@ -163,12 +165,12 @@ export default function FreightOrder() {
         try {
             const signeeName = signeeRef.current?.trim();
             if (!signeeName) {
-                enqueueSnackbar('Please enter the signee name.', { variant: 'warning' });
+                enqueueSnackbar(t('freight.enterSigneeWarning'), { variant: 'warning' });
                 return;
             }
             const signature = signatureRef.current?.getDataURL();
             if (!signature) {
-                enqueueSnackbar('Please provide a signature.', { variant: 'warning' });
+                enqueueSnackbar(t('freight.provideSignatureWarning'), { variant: 'warning' });
                 return;
             }
             const time = isPickup ?
@@ -224,14 +226,14 @@ export default function FreightOrder() {
                         <CheckCircle sx={{ fontSize: 42, color: 'success.main' }} />
                     </Box>
                     <Typography className={classes.successTitle}>
-                        {isPickup ? 'Picked Up' : 'Delivered'} Successfully!
+                        {isPickup ? t('freight.pickedUpSuccess') : t('freight.deliveredSuccess')}
                     </Typography>
                     <Typography className={classes.successSub}>
-                        {SELECTED_ORDERS?.length} order{SELECTED_ORDERS?.length > 1 ? 's' : ''} confirmed
+                        {t('freight.ordersConfirmed', { count: SELECTED_ORDERS?.length ?? 0 })}
                     </Typography>
                     <Box className={classes.successOrderList}>
                         {SELECTED_ORDERS?.map(o => (
-                            <Box key={o.id} className={classes.successOrderChip}>Order #{o.order_number}</Box>
+                            <Box key={o.id} className={classes.successOrderChip}>{t('freight.orderNumber', { number: o.order_number })}</Box>
                         ))}
                     </Box>
                     <Box
@@ -240,7 +242,7 @@ export default function FreightOrder() {
                         className={classes.actionBtnPickup}
                         mt={2}
                     >
-                        {<><ArrowBack sx={{ fontSize: 18 }} /> Back To Trip Live</>}
+                        {<><ArrowBack sx={{ fontSize: 18 }} /> {t('freight.backToTripLive')}</>}
                     </Box>
                 </Box>
             </DriverLayout>
@@ -259,7 +261,7 @@ export default function FreightOrder() {
                     <Grid size={12}>
                         <Stack direction="row" alignItems="center" className={classes.backRow} onClick={() => navigate(-1)}>
                             <ArrowBackIos className={classes.backIcon} />
-                            <Typography className={classes.backLabel}>Back to Stop Actions</Typography>
+                            <Typography className={classes.backLabel}>{t('freight.backToStopActions')}</Typography>
                         </Stack>
                     </Grid>
                     <Grid size={12}>
@@ -269,10 +271,10 @@ export default function FreightOrder() {
                             </Box>
                             <Box>
                                 <Typography className={classes.pageTitleText}>
-                                    Freight {isPickup ? 'Pick Up' : 'Delivery'}
+                                    {isPickup ? t('freight.freightPickUp') : t('freight.freightDelivery')}
                                 </Typography>
                                 <Typography className={classes.pageTitleSub}>
-                                    {SELECTED_ORDERS?.length} order{SELECTED_ORDERS?.length > 1 ? 's' : ''} selected
+                                    {t('freight.ordersSelected', { count: SELECTED_ORDERS?.length ?? 0 })}
                                 </Typography>
                             </Box>
                         </Stack>
@@ -280,7 +282,7 @@ export default function FreightOrder() {
                     <Grid size={12}>
                         <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
                             <Scale sx={{ fontSize: 18, color: 'text.secondary' }} />
-                            <Typography className={classes.sectionLabel}>Freight Details</Typography>
+                            <Typography className={classes.sectionLabel}>{t('freight.freightDetails')}</Typography>
                         </Stack>
                         <Stack gap={1.5}>
                             {SELECTED_ORDERS.map((order, index) => {
@@ -302,7 +304,7 @@ export default function FreightOrder() {
                                                 </Typography>
                                                 {checkedCount > 0 && (
                                                     <Box className={classes.accordionBadge} sx={{ ml: 'auto' }}>
-                                                        {checkedCount} Accessorial{checkedCount > 1 ? 's' : ''}
+                                                        {t('freight.accessorialsCount', { count: checkedCount })}
                                                     </Box>
                                                 )}
                                             </Stack>
@@ -311,7 +313,7 @@ export default function FreightOrder() {
                                         content={
                                             <Stack gap={0} mt={-4}>
                                                 <Typography className={classes.accessorialSectionLabel}>
-                                                    Accessorial Charges
+                                                    {t('freight.accessorialCharges')}
                                                 </Typography>
                                                 {order.accessorials?.length > 0 ? (
                                                     <Box className={classes.accessorialList}>
@@ -326,7 +328,7 @@ export default function FreightOrder() {
                                                     </Box>
                                                 ) :
                                                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 14, fontWeight: 600, color: '#aaa8a8', padding: 5, letterSpacing: '.5px' }}>
-                                                        No accessorials available!
+                                                        {t('freight.noAccessorials')}
                                                     </Box>
                                                 }
                                                 <Divider sx={{ mx: -2, mb: 4 }} />
@@ -334,7 +336,7 @@ export default function FreightOrder() {
                                                     <Grid size={6}>
                                                         <TextInput
                                                             variant="outlined" required fullWidth
-                                                            label="Pieces"
+                                                            label={t('freight.pieces')}
                                                             type='number'
                                                             value={q?.pieces ?? ''}
                                                             onChange={e => updateQty(order.id, 'pieces', e.target.value)}
@@ -344,7 +346,7 @@ export default function FreightOrder() {
                                                     <Grid size={6}>
                                                         <TextInput
                                                             variant="outlined" required fullWidth
-                                                            label="Pallets"
+                                                            label={t('freight.pallets')}
                                                             type='number'
                                                             value={q?.pallets ?? ''}
                                                             onChange={e => updateQty(order.id, 'pallets', e.target.value)}
@@ -354,7 +356,7 @@ export default function FreightOrder() {
                                                     <Grid size={6}>
                                                         <TextInput
                                                             variant="outlined" required fullWidth
-                                                            label="Weight"
+                                                            label={t('freight.weight')}
                                                             type='number'
                                                             value={q?.weight ?? ''}
                                                             onChange={e => updateQty(order.id, 'weight', e.target.value)}
@@ -364,7 +366,7 @@ export default function FreightOrder() {
                                                     <Grid size={6}>
                                                         <TextInput
                                                             variant="outlined" required fullWidth
-                                                            label="Unit"
+                                                            label={t('freight.unit')}
                                                             value={q?.unit ?? 'lbs'}
                                                             onChange={e => updateQty(order.id, 'unit', e.target.value)}
                                                             select
@@ -388,7 +390,7 @@ export default function FreightOrder() {
                             title={
                                 <Stack direction="row" alignItems="center" gap={1}>
                                     <Draw sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                    <span>Customer Signature</span>
+                                    <span>{t('freight.customerSignature')}</span>
                                 </Stack>
                             }
                             bold={700}
@@ -397,7 +399,7 @@ export default function FreightOrder() {
                                     <Grid size={12}>
                                         <TextInput
                                             variant="outlined"
-                                            label="Signee Name"
+                                            label={t('freight.signeeName')}
                                             required
                                             fullWidth
                                             defaultValue=""
@@ -410,7 +412,7 @@ export default function FreightOrder() {
                                             color: 'text.secondary', textTransform: 'uppercase',
                                             letterSpacing: '0.08em',
                                         }}>
-                                            Signature
+                                            {t('freight.signature')}
                                         </Typography>
                                         <SignatureCanvas ref={signatureRef} onSigned={onSigned} />
                                     </Grid>
@@ -426,7 +428,7 @@ export default function FreightOrder() {
                         >
                             {driverPickupDeliveryOrders.isPending && <CircularProgress size={18} color="inherit" />}
                             <CheckCircle sx={{ fontSize: 22 }} />
-                            {isPickup ? 'Pick Up and Complete' : 'Delivery and Complete'}
+                            {isPickup ? t('freight.pickUpAndComplete') : t('freight.deliveryAndComplete')}
                         </button>
                     </Grid>
 

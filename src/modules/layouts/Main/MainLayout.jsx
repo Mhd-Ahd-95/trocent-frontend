@@ -20,6 +20,9 @@ const MainContent = styled("main")(({ theme, noPadding }) => ({
   paddingBlock: theme.spacing(4),
   overflowX: "hidden",
   backgroundColor: theme.palette.mode === "light" ? "#f9f9f9" : "#494949",
+  [theme.breakpoints.down('sm')]: {
+    paddingInline: theme.spacing(1.5),
+  }
 }));
 
 function MainLayout(props) {

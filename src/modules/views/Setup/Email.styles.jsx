@@ -5,6 +5,9 @@ export const useStyles = makeStyles()((theme) => ({
         padding: 24,
         backgroundColor: theme.palette.background.default,
         minHeight: "100%",
+        [theme.breakpoints.down('sm')]: {
+            padding: 4
+        }
     },
 
     pageHeader: {

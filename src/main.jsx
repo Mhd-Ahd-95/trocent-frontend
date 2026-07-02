@@ -7,6 +7,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import './modules/DriverApp/locale/i18n'
 
 window.Pusher = Pusher;
 window.Echo = new Echo({

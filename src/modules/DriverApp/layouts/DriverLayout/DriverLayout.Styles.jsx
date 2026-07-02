@@ -5,7 +5,7 @@ export default makeStyles()((theme) => ({
     root: {
         background: theme.palette.background.default,
         color: theme.palette.secondary.main,
-        height: '100dvh', 
+        height: '100dvh',
         overflow: 'hidden',
         position: 'relative',
     },
@@ -52,7 +52,7 @@ export default makeStyles()((theme) => ({
         zIndex: 1,
         maxWidth: 800,
         margin: '0 auto',
-        height: '100dvh',        
+        height: '100dvh',
         display: 'flex',
         overflow: 'hidden',
         flexDirection: 'column',
@@ -61,7 +61,7 @@ export default makeStyles()((theme) => ({
     },
     content: {
         width: '100%',
-        flex: 1,                  
+        flex: 1,
         overflow: 'hidden auto',
         padding: '10px 20px',
         [theme.breakpoints.down('sm')]: {
@@ -137,5 +137,70 @@ export default makeStyles()((theme) => ({
 
     navLabelActive: {
         color: `${theme.palette.primary.main} !important`,
+    },
+    menuSheet: {
+        maxWidth: 800,
+        margin: '0 auto',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: '10px 0 calc(env(safe-area-inset-bottom, 16px) + 12px)',
+        boxShadow: '0 -8px 40px rgba(0,0,0,0.12)',
+    },
+
+    sheetHandle: {
+        width: 40,
+        height: 4,
+        borderRadius: 2,
+        background: theme.palette.secondary.main,
+        opacity: 0.25,
+        margin: '6px auto 14px',
+    },
+
+    sheetSection: {
+        padding: '0 20px',
+    },
+
+    sheetSectionHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 6,
+        color: theme.palette.secondary.light,
+    },
+
+    sheetSectionTitle: {
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 0.6,
+        textTransform: 'uppercase',
+    },
+
+    langItem: {
+        borderRadius: 12,
+        marginBottom: 4,
+        padding: '10px 12px',
+        '&.Mui-selected': {
+            background: `${theme.palette.primary.main}12`,
+            '&:hover': {
+                background: `${theme.palette.primary.main}1a`,
+            },
+        },
+    },
+
+    langPrimary: {
+        fontSize: 15,
+        fontWeight: 600,
+        color: theme.palette.secondary.main,
+    },
+
+    langSecondary: {
+        fontSize: 12,
+        color: theme.palette.secondary.light,
+    },
+
+    langCheck: {
+        minWidth: 'auto',
+        color: theme.palette.primary.main,
+        justifyContent: 'flex-end',
     },
 }));

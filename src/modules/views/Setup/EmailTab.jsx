@@ -90,7 +90,7 @@ function EmailTab({ enabled }) {
     const [activeStatus, setActiveStatus] = useState("all");
     const { create, update, destroy } = useEmailTemplateMutation()
 
-    const filtered = React.useMemo(() => activeStatus === "all" ? templates : templates.filter((t) => t.trigger_key === activeStatus), [templates])
+    const filtered = React.useMemo(() => activeStatus === "all" ? templates : templates.filter((t) => t.trigger_key === activeStatus), [templates, activeStatus])
     const countFor = (status) => status === "all" ? templates.length : templates.filter((t) => t.trigger_key === status).length;
 
     React.useEffect(() => {

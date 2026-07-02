@@ -2,9 +2,10 @@ import React from 'react';
 import { Avatar, Menu, IconButton, useTheme, Box, Divider, Tooltip, Button } from '@mui/material';
 import useStyles from './Appbar.styles'
 import globalVariables from '../../../global';
-import { AuthContext, ThemeContext } from '../../../contexts';
+import { AuthContext } from '../../../contexts';
 import { AccountCircle, DarkMode, LightMode, Logout } from '@mui/icons-material';
 import AuthAPI from "../../../apis/login.api";
+import { useTranslation } from 'react-i18next';
 
 export default function Appbar() {
 
@@ -15,7 +16,7 @@ export default function Appbar() {
     const handleClose = () => setAnchor(null);
     const authContext = React.useContext(AuthContext);
     const authedUser = JSON.parse(localStorage.getItem('authedUser'))
-    const { themeState } = React.useContext(ThemeContext);
+    const { t } = useTranslation();
 
     const handleLogout = (e) => {
         e.preventDefault();
@@ -48,12 +49,7 @@ export default function Appbar() {
                     onClose={handleClose}
                     anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                     transformOrigin={{ vertical: "top", horizontal: "right" }}
-                    PaperProps={{
-                        sx: {
-                            width: 200,
-                            paddingY: 1,
-                        },
-                    }}
+                    PaperProps={{ sx: { width: 200, paddingY: 1, }, }}
                 >
                     {/* <Button
                         fullWidth
@@ -69,13 +65,11 @@ export default function Appbar() {
                         }}
                         onClick={() => console.log("Go to profile")}
                     >
-                        Profile
+                        {t('appbar.profile')}
                     </Button>
-
                     <Divider sx={{ my: 0.5 }} />
-
                     <Box display="flex" justifyContent="space-between" px={2} gap={1} py={0.5}>
-                        <Tooltip title="Enable Light Theme">
+                        <Tooltip title={t('appbar.lightTheme')}>
                             <IconButton size="small"
                                 color={themeState.palette.mode === "light" ? "primary" : "default"}
                             // onClick={() => themeState.palette.mode === "dark" ? handleToggleMode() : undefined}
@@ -83,7 +77,7 @@ export default function Appbar() {
                                 <LightMode fontSize="small" />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Enable Dark Theme">
+                        <Tooltip title={t('appbar.darkTheme')}>
                             <IconButton size="small"
                                 color={themeState.palette.mode === "dark" ? "primary" : "default"}
                             // onClick={() => themeState.palette.mode === "light" ? handleToggleMode() : undefined}
@@ -92,24 +86,17 @@ export default function Appbar() {
                             </IconButton>
                         </Tooltip>
                     </Box>
-
                     <Divider sx={{ my: 0.5 }} /> */}
-
                     <Button
                         fullWidth
                         startIcon={<Logout />}
                         sx={{
-                            justifyContent: "flex-start",
-                            textTransform: "capitalize",
-                            px: 2,
-                            color: "text.secondary",
-                            "& svg": {
-                                color: theme.palette.grey[500],
-                            },
+                            justifyContent: "flex-start", textTransform: "capitalize", px: 2, color: "text.secondary",
+                            "& svg": { color: theme.palette.grey[500], },
                         }}
                         onClick={(e) => handleLogout(e)}
                     >
-                        Sign out
+                        {t('appbar.signOut')}
                     </Button>
                 </Menu>
             </div>
