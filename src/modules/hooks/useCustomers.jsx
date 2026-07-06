@@ -116,7 +116,10 @@ export function useCustomerMutation() {
                     if (!data) continue;
                     const [, page] = key;
                     if (page === 1) {
-                        queryClient.setQueryData(key, (old = []) => [newCust, ...old]);
+                        queryClient.setQueryData(key, (old) => {
+                            if (!old || !Array.isArray(old.data)) return old;
+                            return { ...old, data: [newCust, ...old.data], total: typeof old.total === 'number' ? old.total + 1 : old.total, };
+                        });
                     } else {
                         queryClient.invalidateQueries({ queryKey: key });
                     }
