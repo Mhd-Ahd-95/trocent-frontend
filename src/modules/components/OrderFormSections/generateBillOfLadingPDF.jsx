@@ -151,7 +151,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
     } catch (error) {
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('MESSAGERS', margin, headerYPos + 5);
+        pdf.text('TROCENT', margin, headerYPos + 5);
     }
 
     pdf.setFontSize(14);
@@ -499,7 +499,7 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
 
     yPos += dateBoxHeight + 5;
 
-    const signatureHeight = 13;
+    const signatureHeight = 24;
     checkAddPage(signatureHeight + 5);
 
     drawBox(margin, yPos, boxWidth, signatureHeight);
@@ -518,8 +518,8 @@ export const generateBillOfLadingPDF = async (data, language = 'en') => {
         const { pickup_signature, delivery_signature } = signatureRes.data || {};
 
         const sigImgWidth = boxWidth - 4;
-        const sigImgHeight = 6;
-        const sigImgY = yPos + 7;
+        const sigImgHeight = 18;
+        const sigImgY = yPos + 6;
 
         if (pickup_signature && pickup_signature.startsWith('data:image')) {
             const pickupImg = new Image();

@@ -2,7 +2,6 @@ import React from 'react'
 import { MainLayout } from '../../layouts'
 import { Breadcrumbs, Table, CustomCell, Modal, ConfirmModal } from '../../components'
 import { Grid, Button, Box } from '@mui/material'
-import EditSquareIcon from '@mui/icons-material/EditSquare'
 import { useNavigate } from 'react-router-dom'
 import { useCustomerMutation, useCustomers } from '../../hooks/useCustomers'
 import { CheckCircleOutline, DeleteForever, HighlightOffOutlined } from '@mui/icons-material'
@@ -38,6 +37,8 @@ export default function CustomerView() {
     setPage(page);
     setPageSize(pageSize);
   }, []);
+
+  const sortedCustomers = React.useMemo(() => [...(data?.data ?? [])].sort((a, b) => a.name.localeCompare(b.name)), [data]);
 
   return (
     <MainLayout
@@ -152,7 +153,7 @@ export default function CustomerView() {
                 )
               }
             ]}
-            data={data?.data || []}
+            data={sortedCustomers || []}
           />
         </Grid>
       </Grid>
