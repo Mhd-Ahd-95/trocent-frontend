@@ -114,19 +114,24 @@ function PickupDetails(props) {
         <Controller
           name='pickup_driver_assigned'
           control={control}
-          render={({ field }) => (
-            <TextInput
-              {...field}
-              value={field.value || ''}
-              label='Driver Assigned'
-              variant='outlined'
-              disabled
-              fullWidth
-              sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#000', color: '#000' }, '& .MuiInputLabel-root.Mui-disabled': { color: '#000' } }}
-              FormHelperTextProps={{ sx: { whiteSpace: 'pre-line', color: '#000 !important' } }}
-              helperText={props.editMode ? pickupNotes() : null}
-            />
-          )}
+          render={({ field }) => {
+            const name = field.value?.name || ''
+            const dnumber = field.value?.driver_number || ''
+            const value = name ? dnumber ? name + ' | ' + dnumber : name : ''
+            return (
+              <TextInput
+                {...field}
+                value={value || ''}
+                label='Driver Assigned'
+                variant='outlined'
+                disabled
+                fullWidth
+                sx={{ '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#000', color: '#000' }, '& .MuiInputLabel-root.Mui-disabled': { color: '#000' } }}
+                FormHelperTextProps={{ sx: { whiteSpace: 'pre-line', color: '#000 !important' } }}
+                helperText={props.editMode ? pickupNotes() : null}
+              />
+            )
+          }}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 12, md: 12 }}>

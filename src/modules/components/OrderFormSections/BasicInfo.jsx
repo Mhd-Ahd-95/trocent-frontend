@@ -329,7 +329,7 @@ function BasicInfo(props) {
               onChange={(_, value) => {
                 field.onChange(value)
                 if (value === 'Order Billing') {
-                  setValue('order_status', 'Approved')
+                  setValue('order_status', 'approved')
                 }
                 else setValue('order_status', 'pending')
               }}

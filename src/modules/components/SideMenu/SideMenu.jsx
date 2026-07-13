@@ -8,7 +8,8 @@ import {
   SettingsOutlined as Setting,
   GppGoodOutlined as Access,
   ExpandMore,
-  ReceiptLongOutlined
+  ReceiptLongOutlined,
+  Receipt
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
@@ -145,12 +146,21 @@ function SideMenu(props) {
     "Fleet Management": true,
     Settings: true,
     "Access Management": true,
+    'Billing': true
   });
 
   const itemsLinks = [
     { text: 'Dashboard', icon: <Dashboard />, url: '/' },
     { text: 'Orders', icon: <ReceiptLongOutlined />, url: '/orders' },
     { text: 'Dispatch', icon: <Order />, url: '/dispatch' },
+    {
+      text: 'Billing', icon: <Receipt />,
+      options: [
+        { text: 'Billing', url: '/billings' },
+        { text: 'Driver Pay', url: '#' },
+        { text: 'Invoicing', url: '#' }
+      ]
+    },
     {
       text: 'Customers',
       icon: <Customer />,

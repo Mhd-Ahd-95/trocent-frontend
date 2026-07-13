@@ -37,6 +37,21 @@ export function useCustomer(cid) {
     });
 }
 
+export function useCustomerAccessorials(cid) {
+    return useQuery({
+        queryKey: ['customerAccessorials', Number(cid)],
+        queryFn: async () => {
+            const res = await CustomersApi.getCustomerAccessorials(cid);
+            return res.data;
+        },
+        enabled: !!cid,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 export const useCustomersNames = () => {
     const queryClient = useQueryClient();
     return useQuery({
@@ -144,6 +159,7 @@ export function useCustomerMutation() {
             updateNamesCache((old) => old.map((item) => Number(item.id) === Number(updated.id) ? { id: updated.id, name: updated.name, account_number: updated.account_number } : item));
             queryClient.invalidateQueries({ queryKey: ['customerSearch'] });
             queryClient.invalidateQueries({ queryKey: ['customer', Number(updated.id)] });
+            queryClient.invalidateQueries({ queryKey: ['customerAccessorials', Number(updated.id)] });
             queryClient.invalidateQueries({ queryKey: ['order'] });
             enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
         },

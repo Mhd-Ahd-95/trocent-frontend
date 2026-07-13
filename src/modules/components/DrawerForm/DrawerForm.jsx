@@ -3,23 +3,25 @@ import { styled, useTheme } from '@mui/material/styles'
 import { Drawer, Grid, IconButton, Typography, colors, useMediaQuery, Box } from '@mui/material'
 import { Close } from '@mui/icons-material'
 
-const CustomDrawer = styled(Drawer)(({ theme, ismddown }) => ({
-  width: ismddown === 'true' ? '100%' : '50%',
-  flexShrink: 0,
-  overflow: 'hidden',
-  zIndex: 2100
-}))
+const CustomDrawer = styled(Drawer)(({ theme, ismddown, size }) => {
+  return ({
+    width: ismddown === 'true' ? '100%' : size === 'small' ? '30%' : '50%',
+    flexShrink: 0,
+    overflow: 'hidden',
+    zIndex: 2100
+  })
+})
 
-const DrawerPaper = styled('div', {
-  shouldForwardProp: prop => prop !== 'myProp'
-})(({ theme, myProp }) => ({
-  width: myProp === 'true' ? '100%' : '50%',
-  backgroundColor: colors.grey[50],
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100vh',
-  overflow: 'hidden'
-}))
+const DrawerPaper = styled('div', { shouldForwardProp: prop => prop !== 'myProp' })(({ theme, myProp, size }) => {
+  return ({
+    width: myProp === 'true' ? '100%' : size === 'small' ? '30%' : '50%',
+    backgroundColor: colors.grey[50],
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
+    overflow: 'hidden'
+  })
+})
 
 const DrawerHeader = styled(Box)(({ theme }) => ({
   flexShrink: 0,
@@ -37,7 +39,7 @@ const DrawerContent = styled(Box)(({ theme }) => ({
 
 export default function DrawerComponent(props) {
 
-  const { open, setOpen, children } = props
+  const { open, setOpen, children, size = 'medium' } = props
   const theme = useTheme()
   const isMdDown = useMediaQuery(theme.breakpoints.down('md'))
 
@@ -46,30 +48,23 @@ export default function DrawerComponent(props) {
   return (
     <CustomDrawer
       ismddown={isMdDown ? 'true' : 'false'}
+      size={size}
       variant={'temporary'}
       onClose={() => setOpen(!open)}
       open={open}
       ModalProps={{ keepMounted: true }}
       PaperProps={{
         component: DrawerPaper,
+        size: size,
         myProp: isMdDown ? 'true' : 'false'
       }}
       anchor='right'
-    // aria-hidden={!open}
     >
-      <DrawerHeader>
-        <Grid
-          container
-          justifyContent={'space-between'}
-          alignItems={'center'}
-          sx={{ paddingInline: 3, paddingBlock: 2 }}
-        >
+      <DrawerHeader size={size}>
+        <Grid container justifyContent={'space-between'} alignItems={'center'} sx={{ paddingInline: 3, paddingBlock: 2 }}        >
           <Grid size='auto'>
             {CustomTitle ? CustomTitle :
-              <Typography
-                component={'h2'}
-                sx={{ fontSize: 16, fontWeight: 600, color: 'text.primary' }}
-              >
+              <Typography component={'h2'} sx={{ fontSize: 16, fontWeight: 600, color: 'text.primary' }}              >
                 {props.title}
               </Typography>
             }
@@ -78,11 +73,7 @@ export default function DrawerComponent(props) {
             <IconButton
               onClick={() => setOpen(!open)}
               size='small'
-              sx={{
-                '&:hover': {
-                  backgroundColor: 'action.hover'
-                }
-              }}
+              sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
             >
               <Close fontSize='small' />
             </IconButton>
