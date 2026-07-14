@@ -126,7 +126,7 @@ export default function BillingView() {
                             <Box className={classes.paginationBar}>
                                 <Box className={classes.paginationInfo}>
                                     {isPending && <CircularProgress size={13} />}
-                                    Clients per page
+                                    Customers per page
                                     <Select
                                         size="small" value={rowsPerPage}
                                         className={classes.rowsPerPageSelect}
@@ -134,7 +134,7 @@ export default function BillingView() {
                                     >
                                         {PAGE_SIZE_OPTIONS.map((n) => <MenuItem key={n} value={n} sx={{ fontSize: 12.5 }}>{n}</MenuItem>)}
                                     </Select>
-                                    <span>· {data.length} client{data.length !== 1 ? 's' : ''} total</span>
+                                    <span>· {data.length} Customer{data.length !== 1 ? 's' : ''} total</span>
                                 </Box>
                                 <Pagination
                                     className={classes.muiPaginationRoot}
