@@ -20,6 +20,8 @@ const customerSearch = (search) => CustomAxios.get(`/api/customers/search/${sear
 
 const getLogo = (cid) => CustomAxios.get(`/api/customers/logo/${cid}`)
 
+const getCustomerAccessorials = (cid) => CustomAxios.get(`/api/customers/accessorials/${cid}`)
+
 export default {
     getCustomer,
     getCustomers,
@@ -30,5 +32,6 @@ export default {
     downloadFile,
     getCustomersNames,
     customerSearch,
-    getLogo
+    getLogo,
+    getCustomerAccessorials
 }

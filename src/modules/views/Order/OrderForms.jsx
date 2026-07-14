@@ -180,6 +180,7 @@ function OrderForm(props) {
     if (payload['order_status'] === 'pending') {
       payload['order_status'] = 'entered'
     }
+    console.log(payload);
     try {
       await submit(payload)
       if (action === 'save-order-action' && !editMode) {

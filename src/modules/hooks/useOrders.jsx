@@ -155,6 +155,7 @@ export function useOrderMutations() {
                     else {
                         queryClient.invalidateQueries({ queryKey: ['orders'] })
                     }
+                    queryClient.invalidateQueries({ queryKey: ['billings'] })
                     queryClient.invalidateQueries(['order', Number(order.id)])
                     enqueueSnackbar('Order has been updated successfully', { variant: 'success' });
                 }
@@ -192,6 +193,7 @@ export function useOrderMutations() {
                 else {
                     queryClient.invalidateQueries({ queryKey: ['order', Number(id)], exact: true })
                 }
+                queryClient.invalidateQueries({ queryKey: ['billings'] })
                 enqueueSnackbar(`Order has been ${sts} successfully`, { variant: 'success' });
             }
         },
@@ -262,6 +264,7 @@ export function useOrderMutations() {
             if (res) {
                 enqueueSnackbar('Order Status updated successfully', { variant: 'success' })
             }
+            queryClient.invalidateQueries({ queryKey: ['billings'] })
         },
         onError: handleError
     })

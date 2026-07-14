@@ -206,6 +206,7 @@ export function useDispatchOrderMutation() {
             return res.data;
         },
         onSuccess: (tripUpdate, { id, payload }) => {
+            queryClient.invalidateQueries({ queryKey: ['billings'] })
             enqueueSnackbar('New Orders has been sucessfully added to trip', { variant: 'success' });
         },
         onError: handleError,
@@ -218,6 +219,7 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (updated) => {
             if (updated) {
+                queryClient.invalidateQueries({ queryKey: ['billings'] })
                 queryClient.invalidateQueries({ queryKey: ['orders'] })
                 queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
                 queryClient.invalidateQueries({ queryKey: ['order'] })
@@ -234,6 +236,7 @@ export function useDispatchOrderMutation() {
         },
         onSuccess: (updated) => {
             if (updated) {
+                queryClient.invalidateQueries({ queryKey: ['billings'] })
             }
             enqueueSnackbar('Trip has been successfully updated', { variant: 'success' })
         },
@@ -288,6 +291,7 @@ export function useDispatchOrderMutation() {
                 else {
                     queryClient.invalidateQueries({ queryKey: ['stopAction', Number(did), legType], exact: true })
                 }
+                queryClient.invalidateQueries({ queryKey: ['billings'] })
             }
             const cachedTrip = queryClient.getQueryData(['trip', Number(trip_id)])
             if (cachedTrip) {
@@ -306,6 +310,7 @@ export function useDispatchOrderMutation() {
             else {
                 queryClient.invalidateQueries({ queryKey: ['trip', Number(trip_id)], exact: true })
             }
+            queryClient.invalidateQueries({ queryKey: ['billings'] })
             enqueueSnackbar('Order has been successufully updated', { variant: 'success' })
         },
         onError: handleError
@@ -323,6 +328,7 @@ export function useDispatchOrderMutation() {
             queryClient.invalidateQueries({ queryKey: ['trip', Number(tripId)], exact: true })
             queryClient.invalidateQueries({ queryKey: ['driverTrips', Number(driverId)], exact: true })
             enqueueSnackbar('Order has been updated successfully', { variant: 'success' })
+            queryClient.invalidateQueries({ queryKey: ['billings'] })
         },
         onError: handleError
     })

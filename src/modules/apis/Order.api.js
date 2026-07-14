@@ -53,5 +53,5 @@ export default {
     addNote,
     updateOrderStatus,
     getSignature,
-    getOrderUpdates
+    getOrderUpdates,
 }

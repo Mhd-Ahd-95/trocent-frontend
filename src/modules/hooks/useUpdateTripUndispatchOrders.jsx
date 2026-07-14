@@ -43,7 +43,7 @@ export function useUpdateTripUndispatchOrders() {
             delete tripWithoutOrders['total_orders_completed']
             const found = cachedDriverTrips.find(t => Number(t.id) === Number(tripWithoutOrders.id))
             if (found) {
-                queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(tripWithoutOrders.id)) ? tripWithoutOrders : o)
+                queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => old.map(o => Number(o.id) === Number(tripWithoutOrders.id) ? tripWithoutOrders : o))
             }
             else {
                 queryClient.setQueryData(['driverTrips', Number(trip.driver_id)], (old = []) => ([tripWithoutOrders, ...old]))

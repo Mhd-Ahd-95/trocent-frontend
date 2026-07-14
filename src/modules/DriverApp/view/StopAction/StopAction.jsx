@@ -255,7 +255,8 @@ export default function StopAction() {
             a['unit'] = r.freight_details && r.freight_details?.length > 0 ? r.freight_details[0].unit : 'lbs'
             return a
         }, { totalPieces: 0, totalWeight: 0, unit: 'lbs' })
-        return { totalPieces, totalWeight, unit }
+        const newTotalWeight = String(totalWeight).includes(',') ? totalWeight.toFixed(2) : totalWeight
+        return { totalPieces, totalWeight: newTotalWeight, unit }
     }, [relatedOrders])
 
     const orderStatus = dispatchOrder?.order_status;

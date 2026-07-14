@@ -30,7 +30,8 @@ import {
   EditOrder,
   DispatchView,
   NotAuthorized,
-  SetUp
+  SetUp,
+  BillingView
 } from './views'
 import { DriverDeliveries, LandingPage, StopActions, FreightOrder } from './DriverApp/view'
 import { ScrollToTop } from './components'
@@ -104,6 +105,7 @@ function App() {
           <Route path='/interliner/create' Component={CreateInterliner} />
           <Route path='/interliner/edit/:id' Component={EditInterliner} />
           <Route path='/setup' Component={SetUp} />
+          <Route path='/billings' Component={BillingView} />
         </Route>
         <Route element={<RoleProtectedRoute allowedRoles={[ROLES.DRIVER]} />}>
           <Route path='/driver-dashboard' Component={LandingPage} />
