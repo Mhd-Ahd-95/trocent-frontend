@@ -71,7 +71,6 @@ function AccessorialCharges({ onClose, order }) {
         e.preventDefault()
         const result = formValues.customer_accessorials
             .filter(row => row.is_included).map(row => ({ access_id: row.access_id, qty: row.charge_quantity, amount: row.charge_amount }))
-        console.log(result);
         try {
             await applyAccessorials.mutateAsync({ id: order.order_id, payload: result })
             onClose && onClose()

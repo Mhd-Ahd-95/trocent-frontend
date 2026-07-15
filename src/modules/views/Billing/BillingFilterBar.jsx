@@ -10,11 +10,10 @@ export const CARRIER_TYPE_OPTIONS = [
 ];
 
 export const SORT_OPTIONS = [
-    { value: 'order_date_desc', label: 'Order Date (Newest)' },
-    { value: 'order_date_asc', label: 'Order Date (Oldest)' },
-    { value: 'order_number_desc', label: 'Order Number (High-Low)' },
-    { value: 'customer_name_asc', label: 'Client Name (A-Z)' },
-    { value: 'amount_desc', label: 'Amount (High-Low)' },
+    { value: 'order_number_desc', label: 'Order Number (DESC)' },
+    { value: 'order_number_asc', label: 'Order Number (ASC)' },
+    { value: 'delivery_date_desc', label: 'Delivery Date (DESC)' },
+    { value: 'delivery_date_asc', label: 'Delivery Date (ASC)' },
 ];
 
 const LabeledField = ({ label, icon, children, classes }) => (
@@ -32,16 +31,20 @@ const EMPTY_FILTERS = {
     orderDateTo: '',
     keyword: '',
     carrierType: '',
-    sortBy: SORT_OPTIONS[0].value,
+    sortBy: '',
 };
 
 const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
+
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(defaultExpanded);
     const [filters, setFilters] = useState(EMPTY_FILTERS);
 
-    const setField = useCallback((key, value) => {
+    const setField = useCallback((key, value, isSeacrh = false) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
+        if (isSeacrh) {
+            onSearch?.({ ...filters, [key]: value })
+        }
     }, []);
 
     const handleSearch = useCallback(() => onSearch?.(filters), [filters, onSearch]);
@@ -51,7 +54,7 @@ const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
         onSearch?.(EMPTY_FILTERS);
     }, [onSearch]);
 
-    const activeCount = Object.entries(filters).filter(([k, v]) => k !== 'sortBy' && v).length;
+    const activeCount = Object.entries(filters).filter(([k, v]) => v).length;
 
     return (
         <Box className={classes.filterRoot}>
@@ -92,7 +95,7 @@ const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
                         <LabeledField classes={classes} label="Keyword" icon={<Search sx={{ fontSize: 11 }} />}>
                             <TextField
                                 size="small" fullWidth className={classes.inputRoot}
-                                placeholder="Order number, client name..."
+                                placeholder="#order, #customer, customer name..."
                                 value={filters.keyword}
                                 onChange={(e) => setField('keyword', e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -117,7 +120,7 @@ const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
                             <TextField
                                 select size="small" fullWidth className={classes.inputRoot}
                                 value={filters.carrierType}
-                                onChange={(e) => setField('carrierType', e.target.value)}
+                                onChange={(e) => setField('carrierType', e.target.value, true)}
                             >
                                 {CARRIER_TYPE_OPTIONS.map((opt) => (
                                     <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
@@ -129,8 +132,9 @@ const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
                             <TextField
                                 select size="small" fullWidth className={classes.inputRoot}
                                 value={filters.sortBy}
-                                onChange={(e) => setField('sortBy', e.target.value)}
+                                onChange={(e) => setField('sortBy', e.target.value, true)}
                             >
+                                <MenuItem value={''}>All</MenuItem>
                                 {SORT_OPTIONS.map((opt) => (
                                     <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
                                 ))}

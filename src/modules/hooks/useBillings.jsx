@@ -3,11 +3,11 @@ import BillingsApi from "../apis/Billings.api";
 import { useSnackbar } from "notistack";
 
 
-export function useBillings() {
+export function useBillings(filters = {}, page = 1, pageSize = 10) {
     return useQuery({
-        queryKey: ['billings'],
+        queryKey: ['billings', { filters: JSON.stringify(filters), page, pageSize }],
         queryFn: async () => {
-            const response = await BillingsApi.getOrdersForBilling();
+            const response = await BillingsApi.getOrdersForBilling({ ...filters, page, pageSize });
             return response.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -35,11 +35,23 @@ export function useBillingMutation() {
         },
         onSuccess: (res) => {
             const { customer_id, accessorials, sub_total, freight_fuel_surcharge, order_id } = res
-            queryClient.setQueryData(['billings'], (old = []) => {
-                return old.map(o =>
-                    Number(o.customer_id) === Number(customer_id) ?
-                        ({ ...o, orders: (o.orders || []).map(oo => Number(oo.order_id) === Number(order_id) ? ({ ...oo, accessorials, freight_fuel_surcharge, sub_total }) : oo) })
-                        : o)
+            queryClient.setQueriesData({ queryKey: ['billings'] }, (old) => {
+                if (!old?.data) return old
+                return {
+                    ...old,
+                    data: old.data.map(group =>
+                        Number(group.customer_id) === Number(customer_id)
+                            ? {
+                                ...group,
+                                orders: group.orders.map(order =>
+                                    Number(order.order_id) === Number(order_id)
+                                        ? { ...order, accessorials, sub_total, freight_fuel_surcharge }
+                                        : order
+                                )
+                            }
+                            : group
+                    )
+                }
             })
             queryClient.invalidateQueries({ queryKey: ['order', Number(order_id)], exact: true })
             enqueueSnackbar('Accessorial Charges has been successfully applied', { variant: 'success' })
