@@ -8,6 +8,7 @@ import BillingFilterBar from './BillingFilterBar';
 import CustomerBillingGroup from './CustomerBillingGroup';
 import { useBillings } from '../../hooks/useBillings';
 import AccessorialCharges from './CustomerAccessorials'
+import { useSnackbar } from 'notistack';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -20,8 +21,9 @@ export default function BillingView() {
     const [isPending, startTransition] = useTransition();
     const orderRef = React.useRef()
     const [openDrawer, setOpenDrawer] = React.useState(false)
-
-    const { data = [], isLoading } = useBillings()
+    const { enqueueSnackbar } = useSnackbar()
+    const { data: billingOrders, isLoading, isError, error } = useBillings(appliedFilters, page, rowsPerPage)
+    const data = billingOrders?.data || []
 
     const groupApis = useRef(new Map());
     const refCallbackCache = useRef(new Map());
@@ -69,6 +71,15 @@ export default function BillingView() {
     const handleOpenCharges = useCallback(() => {
         setOpenDrawer(true)
     }, []);
+
+    React.useEffect(() => {
+        if (isError && error) {
+            const message = error.response?.data?.message;
+            const status = error.response?.status;
+            const errorMessage = message ? `${message} - ${status}` : error.message;
+            enqueueSnackbar(errorMessage, { variant: 'error' });
+        }
+    }, [isError, error])
 
     return (
         <MainLayout

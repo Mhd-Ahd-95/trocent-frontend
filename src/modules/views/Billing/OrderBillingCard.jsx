@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider } from '@mui/material';
+import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider, Link } from '@mui/material';
 import { EditRounded, CheckCircleRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded } from '@mui/icons-material';
 import moment from 'moment';
+import { Link as RouterLink } from 'react-router-dom'
 import useStyles from './Billing.styles';
 
 const money = (n) => `$${Number(n || 0).toFixed(2)}`;
@@ -58,7 +59,9 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                 <Grid size={12}>
                     <Grid container justifyContent="space-between">
                         <Grid size="auto">
-                            <Typography className={classes.orderNumber}># {order.order_number}</Typography>
+                            <Link component={RouterLink} to={`/orders/edit/${order.order_id}`}>
+                                <Typography className={classes.orderNumber}># {order.order_number}</Typography>
+                            </Link>
                             <Typography className={classes.orderMetaLine}>Ref: <span className={classes.orderMetaStrong}>{order.references || '—'}</span></Typography>
 
                         </Grid>
