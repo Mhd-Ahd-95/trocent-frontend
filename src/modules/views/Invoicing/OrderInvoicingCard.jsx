@@ -1,7 +1,51 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Box, Checkbox, Button, Table, TableHead, TableBody, TableRow, TableCell, Chip, } from "@mui/material";
+import { Box, Checkbox, Button, Table, TableHead, TableBody, TableRow, TableCell, Chip, Tooltip, } from "@mui/material";
 import useStyles from './Invoicing.styles';
 import moment from 'moment';
+
+const STATUS_BADGE_CLASS_MAP = { green: 'statusBadgeGreen', orange: 'statusBadgeOrange', red: 'statusBadgeRed' };
+const DOT_CLASS_MAP = { green: 'statusDotGreen', orange: 'statusDotOrange', red: 'statusDotRed' };
+
+
+const getBillingStatus = (order, invoicingFrequency) => {
+
+    if (!order.approved_date || !invoicingFrequency) return null;
+    const approved = new Date(`${order.approved_date}T00:00:00`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    approved.setHours(0, 0, 0, 0);
+    const daysSince = Math.floor((today - approved) / 86400000);
+
+    if (invoicingFrequency === 'daily') {
+        return daysSince >= 0 ? { color: 'green', label: 'Approved — ready to bill (daily)' } : null;
+    }
+    if (invoicingFrequency === 'weekly') {
+        return daysSince >= 7 ? { color: 'green', label: 'Weekly cycle complete — ready to bill' } : { color: 'orange', label: `Bills in ${7 - daysSince} day${7 - daysSince === 1 ? '' : 's'} (weekly)` };
+    }
+    if (invoicingFrequency === 'monthly') {
+        return daysSince >= 30 ? { color: 'green', label: 'Monthly cycle complete — ready to bill' } : { color: 'red', label: `Bills in ${30 - daysSince} day${30 - daysSince === 1 ? '' : 's'} (monthly)` };
+    }
+    return null;
+};
+
+const BillingStatusBadge = React.memo(({ status, classes, cx }) => {
+    if (!status) return null;
+    return (
+        <Tooltip title={status.label} arrow placement="top">
+            <span className={cx(classes.statusBadge, classes[STATUS_BADGE_CLASS_MAP[status.color]])}>
+                <span
+                    className={cx(
+                        classes.statusDot,
+                        classes[DOT_CLASS_MAP[status.color]],
+                        status.color === 'green' && classes.statusDotPulsing
+                    )}
+                />
+                {status.shortLabel}
+            </span>
+        </Tooltip>
+    );
+});
+BillingStatusBadge.displayName = 'BillingStatusBadge';
 
 const formatMoney = (value) => `$${Number(value ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -49,7 +93,10 @@ const TotalRow = React.memo(({ orders, classes, cx }) => {
     );
 }, (prev, next) => prev.order === next.order);
 
-const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, index }) => {
+const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, index, customerInvoicing }) => {
+
+    const billingStatus = getBillingStatus(order, customerInvoicing);
+
     const handleOrderClick = (e) => {
         e.preventDefault();
         window.open(`/orders/edit/${order.id}`, '_blank', 'noopener,noreferrer');
@@ -67,9 +114,16 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
                 />
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colOrderNumber)}>
-                <a href={`/orders/edit/${order.id}`} onClick={handleOrderClick} className={classes.orderNumberLink}>
-                    # {order.order_number}
-                </a>
+                <Box className={classes.orderNumberRow}>
+                    <a href={`/orders/edit/${order.id}`} onClick={handleOrderClick} className={classes.orderNumberLink}>
+                        # {order.order_number}
+                    </a>
+                    {billingStatus && (
+                        <Tooltip title={billingStatus.label} arrow placement="top">
+                            <span className={cx(classes.statusDot, classes[DOT_CLASS_MAP[billingStatus.color]], billingStatus.color === 'green' && classes.statusDotPulsing)} />
+                        </Tooltip>
+                    )}
+                </Box>
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colReferences)}>
                 <span className={classes.cellValueWrap}>{order.reference_numbers || '—'}</span>
@@ -104,7 +158,7 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
 OrderRow.displayName = 'OrderRow';
 
 
-const OrderInvoicingCard = React.memo(({ orders }) => {
+const OrderInvoicingCard = React.memo(({ orders, customerInvoicing }) => {
 
     const { classes, cx } = useStyles();
     const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -164,6 +218,7 @@ const OrderInvoicingCard = React.memo(({ orders }) => {
                                 onToggleSelect={onToggleSelect}
                                 classes={classes}
                                 cx={cx}
+                                customerInvoicing={customerInvoicing}
                             />
                         ))}
                         <TotalRow orders={orders} classes={classes} cx={cx} />

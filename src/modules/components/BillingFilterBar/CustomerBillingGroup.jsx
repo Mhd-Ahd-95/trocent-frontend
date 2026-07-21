@@ -3,7 +3,7 @@ import { Accordion, AccordionSummary, AccordionDetails, Box, Chip } from '@mui/m
 import { ExpandMoreRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 
-const CustomerBillingGroup = React.memo(forwardRef(({ customerName, accountNumber, orders, onApprovalChange, orderRef, openCharges, OrderCard, isInvoicing = false }, ref) => {
+const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, onApprovalChange, orderRef, openCharges, OrderCard, isInvoicing = false }, ref) => {
 
     const { classes } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -39,7 +39,7 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, accountNumbe
             </AccordionSummary>
 
             <AccordionDetails className={classes.accordionDetails}>
-                {isInvoicing ? <OrderCard orders={orders} /> :
+                {isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} /> :
                     orders.map((order) => (
                         <OrderCard key={order.order_id} order={order} onApprovalChange={onApprovalChange} handleCharge={handleCharge} />
                     ))

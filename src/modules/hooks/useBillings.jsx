@@ -17,6 +17,20 @@ export function useBillings(filters = {}, page = 1, pageSize = 10) {
     });
 }
 
+export function useInvoicing(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['invoicing', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await BillingsApi.getApprovedOrders({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 export function useBillingMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
