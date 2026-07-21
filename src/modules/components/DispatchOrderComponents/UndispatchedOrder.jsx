@@ -142,11 +142,7 @@ const UndispatchedOrdersTable = React.memo(({ onTerminalUpdate, orders, total, p
   }
 
   return (
-    <Paper elevation={0} sx={{
-      border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden',
-      opacity: isFetching && !isLoading ? 0.5 : 1,
-      transition: 'opacity 0.15s ease',
-    }}>
+    <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden', opacity: isFetching && !isLoading ? 0.5 : 1, transition: 'opacity 0.15s ease' }}>
       <Box sx={{ overflowX: 'auto' }}>
         <Table size="small" stickyHeader>
           <TableHead>
@@ -332,7 +328,6 @@ function UndispatchedOrders(props) {
   return (
     <>
       <Paper ref={paperRef} id="undispatched-section" elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 2 }}>
-
         <Box sx={{ visibility: isSticky ? 'hidden' : 'visible' }}>
           <StickyHeader
             isFetching={isFetching}
@@ -342,7 +337,6 @@ function UndispatchedOrders(props) {
             onClearSelection={handleClearSelection}
           />
         </Box>
-
         {isSticky && createPortal(
           <Box sx={{ position: 'fixed', top: 65, marginTop: 0.1, right: 32, zIndex: 2000, width: paperWidth, boxShadow: 1, borderTop: '1px solid #ccc', overflow: 'hidden' }}>
             <StickyHeader
@@ -355,11 +349,9 @@ function UndispatchedOrders(props) {
           </Box>,
           document.body
         )}
-
         <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
           <FilterBar onSearch={handleSearch} showSearchButton defaultExpanded={false} placeholderSearch='Order #, Shipper, Receiver...' />
         </Box>
-
         <Box sx={{ p: 2 }}>
           <UndispatchedOrdersTable
             orders={sortedOrders}
@@ -379,7 +371,6 @@ function UndispatchedOrders(props) {
             onOrderUpdates={handleOrderUpdates}
           />
         </Box>
-
         {openDrawer === 1 && (
           <DrawerForm title="Create or Select Trip" setOpen={setOpenDrawer} open={openDrawer}>
             <TripForm
@@ -399,13 +390,11 @@ function UndispatchedOrders(props) {
             />
           </DrawerForm>
         )}
-
         {openDrawer === 2 && (
           <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Add Note' Icon={NoteAdd} isOrder />} setOpen={setOpenDrawer} open={openDrawer}>
             <OrderNoteForm order={dispatchOrderRef.current} onClose={() => setOpenDrawer(false)} />
           </DrawerForm>
         )}
-
         {openDrawer === 3 && (
           <DrawerForm customTitle={<CustomTitle number={dispatchOrderRef.current.order_number} title='Update Terminal' isOrder Icon={Terminal} />} setOpen={setOpenDrawer} open={openDrawer}>
             <UpdateTerminalForm

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { TextField, Button, MenuItem, Box, InputAdornment, IconButton, Collapse } from '@mui/material';
 import { Search, CalendarTodayRounded, LocalShippingRounded, SortRounded, CloseRounded, TuneRounded, KeyboardArrowDownRounded } from '@mui/icons-material';
-import useStyles from './Billing.styles';
+import useStyles from './Filter.styles';
 
 export const CARRIER_TYPE_OPTIONS = [
     { value: '', label: 'All' },
@@ -34,9 +34,9 @@ const EMPTY_FILTERS = {
     sortBy: '',
 };
 
-const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
+const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false, isInvoicing = false }) => {
 
-    const { classes, cx } = useStyles();
+    const { classes, cx } = useStyles({ isInvoicing });
     const [expanded, setExpanded] = useState(defaultExpanded);
     const [filters, setFilters] = useState(EMPTY_FILTERS);
 
@@ -115,19 +115,19 @@ const BillingFilterBar = React.memo(({ onSearch, defaultExpanded = false }) => {
                                 }}
                             />
                         </LabeledField>
-
-                        <LabeledField classes={classes} label="Carrier Type" icon={<LocalShippingRounded sx={{ fontSize: 11 }} />}>
-                            <TextField
-                                select size="small" fullWidth className={classes.inputRoot}
-                                value={filters.carrierType}
-                                onChange={(e) => setField('carrierType', e.target.value, true)}
-                            >
-                                {CARRIER_TYPE_OPTIONS.map((opt) => (
-                                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                                ))}
-                            </TextField>
-                        </LabeledField>
-
+                        {!isInvoicing &&
+                            <LabeledField classes={classes} label="Carrier Type" icon={<LocalShippingRounded sx={{ fontSize: 11 }} />}>
+                                <TextField
+                                    select size="small" fullWidth className={classes.inputRoot}
+                                    value={filters.carrierType}
+                                    onChange={(e) => setField('carrierType', e.target.value, true)}
+                                >
+                                    {CARRIER_TYPE_OPTIONS.map((opt) => (
+                                        <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </LabeledField>
+                        }
                         <LabeledField classes={classes} label="Sort By" icon={<SortRounded sx={{ fontSize: 11 }} />}>
                             <TextField
                                 select size="small" fullWidth className={classes.inputRoot}

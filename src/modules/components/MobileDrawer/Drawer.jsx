@@ -150,7 +150,7 @@ export default function MobileDrawer(props) {
       options: [
         { text: 'Billing', url: '/billings' },
         { text: 'Driver Pay', url: '#' },
-        { text: 'Invoicing', url: '#' }
+        { text: 'Invoicing', url: '/invoicing' }
       ]
     },
     {

@@ -2,13 +2,12 @@ import React, { useState, useMemo, useCallback, useTransition, useRef } from 're
 import { Box, MenuItem, Select, CircularProgress, Pagination, Button, Grid } from '@mui/material';
 import { ReceiptLongRounded, UnfoldMoreRounded, UnfoldLessRounded, RequestQuote } from '@mui/icons-material';
 import { MainLayout } from '../../layouts';
-import { CustomTitle, DrawerForm, SideMenu } from '../../components';
+import { CustomTitle, DrawerForm, SideMenu, BillingFilterBar, CustomerBillingGroup } from '../../components';
 import useStyles from './Billing.styles';
-import BillingFilterBar from './BillingFilterBar';
-import CustomerBillingGroup from './CustomerBillingGroup';
 import { useBillings } from '../../hooks/useBillings';
 import AccessorialCharges from './CustomerAccessorials'
 import { useSnackbar } from 'notistack';
+import OrderBillingCard from './OrderBillingCard';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -40,11 +39,6 @@ export default function BillingView() {
 
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
-    const pageGroups = useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        return data.slice(start, start + rowsPerPage);
-    }, [data, page, rowsPerPage]);
-
     const handleSearch = useCallback((filters) => {
         startTransition(() => {
             setAppliedFilters(filters);
@@ -53,6 +47,7 @@ export default function BillingView() {
     }, []);
 
     const handlePageChange = useCallback((_, newPage) => setPage(newPage), []);
+
     const handleRowsPerPageChange = useCallback((count) => {
         setRowsPerPage(count);
         setPage(1);
@@ -61,6 +56,7 @@ export default function BillingView() {
     const handleExpandAll = useCallback(() => {
         groupApis.current.forEach((api) => api.expand());
     }, []);
+
     const handleCollapseAll = useCallback(() => {
         groupApis.current.forEach((api) => api.collapse());
     }, []);
@@ -86,13 +82,14 @@ export default function BillingView() {
             title="Billing"
             activeDrawer={{ active: 'Billing' }}
             sideMenu={SideMenu}
+            grid noPanding
         >
             <Grid container spacing={2} sx={{ overflow: 'auto' }}>
                 <Grid size={12}>
                     <BillingFilterBar onSearch={handleSearch} />
                 </Grid>
                 <Grid size={12}>
-                    {pageGroups.length > 0 && (
+                    {(data || []).length > 0 && (
                         <Box className={classes.toolbarRow}>
                             <Button className={classes.toolbarButton} color="inherit" startIcon={<UnfoldMoreRounded sx={{ fontSize: 16 }} />} onClick={handleExpandAll}>
                                 Expand All
@@ -128,6 +125,7 @@ export default function BillingView() {
                                             orders={group.orders}
                                             openCharges={handleOpenCharges}
                                             onApprovalChange={handleApprovalChange}
+                                            OrderCard={OrderBillingCard}
                                         />
                                     ))}
                                 </Box>
