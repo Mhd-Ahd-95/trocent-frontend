@@ -1,62 +1,186 @@
-import React from 'react';
-import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider, Link } from '@mui/material';
-import { EditRounded, CheckCircleRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded } from '@mui/icons-material';
-import moment from 'moment';
-import { Link as RouterLink } from 'react-router-dom'
-import useStyles from './Billing.styles';
+import React from 'react'
+import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider, CircularProgress } from '@mui/material'
+import { EditRounded, CheckCircleRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded } from '@mui/icons-material'
+import moment from 'moment'
+import useStyles from './Billing.styles'
+import { useBillingMutation } from '../../hooks/useBillings'
 
-const money = (n) => `$${Number(n || 0).toFixed(2)}`;
+const money = (n) => `$${Number(n || 0).toFixed(2)}`
 
 const SERVICE_CHIP_CLASS = {
     Direct: 'serviceChipDirect',
     Rush: 'serviceChipRush',
     Regular: 'serviceChipRegular',
-};
+}
 
 const BoxTitle = ({ classes, icon, children, tone = 'neutral' }) => (
     <Box className={`${classes.boxTitle} ${classes[`boxTitle_${tone}`]}`}>
         {icon}
         {children}
     </Box>
-);
+)
 
 const KVRow = ({ classes, label, value, emphasis, column }) => (
     <Box className={column ? classes.kvColumn : classes.kvRow}>
         <Typography className={label === 'Sub Total' ? classes.kvTotal : classes.kvLabel}>{label}</Typography>
         <Typography className={label === 'Sub Total' ? classes.kvTotalValue : emphasis ? classes.kvValueEmphasis : classes.kvValue}>{value}</Typography>
     </Box>
-);
+)
 
 const DriverLine = ({ classes, driver, roleLabel }) => (
     <Typography className={classes.orderMetaLine}>
         Driver: <span className={classes.orderMetaStrong}>{driver.name}{driver.driver_number ? ` | ${driver.driver_number}` : ''} ({roleLabel})</span>
     </Typography>
-);
+)
 
-const PayoutInput = ({ classes, driver }) => (
+const PayoutInput = ({ classes, placeholder, value, onChange, type, disabled }) => (
     <TextField
         className={classes.payoutInput}
         size="small"
-        placeholder={`#${driver.driver_number ? driver.driver_number : driver.name}`}
+        value={value ?? ''}
+        type="number"
+        disabled={disabled}
+        onChange={(e) => {
+            const val = e.target.value
+            if (val < 0) return
+            onChange?.(type, val)
+        }}
+        placeholder={placeholder}
     />
-);
+)
 
-const OrderBillingCard = React.memo(({ order, handleCharge }) => {
 
-    const { classes, cx } = useStyles();
-    const isInterliner = order.interliners?.length > 0;
+const computeDriverPay = (pickupDriver, deliveryDriver, subTotal, fuelSurcharge, interliners) => {
+
+    const isPickupDriver = Boolean(pickupDriver)
+    const isDeliveryDriver = Boolean(deliveryDriver)
+
+    if (!isPickupDriver && !isDeliveryDriver) {
+        return { pickupAmount: null, deliveryAmount: null }
+    }
+
+    const base = (subTotal || 0) - (fuelSurcharge || 0)
+
+    if (!isPickupDriver && isDeliveryDriver) {
+        if (deliveryDriver.driver_pay_type === 'commission' && deliveryDriver.commission_percentage > 0) {
+            const pickupInterliner = interliners?.find(i => i.type === 'pickup')
+            const pickupInterlinerAmount = pickupInterliner?.charge_amount ?? 0
+            const commission = deliveryDriver.commission_percentage / 100
+            return { pickupAmount: null, deliveryAmount: (base - pickupInterlinerAmount) * commission }
+        }
+        return { pickupAmount: null, deliveryAmount: 0 }
+    }
+
+    if (isPickupDriver && !isDeliveryDriver) {
+        if (pickupDriver.driver_pay_type === 'commission' && pickupDriver.commission_percentage > 0) {
+            const deliveryInterliner = interliners?.find(i => i.type === 'delivery')
+            const deliveryInterlinerAmount = deliveryInterliner?.charge_amount ?? 0
+            const commission = pickupDriver.commission_percentage / 100
+            return { pickupAmount: (base - deliveryInterlinerAmount) * commission, deliveryAmount: null }
+        }
+        return { pickupAmount: 0, deliveryAmount: null }
+    }
+
+    if (pickupDriver.id === deliveryDriver.id) {
+        if (pickupDriver.driver_pay_type === 'commission' && pickupDriver.commission_percentage > 0) {
+            const commission = pickupDriver.commission_percentage / 100
+            const amount = base * commission
+            return { pickupAmount: amount, deliveryAmount: amount }
+        }
+        return { pickupAmount: 0, deliveryAmount: 0 }
+    }
+
+    let pickupAmount = 0
+    let deliveryAmount = 0
+    if (pickupDriver.driver_pay_type === 'commission' && pickupDriver.commission_percentage > 0) {
+        pickupAmount = base * (pickupDriver.commission_percentage / 100)
+    }
+    if (deliveryDriver.driver_pay_type === 'commission' && deliveryDriver.commission_percentage > 0) {
+        deliveryAmount = base * (deliveryDriver.commission_percentage / 100)
+    }
+    return { pickupAmount, deliveryAmount }
+}
+
+const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) => {
+
+    const { classes, cx } = useStyles()
+
+    const { driverPayout } = useBillingMutation()
+
     const dp = order?.pickup_driver_assigned || null
     const dd = order?.delivery_driver_assigned || null
-    const isSamedriver = Boolean(dp && dd && dp.id === dd.id);
+
+    const isPickupDriver = Boolean(dp?.driver_number)
+    const isDeliveryDriver = Boolean(dd?.driver_number)
+    const isSameDriver = Boolean(isPickupDriver && isDeliveryDriver && dp.id === dd.id)
+
+    const pickupDriverPay = isPickupDriver ? (order?.pickup_driver || null) : null
+    const deliveryDriverPay = isDeliveryDriver ? (order?.delivery_driver || null) : null
+
+    const { pickupInterliner, deliveryInterliner, bothInterliner } = React.useMemo(() => {
+        const interliners = order.interliners || []
+        return {
+            pickupInterliner: interliners.find(i => i.type === 'pickup') || null,
+            deliveryInterliner: interliners.find(i => i.type === 'delivery') || null,
+            bothInterliner: interliners.find(i => i.type === 'both') || null,
+        }
+    }, [order.interliners])
+
+    const isInterliner = (order.interliners?.length || 0) > 0
+    const showSingleField = isSameDriver || Boolean(bothInterliner)
+
+    const { pickupAmount: computedPickup, deliveryAmount: computedDelivery } = React.useMemo(() =>
+        computeDriverPay(pickupDriverPay, deliveryDriverPay, order.sub_total, order.freight_fuel_surcharge, order.interliners),
+        [pickupDriverPay, deliveryDriverPay, order.sub_total, order.freight_fuel_surcharge, order.interliners])
+
+    const initialPickupAmount = isPickupDriver ? (computedPickup ?? '') : (bothInterliner?.charge_amount ?? pickupInterliner?.charge_amount ?? '')
+    const initialDeliveryAmount = isDeliveryDriver ? (computedDelivery ?? '') : (bothInterliner?.charge_amount ?? deliveryInterliner?.charge_amount ?? '')
+
+    const [pickupAmount, setPickupAmount] = React.useState(initialPickupAmount)
+    const [deliveryAmount, setDeliveryAmount] = React.useState(initialDeliveryAmount)
+
+    const prevDepsRef = React.useRef({ subTotal: order.sub_total, fuelSurcharge: order.freight_fuel_surcharge });
+    React.useEffect(() => {
+        const prev = prevDepsRef.current;
+        if (prev.subTotal !== order.sub_total || prev.fuelSurcharge !== order.freight_fuel_surcharge) {
+            setPickupAmount(initialPickupAmount);
+            setDeliveryAmount(initialDeliveryAmount);
+            prevDepsRef.current = { subTotal: order.sub_total, fuelSurcharge: order.freight_fuel_surcharge };
+        }
+    }, [order.sub_total, order.freight_fuel_surcharge]);
+
     const approved = false
     const unit = order.freights?.length > 0 ? order.freights[0].unit : 'lbs'
 
-    const differenceTime = (tin, tout) => moment(tout, 'HH:mm').diff(moment(tin, 'HH:mm'), 'minutes');
+    const pickupNotes = React.useMemo(() => order.order_notes.filter(on => on.note_type === 'pickup'), [order.order_notes])
+    const deliveryNotes = React.useMemo(() => order.order_notes.filter(on => on.note_type === 'delivery'), [order.order_notes])
+
+    const differenceTime = (tin, tout) => moment(tout, 'HH:mm').diff(moment(tin, 'HH:mm'), 'minutes')
 
     const handleOrderClick = (e) => {
-        e.preventDefault();
-        window.open(`/orders/edit/${order.order_id}`, '_blank', 'noopener,noreferrer');
-    };
+        e.preventDefault()
+        window.open(`/orders/edit/${order.order_id}`, '_blank', 'noopener,noreferrer')
+    }
+
+    const handleChange = React.useCallback((type, value) => {
+        if (type === 'pickup') setPickupAmount(value)
+        if (type === 'delivery') setDeliveryAmount(value)
+    }, [])
+
+    const handleApprove = async (e) => {
+        e.preventDefault()
+        const payload = {
+            order_id: order.order_id,
+            pickup_driver_id: isPickupDriver ? dp.id : null,
+            pickup_payout: isPickupDriver ? pickupAmount : null,
+            delivery_driver_id: isDeliveryDriver ? dd.id : null,
+            delivery_payout: isSameDriver ? null : (isDeliveryDriver ? deliveryAmount : null),
+            leg_type: !isPickupDriver && !isDeliveryDriver ? 'both_interliner'
+                : isSameDriver || (isPickupDriver && isDeliveryDriver) ? 'both'
+                    : isPickupDriver ? 'pickup' : 'delivery',
+        }
+        await driverPayout.mutateAsync({ payload, cid: order.customer_id })
+    }
 
     return (
         <Box className={classes.orderCard}>
@@ -68,17 +192,16 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                                 # {order.order_number}
                             </a>
                             <Typography className={classes.orderMetaLine}>Ref: <span className={classes.orderMetaStrong}>{order.references || '—'}</span></Typography>
-
                         </Grid>
-                        <Grid size='auto'>
-                            {dp && <DriverLine classes={classes} driver={dp} roleLabel={isSamedriver ? 'P & D' : 'P'} />}
-                            {dd && !isSamedriver && <DriverLine classes={classes} driver={dd} roleLabel="D" />}
+                        <Grid size="auto">
+                            {isPickupDriver && <DriverLine classes={classes} driver={dp} roleLabel={isSameDriver ? 'P & D' : 'P'} />}
+                            {isDeliveryDriver && !isSameDriver && <DriverLine classes={classes} driver={dd} roleLabel="D" />}
                         </Grid>
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container spacing={2} alignItems="stretch" >
-                <Grid size={{ xs: 12, sm: 6, md: 4.5 }} >
+            <Grid container spacing={2} alignItems="stretch">
+                <Grid size={{ xs: 12, sm: 6, md: 4.5 }}>
                     <Box className={classes.infoBox}>
                         <Grid container spacing={1.5} alignItems="stretch" sx={{ height: '100%' }}>
                             <Grid size={{ xs: 12, sm: 8.5 }}>
@@ -89,11 +212,11 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                                     {order.shipper_city || '-'} | {order.shipper_province || '-'} | {order.shipper_postal_code || '-'}
                                 </Typography>
                                 <Typography className={classes.specialInstructions}>{order.shipper_special_instructions || '-'}</Typography>
-                                {order.order_notes.filter(on => on.note_type === 'pickup')?.length > 0 &&
+                                {pickupNotes.length > 0 &&
                                     <>
                                         <Typography className={classes.partyName} sx={{ mt: 0.5 }}>Driver | Dispatch Notes</Typography>
                                         <ul className={classes.driverNotes}>
-                                            {order.order_notes.filter(on => on.note_type === 'pickup').map(n => (
+                                            {pickupNotes.map(n => (
                                                 <li key={n.id}><Typography className={classes.addressText}>{n.note}</Typography></li>
                                             ))}
                                         </ul>
@@ -109,7 +232,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                         </Grid>
                     </Box>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4.5 }} >
+                <Grid size={{ xs: 12, sm: 6, md: 4.5 }}>
                     <Box className={classes.infoBox}>
                         <Grid container spacing={1.5} alignItems="stretch" sx={{ height: '100%' }}>
                             <Grid size={{ xs: 12, sm: 8.5 }}>
@@ -120,11 +243,11 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                                     {order.receiver_city || '-'} | {order.receiver_province || '-'} | {order.receiver_postal_code || '-'}
                                 </Typography>
                                 <Typography className={classes.specialInstructions}>{order.receiver_special_instructions || '-'}</Typography>
-                                {order.order_notes.filter(on => on.note_type === 'delivery')?.length > 0 &&
+                                {deliveryNotes.length > 0 &&
                                     <>
                                         <Typography className={classes.partyName} sx={{ mt: 0.5 }}>Driver | Dispatch Notes</Typography>
                                         <ul className={classes.driverNotes}>
-                                            {order.order_notes.filter(on => on.note_type === 'delivery').map(n => (
+                                            {deliveryNotes.map(n => (
                                                 <li key={n.id}><Typography className={classes.addressText}>{n.note}</Typography></li>
                                             ))}
                                         </ul>
@@ -140,7 +263,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                         </Grid>
                     </Box>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 3 }} >
+                <Grid size={{ xs: 12, sm: 12, md: 3 }}>
                     <Box className={classes.infoBox}>
                         <Grid container>
                             <Grid size={12}>
@@ -161,7 +284,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                             size="medium"
                         />
                         <Grid container spacing={2} alignItems="stretch" sx={{ mt: 0.25, flex: 1 }}>
-                            <Grid size={{ xs: 12, sm: 6 }} >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <Box className={classes.infoSubBox}>
                                     <BoxTitle classes={classes} tone="neutral">Freight Details</BoxTitle>
                                     {order.freights.map((f, idx) => (
@@ -176,7 +299,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                                     ))}
                                 </Box>
                             </Grid>
-                            <Grid size={{ xs: 12, sm: 6 }} >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <Box className={classes.infoSubBox}>
                                     <BoxTitle classes={classes} tone="neutral">Totals</BoxTitle>
                                     <Grid container spacing={1}>
@@ -197,23 +320,26 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                     </Box>
                 </Grid>
                 {isInterliner && (
-                    <Grid size={{ xs: 12, sm: 12, md: 3 }} >
+                    <Grid size={{ xs: 12, sm: 12, md: 3 }}>
                         <Box className={classes.infoBox}>
-                            <BoxTitle classes={classes} tone="neutral" icon={<LocalShippingRounded sx={{ fontSize: 13 }} />}>Interliner Charges</BoxTitle>
+                            <Box className={classes.chargesTitleRow}>
+                                <BoxTitle classes={classes} tone="neutral" icon={<LocalShippingRounded sx={{ fontSize: 13 }} />}>Interliner Charges</BoxTitle>
+                                <IconButton className={classes.editButton} size="small" onClick={() => handleInterliner(order)}>
+                                    <EditRounded style={{ fontSize: 17 }} />
+                                </IconButton>
+                            </Box>
                             {order.interliners.map((interliner) => (
                                 <React.Fragment key={interliner.id}>
                                     <KVRow classes={classes} label="Name:" value={interliner.name ? `${interliner.name} (${interliner.type === 'both' ? 'P & D' : interliner.type === 'pickup' ? 'P' : 'D'})` : '-'} emphasis />
                                     <KVRow classes={classes} label="Reference:" value={interliner.invoice || '-'} emphasis />
                                     <KVRow classes={classes} label="Amount:" value={money(interliner.charge_amount)} emphasis />
-                                    {order.interliners.length > 1 &&
-                                        <Divider />
-                                    }
+                                    {order.interliners.length > 1 && <Divider />}
                                 </React.Fragment>
                             ))}
                         </Box>
                     </Grid>
                 )}
-                <Grid size={{ xs: 12, sm: 12, md: 3 }} >
+                <Grid size={{ xs: 12, sm: 12, md: 3 }}>
                     <Box className={classes.infoBox}>
                         <Box className={classes.chargesTitleRow}>
                             <BoxTitle classes={classes} tone="neutral">Charges</BoxTitle>
@@ -237,19 +363,50 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                     <Typography className={classes.notesText}>{order.internal_note || '—'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <Grid container spacing={1} justifyContent={'flex-end'}>
+                    <Grid container spacing={1} justifyContent="flex-end">
                         <Grid size="auto" className={classes.topRightCol}>
                             <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    {dp && <PayoutInput classes={classes} driver={dp} />}
-                                    {dd && !isSamedriver && <PayoutInput classes={classes} driver={dd} />}
-                                </Box>
+                                {showSingleField ? (
+                                    isPickupDriver &&
+                                    <PayoutInput
+                                        classes={classes}
+                                        value={pickupAmount}
+                                        onChange={handleChange}
+                                        type="pickup"
+                                        disabled={!isPickupDriver}
+                                        placeholder={isPickupDriver ? `#${dp.driver_number || dp.name}` : 'Interliner'}
+                                    />
+                                ) : (
+                                    <>
+                                        {isPickupDriver &&
+                                            <PayoutInput
+                                                classes={classes}
+                                                value={pickupAmount}
+                                                onChange={handleChange}
+                                                type="pickup"
+                                                disabled={!isPickupDriver}
+                                                placeholder={isPickupDriver ? `#${dp.driver_number || dp.name}` : 'Interliner'}
+                                            />
+                                        }
+                                        {isDeliveryDriver &&
+                                            <PayoutInput
+                                                classes={classes}
+                                                value={deliveryAmount}
+                                                onChange={handleChange}
+                                                type="delivery"
+                                                disabled={!isDeliveryDriver}
+                                                placeholder={isDeliveryDriver ? `#${dd.driver_number || dd.name}` : 'Interliner'}
+                                            />
+                                        }
+                                    </>
+                                )}
                             </Box>
                             {approved ? (
                                 <Chip className={classes.approveChip} color="success" icon={<CheckCircleRounded style={{ fontSize: 14 }} />} label="Approved" />
                             ) : (
-                                <Button className={classes.approveButton} variant="contained">
-                                    Approve
+                                <Button className={classes.approveButton} variant="contained" onClick={handleApprove} disabled={driverPayout.isPending}>
+                                    {driverPayout.isPending && <CircularProgress size={18} sx={{marginRight: 1}} />}
+                                    {driverPayout.isPending ? 'Processing' : 'Approved'}
                                 </Button>
                             )}
                         </Grid>
@@ -257,8 +414,8 @@ const OrderBillingCard = React.memo(({ order, handleCharge }) => {
                 </Grid>
             </Grid>
         </Box>
-    );
-});
+    )
+})
 
-OrderBillingCard.displayName = 'OrderBillingCard';
-export default OrderBillingCard;
+OrderBillingCard.displayName = 'OrderBillingCard'
+export default OrderBillingCard

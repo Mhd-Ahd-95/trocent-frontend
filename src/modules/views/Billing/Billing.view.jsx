@@ -8,6 +8,7 @@ import { useBillings } from '../../hooks/useBillings';
 import AccessorialCharges from './CustomerAccessorials'
 import { useSnackbar } from 'notistack';
 import OrderBillingCard from './OrderBillingCard';
+import InterlinerCharge from './InterlinerCharge';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -61,11 +62,8 @@ export default function BillingView() {
         groupApis.current.forEach((api) => api.collapse());
     }, []);
 
-    const handleApprovalChange = useCallback(() => {
-    }, []);
-
-    const handleOpenCharges = useCallback(() => {
-        setOpenDrawer(true)
+    const handleOpenCharges = useCallback((nb) => {
+        setOpenDrawer(nb)
     }, []);
 
     React.useEffect(() => {
@@ -124,7 +122,6 @@ export default function BillingView() {
                                             accountNumber={group.customer_account_number}
                                             orders={group.orders}
                                             openCharges={handleOpenCharges}
-                                            onApprovalChange={handleApprovalChange}
                                             OrderCard={OrderBillingCard}
                                         />
                                     ))}
@@ -159,9 +156,17 @@ export default function BillingView() {
                     </>
                 }
             </Grid>
-            {openDrawer &&
-                <DrawerForm customTitle={<CustomTitle title='Customer Accessorials Charges' Icon={RequestQuote} />} setOpen={setOpenDrawer} open={openDrawer}>
+            {openDrawer === 1 &&
+                <DrawerForm customTitle={<CustomTitle title='Customer Accessorials Charges' Icon={RequestQuote} />} setOpen={setOpenDrawer} open={openDrawer === 1}>
                     <AccessorialCharges
+                        order={orderRef.current}
+                        onClose={() => setOpenDrawer(false)}
+                    />
+                </DrawerForm>
+            }
+            {openDrawer === 2 &&
+                <DrawerForm customTitle={<CustomTitle title='Interliner charge amount' Icon={RequestQuote} />} setOpen={setOpenDrawer} open={openDrawer === 2}>
+                    <InterlinerCharge
                         order={orderRef.current}
                         onClose={() => setOpenDrawer(false)}
                     />

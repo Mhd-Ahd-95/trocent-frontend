@@ -51,16 +51,15 @@ const formatMoney = (value) => `$${Number(value ?? 0).toLocaleString('en-US', { 
 
 const formatDate = (dateStr) => {
     if (!dateStr) return '—';
-    const date = moment(dateStr, 'YYYY-MM-DD', true);
-    return date.isValid() ? date.format('ddd, MM/DD/YYYY') : dateStr;
+    return moment.utc(dateStr).format('ddd, DD/MM/YYYY')
 };
 
 const TotalRow = React.memo(({ orders, classes, cx }) => {
-
+    
     const totals = useMemo(() => orders.reduce((acc, o) => {
         acc.freight += Number(o.freight_rate ?? 0);
         acc.fuel += Number(o.freight_fuel_surcharge ?? 0);
-        acc.accessorial += Number(o.total_accessorials ?? 0);
+        acc.accessorial += Number(o.accessorials ?? 0);
         acc.subTotal += Number(o.sub_total ?? 0);
         acc.grandTotal += Number(o.grand_total ?? 0);
         return acc;
@@ -91,7 +90,7 @@ const TotalRow = React.memo(({ orders, classes, cx }) => {
             </TableCell>
         </TableRow>
     );
-}, (prev, next) => prev.order === next.order);
+});
 
 const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, index, customerInvoicing }) => {
 
@@ -115,7 +114,7 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colOrderNumber)}>
                 <Box className={classes.orderNumberRow}>
-                    <a href={`/orders/edit/${order.id}`} onClick={handleOrderClick} className={classes.orderNumberLink}>
+                    <a href={`/orders/edit/${order.order_id}`} onClick={handleOrderClick} className={classes.orderNumberLink}>
                         # {order.order_number}
                     </a>
                     {billingStatus && (
@@ -126,7 +125,7 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
                 </Box>
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colReferences)}>
-                <span className={classes.cellValueWrap}>{order.reference_numbers || '—'}</span>
+                <span className={classes.cellValueWrap}>{order.references?.join(', ') || '—'}</span>
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colDeliveryDate)}>
                 <span className={classes.cellValue}>{formatDate(order.delivery_date)}</span>
@@ -144,7 +143,7 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
                 <span className={classes.cellValue}>{formatMoney(order.freight_fuel_surcharge)}</span>
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colAccessorial, classes.cellMoney)}>
-                <span className={classes.cellValue}>{formatMoney(order.total_accessorials)}</span>
+                <span className={classes.cellValue}>{formatMoney(order.accessorials)}</span>
             </TableCell>
             <TableCell className={cx(classes.bodyCell, classes.colSubTotal, classes.cellMoney)}>
                 <span className={classes.cellValueStrong}>{formatMoney(order.sub_total)}</span>
@@ -212,7 +211,7 @@ const OrderInvoicingCard = React.memo(({ orders, customerInvoicing }) => {
                         {orders.map((order, index) => (
                             <OrderRow
                                 index={index}
-                                key={order.id}
+                                key={order.order_id}
                                 order={order}
                                 selected={selectedIds.has(order.id)}
                                 onToggleSelect={onToggleSelect}

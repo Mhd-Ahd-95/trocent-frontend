@@ -6,8 +6,11 @@ const getApprovedOrders = (params = {}) => CustomAxios.get('/api/billings/invoic
 
 const applyCustomerAccessorials = (oid, payload) => CustomAxios.put(`/api/billings/calculations/accessorials/order/${oid}`, payload)
 
+const driverPayout = (payload) => CustomAxios.post(`/api/billings/driver-payout`, payload)
+
 export default {
     getOrdersForBilling,
     applyCustomerAccessorials,
-    getApprovedOrders
+    getApprovedOrders,
+    driverPayout
 }

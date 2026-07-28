@@ -73,5 +73,37 @@ export function useBillingMutation() {
         onError: handleError
     })
 
-    return { applyAccessorials }
+    const driverPayout = useMutation({
+        mutationFn: async ({ payload, cid }) => {
+            const res = await BillingsApi.driverPayout(payload)
+            return res
+        },
+        onSuccess: (res, { payload, cid }) => {
+            if (res.data) {
+                queryClient.setQueriesData({ queryKey: ['billings'] }, (old) => {
+                    if (!old?.data) return old
+                    return {
+                        ...old,
+                        data: old.data.reduce((acc, group) => {
+                            if (Number(group.customer_id) !== Number(cid)) {
+                                acc.push(group)
+                                return acc
+                            }
+                            const remainingOrders = group.orders.filter(order => Number(order.order_id) !== Number(payload.order_id))
+                            if (remainingOrders.length > 0) {
+                                acc.push({ ...group, orders: remainingOrders })
+                            }
+                            return acc
+                        }, [])
+                    }
+                })
+                queryClient.invalidateQueries({ queryKey: ['order', Number(payload.order_id)], exact: true })
+                queryClient.invalidateQueries({ queryKey: ['invoicing'] })
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
+            }
+        },
+        onError: handleError
+    })
+
+    return { applyAccessorials, driverPayout }
 }
