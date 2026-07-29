@@ -354,6 +354,32 @@ export default makeStyles({ name: 'Billing' })((theme) => {
         driverNotes: {
             margin: 0,
             paddingInline: theme.spacing(3)
-        }
+        },
+        statusDot: {
+            position: 'relative',
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            flexShrink: 0,
+        },
+        statusDotPulsing: {
+            '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: -4,
+                borderRadius: '50%',
+                backgroundColor: 'inherit',
+                animation: 'pulseRing 1.6s ease-in-out infinite',
+                '@keyframes pulseRing': {
+                    '0%': { transform: 'scale(1)', opacity: 0.6 },
+                    '70%': { transform: 'scale(2)', opacity: 0 },
+                    '100%': { transform: 'scale(2)', opacity: 0 },
+                },
+            },
+        },
+        statusDotGreen: {
+            backgroundColor: theme.palette.success.main,
+            boxShadow: `0 0 0 2px ${alpha(theme.palette.success.main, 0.18)}`,
+        },
     };
 });

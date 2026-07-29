@@ -2,6 +2,7 @@ import React from "react";
 import { Grid, Box, Paper, Typography, TextField, InputAdornment, Chip } from "@mui/material";
 import { LocalShippingRounded, ArrowUpwardRounded, ArrowDownwardRounded, SwapVertRounded } from "@mui/icons-material";
 import { SubmitButton } from "../../components";
+import { useBillingMutation } from "../../hooks/useBillings";
 
 const TYPE_META = {
     both: { label: "Pickup & Delivery", icon: <SwapVertRounded sx={{ fontSize: 14 }} />, color: "#6366F1" },
@@ -11,11 +12,12 @@ const TYPE_META = {
 
 function InterlinerCharge(props) {
 
-    const { order, onSubmit, onClose } = props
+    const { order, onClose } = props
     const interliners = order?.interliners || []
 
     const bothInterliner = interliners.find((i) => i.type === 'both')
     const displayInterliners = bothInterliner ? [bothInterliner] : interliners
+    const { updateInterlinerAmounts } = useBillingMutation()
 
     const [amounts, setAmounts] = React.useState(() => Object.fromEntries(displayInterliners.map((i) => [i.id, i.charge_amount ?? ''])))
 
@@ -24,8 +26,16 @@ function InterlinerCharge(props) {
         setAmounts((prev) => ({ ...prev, [id]: value }))
     }, [])
 
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const payload = Object.entries(amounts).map(([k, v]) => ({ id: k, amount: Number(v) }))
+        console.log(payload);
+        await updateInterlinerAmounts.mutateAsync({ payload, oid: order.order_id, cid: order.customer_id })
+        onClose()
+    }
+
     return (
-        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <form style={{ height: '100%', display: 'flex', flexDirection: 'column' }} onSubmit={handleSubmit}>
             <div style={{ flexGrow: 1, overflow: 'auto', padding: '24px' }}>
                 <Grid container spacing={2}>
                     {displayInterliners.map((i) => {
@@ -77,6 +87,8 @@ function InterlinerCharge(props) {
                             variant="contained"
                             color="primary"
                             size="small"
+                            disabled={updateInterlinerAmounts.isPending}
+                            isLoading={updateInterlinerAmounts.isPending}
                             textTransform="capitalize"
                         >
                             Save Changes

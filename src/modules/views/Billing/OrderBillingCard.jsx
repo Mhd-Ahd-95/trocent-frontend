@@ -1,6 +1,6 @@
 import React from 'react'
-import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider, CircularProgress } from '@mui/material'
-import { EditRounded, CheckCircleRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded } from '@mui/icons-material'
+import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider, CircularProgress, Tooltip } from '@mui/material'
+import { EditRounded, CheckCircleRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded, PriceChange } from '@mui/icons-material'
 import moment from 'moment'
 import useStyles from './Billing.styles'
 import { useBillingMutation } from '../../hooks/useBillings'
@@ -20,10 +20,17 @@ const BoxTitle = ({ classes, icon, children, tone = 'neutral' }) => (
     </Box>
 )
 
-const KVRow = ({ classes, label, value, emphasis, column }) => (
+const KVRow = ({ classes, label, value, emphasis, column, isBilling, cx }) => (
     <Box className={column ? classes.kvColumn : classes.kvRow}>
         <Typography className={label === 'Sub Total' ? classes.kvTotal : classes.kvLabel}>{label}</Typography>
-        <Typography className={label === 'Sub Total' ? classes.kvTotalValue : emphasis ? classes.kvValueEmphasis : classes.kvValue}>{value}</Typography>
+        <Typography className={label === 'Sub Total' ? classes.kvTotalValue : emphasis ? classes.kvValueEmphasis : classes.kvValue} sx={{ display: 'flex', gap: 1, alignItems: 'center', position: 'relative' }}>
+            {isBilling && (
+                <Tooltip title={'Amount changed from billing.'} arrow placement="top">
+                    <span className={cx(classes.statusDot, classes.statusDotGreen, classes.statusDotPulsing)} />
+                </Tooltip>
+            )}
+            {value}
+        </Typography>
     </Box>
 )
 
@@ -56,6 +63,10 @@ const computeDriverPay = (pickupDriver, deliveryDriver, subTotal, fuelSurcharge,
     const isDeliveryDriver = Boolean(deliveryDriver)
 
     if (!isPickupDriver && !isDeliveryDriver) {
+        return { pickupAmount: null, deliveryAmount: null }
+    }
+
+    if (pickupDriver?.driver_pay_type !== 'commission' && deliveryDriver?.driver_pay_type !== 'commission') {
         return { pickupAmount: null, deliveryAmount: null }
     }
 
@@ -102,7 +113,6 @@ const computeDriverPay = (pickupDriver, deliveryDriver, subTotal, fuelSurcharge,
 }
 
 const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) => {
-
     const { classes, cx } = useStyles()
 
     const { driverPayout } = useBillingMutation()
@@ -117,6 +127,9 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
     const pickupDriverPay = isPickupDriver ? (order?.pickup_driver || null) : null
     const deliveryDriverPay = isDeliveryDriver ? (order?.delivery_driver || null) : null
 
+    const isPickupCommission = isPickupDriver && pickupDriverPay?.driver_pay_type === 'commission'
+    const isDeliveryCommission = isDeliveryDriver && deliveryDriverPay?.driver_pay_type === 'commission'
+
     const { pickupInterliner, deliveryInterliner, bothInterliner } = React.useMemo(() => {
         const interliners = order.interliners || []
         return {
@@ -127,14 +140,14 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
     }, [order.interliners])
 
     const isInterliner = (order.interliners?.length || 0) > 0
-    const showSingleField = isSameDriver || Boolean(bothInterliner)
+    const showSingleField = (isSameDriver && isPickupCommission) || Boolean(bothInterliner)
 
     const { pickupAmount: computedPickup, deliveryAmount: computedDelivery } = React.useMemo(() =>
         computeDriverPay(pickupDriverPay, deliveryDriverPay, order.sub_total, order.freight_fuel_surcharge, order.interliners),
         [pickupDriverPay, deliveryDriverPay, order.sub_total, order.freight_fuel_surcharge, order.interliners])
 
-    const initialPickupAmount = isPickupDriver ? (computedPickup ?? '') : (bothInterliner?.charge_amount ?? pickupInterliner?.charge_amount ?? '')
-    const initialDeliveryAmount = isDeliveryDriver ? (computedDelivery ?? '') : (bothInterliner?.charge_amount ?? deliveryInterliner?.charge_amount ?? '')
+    const initialPickupAmount = isPickupCommission ? (computedPickup ?? '') : (bothInterliner?.charge_amount ?? pickupInterliner?.charge_amount ?? '')
+    const initialDeliveryAmount = isDeliveryCommission ? (computedDelivery ?? '') : (bothInterliner?.charge_amount ?? deliveryInterliner?.charge_amount ?? '')
 
     const [pickupAmount, setPickupAmount] = React.useState(initialPickupAmount)
     const [deliveryAmount, setDeliveryAmount] = React.useState(initialDeliveryAmount)
@@ -172,13 +185,11 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
         const payload = {
             order_id: order.order_id,
             pickup_driver_id: isPickupDriver ? dp.id : null,
-            pickup_payout: isPickupDriver ? pickupAmount : null,
+            pickup_payout: isPickupCommission ? pickupAmount : null,
             delivery_driver_id: isDeliveryDriver ? dd.id : null,
-            delivery_payout: isSameDriver ? null : (isDeliveryDriver ? deliveryAmount : null),
-            leg_type: !isPickupDriver && !isDeliveryDriver ? 'both_interliner'
-                : isSameDriver || (isPickupDriver && isDeliveryDriver) ? 'both'
-                    : isPickupDriver ? 'pickup' : 'delivery',
+            delivery_payout: isDeliveryCommission ? deliveryAmount : null
         }
+        console.log(payload);
         await driverPayout.mutateAsync({ payload, cid: order.customer_id })
     }
 
@@ -332,7 +343,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
                                 <React.Fragment key={interliner.id}>
                                     <KVRow classes={classes} label="Name:" value={interliner.name ? `${interliner.name} (${interliner.type === 'both' ? 'P & D' : interliner.type === 'pickup' ? 'P' : 'D'})` : '-'} emphasis />
                                     <KVRow classes={classes} label="Reference:" value={interliner.invoice || '-'} emphasis />
-                                    <KVRow classes={classes} label="Amount:" value={money(interliner.charge_amount)} emphasis />
+                                    <KVRow classes={classes} label="Amount:" isBilling={interliner.is_billing} value={money(interliner.charge_amount)} emphasis cx={cx} />
                                     {order.interliners.length > 1 && <Divider />}
                                 </React.Fragment>
                             ))}
@@ -367,35 +378,35 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
                         <Grid size="auto" className={classes.topRightCol}>
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 {showSingleField ? (
-                                    isPickupDriver &&
+                                    isPickupCommission &&
                                     <PayoutInput
                                         classes={classes}
                                         value={pickupAmount}
                                         onChange={handleChange}
                                         type="pickup"
-                                        disabled={!isPickupDriver}
-                                        placeholder={isPickupDriver ? `#${dp.driver_number || dp.name}` : 'Interliner'}
+                                        disabled={!isPickupCommission}
+                                        placeholder={isPickupCommission ? `#${dp.driver_number || dp.name}` : 'Interliner'}
                                     />
                                 ) : (
                                     <>
-                                        {isPickupDriver &&
+                                        {isPickupCommission &&
                                             <PayoutInput
                                                 classes={classes}
                                                 value={pickupAmount}
                                                 onChange={handleChange}
                                                 type="pickup"
-                                                disabled={!isPickupDriver}
-                                                placeholder={isPickupDriver ? `#${dp.driver_number || dp.name}` : 'Interliner'}
+                                                disabled={!isPickupCommission}
+                                                placeholder={isPickupCommission ? `#${dp.driver_number || dp.name}` : 'Interliner'}
                                             />
                                         }
-                                        {isDeliveryDriver &&
+                                        {isDeliveryCommission &&
                                             <PayoutInput
                                                 classes={classes}
                                                 value={deliveryAmount}
                                                 onChange={handleChange}
                                                 type="delivery"
-                                                disabled={!isDeliveryDriver}
-                                                placeholder={isDeliveryDriver ? `#${dd.driver_number || dd.name}` : 'Interliner'}
+                                                disabled={!isDeliveryCommission}
+                                                placeholder={isDeliveryCommission ? `#${dd.driver_number || dd.name}` : 'Interliner'}
                                             />
                                         }
                                     </>
@@ -405,7 +416,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
                                 <Chip className={classes.approveChip} color="success" icon={<CheckCircleRounded style={{ fontSize: 14 }} />} label="Approved" />
                             ) : (
                                 <Button className={classes.approveButton} variant="contained" onClick={handleApprove} disabled={driverPayout.isPending}>
-                                    {driverPayout.isPending && <CircularProgress size={18} sx={{marginRight: 1}} />}
+                                    {driverPayout.isPending && <CircularProgress size={18} sx={{ marginRight: 1 }} />}
                                     {driverPayout.isPending ? 'Processing' : 'Approved'}
                                 </Button>
                             )}

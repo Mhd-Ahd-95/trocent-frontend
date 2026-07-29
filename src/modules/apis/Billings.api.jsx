@@ -8,9 +8,12 @@ const applyCustomerAccessorials = (oid, payload) => CustomAxios.put(`/api/billin
 
 const driverPayout = (payload) => CustomAxios.post(`/api/billings/driver-payout`, payload)
 
+const updateInterlinerAmounts = (payload) => CustomAxios.put(`/api/billings/interliners`, payload)
+
 export default {
     getOrdersForBilling,
     applyCustomerAccessorials,
     getApprovedOrders,
-    driverPayout
+    driverPayout,
+    updateInterlinerAmounts
 }
