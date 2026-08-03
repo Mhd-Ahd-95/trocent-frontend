@@ -88,7 +88,7 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
                 gridTemplateColumns: '1fr 1fr',
             },
             [theme.breakpoints.up('md')]: {
-                gridTemplateColumns: props?.isInvoicing ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)',
+                gridTemplateColumns: props?.isInvoicing ? 'repeat(4, 1fr)' : props?.commission ? 'repeat(3, 1fr)' :  'repeat(5, 1fr)',
             },
         },
         labelText: {
@@ -223,5 +223,11 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
             padding: theme.spacing(1.5),
             background: isDark ? 'transparent' : alpha(secondary, 0.012),
         },
+        payDate: {
+            fontSize: 16,
+            fontWeight: 800,
+            letterSpacing: '0.01em',
+            color: isDark ? '#fff' : secondary,
+        }
     };
 });

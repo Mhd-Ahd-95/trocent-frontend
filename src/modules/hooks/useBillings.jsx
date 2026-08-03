@@ -113,7 +113,6 @@ export function useBillingMutation() {
         },
         onSuccess: (res, { payload, cid, oid }) => {
             const interliners = res.data
-            console.log(interliners);
             queryClient.setQueriesData({ queryKey: ['billings'] }, (old) => {
                 if (!old?.data) return old
                 return {
@@ -137,5 +136,36 @@ export function useBillingMutation() {
         onError: handleError
     })
 
-    return { applyAccessorials, driverPayout, updateInterlinerAmounts }
+    const updateOrderStatus = useMutation({
+        mutationFn: async (payload) => {
+            const res = await BillingsApi.updateOrderStatusToBilled(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                const cid = payload.customer_id
+                const oids = payload.orders
+                queryClient.setQueriesData({ queryKey: ['invoicing'] }, (old) => {
+                    if (!old?.data) return old
+                    return {
+                        ...old,
+                        data: old.data.reduce((acc, group) => {
+                            if (Number(group.customer_id) !== Number(cid)) {
+                                acc.push(group)
+                                return acc
+                            }
+                            const remainingOrders = group.orders.filter(order => !oids.includes(Number(order.order_id)))
+                            if (remainingOrders.length > 0) {
+                                acc.push({ ...group, orders: remainingOrders })
+                            }
+                            return acc
+                        }, [])
+                    }
+                })
+            }
+        },
+        onError: handleError
+    })
+
+    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus }
 }

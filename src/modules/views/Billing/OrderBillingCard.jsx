@@ -1,11 +1,10 @@
 import React from 'react'
 import { Box, Button, Chip, IconButton, TextField, Grid, Typography, Divider, CircularProgress, Tooltip } from '@mui/material'
-import { EditRounded, CheckCircleRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded, PriceChange } from '@mui/icons-material'
+import { EditRounded, CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Rounded } from '@mui/icons-material'
 import moment from 'moment'
 import useStyles from './Billing.styles'
 import { useBillingMutation } from '../../hooks/useBillings'
-
-const money = (n) => `$${Number(n || 0).toFixed(2)}`
+import { money, computeDriverPay } from '../Utils/driverPay'
 
 const SERVICE_CHIP_CLASS = {
     Direct: 'serviceChipDirect',
@@ -56,65 +55,9 @@ const PayoutInput = ({ classes, placeholder, value, onChange, type, disabled }) 
     />
 )
 
+const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner, isDriverPay }) => {
 
-const computeDriverPay = (pickupDriver, deliveryDriver, subTotal, fuelSurcharge, interliners) => {
-
-    const isPickupDriver = Boolean(pickupDriver)
-    const isDeliveryDriver = Boolean(deliveryDriver)
-
-    if (!isPickupDriver && !isDeliveryDriver) {
-        return { pickupAmount: null, deliveryAmount: null }
-    }
-
-    if (pickupDriver?.driver_pay_type !== 'commission' && deliveryDriver?.driver_pay_type !== 'commission') {
-        return { pickupAmount: null, deliveryAmount: null }
-    }
-
-    const base = (subTotal || 0) - (fuelSurcharge || 0)
-
-    if (!isPickupDriver && isDeliveryDriver) {
-        if (deliveryDriver.driver_pay_type === 'commission' && deliveryDriver.commission_percentage > 0) {
-            const pickupInterliner = interliners?.find(i => i.type === 'pickup')
-            const pickupInterlinerAmount = pickupInterliner?.charge_amount ?? 0
-            const commission = deliveryDriver.commission_percentage / 100
-            return { pickupAmount: null, deliveryAmount: (base - pickupInterlinerAmount) * commission }
-        }
-        return { pickupAmount: null, deliveryAmount: 0 }
-    }
-
-    if (isPickupDriver && !isDeliveryDriver) {
-        if (pickupDriver.driver_pay_type === 'commission' && pickupDriver.commission_percentage > 0) {
-            const deliveryInterliner = interliners?.find(i => i.type === 'delivery')
-            const deliveryInterlinerAmount = deliveryInterliner?.charge_amount ?? 0
-            const commission = pickupDriver.commission_percentage / 100
-            return { pickupAmount: (base - deliveryInterlinerAmount) * commission, deliveryAmount: null }
-        }
-        return { pickupAmount: 0, deliveryAmount: null }
-    }
-
-    if (pickupDriver.id === deliveryDriver.id) {
-        if (pickupDriver.driver_pay_type === 'commission' && pickupDriver.commission_percentage > 0) {
-            const commission = pickupDriver.commission_percentage / 100
-            const amount = base * commission
-            return { pickupAmount: amount, deliveryAmount: amount }
-        }
-        return { pickupAmount: 0, deliveryAmount: 0 }
-    }
-
-    let pickupAmount = 0
-    let deliveryAmount = 0
-    if (pickupDriver.driver_pay_type === 'commission' && pickupDriver.commission_percentage > 0) {
-        pickupAmount = base * (pickupDriver.commission_percentage / 100)
-    }
-    if (deliveryDriver.driver_pay_type === 'commission' && deliveryDriver.commission_percentage > 0) {
-        deliveryAmount = base * (deliveryDriver.commission_percentage / 100)
-    }
-    return { pickupAmount, deliveryAmount }
-}
-
-const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) => {
     const { classes, cx } = useStyles()
-
     const { driverPayout } = useBillingMutation()
 
     const dp = order?.pickup_driver_assigned || null
@@ -162,7 +105,6 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
         }
     }, [order.sub_total, order.freight_fuel_surcharge]);
 
-    const approved = false
     const unit = order.freights?.length > 0 ? order.freights[0].unit : 'lbs'
 
     const pickupNotes = React.useMemo(() => order.order_notes.filter(on => on.note_type === 'pickup'), [order.order_notes])
@@ -189,7 +131,6 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
             delivery_driver_id: isDeliveryDriver ? dd.id : null,
             delivery_payout: isDeliveryCommission ? deliveryAmount : null
         }
-        console.log(payload);
         await driverPayout.mutateAsync({ payload, cid: order.customer_id })
     }
 
@@ -335,9 +276,11 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
                         <Box className={classes.infoBox}>
                             <Box className={classes.chargesTitleRow}>
                                 <BoxTitle classes={classes} tone="neutral" icon={<LocalShippingRounded sx={{ fontSize: 13 }} />}>Interliner Charges</BoxTitle>
-                                <IconButton className={classes.editButton} size="small" onClick={() => handleInterliner(order)}>
-                                    <EditRounded style={{ fontSize: 17 }} />
-                                </IconButton>
+                                {!isDriverPay &&
+                                    <IconButton className={classes.editButton} size="small" onClick={() => handleInterliner(order)}>
+                                        <EditRounded style={{ fontSize: 17 }} />
+                                    </IconButton>
+                                }
                             </Box>
                             {order.interliners.map((interliner) => (
                                 <React.Fragment key={interliner.id}>
@@ -354,9 +297,11 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
                     <Box className={classes.infoBox}>
                         <Box className={classes.chargesTitleRow}>
                             <BoxTitle classes={classes} tone="neutral">Charges</BoxTitle>
-                            <IconButton className={classes.editButton} size="small" onClick={() => handleCharge(order)}>
-                                <EditRounded style={{ fontSize: 17 }} />
-                            </IconButton>
+                            {!isDriverPay &&
+                                <IconButton className={classes.editButton} size="small" onClick={() => handleCharge(order)}>
+                                    <EditRounded style={{ fontSize: 17 }} />
+                                </IconButton>
+                            }
                         </Box>
                         <KVRow classes={classes} label="Freight Charge" value={money(order.freight_rate)} emphasis />
                         <KVRow classes={classes} label="Fuel Surcharge" value={money(order.freight_fuel_surcharge)} emphasis />
@@ -412,14 +357,12 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner }) 
                                     </>
                                 )}
                             </Box>
-                            {approved ? (
-                                <Chip className={classes.approveChip} color="success" icon={<CheckCircleRounded style={{ fontSize: 14 }} />} label="Approved" />
-                            ) : (
+                            {!isDriverPay &&
                                 <Button className={classes.approveButton} variant="contained" onClick={handleApprove} disabled={driverPayout.isPending}>
                                     {driverPayout.isPending && <CircularProgress size={18} sx={{ marginRight: 1 }} />}
                                     {driverPayout.isPending ? 'Processing' : 'Approved'}
                                 </Button>
-                            )}
+                            }
                         </Grid>
                     </Grid>
                 </Grid>

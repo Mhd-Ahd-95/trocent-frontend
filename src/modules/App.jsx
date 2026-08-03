@@ -32,7 +32,8 @@ import {
   NotAuthorized,
   SetUp,
   BillingView,
-  InvoicingView
+  InvoicingView,
+  DriverPayCommission
 } from './views'
 import { DriverDeliveries, LandingPage, StopActions, FreightOrder } from './DriverApp/view'
 import { ScrollToTop } from './components'
@@ -108,6 +109,7 @@ function App() {
           <Route path='/setup' Component={SetUp} />
           <Route path='/billings' Component={BillingView} />
           <Route path='/invoicing' Component={InvoicingView} />
+          <Route path='/driver-pay-commission' Component={DriverPayCommission} />
         </Route>
         <Route element={<RoleProtectedRoute allowedRoles={[ROLES.DRIVER]} />}>
           <Route path='/driver-dashboard' Component={LandingPage} />

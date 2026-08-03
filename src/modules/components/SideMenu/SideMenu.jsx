@@ -9,7 +9,8 @@ import {
   GppGoodOutlined as Access,
   ExpandMore,
   ReceiptLongOutlined,
-  Receipt
+  Receipt,
+  LocalAtm
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
@@ -146,7 +147,8 @@ function SideMenu(props) {
     "Fleet Management": true,
     Settings: true,
     "Access Management": true,
-    'Billing': true
+    'Billing': true,
+    "Driver Pay": true
   });
 
   const itemsLinks = [
@@ -157,8 +159,14 @@ function SideMenu(props) {
       text: 'Billing', icon: <Receipt />,
       options: [
         { text: 'Billing', url: '/billings' },
-        { text: 'Driver Pay', url: '#' },
         { text: 'Invoicing', url: '/invoicing' }
+      ]
+    },
+    {
+      text: 'Driver Pay', icon: <LocalAtm />,
+      options: [
+        { text: 'Commission', url: '/driver-pay-commission' },
+        { text: 'Hourly', url: '#' }
       ]
     },
     {

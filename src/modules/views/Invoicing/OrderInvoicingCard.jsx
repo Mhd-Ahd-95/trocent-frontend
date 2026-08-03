@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Box, Checkbox, Button, Table, TableHead, TableBody, TableRow, TableCell, Chip, Tooltip, } from "@mui/material";
+import { Box, Checkbox, Button, Table, TableHead, TableBody, TableRow, TableCell, Chip, Tooltip, CircularProgress, } from "@mui/material";
 import useStyles from './Invoicing.styles';
 import moment from 'moment';
+import { useBillingMutation } from "../../hooks/useBillings";
 
 const STATUS_BADGE_CLASS_MAP = { green: 'statusBadgeGreen', orange: 'statusBadgeOrange', red: 'statusBadgeRed' };
 const DOT_CLASS_MAP = { green: 'statusDotGreen', orange: 'statusDotOrange', red: 'statusDotRed' };
@@ -55,7 +56,7 @@ const formatDate = (dateStr) => {
 };
 
 const TotalRow = React.memo(({ orders, classes, cx }) => {
-    
+
     const totals = useMemo(() => orders.reduce((acc, o) => {
         acc.freight += Number(o.freight_rate ?? 0);
         acc.fuel += Number(o.freight_fuel_surcharge ?? 0);
@@ -107,7 +108,7 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
                 <Checkbox
                     size="small"
                     checked={!!selected}
-                    onChange={() => onToggleSelect(order.id)}
+                    onChange={() => onToggleSelect(order.order_id)}
                     onClick={(e) => e.stopPropagation()}
                     className={classes.rowCheckbox}
                 />
@@ -157,10 +158,11 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
 OrderRow.displayName = 'OrderRow';
 
 
-const OrderInvoicingCard = React.memo(({ orders, customerInvoicing }) => {
+const OrderInvoicingCard = React.memo(({ orders, customerInvoicing, customerId }) => {
 
     const { classes, cx } = useStyles();
     const [selectedIds, setSelectedIds] = useState(() => new Set());
+    const { updateOrderStatus } = useBillingMutation()
 
     const onToggleSelect = useCallback((id) => {
         setSelectedIds(prev => {
@@ -170,20 +172,23 @@ const OrderInvoicingCard = React.memo(({ orders, customerInvoicing }) => {
         });
     }, []);
 
-    const allSelected = orders.length > 0 && orders.every(o => selectedIds.has(o.id));
+    const allSelected = orders.length > 0 && orders.every(o => selectedIds.has(o.order_id));
     const someSelected = orders.some(o => selectedIds.has(o.id));
-    const selectedCount = useMemo(() => orders.filter(o => selectedIds.has(o.id)).length, [orders, selectedIds]);
+    const selectedCount = useMemo(() => orders.filter(o => selectedIds.has(o.order_id)).length, [orders, selectedIds]);
 
     const onToggleSelectAll = useCallback(() => {
         setSelectedIds(prev => {
-            const willSelectAll = !(orders.length > 0 && orders.every(o => prev.has(o.id)));
-            return willSelectAll ? new Set(orders.map(o => o.id)) : new Set();
+            const isSelectedAll = !(orders.length > 0 && orders.every(o => prev.has(o.order_id)));
+            return isSelectedAll ? new Set(orders.map(o => o.order_id)) : new Set();
         });
     }, [orders]);
 
-    const handleSubmitInvoice = () => {
-        const selectedOrders = orders.filter(o => selectedIds.has(o.id));
-        console.log('Submitting invoice for orders:', selectedOrders);
+    const handleSubmitInvoice = async (e) => {
+        e.preventDefault()
+        const selectedOrders = Array.from(selectedIds)
+        const payload = { customer_id: customerId, orders: selectedOrders }
+        console.log(payload);
+        await updateOrderStatus.mutateAsync(payload)
     };
 
     return (
@@ -213,7 +218,7 @@ const OrderInvoicingCard = React.memo(({ orders, customerInvoicing }) => {
                                 index={index}
                                 key={order.order_id}
                                 order={order}
-                                selected={selectedIds.has(order.id)}
+                                selected={selectedIds.has(order.order_id)}
                                 onToggleSelect={onToggleSelect}
                                 classes={classes}
                                 cx={cx}
@@ -228,8 +233,9 @@ const OrderInvoicingCard = React.memo(({ orders, customerInvoicing }) => {
                 <span className={classes.selectionHint}>
                     {selectedCount > 0 ? `${selectedCount} order${selectedCount > 1 ? 's' : ''} selected` : 'No orders selected'}
                 </span>
-                <Button variant="contained" color="primary" className={classes.submitButton} disabled={selectedCount === 0} onClick={handleSubmitInvoice}>
-                    Submit Invoice
+                <Button variant="contained" color="primary" className={classes.submitButton} disabled={selectedCount === 0 || updateOrderStatus.isPending} onClick={handleSubmitInvoice}>
+                    {updateOrderStatus.isPending && <CircularProgress size={18} sx={{ marginRight: 1 }} />}
+                    {updateOrderStatus.isPending ? 'Processing' : 'Submit Invoice'}
                 </Button>
             </Box>
         </Box>

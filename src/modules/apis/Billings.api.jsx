@@ -10,10 +10,13 @@ const driverPayout = (payload) => CustomAxios.post(`/api/billings/driver-payout`
 
 const updateInterlinerAmounts = (payload) => CustomAxios.put(`/api/billings/interliners`, payload)
 
+const updateOrderStatusToBilled = (payload) => CustomAxios.put('/api/billings/invoicing/orders', payload)
+
 export default {
     getOrdersForBilling,
     applyCustomerAccessorials,
     getApprovedOrders,
     driverPayout,
-    updateInterlinerAmounts
+    updateInterlinerAmounts,
+    updateOrderStatusToBilled
 }
