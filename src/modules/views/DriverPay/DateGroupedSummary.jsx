@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useRef } from 'react'
 import { Box, Typography, TextField, Button, Grid, Collapse } from '@mui/material'
 import { TuneRounded } from '@mui/icons-material'
 import moment from 'moment'
-import OrderBillingDetailCard from '../Billing/OrderBillingCard'
+import OrderDriverCard from '../Billing/OrderDriverCard'
 import { money, accessorialsTotal, interlinersTotal } from '../Utils/driverPay'
 import useStyles from './DriverPay.styles'
 
@@ -17,15 +17,20 @@ const StatTile = ({ classes, cx, label, value, highlight }) => (
     </Box>
 )
 
-const DateGroupedSummary = React.memo(({ date, orders }) => {
+const DateGroupedSummary = React.memo(({ date, orders, driver, onApprove }) => {
 
     const { classes, cx } = useStyles()
     const [expanded, setExpanded] = useState(false)
     const hasOpened = useRef(false)
-    const [approved, setApproved] = useState(false)
-    const payoutsRef = useRef({})
+
+    const payoutsRef = useRef(
+        orders.reduce((acc, o) => {
+            acc[o.order_id] = Number(o.driver_payout || 0)
+            return acc
+        }, {})
+    )
+
     const [runningTotal, setRunningTotal] = useState(() => orders.reduce((sum, o) => sum + Number(o.driver_payout || 0), 0))
-    const [autoSync, setAutoSync] = useState(true)
 
     const totals = useMemo(() => {
         let freight = 0, fuel = 0, subTotal = 0, accessorials = 0, interliners = 0
@@ -46,21 +51,19 @@ const DateGroupedSummary = React.memo(({ date, orders }) => {
 
     const handlePayoutChange = useCallback((orderId, value) => {
         payoutsRef.current[orderId] = value
-        if (autoSync) {
-            const sum = Object.values(payoutsRef.current).reduce((a, b) => a + Number(b || 0), 0)
-            setRunningTotal(sum)
-        }
-    }, [autoSync])
+        const sum = Object.values(payoutsRef.current).reduce((a, b) => a + Number(b || 0), 0)
+        setRunningTotal(sum)
+    }, [])
 
     const handleRunningTotalChange = useCallback((val) => {
-        setAutoSync(false)
         setRunningTotal(val)
     }, [])
 
     const handleApprove = useCallback((e) => {
         e.stopPropagation()
-        setApproved(true)
-    }, [orders, runningTotal])
+        onApprove?.({ driverId: driver?.driver_id, date, amount: Number(runningTotal) })
+    }, [driver, date, runningTotal, onApprove])
+
 
     return (
         <Box className={classes.dateGroupRoot}>
@@ -97,7 +100,6 @@ const DateGroupedSummary = React.memo(({ date, orders }) => {
                             type="number"
                             className={classes.runningTotalInput}
                             value={runningTotal}
-                            disabled={approved}
                             onChange={(e) => handleRunningTotalChange(e.target.value)}
                         />
                         <Button
@@ -114,10 +116,10 @@ const DateGroupedSummary = React.memo(({ date, orders }) => {
                 <Grid container spacing={2} sx={{ p: 2 }}>
                     <Grid size={12}>
                         {orders.map(order => (
-                            <OrderBillingDetailCard
-                                key={order.order_id}
+                            <OrderDriverCard
+                                key={`${order.order_id}-${driver?.driver_id}`}
                                 order={order}
-                                isDriverPay
+                                driver={driver}
                                 onPayoutChange={handlePayoutChange}
                             />
                         ))}

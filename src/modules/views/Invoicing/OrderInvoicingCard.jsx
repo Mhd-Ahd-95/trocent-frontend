@@ -7,24 +7,43 @@ import { useBillingMutation } from "../../hooks/useBillings";
 const STATUS_BADGE_CLASS_MAP = { green: 'statusBadgeGreen', orange: 'statusBadgeOrange', red: 'statusBadgeRed' };
 const DOT_CLASS_MAP = { green: 'statusDotGreen', orange: 'statusDotOrange', red: 'statusDotRed' };
 
+const getNextMonday = (approvedDate) => {
+    const billingDate = moment(approvedDate).startOf('day');
+    const day = billingDate.isoWeekday();
+    const daysUntilMonday = day === 1 ? 7 : 8 - day;
+    return billingDate.add(daysUntilMonday, 'days');
+};
+
+const getNextMonthFirst = (approvedDate) => {
+    return moment(approvedDate).startOf('day').add(1, 'month').startOf('month');
+};
 
 const getBillingStatus = (order, invoicingFrequency) => {
 
     if (!order.approved_date || !invoicingFrequency) return null;
-    const approved = new Date(`${order.approved_date}T00:00:00`);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    approved.setHours(0, 0, 0, 0);
-    const daysSince = Math.floor((today - approved) / 86400000);
+    const approved = moment(order.approved_date).startOf('day');
+    const today = moment().startOf('day');
 
     if (invoicingFrequency === 'daily') {
-        return daysSince >= 0 ? { color: 'green', label: 'Approved — ready to bill (daily)' } : null;
+        return today.isSameOrAfter(approved) ? { color: 'green', label: 'Approved — ready to bill (daily)' } : null;
     }
+
     if (invoicingFrequency === 'weekly') {
-        return daysSince >= 7 ? { color: 'green', label: 'Weekly cycle complete — ready to bill' } : { color: 'orange', label: `Bills in ${7 - daysSince} day${7 - daysSince === 1 ? '' : 's'} (weekly)` };
+        const billingDate = getNextMonday(approved);
+        if (today.isSameOrAfter(billingDate)) {
+            return { color: 'green', label: 'Weekly cycle complete — ready to bill', };
+        }
+        const daysLeft = billingDate.diff(today, 'days');
+        return { color: 'orange', label: `Bills in ${daysLeft} day${daysLeft === 1 ? '' : 's'} (${billingDate.format('YYYY-MM-DD')})`, };
     }
+
     if (invoicingFrequency === 'monthly') {
-        return daysSince >= 30 ? { color: 'green', label: 'Monthly cycle complete — ready to bill' } : { color: 'red', label: `Bills in ${30 - daysSince} day${30 - daysSince === 1 ? '' : 's'} (monthly)` };
+        const billingDate = getNextMonthFirst(approved);
+        if (today.isSameOrAfter(billingDate)) {
+            return { color: 'green', label: 'Monthly cycle complete — ready to bill', };
+        }
+        const daysLeft = billingDate.diff(today, 'days');
+        return { color: 'red', label: `Bills in ${daysLeft} day${daysLeft === 1 ? '' : 's'} (${billingDate.format('YYYY-MM-DD')})`, };
     }
     return null;
 };
@@ -187,7 +206,6 @@ const OrderInvoicingCard = React.memo(({ orders, customerInvoicing, customerId }
         e.preventDefault()
         const selectedOrders = Array.from(selectedIds)
         const payload = { customer_id: customerId, orders: selectedOrders }
-        console.log(payload);
         await updateOrderStatus.mutateAsync(payload)
     };
 

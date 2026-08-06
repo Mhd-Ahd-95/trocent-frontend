@@ -4,7 +4,7 @@ import { ExpandMoreRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
 
-const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false, customerId, isDriverPay }, ref) => {
+const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false, customerId, isDriverPay, driver_id, onApprove }, ref) => {
 
     const { classes } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -30,7 +30,8 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
         if (!isDriverPay) return []
         const map = new Map();
         orders.forEach((o) => {
-            const key = moment(o.create_date).format('YYYY-MM-DD');
+            const dateField = o.leg_type === 'pickup' ? o.pickup_at : o.delivery_at
+            const key = moment(dateField).format('YYYY-MM-DD');
             if (!map.has(key)) map.set(key, []);
             map.get(key).push(o);
         });
@@ -59,7 +60,7 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
 
             <AccordionDetails className={classes.accordionDetails}>
                 {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
-                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} />))
+                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
                         :
                         orders.map((order) => (
                             <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />

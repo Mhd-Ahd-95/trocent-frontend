@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import BillingsApi from "../apis/Billings.api";
 import { useSnackbar } from "notistack";
+import DriverPaysApi from "../apis/DriverPays.api";
 
 
 export function useBillings(filters = {}, page = 1, pageSize = 10) {
@@ -22,6 +23,20 @@ export function useInvoicing(filters = {}, page = 1, pageSize = 10) {
         queryKey: ['invoicing', { filters: JSON.stringify(filters), page, pageSize }],
         queryFn: async () => {
             const response = await BillingsApi.getApprovedOrders({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useCommissionDrivers(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['commissionDrivers', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.getPendingCommissionDriverPay({ ...filters, page, pageSize });
             return response.data;
         },
         staleTime: 5 * 60 * 1000,

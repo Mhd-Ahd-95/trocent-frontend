@@ -80,7 +80,7 @@ const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = fals
                         <LabeledField classes={classes} label="Keyword" icon={<Search sx={{ fontSize: 11 }} />}>
                             <TextField
                                 size="small" fullWidth className={classes.inputRoot}
-                                placeholder="#order, #customer, customer name..."
+                                placeholder="#order, #driver, driver name..."
                                 value={filters.keyword}
                                 onChange={(e) => setField('keyword', e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
