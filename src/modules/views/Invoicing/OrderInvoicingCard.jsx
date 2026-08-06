@@ -118,7 +118,7 @@ const OrderRow = React.memo(({ order, selected, onToggleSelect, classes, cx, ind
 
     const handleOrderClick = (e) => {
         e.preventDefault();
-        window.open(`/orders/edit/${order.id}`, '_blank', 'noopener,noreferrer');
+        window.open(`/orders/edit/${order.order_id}`, '_blank', 'noopener,noreferrer');
     };
 
     return (
