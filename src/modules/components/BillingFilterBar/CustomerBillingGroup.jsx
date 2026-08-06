@@ -1,10 +1,10 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
 import { Accordion, AccordionSummary, AccordionDetails, Box, Chip } from '@mui/material';
 import { ExpandMoreRounded } from '@mui/icons-material';
-import useStyles from './Billing.styles';
-import OrderBillingCard from './OrderBillingCard';
+import useStyles from './Filter.styles';
+import moment from 'moment';
 
-const CustomerBillingGroup = React.memo(forwardRef(({ customerName, accountNumber, orders, onApprovalChange, orderRef, openCharges }, ref) => {
+const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false, customerId, isDriverPay, driver_id, onApprove }, ref) => {
 
     const { classes } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -18,8 +18,27 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, accountNumbe
 
     const handleCharge = (order) => {
         orderRef.current = order
-        openCharges()
+        openCharges(1)
     }
+
+    const handleInterliner = (order) => {
+        orderRef.current = order
+        openCharges(2)
+    }
+
+    const dateGroups = React.useMemo(() => {
+        if (!isDriverPay) return []
+        const map = new Map();
+        orders.forEach((o) => {
+            const dateField = o.leg_type === 'pickup' ? o.pickup_at : o.delivery_at
+            const key = moment(dateField).format('YYYY-MM-DD');
+            if (!map.has(key)) map.set(key, []);
+            map.get(key).push(o);
+        });
+        return Array.from(map.entries())
+            .sort((a, b) => moment(b[0]).diff(moment(a[0])))
+            .map(([date, dateOrders]) => ({ date, orders: dateOrders }));
+    }, [orders, isDriverPay]);
 
     return (
         <Accordion
@@ -40,9 +59,13 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, accountNumbe
             </AccordionSummary>
 
             <AccordionDetails className={classes.accordionDetails}>
-                {orders.map((order) => (
-                    <OrderBillingCard key={order.order_id} order={order} onApprovalChange={onApprovalChange} handleCharge={handleCharge} />
-                ))}
+                {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
+                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
+                        :
+                        orders.map((order) => (
+                            <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
+                        )) : null
+                }
             </AccordionDetails>
         </Accordion>
     );

@@ -9,7 +9,8 @@ import {
   GppGoodOutlined as Access,
   ExpandMore,
   ReceiptLongOutlined,
-  Receipt
+  Receipt,
+  LocalAtm
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { RoleContext, ThemeContext, AddressBookContext } from '../../contexts'
@@ -150,7 +151,14 @@ export default function MobileDrawer(props) {
       options: [
         { text: 'Billing', url: '/billings' },
         { text: 'Driver Pay', url: '#' },
-        { text: 'Invoicing', url: '#' }
+        { text: 'Invoicing', url: '/invoicing' }
+      ]
+    },
+    {
+      text: 'Driver Pay', icon: <LocalAtm />,
+      options: [
+        { text: 'Commission', url: '/driver-pay-commission' },
+        { text: 'Hourly', url: '/drivers/hourly' }
       ]
     },
     {

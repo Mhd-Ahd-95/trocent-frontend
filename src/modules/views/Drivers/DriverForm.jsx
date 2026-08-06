@@ -1,8 +1,8 @@
 import React from 'react'
-import { Grid, CircularProgress, Switch, FormControl, Autocomplete, MenuItem, TextField, Typography, Button } from '@mui/material'
+import { Grid, CircularProgress, Switch, FormControl, Autocomplete, MenuItem, TextField, Typography, Button, RadioGroup, Box, FormControlLabel, Radio, FormHelperText } from '@mui/material'
 import { TextInput, StyledButton, SubmitButton, AccordionComponent, CustomFormControlLabel } from '../../components'
 import initialInputs from './initialInputs'
-import { useForm, Controller, useFieldArray } from 'react-hook-form'
+import { useForm, Controller, useFieldArray, useWatch } from 'react-hook-form'
 import global from '../../global'
 import { useCompanies } from '../../hooks/useComapnies'
 import { DatePicker } from '@mui/x-date-pickers'
@@ -20,13 +20,7 @@ export default function DriverForm(props) {
     const [loading, setLoading] = React.useState(false)
     const { isLoading, data } = useCompanies()
 
-    const { register,
-        control,
-        formState: { errors },
-        reset,
-        handleSubmit,
-        setValue
-    } = useForm({
+    const { register, control, formState: { errors }, reset, handleSubmit, setValue, watch } = useForm({
         defaultValues: {
             driver_number: '',
             fname: '',
@@ -52,6 +46,12 @@ export default function DriverForm(props) {
             criminal_note: '',
             contract_type: '',
             driver_description: '',
+            driver_pay_type: '',
+            commission_percentage: 0,
+            hourly_rate: 0,
+            rate_per_km: 0,
+            mileage_allotment: 0,
+            fuel_surcharge_type: '',
             driver_documents: [],
             ...initialValues
         }
@@ -75,6 +75,10 @@ export default function DriverForm(props) {
         });
         for (let [key, value] of Object.entries(data)) {
             if (key === 'driver_documents') continue;
+            if (value === '') value = null
+            if (key === 'commission_percentage' || key === 'hourly_rate' || key === 'mileage_allotment' || key === 'rate_per_km') {
+                if (value === '') value = 0
+            }
             formData.append(key, value);
         }
         const action = e?.nativeEvent?.submitter?.id;
@@ -107,6 +111,7 @@ export default function DriverForm(props) {
         })
     }, [append])
 
+    const driverPerType = useWatch({ control, name: 'driver_pay_type' })
 
     return (
         <Grid container spacing={3} component={'form'} onSubmit={handleSubmit(onSubmit)}>
@@ -305,7 +310,194 @@ export default function DriverForm(props) {
                 )
             })}
 
-            {/* driver documents */}
+            <Grid size={12}>
+                <AccordionComponent
+                    bordered='true'
+                    bold={600}
+                    title='Driver Pay Type'
+                    content={
+                        <Controller
+                            name='driver_pay_type'
+                            control={control}
+                            // rules={{ required: 'Driver Pay Type is a required field' }}
+                            render={({ field: payTypeField }) => (
+                                <>
+                                    <RadioGroup
+                                        {...payTypeField}
+                                        value={payTypeField.value || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value
+                                            payTypeField.onChange(value)
+                                            if (value === 'hourly') {
+                                                setValue('commission_percentage', 0)
+                                            }
+                                            else if (value === 'commission') {
+                                                setValue('hourly_rate', 0)
+                                                setValue('rate_per_km', 0)
+                                                setValue('mileage_allotment', 0)
+                                                setValue('fuel_surcharge_type', '')
+                                            }
+                                            else {
+                                                setValue('commission_percentage', 0)
+                                                setValue('hourly_rate', 0)
+                                                setValue('rate_per_km', 0)
+                                                setValue('mileage_allotment', 0)
+                                                setValue('fuel_surcharge_type', '')
+                                            }
+                                        }}
+                                    >
+                                        <Grid container spacing={2}>
+                                            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+                                                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, height: '100%' }}>
+                                                    <FormControlLabel value='hourly' control={<Radio />} label='Hourly' />
+                                                    <Grid container spacing={3} sx={{ mt: 1 }}>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                                            <Controller
+                                                                name='hourly_rate'
+                                                                control={control}
+                                                                defaultValue={0}
+                                                                render={({ field }) => (
+                                                                    <TextField
+                                                                        {...field}
+                                                                        label='Hourly Rate $'
+                                                                        type='number'
+                                                                        disabled={driverPerType !== 'hourly'}
+                                                                        variant='outlined'
+                                                                        fullWidth size='small'
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value
+                                                                            if (value === '') field.onChange('')
+                                                                            if (value < 0) return
+                                                                            else field.onChange(Number(value))
+
+                                                                        }}
+                                                                        onFocus={(e) => e.target.select()}
+                                                                    />
+                                                                )}
+                                                            />
+                                                        </Grid>
+                                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                                            <Controller
+                                                                name='rate_per_km'
+                                                                control={control}
+                                                                defaultValue={0}
+                                                                render={({ field }) => (
+                                                                    <TextField {...field} label='Rate per KM / Mile' type='number' variant='outlined' fullWidth size='small'
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value
+                                                                            if (value === '') field.onChange('')
+                                                                            else if (value < 0) return
+                                                                            else field.onChange(Number(value))
+
+                                                                        }}
+                                                                        disabled={driverPerType !== 'hourly'}
+                                                                        onFocus={(e) => e.target.select()} />
+                                                                )}
+                                                            />
+                                                        </Grid>
+                                                        <Grid size={12}>
+                                                            <Controller
+                                                                name='mileage_allotment'
+                                                                control={control}
+                                                                defaultValue={0}
+                                                                render={({ field }) => (
+                                                                    <TextField {...field} label='Mileage Allotment' type='number' variant='outlined' fullWidth size='small'
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value
+                                                                            if (value === '') field.onChange('')
+                                                                            else if (value < 0) return
+                                                                            else field.onChange(Number(value))
+                                                                        }}
+                                                                        disabled={driverPerType !== 'hourly'}
+                                                                        onFocus={(e) => e.target.select()} />
+                                                                )}
+                                                            />
+                                                        </Grid>
+                                                        <Grid size={12}>
+                                                            <Typography variant='body2' fontWeight={500} sx={{ mb: 0.5 }}>
+                                                                Fuel Surcharge
+                                                            </Typography>
+                                                            <Controller
+                                                                name='fuel_surcharge_type'
+                                                                control={control}
+                                                                defaultValue='none'
+                                                                render={({ field }) => (
+                                                                    <RadioGroup
+                                                                        {...field}
+                                                                        sx={{ width: '100%' }}
+                                                                    >
+                                                                        <Grid container spacing={1}>
+                                                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                                                <FormControlLabel value='' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='None' />
+                                                                            </Grid>
+                                                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                                                <FormControlLabel value='hourly' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='Hourly' />
+                                                                            </Grid>
+                                                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                                                <FormControlLabel value='mileage' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='Mileage' />
+                                                                            </Grid>
+                                                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                                                <FormControlLabel value='both' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='Both' />
+                                                                            </Grid>
+                                                                        </Grid>
+                                                                    </RadioGroup>
+                                                                )}
+                                                            />
+                                                        </Grid>
+                                                    </Grid>
+                                                </Box>
+                                            </Grid>
+                                            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+                                                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, height: '100%' }}>
+                                                    <FormControlLabel value='commission' control={<Radio />} label='Commission' />
+                                                    <Grid container spacing={3} sx={{ mt: 1 }}>
+                                                        <Grid size={12}>
+                                                            <Controller
+                                                                name='commission_percentage'
+                                                                control={control}
+                                                                defaultValue={0}
+                                                                render={({ field }) => (
+                                                                    <TextField
+                                                                        {...field}
+                                                                        label='Percentage %'
+                                                                        type='number'
+                                                                        disabled={driverPerType !== 'commission'}
+                                                                        onFocus={(e) => e.target.select()}
+                                                                        variant='outlined'
+                                                                        fullWidth
+                                                                        size='small'
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value
+                                                                            if (value === '') field.onChange('')
+                                                                            else if (value > 100 || value < 0) return
+                                                                            else field.onChange(Number(value))
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            />
+                                                        </Grid>
+                                                    </Grid>
+                                                </Box>
+                                            </Grid>
+                                            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+                                                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, height: '100%' }}>
+                                                    <FormControlLabel value='' control={<Radio />} label='None' />
+                                                </Box>
+                                            </Grid>
+
+                                        </Grid>
+                                    </RadioGroup>
+                                    {!!errors.driver_pay_type && (
+                                        <FormHelperText error sx={{ ml: 1.5, mt: 1 }}>
+                                            {errors.driver_pay_type.message}
+                                        </FormHelperText>
+                                    )}
+                                </>
+                            )}
+                        />
+                    }
+                />
+            </Grid>
             <Grid size={12}>
                 <AccordionComponent
                     bordered='true'

@@ -1,10 +1,5 @@
 import React, { createContext, useState } from "react";
-import {
-  createTheme,
-  ThemeProvider,
-  responsiveFontSizes,
-  StyledEngineProvider,
-} from "@mui/material/styles";
+import { createTheme, ThemeProvider, responsiveFontSizes, StyledEngineProvider, } from "@mui/material/styles";
 import { colors } from "@mui/material";
 
 const defaultTheme = {
@@ -206,7 +201,4 @@ function ThemeContextProvider(props) {
 }
 
 
-export {
-  ThemeContext,
-  ThemeContextProvider
-}
+export { ThemeContext, ThemeContextProvider }

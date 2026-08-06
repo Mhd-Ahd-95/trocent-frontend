@@ -1,34 +1,38 @@
-import React, { useState, useMemo, useCallback, useTransition, useRef } from 'react';
-import { Box, MenuItem, Select, CircularProgress, Pagination, Button, Grid } from '@mui/material';
-import { ReceiptLongRounded, UnfoldMoreRounded, UnfoldLessRounded, RequestQuote } from '@mui/icons-material';
-import { MainLayout } from '../../layouts';
-import { CustomTitle, DrawerForm, SideMenu, BillingFilterBar, CustomerBillingGroup } from '../../components';
-import useStyles from './Billing.styles';
-import { useBillings } from '../../hooks/useBillings';
-import AccessorialCharges from './CustomerAccessorials'
-import { useSnackbar } from 'notistack';
-import OrderBillingCard from './OrderBillingCard';
-import InterlinerCharge from './InterlinerCharge';
+import React, { useTransition } from 'react'
+import { Box, Button, CircularProgress, Grid, MenuItem, Pagination, Select } from '@mui/material'
+import { MainLayout } from '../../layouts'
+import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup } from '../../components'
+import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
+import useStyles from './DriverPay.styles'
+import DateGroupedSummary from './DateGroupedSummary'
+import { useCommissionDrivers } from '../../hooks/useBillings'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
-export default function BillingView() {
+export default function DriverPayCommission() {
 
-    const { classes } = useStyles();
-    const [appliedFilters, setAppliedFilters] = useState(null);
-    const [page, setPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [isPending, startTransition] = useTransition();
+    const { classes, cx } = useStyles()
+    const groupApis = React.useRef(new Map());
+    const refCallbackCache = React.useRef(new Map())
     const orderRef = React.useRef()
-    const [openDrawer, setOpenDrawer] = React.useState(false)
-    const { enqueueSnackbar } = useSnackbar()
-    const { data: billingOrders, isLoading, isError, error } = useBillings(appliedFilters, page, rowsPerPage)
-    const data = billingOrders?.data || []
+    const [isPending, startTransition] = useTransition();
+    const [page, setPage] = React.useState(1);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [appliedFilters, setAppliedFilters] = React.useState(null);
 
-    const groupApis = useRef(new Map());
-    const refCallbackCache = useRef(new Map());
+    const { data: driverPays, isLoading, isError, error } = useCommissionDrivers(appliedFilters, page, rowsPerPage)
+    const data = driverPays?.data || []
+    console.log(data);
+    const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
-    const getGroupRef = useCallback((id) => {
+    const handleSearch = React.useCallback((filters) => {
+        startTransition(() => {
+            setAppliedFilters(filters);
+            setPage(1);
+        });
+    }, []);
+
+    const getGroupRef = React.useCallback((id) => {
         if (!refCallbackCache.current.has(id)) {
             refCallbackCache.current.set(id, (el) => {
                 if (el) groupApis.current.set(id, el);
@@ -38,32 +42,19 @@ export default function BillingView() {
         return refCallbackCache.current.get(id);
     }, []);
 
-    const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
-
-    const handleSearch = useCallback((filters) => {
-        startTransition(() => {
-            setAppliedFilters(filters);
-            setPage(1);
-        });
-    }, []);
-
-    const handlePageChange = useCallback((_, newPage) => setPage(newPage), []);
-
-    const handleRowsPerPageChange = useCallback((count) => {
-        setRowsPerPage(count);
-        setPage(1);
-    }, []);
-
-    const handleExpandAll = useCallback(() => {
+    const handleExpandAll = React.useCallback(() => {
         groupApis.current.forEach((api) => api.expand());
     }, []);
 
-    const handleCollapseAll = useCallback(() => {
+    const handleCollapseAll = React.useCallback(() => {
         groupApis.current.forEach((api) => api.collapse());
     }, []);
 
-    const handleOpenCharges = useCallback((nb) => {
-        setOpenDrawer(nb)
+    const handlePageChange = React.useCallback((_, newPage) => setPage(newPage), []);
+
+    const handleRowsPerPageChange = React.useCallback((count) => {
+        setRowsPerPage(count);
+        setPage(1);
     }, []);
 
     React.useEffect(() => {
@@ -77,17 +68,17 @@ export default function BillingView() {
 
     return (
         <MainLayout
-            title="Billing"
-            activeDrawer={{ active: 'Billing' }}
+            title='Driver Pay Commissions'
             sideMenu={SideMenu}
+            activeDrawer={{ active: 'Commission' }}
             grid noPanding
         >
-            <Grid container spacing={2} sx={{ overflow: 'auto' }}>
+            <Grid container spacing={2}>
                 <Grid size={12}>
-                    <BillingFilterBar onSearch={handleSearch} />
+                    <FilterPayDriverCommission onSearch={handleSearch} />
                 </Grid>
                 <Grid size={12}>
-                    {(data || []).length > 0 && (
+                    {data.length > 0 && (
                         <Box className={classes.toolbarRow}>
                             <Button className={classes.toolbarButton} color="inherit" startIcon={<UnfoldMoreRounded sx={{ fontSize: 16 }} />} onClick={handleExpandAll}>
                                 Expand All
@@ -114,15 +105,21 @@ export default function BillingView() {
                                 <Box className={`${classes.listWrap} ${isPending ? classes.listWrapFetching : ''}`}>
                                     {data.map((group) => (
                                         <CustomerBillingGroup
-                                            key={group.customer_id}
+                                            key={group.driver_id}
+                                            driver_id={group.driver_id}
                                             orderRef={orderRef}
-                                            customerId={group.customer_id}
-                                            ref={getGroupRef(group.customer_id)}
-                                            customerName={group.customer_name}
-                                            accountNumber={group.customer_account_number}
+                                            customerId={group.driver_id}
+                                            ref={getGroupRef(group.driver_id)}
+                                            customerName={group.driver_name}
+                                            accountNumber={group.driver_number}
                                             orders={group.orders}
-                                            openCharges={handleOpenCharges}
-                                            OrderCard={OrderBillingCard}
+                                            OrderCard={DateGroupedSummary}
+                                            isDriverPay
+                                            onApprove={({ driverId, date, amount }) => {
+                                                console.log(driverId);
+                                                console.log(amount);
+                                                console.log(date);
+                                            }}
                                         />
                                     ))}
                                 </Box>
@@ -156,22 +153,7 @@ export default function BillingView() {
                     </>
                 }
             </Grid>
-            {openDrawer === 1 &&
-                <DrawerForm customTitle={<CustomTitle title='Customer Accessorials Charges' Icon={RequestQuote} />} setOpen={setOpenDrawer} open={openDrawer === 1}>
-                    <AccessorialCharges
-                        order={orderRef.current}
-                        onClose={() => setOpenDrawer(false)}
-                    />
-                </DrawerForm>
-            }
-            {openDrawer === 2 &&
-                <DrawerForm customTitle={<CustomTitle title='Interliner charge amount' Icon={RequestQuote} />} setOpen={setOpenDrawer} open={openDrawer === 2}>
-                    <InterlinerCharge
-                        order={orderRef.current}
-                        onClose={() => setOpenDrawer(false)}
-                    />
-                </DrawerForm>
-            }
         </MainLayout>
-    );
+    )
+
 }
