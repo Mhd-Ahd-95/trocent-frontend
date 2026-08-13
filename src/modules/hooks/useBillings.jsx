@@ -46,6 +46,36 @@ export function useCommissionDrivers(filters = {}, page = 1, pageSize = 10) {
     });
 }
 
+export function useHourlyDrivers(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['hourlyDrivers', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.getPendingHourlyDriverPay({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useHourlyDriverDetails(driver_id, filters = {}) {
+    const did = Number(driver_id)
+    return useQuery({
+        queryKey: ['hourlyDriversDetails', { filters: JSON.stringify(filters), driver_id: did }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.getHourlyDriverPayDetails(did, filters);
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+
 export function useBillingMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()

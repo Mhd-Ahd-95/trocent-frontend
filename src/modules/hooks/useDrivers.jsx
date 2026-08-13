@@ -164,8 +164,8 @@ export function useDriverMutation() {
     });
 
     const driverClockInOut = useMutation({
-        mutationFn: async ({ did, cid }) => {
-            const res = await DriversApi.driverClockInOut(did, cid);
+        mutationFn: async ({ did, cid, clock_in, clock_out }) => {
+            const res = await DriversApi.driverClockInOut(did, cid, clock_in, clock_out);
             return res.data;
         },
         onSuccess: (res, { did, cid }) => {

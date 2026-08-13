@@ -166,7 +166,7 @@ function SideMenu(props) {
       text: 'Driver Pay', icon: <LocalAtm />,
       options: [
         { text: 'Commission', url: '/driver-pay-commission' },
-        { text: 'Hourly', url: '#' }
+        { text: 'Hourly', url: '/driver-pay-hourly' }
       ]
     },
     {

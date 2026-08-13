@@ -4,7 +4,8 @@ import { ExpandMoreRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
 
-const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false, customerId, isDriverPay, driver_id, onApprove }, ref) => {
+const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false,
+    customerId, isDriverPay, driver_id, onApprove, isHourly }, ref) => {
 
     const { classes } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -26,6 +27,11 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
         openCharges(2)
     }
 
+    const handleDetails = () => {
+        orderRef.current = customerId
+        openCharges(true)
+    }
+
     const dateGroups = React.useMemo(() => {
         if (!isDriverPay) return []
         const map = new Map();
@@ -39,6 +45,8 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
             .sort((a, b) => moment(b[0]).diff(moment(a[0])))
             .map(([date, dateOrders]) => ({ date, orders: dateOrders }));
     }, [orders, isDriverPay]);
+
+    const type = isHourly ? 'Day' : 'Order'
 
     return (
         <Accordion
@@ -54,17 +62,18 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                         <Box className={classes.customerName}>{customerName}</Box>
                         <Box className={classes.customerMeta}>#{accountNumber}</Box>
                     </Box>
-                    <Chip className={classes.orderCountChip} label={`${orders.length} order${orders.length > 1 ? 's' : ''}`} />
+                    <Chip className={classes.orderCountChip} label={`${orders.length} ${type}${orders.length > 1 ? 's' : ''}`} />
                 </Box>
             </AccordionSummary>
 
             <AccordionDetails className={classes.accordionDetails}>
                 {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
                     isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
-                        :
-                        orders.map((order) => (
-                            <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
-                        )) : null
+                        : isHourly ? <OrderCard days={orders} handleDetails={handleDetails} /> :
+                            orders.map((order) => (
+                                <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
+                            ))
+                    : null
                 }
             </AccordionDetails>
         </Accordion>

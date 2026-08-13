@@ -28,7 +28,7 @@ const downloadFile = id => CustomAxios.get(`/api/drivers/download-file/${id}`, {
 
 const create_driver_login = (did, user) => CustomAxios.post(`/api/drivers/create-login/${did}`, user)
 
-const driverClockInOut = (did, cid) => CustomAxios.post(`/api/drivers/clock-in-out/${did}`, { cid: cid ?? null })
+const driverClockInOut = (did, cid, clock_in, clock_out) => CustomAxios.post(`/api/drivers/clock-in-out/${did}`, { cid: cid ?? null, clock_in, clock_out })
 
 const getDriverTimeToday = (did) => CustomAxios.get(`/api/drivers/clock-in-out/${did}/time`)
 

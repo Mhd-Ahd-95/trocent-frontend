@@ -24,7 +24,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
     const authUser = globalVariables.auth.user;
 
     const { data, isLoading, isFetching } = useDriverClock(authUser?.driver_id);
-    
+
     const { driverClockInOut } = useDriverMutation();
     const [tickSeconds, setTickSeconds] = React.useState(0);
 
@@ -43,7 +43,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
         if (data?.active_clock_in) {
             clockedInRef.current = true
         }
-        const base = moment.utc(data.active_clock_in).valueOf();
+        const base = moment(data.active_clock_in).valueOf();
         const tick = () => setTickSeconds(Math.floor((Date.now() - base) / 1000));
         tick();
         intervalRef.current = setInterval(tick, 1000);
@@ -59,7 +59,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
         e.preventDefault()
         clockedInRef.current = true
         try {
-            await driverClockInOut.mutateAsync({ did: authUser?.driver_id, cid: null });
+            await driverClockInOut.mutateAsync({ did: authUser?.driver_id, cid: null, clock_in: moment(new Date()).format('YYYY-MM-DD HH:mm:ss') });
         } catch (e) {
             //
         }
@@ -69,7 +69,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
         e.preventDefault()
         clockedInRef.current = false
         try {
-            await driverClockInOut.mutateAsync({ did: authUser?.driver_id, cid: data?.active_clock_id });
+            await driverClockInOut.mutateAsync({ did: authUser?.driver_id, cid: data?.active_clock_id, clock_out: moment(new Date()).format('YYYY-MM-DD HH:mm:ss') });
         } catch (e) {
             //
         }
