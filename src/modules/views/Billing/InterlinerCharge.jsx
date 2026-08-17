@@ -29,7 +29,6 @@ function InterlinerCharge(props) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         const payload = Object.entries(amounts).map(([k, v]) => ({ id: k, amount: Number(v) }))
-        console.log(payload);
         await updateInterlinerAmounts.mutateAsync({ payload, oid: order.order_id, cid: order.customer_id })
         onClose()
     }

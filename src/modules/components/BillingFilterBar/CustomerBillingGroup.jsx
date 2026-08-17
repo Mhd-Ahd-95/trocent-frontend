@@ -1,11 +1,11 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Box, Chip } from '@mui/material';
-import { ExpandMoreRounded } from '@mui/icons-material';
+import { Accordion, AccordionSummary, AccordionDetails, Box, Chip, Typography } from '@mui/material';
+import { ExpandMoreRounded, RouteRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false,
-    customerId, isDriverPay, driver_id, onApprove, isHourly }, ref) => {
+    customerId, isDriverPay, driver_id, onApprove, isHourly, driverDetails }, ref) => {
 
     const { classes } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -27,7 +27,8 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
         openCharges(2)
     }
 
-    const handleDetails = () => {
+    const handleDetails = (e) => {
+        e.stopPropagation()
         orderRef.current = customerId
         openCharges(true)
     }
@@ -48,6 +49,15 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
 
     const type = isHourly ? 'Day' : 'Order'
 
+    const dateRangeLabel = React.useMemo(() => {
+        if (!isHourly) return
+        if (!orders.length) return '—';
+        const sorted = [...orders].sort((a, b) => moment(a.date).diff(moment(b.date)));
+        const from = moment(sorted[0].date).format('MMM D');
+        const to = moment(sorted[sorted.length - 1].date).format('MMM D, YYYY');
+        return `${orders.length} days · ${from} – ${to}`;
+    }, [orders, isHourly]);
+
     return (
         <Accordion
             className={classes.accordionRoot}
@@ -60,16 +70,25 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                 <Box className={classes.accordionSummaryContent}>
                     <Box className={classes.customerIdentity}>
                         <Box className={classes.customerName}>{customerName}</Box>
-                        <Box className={classes.customerMeta}>#{accountNumber}</Box>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <Box className={classes.customerMeta}>#{accountNumber}.</Box>
+                            <Box className={classes.customerMeta}>{dateRangeLabel}</Box>
+                            {/* <Chip className={classes.orderCountChip} label={dateRangeLabel} /> */}
+                        </Box>
                     </Box>
-                    <Chip className={classes.orderCountChip} label={`${orders.length} ${type}${orders.length > 1 ? 's' : ''}`} />
+                    <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                        <button type="button" className={classes.detailsButton} onClick={handleDetails}>
+                            <RouteRounded sx={{ fontSize: 15 }} />
+                            Show Trip Details
+                        </button>
+                    </Box>
                 </Box>
             </AccordionSummary>
 
             <AccordionDetails className={classes.accordionDetails}>
                 {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
                     isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
-                        : isHourly ? <OrderCard days={orders} handleDetails={handleDetails} /> :
+                        : isHourly ? <OrderCard days={orders} driverDetails={driverDetails} /> :
                             orders.map((order) => (
                                 <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
                             ))

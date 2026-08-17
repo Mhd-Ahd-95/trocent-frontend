@@ -88,7 +88,7 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
                 gridTemplateColumns: '1fr 1fr',
             },
             [theme.breakpoints.up('md')]: {
-                gridTemplateColumns: props?.isInvoicing ? 'repeat(4, 1fr)' : props?.commission ? 'repeat(3, 1fr)' :  'repeat(5, 1fr)',
+                gridTemplateColumns: props?.isInvoicing ? 'repeat(4, 1fr)' : props?.commission ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)',
             },
         },
         labelText: {
@@ -103,6 +103,11 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
             gap: 4,
             opacity: 0.7,
             minHeight: 14,
+        },
+        driverMeta: {
+            fontSize: 12.5,
+            color: alpha('#000', 0.6),
+            // marginTop: 1,
         },
         inputRoot: {
             '& .MuiOutlinedInput-root': {
@@ -228,6 +233,28 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
             fontWeight: 800,
             letterSpacing: '0.01em',
             color: isDark ? '#fff' : secondary,
-        }
+        },
+        detailsButton: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            height: 30,
+            padding: theme.spacing(0, 1.5),
+            borderRadius: 20,
+            border: '1px solid',
+            borderColor: alpha(primary, 0.4),
+            background: 'transparent',
+            color: primary,
+            fontSize: 13.5,
+            fontWeight: 700,
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            transition: 'background-color 0.15s ease, border-color 0.15s ease',
+            '&:hover': {
+                borderColor: primary,
+                background: alpha(primary, 0.08),
+            },
+        },
     };
 });

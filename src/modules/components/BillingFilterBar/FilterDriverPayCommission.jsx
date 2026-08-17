@@ -13,17 +13,15 @@ const LabeledField = ({ label, icon, children, classes }) => (
     </Box>
 );
 
-const EMPTY_FILTERS = {
-    payDateFrom: '',
-    payDateTo: '',
-    keyword: '',
-};
+
 
 const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = false, isHourly }) => {
 
+    const EMPTY_FILTERS = isHourly ? { start_date: '', end_date: '', keyword: '' } : { payDateFrom: '', payDateTo: '', keyword: '', };
+
     const { classes, cx } = useStyles({ commission: true });
     const [expanded, setExpanded] = useState(defaultExpanded);
-    const [filters, setFilters] = useState(isHourly ? { start_date: '', end_date: '', keyword: '' } : EMPTY_FILTERS);
+    const [filters, setFilters] = useState(EMPTY_FILTERS);
 
     const setField = useCallback((key, value, isSeacrh = false) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
@@ -84,6 +82,7 @@ const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = fals
                                 value={filters.keyword}
                                 onChange={(e) => setField('keyword', e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                helperText={isHourly ? 'For multiple drivers, separate driver numbers with commas.' : ''}
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">

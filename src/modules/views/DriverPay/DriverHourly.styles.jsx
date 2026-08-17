@@ -1,205 +1,231 @@
 import { makeStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material/styles';
 
-export default makeStyles({ name: 'DriverHourly' })((theme) => {
-
+export default makeStyles({ name: 'DriverHourlyCard' })((theme) => {
     const isDark = theme.palette.mode === 'dark';
-    const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
+    const primary = theme.palette.primary.main;
     const success = theme.palette.success.main;
     const warning = theme.palette.warning.main;
     const error = theme.palette.error.main;
-    const trip = theme.palette.info.main;
-    const divider = isDark ? alpha('#fff', 0.12) : alpha(secondary, 0.15);
+    const info = theme.palette.info.main;
 
     return {
-        tableContainer: {
-            borderRadius: 10,
-            border: `2px solid ${divider}`,
+        root: {
+            borderRadius: 14,
             overflow: 'hidden',
-        },
-        headerCell: {
-            fontSize: 14,
-            fontWeight: 800,
-            // textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            color: isDark ? '#fff' : '#000',
-            background: isDark ? alpha('#fff', 0.04) : alpha(secondary, 0.06),
-            padding: theme.spacing(1, 2),
-            borderBottom: `2px solid ${divider}`,
-            borderRight: `1px solid ${divider}`,
-            '&:last-child': {
-                borderRight: 'none',
-            },
-        },
-        valueRow: {
-            '& > .MuiTableCell-root': {
-                borderBottom: 'none',
-            },
-        },
-        bodyCell: {
-            padding: theme.spacing(1.5, 2, 1),
-            borderRight: `1px solid ${divider}`,
-            '&:last-child': {
-                borderRight: 'none',
-            },
-        },
-        dateText: {
-            fontSize: 14,
-            fontWeight: 700,
-            color: isDark ? '#fff' : secondary,
-            whiteSpace: 'nowrap',
-        },
-        routeCity: {
-            fontSize: 13,
-            fontWeight: 600,
-            color: theme.palette.text.secondary,
-        },
-        routeArrow: {
-            fontSize: 16,
-            flexShrink: 0,
-            color: alpha(primary, 0.8),
-        },
-        summaryValue: {
-            fontSize: 13.5,
-            fontWeight: 700,
-            whiteSpace: 'nowrap',
+            border: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.1) : alpha(secondary, 0.12),
+            background: theme.palette.background.paper,
         },
 
-        diffChip: {
-            fontWeight: 800,
-            fontSize: 12.5,
-            height: 26,
+        statsRow: {
+            display: 'flex',
+            alignItems: 'stretch',
+            flexWrap: 'nowrap',
+            gap: theme.spacing(1.5),
+            overflowX: 'auto',
+        },
+        statTile: {
+            flex: '1 1 0',
+            boxSizing: 'border-box',
             borderRadius: 8,
-            '& .MuiChip-icon': {
-                marginLeft: 6,
-            },
+            padding: theme.spacing(1.25, 1.5),
+            textAlign: 'center',
+            background: isDark ? alpha('#fff', 0.03) : theme.palette.grey[200],
         },
-        diffChipGood: { background: alpha(success, 0.12), color: success },
-        diffChipWarn: { background: alpha(warning, 0.14), color: warning },
-        diffChipBad: { background: alpha(error, 0.12), color: error },
-        diffChipNeutral: { background: alpha(secondary, 0.08), color: theme.palette.text.secondary },
-        adjustmentField: {
-            width: '100%',
-            '& .MuiOutlinedInput-root': {
-                height: 32,
-                fontSize: 13,
-                fontWeight: 700,
-                borderRadius: 8,
-            },
+        statTileHighlight: {
+            background: alpha(primary, 0.2),
         },
-        timelineRow: {
-            '& > .MuiTableCell-root': {
-                borderBottom: `1px solid ${divider}`,
-            },
+        statLabel: {
+            fontSize: 13,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.03em',
+            color: theme.palette.text.secondary,
+            marginBottom: 4,
+            whiteSpace: 'nowrap',
+        },
+        statLabelHighlight: {
+            fontWeight: 800,
+            color: primary,
+        },
+        statValue: {
+            fontSize: 14,
+            fontWeight: 800,
+            color: isDark ? '#fff' : '#000',
+            whiteSpace: 'nowrap',
+        },
+        statValueHighlight: {
+            fontSize: 15,
+            fontWeight: 700,
+            color: primary,
+        },
+        statCell: {
+            flex: '1 1 0',
+            minWidth: 130,
+            padding: theme.spacing(1.5, 2.25),
+            borderRight: '1px solid',
+            borderBottom: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.08) : alpha(secondary, 0.08),
+            '&:last-child': { borderRight: 'none' },
+        },
+        statValue: {
+            fontSize: 19,
+            fontWeight: 800,
+            color: isDark ? '#fff' : '#0f172a',
+        },
+        statValueError: { color: `${error} !important` },
+        statValueSuccess: { color: `${success} !important` },
+        tableHeaderRow: {
+            display: 'flex',
+            alignItems: 'center',
+            padding: theme.spacing(1.5, 2.5),
+            background: isDark ? alpha('#fff', 0.02) : theme.palette.grey[50],
+            borderBottom: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.08) : alpha(secondary, 0.08),
+        },
+        tableHeaderCell: {
+            fontSize: 12,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: theme.palette.text.secondary,
+        },
+
+        row: {
+            display: 'flex',
+            alignItems: 'center',
+            padding: theme.spacing(1.25, 2.5),
+            borderBottom: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.06) : alpha(secondary, 0.06),
+            cursor: 'pointer',
+            transition: 'background-color 0.15s ease',
             '&:hover': {
                 background: isDark ? alpha('#fff', 0.02) : alpha(secondary, 0.02),
             },
         },
-        timelineCell: {
-            padding: theme.spacing(1, 2, 1.5),
+        rowOpened: {
+            background: alpha(primary, 0.1),
         },
-        timelineTitleRow: {
-            display: 'flex',
-            alignItems: 'center'
-        },
-        timelineArrowRow: {
-            display: 'flex',
-        },
-        timelineValueRow: {
-            display: 'flex',
-            alignItems: 'center',
-            marginTop: 1,
-        },
-        timelineColumn: {
-            minWidth: 0,
-        },
-        timelineTitle: {
-            fontSize: 13,
-            fontWeight: 800,
-            textTransform: 'capitalize',
-        },
-        timelineArrow: {
-            fontSize: 15,
+        expandIcon: {
+            fontSize: 16,
             color: theme.palette.text.disabled,
+            transition: 'transform 0.15s ease',
+            marginRight: 6,
         },
-        timelineNodeValue: {
+        expandIconOpen: {
+            transform: 'rotate(90deg)',
+        },
+        dateText: {
             fontSize: 13.5,
             fontWeight: 700,
+            color: isDark ? '#fff' : '#0f172a',
+        },
+        routeText: {
+            fontSize: 12,
+            color: theme.palette.text.secondary,
+            marginTop: 1,
+        },
+        cellValue: {
+            fontSize: 13,
+            fontWeight: 700,
+            color: isDark ? '#fff' : '#0f172a',
+        },
+        idleValue: {
+            fontSize: 13,
+            fontWeight: 600,
+            color: theme.palette.text.secondary,
+        },
+        statusDot: {
+            width: 7,
+            height: 7,
+            borderRadius: '50%',
+            display: 'inline-block',
+            marginRight: 6,
+        },
+        statusText: {
+            fontSize: 12.5,
+            fontWeight: 700,
+        },
+        statusGood: { color: success },
+        statusWarn: { color: warning },
+        statusBad: { color: error },
+        adjustField: {
+            width: 120,
+            '& .MuiOutlinedInput-root': {
+                height: 32,
+                fontSize: 12.5,
+                fontWeight: 700,
+                borderRadius: 7,
+            },
+        },
+
+        timelineWrap: {
+            padding: theme.spacing(0.5, 2.5, 2.5),
+            background: isDark ? alpha('#fff', 0.015) : alpha(secondary, 0.015),
+            borderBottom: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.06) : alpha(secondary, 0.06),
+        },
+        timelineBar: {
+            display: 'flex',
+            width: '100%',
+            height: 20,
+            borderRadius: 6,
+            overflow: 'hidden',
+            marginTop: 12,
+        },
+        segmentIdle: {
+            background: `repeating-linear-gradient(135deg, ${alpha(warning, 0.35)}, ${alpha(warning, 0.35)} 4px, ${alpha(warning, 0.6)} 4px, ${alpha(warning, 0.6)} 8px)`,
+        },
+        segmentActive: {
+            background: info,
+        },
+        timelineLabels: {
+            display: 'flex',
+            marginTop: 8,
+        },
+        tickTime: {
+            fontSize: 12.5,
+            fontWeight: 800,
+            color: isDark ? '#fff' : '#0f172a',
+            whiteSpace: 'nowrap',
+        },
+        tickDuration: {
+            fontSize: 11.5,
+            fontWeight: 700,
+            color: theme.palette.text.secondary,
+            marginLeft: 6,
+        },
+        tickCaption: {
+            fontSize: 11,
+            color: theme.palette.text.secondary,
+            marginTop: 2,
             whiteSpace: 'nowrap',
         },
 
-        timelineSegment: {
-            position: 'relative',
-            height: 0,
-            margin: theme.spacing(0, 0.5),
+        detailGrid: {
+            marginTop: 18,
         },
-        timelineSegmentIdle: {
-            borderTop: `4px solid ${warning}`,
-        },
-        timelineSegmentActive: {
-            borderTop: `4px solid ${trip}`,
-        },
-        timelineSegmentValue: {
-            position: 'absolute',
-            left: '50%',
-            top: 0,
-            transform: 'translate(-50%, -50%)',
-            background: theme.palette.background.paper,
-            padding: theme.spacing(0, 0.75),
-            fontSize: 11.5,
-            fontWeight: 700,
-            whiteSpace: 'nowrap',
-        },
-        timelineSegmentValueIdle: {
-            color: warning,
-        },
-        timelineSegmentValueActive: {
-            color: trip,
-        },
-        inputRoot: {
+        noteField: {
             '& .MuiOutlinedInput-root': {
-                borderRadius: 5,
-                backgroundColor: isDark ? alpha('#fff', 0.05) : theme.palette.background.paper,
-                fontSize: 13,
-                height: 40,
-                fontWeight: 500,
-                '& fieldset': {
-                    borderColor: isDark ? alpha('#fff', 0.12) : alpha(secondary, 0.18),
-                    borderWidth: 1.5,
-                },
-                '&:hover fieldset': {
-                    borderColor: alpha(primary, 0.55),
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: primary,
-                    boxShadow: `0 0 0 3px ${alpha(primary, 0.15)}`,
-                },
+                fontSize: 12.5,
+                borderRadius: 8,
+                background: theme.palette.background.paper,
             },
         },
-        labelText: {
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: '0.07em',
-            textTransform: 'uppercase',
-            color: theme.palette.text.secondary,
-            marginBottom: 6,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            opacity: 0.7,
-            minHeight: 14,
+        whyBox: {
+            padding: theme.spacing(1.5, 2),
         },
-        tripColumn: {
-            backgroundColor: isDark ? alpha('#fff', 0.04) : theme.palette.grey[100],
-            borderBottom: `1px solid ${isDark ? alpha('#fff', 0.1) : alpha(secondary, 0.12)}`,
+        whyTitle: {
             fontSize: 13,
             fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            color: isDark ? theme.palette.grey[400] : theme.palette.grey[600],
-            whiteSpace: 'nowrap',
-            padding: theme.spacing(1.5, 2),
+            marginBottom: 4,
+        },
+        whyText: {
+            fontSize: 12.5,
+            color: theme.palette.text.secondary,
+            lineHeight: 1.5,
         },
     };
 });

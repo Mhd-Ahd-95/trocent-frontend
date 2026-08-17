@@ -22,7 +22,6 @@ export default function DriverPayCommission() {
 
     const { data: driverPays, isLoading, isError, error } = useCommissionDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
-    console.log(data);
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
     const handleSearch = React.useCallback((filters) => {
@@ -98,7 +97,7 @@ export default function DriverPayCommission() {
                             {data && data?.length === 0 ? (
                                 <Box className={classes.emptyState}>
                                     <ReceiptLongRounded sx={{ fontSize: 48, opacity: 0.35, mb: 1 }} />
-                                    <Box sx={{ fontWeight: 700 }}>No orders match your filters</Box>
+                                    <Box sx={{ fontWeight: 700 }}>No Driver match your filters</Box>
                                     <Box sx={{ fontSize: 13, mt: 0.5 }}>Try widening the date range or clearing the keyword.</Box>
                                 </Box>
                             ) : (
@@ -129,7 +128,7 @@ export default function DriverPayCommission() {
                             <Box className={classes.paginationBar}>
                                 <Box className={classes.paginationInfo}>
                                     {isPending && <CircularProgress size={13} />}
-                                    Customers per page
+                                    Drivers per page
                                     <Select
                                         size="small" value={rowsPerPage}
                                         className={classes.rowsPerPageSelect}
@@ -137,7 +136,7 @@ export default function DriverPayCommission() {
                                     >
                                         {PAGE_SIZE_OPTIONS.map((n) => <MenuItem key={n} value={n} sx={{ fontSize: 12.5 }}>{n}</MenuItem>)}
                                     </Select>
-                                    <span>· {data.length} Customer{data.length !== 1 ? 's' : ''} total</span>
+                                    <span>· {data.length} Driver{data.length !== 1 ? 's' : ''} total</span>
                                 </Box>
                                 <Pagination
                                     className={classes.muiPaginationRoot}

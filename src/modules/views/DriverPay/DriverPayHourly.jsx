@@ -7,6 +7,7 @@ import useStyles from './DriverPay.styles'
 import DriverHourlyCard from './DriverHourlyCard'
 import { useHourlyDrivers } from '../../hooks/useBillings'
 import DriverTripDetailsTable from './DriverHourlyDetails'
+import { useSnackbar } from 'notistack'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -21,6 +22,7 @@ export default function DriverPayHourly() {
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
     const [openModal, setOpenModal] = React.useState(false)
+    const { enqueueSnackbar } = useSnackbar()
 
     const { data: driverPays, isLoading, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
@@ -59,6 +61,7 @@ export default function DriverPayHourly() {
         setPage(1);
     }, []);
 
+
     React.useEffect(() => {
         if (isError && error) {
             const message = error.response?.data?.message;
@@ -77,7 +80,7 @@ export default function DriverPayHourly() {
         >
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <FilterPayDriverCommission onSearch={handleSearch} isHourly />
+                    <FilterPayDriverCommission onSearch={handleSearch} isHourly defaultExpanded />
                 </Grid>
                 <Grid size={12}>
                     {data.length > 0 && (
@@ -100,7 +103,7 @@ export default function DriverPayHourly() {
                             {data && data?.length === 0 ? (
                                 <Box className={classes.emptyState}>
                                     <ReceiptLongRounded sx={{ fontSize: 48, opacity: 0.35, mb: 1 }} />
-                                    <Box sx={{ fontWeight: 700 }}>No orders match your filters</Box>
+                                    <Box sx={{ fontWeight: 700 }}>No Drivers match your filters</Box>
                                     <Box sx={{ fontSize: 13, mt: 0.5 }}>Try widening the date range or clearing the keyword.</Box>
                                 </Box>
                             ) : (
@@ -109,6 +112,7 @@ export default function DriverPayHourly() {
                                         <CustomerBillingGroup
                                             key={group.driver_id}
                                             driver_id={group.driver_id}
+                                            driverDetails={{hourly_rate: group.hourly_rate, rate_per_km: group.rate_per_km, mileage_allotment: group.mileage_allotment, fuel_surcharge_type: group.fuel_surcharge_type}}
                                             orderRef={orderRef}
                                             customerId={group.driver_id}
                                             ref={getGroupRef(group.driver_id)}
@@ -127,7 +131,7 @@ export default function DriverPayHourly() {
                             <Box className={classes.paginationBar}>
                                 <Box className={classes.paginationInfo}>
                                     {isPending && <CircularProgress size={13} />}
-                                    Customers per page
+                                    Drivers per page
                                     <Select
                                         size="small" value={rowsPerPage}
                                         className={classes.rowsPerPageSelect}
@@ -135,7 +139,7 @@ export default function DriverPayHourly() {
                                     >
                                         {PAGE_SIZE_OPTIONS.map((n) => <MenuItem key={n} value={n} sx={{ fontSize: 12.5 }}>{n}</MenuItem>)}
                                     </Select>
-                                    <span>· {data.length} Customer{data.length !== 1 ? 's' : ''} total</span>
+                                    <span>· {data.length} Driver{data.length !== 1 ? 's' : ''} total</span>
                                 </Box>
                                 <Pagination
                                     className={classes.muiPaginationRoot}
@@ -151,9 +155,11 @@ export default function DriverPayHourly() {
                     </>
                 }
             </Grid>
-            <DrawerForm title='Driver Details' open={openModal} setOpen={setOpenModal} size='large'>
-                <DriverTripDetailsTable driverId={orderRef.current} filters={appliedFilters} />
-            </DrawerForm>
+            {openModal &&
+                <DrawerForm title='Driver Details' open={openModal} setOpen={setOpenModal} size='large'>
+                    <DriverTripDetailsTable driverId={orderRef.current} filters={appliedFilters} />
+                </DrawerForm>
+            }
         </MainLayout>
     )
 
