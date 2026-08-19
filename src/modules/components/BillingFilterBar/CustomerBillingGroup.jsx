@@ -77,10 +77,10 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                         </Box>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                        <button type="button" className={classes.detailsButton} onClick={handleDetails}>
+                        <Box component="span" role="button" tabIndex={0} className={classes.detailsButton} onClick={handleDetails}>
                             <RouteRounded sx={{ fontSize: 15 }} />
                             Show Trip Details
-                        </button>
+                        </Box>
                     </Box>
                 </Box>
             </AccordionSummary>

@@ -30,7 +30,11 @@ const create_driver_login = (did, user) => CustomAxios.post(`/api/drivers/create
 
 const driverClockInOut = (did, cid, clock_in, clock_out) => CustomAxios.post(`/api/drivers/clock-in-out/${did}`, { cid: cid ?? null, clock_in, clock_out })
 
+const driverKmInOut = (did, kid, km_in, km_out) => CustomAxios.post(`/api/drivers/km-in-out/${did}`, { kid: kid ?? null, km_in, km_out })
+
 const getDriverTimeToday = (did) => CustomAxios.get(`/api/drivers/clock-in-out/${did}/time`)
+
+const driverHasKmIOToday = (did) => CustomAxios.get(`/api/drivers/km-in-out/${did}/today`)
 
 const updateDriverLanguage = (did, lang) => CustomAxios.patch(`/api/drivers/language/${did}/${lang}`)
 
@@ -45,5 +49,7 @@ export default {
     create_driver_login,
     driverClockInOut,
     getDriverTimeToday,
-    updateDriverLanguage
+    updateDriverLanguage,
+    driverKmInOut,
+    driverHasKmIOToday
 }

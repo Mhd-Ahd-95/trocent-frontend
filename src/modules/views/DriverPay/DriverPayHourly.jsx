@@ -112,7 +112,7 @@ export default function DriverPayHourly() {
                                         <CustomerBillingGroup
                                             key={group.driver_id}
                                             driver_id={group.driver_id}
-                                            driverDetails={{hourly_rate: group.hourly_rate, rate_per_km: group.rate_per_km, mileage_allotment: group.mileage_allotment, fuel_surcharge_type: group.fuel_surcharge_type}}
+                                            driverDetails={{ hourly_rate: group.hourly_rate, rate_per_km: group.rate_per_km, mileage_allotment: group.mileage_allotment, fuel_surcharge_type: group.fuel_surcharge_type }}
                                             orderRef={orderRef}
                                             customerId={group.driver_id}
                                             ref={getGroupRef(group.driver_id)}

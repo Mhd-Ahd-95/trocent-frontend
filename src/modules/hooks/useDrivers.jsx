@@ -37,6 +37,23 @@ export function useDriverClock(did) {
     });
 }
 
+export function useDriverKm(did) {
+    return useQuery({
+        queryKey: ['driverKm', Number(did)],
+        queryFn: async () => {
+            const response = await DriversApi.driverHasKmIOToday(did);
+            return response.data;
+        },
+        enabled: !!did,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+        // refetchOnReconnect: false,
+        // refetchOnMount: false,
+    });
+}
+
 
 export function useDriver(cid) {
     return useQuery({
@@ -179,6 +196,22 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
+    const driverKmInOut = useMutation({
+        mutationFn: async ({ did, kid, km_in, km_out }) => {
+            const res = await DriversApi.driverKmInOut(did, kid, km_in, km_out);
+            return res.data;
+        },
+        onSuccess: (res, { did, kid }) => {
+            if (res) {
+                queryClient.invalidateQueries(['driverKm', Number(did)]);
+                const message = kid ? 'You have successfully KM out. Have a great rest of your day!' : 'You are now KM in. Have a safe shift!';
+                const variant = kid ? 'info' : 'success';
+                enqueueSnackbar(message, { variant });
+            }
+        },
+        onError: handleError,
+    });
+
     const updateDriverLanguage = useMutation({
         mutationFn: async ({ did, lang }) => {
             const res = await DriversApi.updateDriverLanguage(did, lang);
@@ -196,6 +229,6 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut, updateDriverLanguage };
+    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut, updateDriverLanguage, driverKmInOut };
 
 }

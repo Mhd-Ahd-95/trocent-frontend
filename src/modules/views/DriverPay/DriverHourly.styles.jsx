@@ -9,6 +9,7 @@ export default makeStyles({ name: 'DriverHourlyCard' })((theme) => {
     const warning = theme.palette.warning.main;
     const error = theme.palette.error.main;
     const info = theme.palette.info.main;
+    const divider = isDark ? alpha('#fff', 0.12) : alpha(secondary, 0.15);
 
     return {
         root: {
@@ -18,7 +19,55 @@ export default makeStyles({ name: 'DriverHourlyCard' })((theme) => {
             borderColor: isDark ? alpha('#fff', 0.1) : alpha(secondary, 0.12),
             background: theme.palette.background.paper,
         },
-
+        labelText: {
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.07em',
+            textTransform: 'uppercase',
+            color: theme.palette.text.secondary,
+            marginBottom: 6,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            opacity: 0.7,
+            minHeight: 14,
+        },
+        inputRoot: {
+            '& .MuiOutlinedInput-root': {
+                borderRadius: 5,
+                backgroundColor: isDark ? alpha('#fff', 0.05) : theme.palette.background.paper,
+                fontSize: 13,
+                height: 40,
+                fontWeight: 500,
+                '& fieldset': {
+                    borderColor: isDark ? alpha('#fff', 0.12) : alpha(secondary, 0.18),
+                    borderWidth: 1.5,
+                },
+                '&:hover fieldset': {
+                    borderColor: alpha(primary, 0.55),
+                },
+                '&.Mui-focused fieldset': {
+                    borderColor: primary,
+                    boxShadow: `0 0 0 3px ${alpha(primary, 0.15)}`,
+                },
+            },
+        },
+        tableContainer: {
+            borderRadius: 10,
+            border: `2px solid ${divider}`,
+            overflow: 'hidden',
+        },
+        tripColumn: {
+            backgroundColor: isDark ? alpha('#fff', 0.04) : theme.palette.grey[100],
+            borderBottom: `1px solid ${isDark ? alpha('#fff', 0.1) : alpha(secondary, 0.12)}`,
+            fontSize: 13,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            color: isDark ? theme.palette.grey[400] : theme.palette.grey[600],
+            whiteSpace: 'nowrap',
+            padding: theme.spacing(1.5, 2),
+        },
         statsRow: {
             display: 'flex',
             alignItems: 'stretch',

@@ -1,9 +1,10 @@
 import React from 'react';
 import useStyles from './LandingPage.styles'
 import { Login, Logout, QueryBuilder } from '@mui/icons-material';
-import { CircularProgress, Grid, Skeleton } from '@mui/material';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Skeleton, TextField, Typography, } from '@mui/material';
 import globalVariables from '../../../global';
-import { useDriverClock, useDriverMutation } from '../../../hooks/useDrivers';
+import { useDriverClock, useDriverKm, useDriverMutation } from '../../../hooks/useDrivers';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 
@@ -24,9 +25,12 @@ function ClockInOut({ hasTrips, clockedInRef }) {
     const authUser = globalVariables.auth.user;
 
     const { data, isLoading, isFetching } = useDriverClock(authUser?.driver_id);
+    const { data: kmData, isLoading: kmLoading } = useDriverKm(authUser?.driver_id);
 
-    const { driverClockInOut } = useDriverMutation();
+    const { driverClockInOut, driverKmInOut } = useDriverMutation();
     const [tickSeconds, setTickSeconds] = React.useState(0);
+    const [kmOutOpen, setKmOutOpen] = React.useState(false);
+    const [kmOutValue, setKmOutValue] = React.useState('');
 
     const intervalRef = React.useRef(null);
 
@@ -54,6 +58,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
     const totalSeconds = completedSeconds + tickSeconds;
     const isClockedIn = Boolean(data?.active_clock_id);
     const isPending = driverClockInOut.isPending;
+    const hasActiveKm = Boolean(kmData?.active_km_id);
 
     const handleClockIn = async (e) => {
         e.preventDefault()
@@ -65,11 +70,31 @@ function ClockInOut({ hasTrips, clockedInRef }) {
         }
     };
 
-    const handleClockOut = async (e) => {
-        e.preventDefault()
+    const doClockOut = async () => {
         clockedInRef.current = false
         try {
             await driverClockInOut.mutateAsync({ did: authUser?.driver_id, cid: data?.active_clock_id, clock_out: moment(new Date()).format('YYYY-MM-DD HH:mm:ss') });
+        } catch (e) {
+            //
+        }
+    };
+
+    const handleClockOutClick = (e) => {
+        e.preventDefault();
+        if (hasActiveKm) {
+            setKmOutOpen(true);
+        } else {
+            doClockOut();
+        }
+    };
+
+    const handleKmOutSubmit = async () => {
+        if (kmOutValue === '' || Number(kmOutValue) < 0) return;
+        try {
+            await driverKmInOut.mutateAsync({ did: authUser?.driver_id, kid: kmData?.active_km_id, km_out: kmOutValue });
+            setKmOutOpen(false);
+            setKmOutValue('');
+            await doClockOut();
         } catch (e) {
             //
         }
@@ -81,8 +106,8 @@ function ClockInOut({ hasTrips, clockedInRef }) {
                 {isClockedIn ? (
                     <button
                         className={cx(classes.actionBtn, classes.clockBtnOut)}
-                        onClick={handleClockOut}
-                        disabled={isPending || isLoading}
+                        onClick={handleClockOutClick}
+                        disabled={isPending || isLoading || kmLoading}
                     >
                         <div className={cx(classes.btnIcon, classes.clockBtnIconOut)}>
                             {isPending ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <Logout sx={{ fontSize: 20, color: '#fff' }} />}
@@ -120,6 +145,45 @@ function ClockInOut({ hasTrips, clockedInRef }) {
                     {isClockedIn && (<div className={classes.clockDotActive} />)}
                 </div>
             </Grid>
+
+            <Dialog open={kmOutOpen} onClose={() => !driverKmInOut.isPending && setKmOutOpen(false)} fullWidth maxWidth="xs">
+                <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <DirectionsCarIcon color="warning" />
+                    {t('clock.kmOutTitle', 'Enter ending odometer')}
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {t('clock.kmOutDesc', 'We need your km-out reading before you can clock out.')}
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        autoFocus
+                        type="number"
+                        label={t('clock.kmOut', 'Km Out')}
+                        value={kmOutValue}
+                        onChange={(e) => setKmOutValue(e.target.value)}
+                        disabled={driverKmInOut.isPending}
+                        inputProps={{ min: 0, inputMode: 'decimal' }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5 }}>
+                    <Button
+                        onClick={() => setKmOutOpen(false)}
+                        disabled={driverKmInOut.isPending}
+                    >
+                        {t('clock.cancel', 'Cancel')}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="warning"
+                        disabled={driverKmInOut.isPending || kmOutValue === '' || Number(kmOutValue) < 0}
+                        onClick={handleKmOutSubmit}
+                        startIcon={driverKmInOut.isPending ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <DirectionsCarIcon />}
+                    >
+                        {t('clock.saveKmOut', 'Save & Clock Out')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Grid>
     );
 }

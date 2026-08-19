@@ -105,10 +105,11 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
         const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0);
         const differenceSeconds = clockedSeconds - tripSeconds;
         const adjustmentSeconds = Object.values(adjustments).reduce((sum, v) => sum + (Number(v) || 0) * 3600, 0);
-        const adjustedClockedSeconds = clockedSeconds - adjustmentSeconds;
+        const adjustedClockedSeconds = clockedSeconds + adjustmentSeconds;
         const estPay = (adjustedClockedSeconds / 3600) * (driverDetails?.hourly_rate || 0);
-        // const estPayKm = (adjustedClockedSeconds / 3600) * driverDetails?.rate_per_km || 0;
-        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentSeconds, adjustedClockedSeconds, estPay };
+        const kms = days.reduce((sum, d) => Number(d.km_driven) + sum, 0)
+        const estPayKm = kms * (driverDetails?.rate_per_km || 0);
+        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentSeconds, adjustedClockedSeconds, estPay, estPayKm };
     }, [days, adjustments, driverDetails]);
 
     const isDeficit = totals.differenceSeconds > 0;
@@ -122,7 +123,7 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
                 <StatTile classes={classes} cx={cx} label="Adjustments" value={formatSeconds(totals.adjustmentSeconds)} />
                 <StatTile classes={classes} cx={cx} label="Adjusted Clocked" value={formatSeconds(totals.adjustedClockedSeconds)} />
                 <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.hourly_rate || 0}/H`} value={`${totals.estPay.toFixed(0)}`} />
-                {/* <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(0)}`} /> */}
+                <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(0)}`} />
             </Grid>
             <Grid size={12} className={classes.tableHeaderRow}>
                 <Grid container sx={{ width: '100%' }} alignItems="center">
