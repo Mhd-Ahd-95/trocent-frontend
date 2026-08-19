@@ -49,12 +49,6 @@ const STATUS_META = {
     bad: { label: 'Review needed' },
 };
 
-const WHY_TEXT = {
-    good: 'Idle time is within the normal 30-minute window on both ends — no action needed.',
-    warn: 'Idle time is above the normal window — consider adding a note or reviewing with the driver.',
-    bad: 'Idle time is significantly above normal — this day should be reviewed before payroll is finalized.',
-};
-
 const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
     <Box className={cx(classes.statTile, highlight && classes.statTileHighlight)}>
         <Typography className={cx(classes.statLabel, highlight && classes.statLabelHighlight)}>
@@ -102,23 +96,24 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
         return `${days.length} days · ${from} – ${to}`;
     }, [days]);
 
+
     const totals = useMemo(() => {
 
         const tripSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.trip_hours), 0);
         const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0);
         const differenceSeconds = clockedSeconds - tripSeconds;
 
-        // Iterate every row (not just ones the user has typed an adjustment for),
-        // defaulting the adjustment to 0 for untouched rows.
         const adjustmentSeconds = days.reduce((sum, day) => {
             const v = adjustments[day.date];
             let cs = durationToSeconds(day.clocked_hours) + ((Number(v) || 0) * 3600);
-            if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
+            if (driverDetails?.fuel_surcharge_type === 'both' || driverDetails?.fuel_surcharge_type === 'hourly') {
                 const fuel = day?.fuel_surcharge || 0;
                 cs = cs * (1 + (Number(fuel) / 100));
             }
-            return sum + cs;
+            sum += cs;
+            return sum
         }, 0);
+
 
         const adjustedClockedSeconds = clockedSeconds + Object.values(adjustments).reduce((sum, v) => sum + ((Number(v) || 0) * 3600), 0);
         const estPay = (adjustmentSeconds / 3600) * (driverDetails?.hourly_rate || 0);
@@ -137,7 +132,8 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
         }, 0)
         const estPayKm = adjustmentKms * (driverDetails?.rate_per_km || 0);
         const estTotals = (estPay || 0) + (estPayKm || 0)
-        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentSeconds, adjustedClockedSeconds, estPay, estPayKm, estTotals };
+        const adjustmentsOnly = Object.values(adjustments).reduce((sum, v) => sum + (Number(v) || 0) * 3600, 0);
+        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentsOnly, adjustedClockedSeconds, estPay, estPayKm, estTotals };
     }, [days, adjustments, driverDetails, kmAdjustments]);
 
     const isDeficit = totals.differenceSeconds > 0;
@@ -145,14 +141,14 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
     return (
         <Grid container className={classes.root} direction="column" wrap="nowrap">
             <Grid size={12} className={classes.statsRow}>
-                <StatTile classes={classes} cx={cx} label="Trip Hours" value={formatSeconds(totals.tripSeconds)} />
                 <StatTile classes={classes} cx={cx} label="Clocked Hours" value={formatSeconds(totals.clockedSeconds)} />
+                <StatTile classes={classes} cx={cx} label="Trip Hours" value={formatSeconds(totals.tripSeconds)} />
                 <StatTile classes={classes} cx={cx} label="Difference" value={formatSeconds(totals.differenceSeconds)} isDeficit={isDeficit} />
-                <StatTile classes={classes} cx={cx} label="Adjustments" value={formatSeconds(totals.adjustmentSeconds)} />
+                <StatTile classes={classes} cx={cx} label="Adjustments" value={formatSeconds(totals.adjustmentsOnly)} />
                 <StatTile classes={classes} cx={cx} label="Adjusted Clocked" value={formatSeconds(totals.adjustedClockedSeconds)} />
-                <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.hourly_rate || 0}/H`} value={`${totals.estPay.toFixed(0)}`} />
-                <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(0)}`} />
-                <StatTile classes={classes} cx={cx} label={`Total Pay`} value={`$${totals?.estTotals.toFixed(0)}`} highlight />
+                <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.hourly_rate || 0}/H`} value={`${totals.estPay.toFixed(2)}`} />
+                <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(2)}`} />
+                <StatTile classes={classes} cx={cx} label={`Total Pay`} value={`$${totals?.estTotals.toFixed(2)}`} highlight />
             </Grid>
             <Grid size={12} className={classes.tableHeaderRow}>
                 <Grid container sx={{ width: '100%' }} alignItems="center">
@@ -233,19 +229,15 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                 </div>
                                 <div className={classes.timelineLabels}>
                                     <div style={{ flex: '0 0 auto' }}>
-                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
-                                        <Typography className={classes.tickCaption}>Clock in</Typography>
+                                        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                                            <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
+                                            {puSeconds > 0 && <Typography className={classes.tickDuration}>{formatDurationShort(day.pu_diff)}</Typography>}
+                                        </div>
+                                        <Typography className={classes.tickCaption}>Clock in waiting</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline' }}>
                                             <Typography className={classes.tickTime}>{day.km_in} KM</Typography>
                                         </div>
                                     </div>
-
-                                    {puSeconds > 0 && (
-                                        <div style={{ flex: '0 0 auto' }}>
-                                            <Typography className={classes.tickTime}>{formatDurationShort(day.pu_diff)}</Typography>
-                                            <Typography className={classes.tickCaption}>waiting</Typography>
-                                        </div>
-                                    )}
 
                                     <div style={{ flex: 1, textAlign: 'center' }}>
                                         <Typography className={classes.tickTime}>
@@ -253,24 +245,19 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                         </Typography>
                                         <Typography className={classes.tickCaption}>on the road</Typography>
                                     </div>
-
-                                    {delSeconds > 0 && (
-                                        <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
-                                            <Typography className={classes.tickTime}>{formatDurationShort(day.delivery_diff)}</Typography>
-                                            <Typography className={classes.tickCaption}>after last stop</Typography>
-                                        </div>
-                                    )}
-
                                     <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
-                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
-                                        <Typography className={classes.tickCaption}>Clock out</Typography>
+                                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
+                                            {delSeconds > 0 && <Typography className={classes.tickDuration} sx={{ marginRight: '6px', marginLeft: 0 }}>{formatDurationShort(day.delivery_diff)}</Typography>}
+                                            <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
+                                        </div>
+                                        <Typography className={classes.tickCaption}>after last stop · Clock out</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
                                             <Typography className={classes.tickTime}>{day.km_out} KM</Typography>
                                         </div>
                                     </div>
                                 </div>
                                 <Grid container spacing={2} className={classes.detailGrid}>
-                                    <Grid size={{ xs: 12, md: 8 }}>
+                                    <Grid size={{ xs: 12 }}>
                                         <TextField
                                             fullWidth
                                             multiline
@@ -280,10 +267,6 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                             value={notes[day.date] ?? ''}
                                             onChange={(e) => setNotes((prev) => ({ ...prev, [day.date]: e.target.value }))}
                                         />
-                                    </Grid>
-                                    <Grid size={{ xs: 12, md: 4 }} className={classes.whyBox}>
-                                        <Typography className={classes.whyTitle}>Why this matters</Typography>
-                                        <Typography className={classes.whyText}>{WHY_TEXT[severity]}</Typography>
                                     </Grid>
                                 </Grid>
                             </Grid>
