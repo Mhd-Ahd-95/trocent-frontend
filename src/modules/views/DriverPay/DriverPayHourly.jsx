@@ -26,7 +26,6 @@ export default function DriverPayHourly() {
 
     const { data: driverPays, isLoading, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
-    console.log(data);
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
     const handleSearch = React.useCallback((filters) => {

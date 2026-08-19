@@ -11,9 +11,7 @@ const TRIP_COLUMNS = [
     { key: 'route', label: 'Route' },
     { key: 'pickup', label: 'Pickup (in / out)' },
     { key: 'delivery', label: 'Delivery (in / out)' },
-    { key: 'delivered_on', label: 'Delivered on', align: 'right' },
-    { key: 'weight', label: 'Weight', align: 'right' },
-    { key: 'pieces', label: 'Pieces', align: 'right' },
+    { key: 'delivered_on', label: 'Delivered on', align: 'right' }
 ];
 
 const formatDate = (value) => {
@@ -164,16 +162,6 @@ export default function DriverTripDetailsTable({ driverId, filters }) {
                                     <TableCell align="right" sx={{ py: 1.25 }}>
                                         <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'text.secondary' }}>
                                             {formatDate(row.delivered_on)}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ py: 1.25 }}>
-                                        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-                                            {row.weight ?? '—'}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ py: 1.25 }}>
-                                        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-                                            {row.pieces ?? '—'}
                                         </Typography>
                                     </TableCell>
                                 </TableRow>

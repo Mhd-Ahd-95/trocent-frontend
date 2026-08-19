@@ -244,7 +244,7 @@ export default makeStyles({ name: 'DriverHourlyCard' })((theme) => {
             fontSize: 11.5,
             fontWeight: 700,
             color: theme.palette.text.secondary,
-            marginLeft: 6,
+            // marginLeft: 6,
         },
         tickCaption: {
             fontSize: 11,

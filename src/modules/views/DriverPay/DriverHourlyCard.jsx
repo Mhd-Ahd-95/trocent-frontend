@@ -66,11 +66,15 @@ const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
     </Box>
 )
 
-export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdjustmentChange, onKmAdjustmentChange }) {
+export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
 
     const { classes, cx } = useStyles();
     const [adjustments, setAdjustments] = useState({});
-    const [kmAdjustments, setKmAdjustments] = useState({});
+    const [kmAdjustments, setKmAdjustments] = useState(days.reduce((acc, d) => {
+        acc[d.date] = d.km_driven || 0
+        return acc
+    }, {}))
+
     const [notes, setNotes] = useState({});
     const [expandedDates, setExpandedDates] = useState(() => new Set());
 
@@ -84,13 +88,11 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
 
     const handleAdjustmentChange = useCallback((date, value) => {
         setAdjustments((prev) => ({ ...prev, [date]: value }));
-        onAdjustmentChange?.(date, value);
-    }, [onAdjustmentChange]);
+    }, []);
 
     const handleKmAdjustmentChange = useCallback((date, value) => {
         setKmAdjustments((prev) => ({ ...prev, [date]: value }));
-        onKmAdjustmentChange?.(date, value);
-    }, [onKmAdjustmentChange]);
+    }, []);
 
     const dateRangeLabel = useMemo(() => {
         if (!days.length) return '—';
@@ -101,16 +103,42 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
     }, [days]);
 
     const totals = useMemo(() => {
+
         const tripSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.trip_hours), 0);
         const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0);
         const differenceSeconds = clockedSeconds - tripSeconds;
-        const adjustmentSeconds = Object.values(adjustments).reduce((sum, v) => sum + (Number(v) || 0) * 3600, 0);
-        const adjustedClockedSeconds = clockedSeconds + adjustmentSeconds;
-        const estPay = (adjustedClockedSeconds / 3600) * (driverDetails?.hourly_rate || 0);
-        const kms = days.reduce((sum, d) => Number(d.km_driven) + sum, 0)
-        const estPayKm = kms * (driverDetails?.rate_per_km || 0);
-        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentSeconds, adjustedClockedSeconds, estPay, estPayKm };
-    }, [days, adjustments, driverDetails]);
+
+        // Iterate every row (not just ones the user has typed an adjustment for),
+        // defaulting the adjustment to 0 for untouched rows.
+        const adjustmentSeconds = days.reduce((sum, day) => {
+            const v = adjustments[day.date];
+            let cs = durationToSeconds(day.clocked_hours) + ((Number(v) || 0) * 3600);
+            if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
+                const fuel = day?.fuel_surcharge || 0;
+                cs = cs * (1 + (Number(fuel) / 100));
+            }
+            return sum + cs;
+        }, 0);
+
+        const adjustedClockedSeconds = clockedSeconds + Object.values(adjustments).reduce((sum, v) => sum + ((Number(v) || 0) * 3600), 0);
+        const estPay = (adjustmentSeconds / 3600) * (driverDetails?.hourly_rate || 0);
+
+        const adjustmentKms = Object.entries(kmAdjustments).reduce((sum, [k, v]) => {
+            const mileage = Number(driverDetails?.mileage_allotment || 0)
+            if (Number(v) > mileage) {
+                let kp = Number(v) - mileage
+                if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
+                    const fuel = days.find(d => d.date === k)?.fuel_surcharge || 0
+                    kp = kp * (1 + (Number(fuel) / 100))
+                }
+                sum = kp + sum
+            }
+            return sum
+        }, 0)
+        const estPayKm = adjustmentKms * (driverDetails?.rate_per_km || 0);
+        const estTotals = (estPay || 0) + (estPayKm || 0)
+        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentSeconds, adjustedClockedSeconds, estPay, estPayKm, estTotals };
+    }, [days, adjustments, driverDetails, kmAdjustments]);
 
     const isDeficit = totals.differenceSeconds > 0;
 
@@ -119,11 +147,12 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
             <Grid size={12} className={classes.statsRow}>
                 <StatTile classes={classes} cx={cx} label="Trip Hours" value={formatSeconds(totals.tripSeconds)} />
                 <StatTile classes={classes} cx={cx} label="Clocked Hours" value={formatSeconds(totals.clockedSeconds)} />
-                <StatTile classes={classes} cx={cx} label="Difference" value={formatSeconds(totals.differenceSeconds)} highlight isDeficit={isDeficit} />
+                <StatTile classes={classes} cx={cx} label="Difference" value={formatSeconds(totals.differenceSeconds)} isDeficit={isDeficit} />
                 <StatTile classes={classes} cx={cx} label="Adjustments" value={formatSeconds(totals.adjustmentSeconds)} />
                 <StatTile classes={classes} cx={cx} label="Adjusted Clocked" value={formatSeconds(totals.adjustedClockedSeconds)} />
                 <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.hourly_rate || 0}/H`} value={`${totals.estPay.toFixed(0)}`} />
                 <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(0)}`} />
+                <StatTile classes={classes} cx={cx} label={`Total Pay`} value={`$${totals?.estTotals.toFixed(0)}`} highlight />
             </Grid>
             <Grid size={12} className={classes.tableHeaderRow}>
                 <Grid container sx={{ width: '100%' }} alignItems="center">
@@ -204,12 +233,19 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
                                 </div>
                                 <div className={classes.timelineLabels}>
                                     <div style={{ flex: '0 0 auto' }}>
+                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
+                                        <Typography className={classes.tickCaption}>Clock in</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                                            <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
-                                            {puSeconds > 0 && <Typography className={classes.tickDuration}>{formatDurationShort(day.pu_diff)}</Typography>}
+                                            <Typography className={classes.tickTime}>{day.km_in} KM</Typography>
                                         </div>
-                                        <Typography className={classes.tickCaption}>Clock in waiting</Typography>
                                     </div>
+
+                                    {puSeconds > 0 && (
+                                        <div style={{ flex: '0 0 auto' }}>
+                                            <Typography className={classes.tickTime}>{formatDurationShort(day.pu_diff)}</Typography>
+                                            <Typography className={classes.tickCaption}>waiting</Typography>
+                                        </div>
+                                    )}
 
                                     <div style={{ flex: 1, textAlign: 'center' }}>
                                         <Typography className={classes.tickTime}>
@@ -217,12 +253,20 @@ export default function DriverHourlyCard({ days = [], driverDetails = {}, onAdju
                                         </Typography>
                                         <Typography className={classes.tickCaption}>on the road</Typography>
                                     </div>
-                                    <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
-                                            {delSeconds > 0 && <Typography className={classes.tickDuration} sx={{ marginRight: '6px', marginLeft: 0 }}>{formatDurationShort(day.delivery_diff)}</Typography>}
-                                            <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
+
+                                    {delSeconds > 0 && (
+                                        <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
+                                            <Typography className={classes.tickTime}>{formatDurationShort(day.delivery_diff)}</Typography>
+                                            <Typography className={classes.tickCaption}>after last stop</Typography>
                                         </div>
-                                        <Typography className={classes.tickCaption}>after last stop · Clock out</Typography>
+                                    )}
+
+                                    <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
+                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
+                                        <Typography className={classes.tickCaption}>Clock out</Typography>
+                                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
+                                            <Typography className={classes.tickTime}>{day.km_out} KM</Typography>
+                                        </div>
                                     </div>
                                 </div>
                                 <Grid container spacing={2} className={classes.detailGrid}>
