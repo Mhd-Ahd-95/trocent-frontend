@@ -1,12 +1,14 @@
 import React from "react";
-import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Grid, Paper, Typography, } from "@mui/material";
+import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Grid, Paper, TextField, Typography, } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import QuestionApi from "../../../apis/Questions.api";
 import { useStyles } from "./TripChecklist.styles";
 import { useTranslation } from 'react-i18next';
+import { useDriverKm, useDriverMutation } from "../../../hooks/useDrivers";
 
 function buildQueue(sections) {
     return sections
@@ -65,7 +67,50 @@ function CompletionScreen({ onConfirm, loading }) {
     );
 }
 
+function KmInScreen({ value, onChange, onSubmit, loading }) {
+    const { classes } = useStyles();
+    const { t } = useTranslation();
+    return (
+        <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" gap={2.5} py={2}>
+            <Box className={classes.completionIcon}>
+                <DirectionsCarIcon sx={{ fontSize: 36, color: "warning.main" }} />
+            </Box>
+            <Box>
+                <Typography variant="h6" fontWeight={800} gutterBottom>
+                    {t('checklist.kmInTitle', 'Enter starting odometer')}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    {t('checklist.kmInDesc', 'We need your km-in reading before this trip can start.')}
+                </Typography>
+            </Box>
+            <TextField
+                fullWidth
+                type="number"
+                autoFocus
+                label={t('checklist.kmIn', 'Km In')}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                disabled={loading}
+                inputProps={{ min: 0, inputMode: 'decimal' }}
+            />
+            <Button
+                fullWidth
+                variant="contained"
+                color="warning"
+                size="large"
+                disabled={loading || value === '' || Number(value) < 0}
+                onClick={onSubmit}
+                startIcon={loading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <DirectionsCarIcon />}
+                sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
+            >
+                {t('checklist.saveKmIn', 'Save & Continue')}
+            </Button>
+        </Box>
+    );
+}
+
 export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId, language = 'en' }) {
+
     const { classes } = useStyles();
     const { t } = useTranslation();
     const queue = React.useMemo(() => buildQueue(sections), [sections]);
@@ -74,6 +119,12 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
     const [completing, setCompleting] = React.useState(false);
     const [done, setDone] = React.useState(false);
     const [animKey, setAnimKey] = React.useState(0);
+    const [kmInValue, setKmInValue] = React.useState('');
+
+    const { data: kmData, isLoading: kmLoading } = useDriverKm(driverId);
+    const { driverKmInOut } = useDriverMutation();
+
+    const hasActiveKm = Boolean(kmData?.active_km_id);
 
     const current = queue[idx] ?? null;
 
@@ -94,6 +145,16 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
             console.error("Answer error:", err);
         } finally {
             setAnswering(false);
+        }
+    };
+
+    const handleKmInSubmit = async () => {
+        if (kmInValue === '' || Number(kmInValue) < 0) return;
+        try {
+            await driverKmInOut.mutateAsync({ did: driverId, kid: null, km_in: kmInValue });
+            setKmInValue('');
+        } catch (err) {
+            console.error("Km in error:", err);
         }
     };
 
@@ -139,7 +200,20 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                 />
                 <CardContent className={classes.cardBody}>
                     {done ? (
-                        <CompletionScreen onConfirm={handleComplete} loading={completing} />
+                        kmLoading ? (
+                            <Box display="flex" alignItems="center" justifyContent="center" py={4}>
+                                <CircularProgress size={26} />
+                            </Box>
+                        ) : !hasActiveKm ? (
+                            <KmInScreen
+                                value={kmInValue}
+                                onChange={setKmInValue}
+                                onSubmit={handleKmInSubmit}
+                                loading={driverKmInOut.isPending}
+                            />
+                        ) : (
+                            <CompletionScreen onConfirm={handleComplete} loading={completing} />
+                        )
                     ) : current ? (
                         <Box key={animKey}>
                             <SectionPill name={current.section.name} />

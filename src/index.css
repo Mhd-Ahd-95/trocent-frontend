@@ -29,3 +29,9 @@ input[type=number]::-webkit-outer-spin-button {
 .MuiSnackbar-container {
   z-index: 99999 !important;
 }
+
+:root {
+    --status-good: #2e7d32;
+    --status-warn: #e67e22;
+    --status-bad: #e74c3c;
+}

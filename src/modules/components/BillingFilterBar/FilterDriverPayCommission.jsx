@@ -13,13 +13,11 @@ const LabeledField = ({ label, icon, children, classes }) => (
     </Box>
 );
 
-const EMPTY_FILTERS = {
-    payDateFrom: '',
-    payDateTo: '',
-    keyword: '',
-};
 
-const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = false }) => {
+
+const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = false, isHourly }) => {
+
+    const EMPTY_FILTERS = isHourly ? { start_date: '', end_date: '', keyword: '' } : { payDateFrom: '', payDateTo: '', keyword: '', };
 
     const { classes, cx } = useStyles({ commission: true });
     const [expanded, setExpanded] = useState(defaultExpanded);
@@ -59,20 +57,20 @@ const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = fals
             <Collapse in={expanded}>
                 <Box className={classes.filterBody}>
                     <Box className={classes.filterGrid}>
-                        <LabeledField classes={classes} label="Pay Date From" icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
+                        <LabeledField classes={classes} label={isHourly ? 'Start Date' : "Pay Date From"} icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
                             <TextField
                                 type="date" size="small" fullWidth className={classes.inputRoot}
-                                value={filters.payDateFrom}
-                                onChange={(e) => setField('payDateFrom', e.target.value)}
+                                value={isHourly ? filters.start_date : filters.payDateFrom}
+                                onChange={(e) => setField(isHourly ? 'start_date' : 'payDateFrom', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                             />
                         </LabeledField>
 
-                        <LabeledField classes={classes} label="Pay Date To" icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
+                        <LabeledField classes={classes} label={isHourly ? 'End Date' : "Pay Date To"} icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
                             <TextField
                                 type="date" size="small" fullWidth className={classes.inputRoot}
-                                value={filters.payDateTo}
-                                onChange={(e) => setField('payDateTo', e.target.value)}
+                                value={isHourly ? filters.end_date : filters.payDateTo}
+                                onChange={(e) => setField(isHourly ? 'end_date' : 'payDateTo', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                             />
                         </LabeledField>
@@ -80,10 +78,11 @@ const FilterDriverPayCommission = React.memo(({ onSearch, defaultExpanded = fals
                         <LabeledField classes={classes} label="Keyword" icon={<Search sx={{ fontSize: 11 }} />}>
                             <TextField
                                 size="small" fullWidth className={classes.inputRoot}
-                                placeholder="#order, #driver, driver name..."
+                                placeholder={isHourly ? '#driver' : "#order, #driver, driver name..."}
                                 value={filters.keyword}
                                 onChange={(e) => setField('keyword', e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                helperText={isHourly ? 'For multiple drivers, separate driver numbers with commas.' : ''}
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">

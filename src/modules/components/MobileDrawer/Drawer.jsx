@@ -158,7 +158,7 @@ export default function MobileDrawer(props) {
       text: 'Driver Pay', icon: <LocalAtm />,
       options: [
         { text: 'Commission', url: '/driver-pay-commission' },
-        { text: 'Hourly', url: '/drivers/hourly' }
+        { text: 'Hourly', url: '/driver-pay-hourly' }
       ]
     },
     {

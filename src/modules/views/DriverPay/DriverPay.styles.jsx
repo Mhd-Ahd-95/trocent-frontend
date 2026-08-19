@@ -136,13 +136,13 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             borderRadius: 8,
             padding: theme.spacing(1.25, 1.5),
             textAlign: 'center',
-            background: isDark ? alpha('#fff', 0.03) : theme.palette.grey[100],
+            background: isDark ? alpha('#fff', 0.03) : theme.palette.grey[200],
         },
         statTileHighlight: {
-            background: alpha(primary, 0.12),
+            background: alpha(primary, 0.2),
         },
         statLabel: {
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.03em',
@@ -219,6 +219,13 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             background: alpha(theme.palette.success.main, 0.12),
             whiteSpace: 'nowrap',
             flexShrink: 0,
+        },
+        
+        statValueError: {
+            color: `${theme.palette.error.main} !important`,
+        },
+        statValueSuccess: {
+            color: `${theme.palette.success.main} !important`,
         },
     };
 });

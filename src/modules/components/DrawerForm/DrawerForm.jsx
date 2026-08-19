@@ -5,7 +5,7 @@ import { Close } from '@mui/icons-material'
 
 const CustomDrawer = styled(Drawer)(({ theme, ismddown, size }) => {
   return ({
-    width: ismddown === 'true' ? '100%' : size === 'small' ? '30%' : '50%',
+    width: ismddown === 'true' ? '100%' : size === 'small' ? '30%' : size === 'large' ? '70%' : '50%',
     flexShrink: 0,
     overflow: 'hidden',
     zIndex: 2100
@@ -14,7 +14,7 @@ const CustomDrawer = styled(Drawer)(({ theme, ismddown, size }) => {
 
 const DrawerPaper = styled('div', { shouldForwardProp: prop => prop !== 'myProp' })(({ theme, myProp, size }) => {
   return ({
-    width: myProp === 'true' ? '100%' : size === 'small' ? '30%' : '50%',
+    width: myProp === 'true' ? '100%' : size === 'small' ? '30%' : size === 'large' ? '70%' : '50%',
     backgroundColor: colors.grey[50],
     display: 'flex',
     flexDirection: 'column',

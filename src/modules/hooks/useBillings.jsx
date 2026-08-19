@@ -46,6 +46,39 @@ export function useCommissionDrivers(filters = {}, page = 1, pageSize = 10) {
     });
 }
 
+export function useHourlyDrivers(filters = {}, page = 1, pageSize = 10) {
+    const hasDateRange = Boolean(filters?.start_date || filters?.end_date);
+    const keyword = filters?.keyword ? filters.keyword.split(',') : []
+    return useQuery({
+        queryKey: ['hourlyDrivers', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.getPendingHourlyDriverPay({ ...filters, keyword, page, pageSize });
+            return response.data;
+        },
+        enabled: hasDateRange,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useHourlyDriverDetails(driver_id, filters = {}) {
+    const did = Number(driver_id)
+    return useQuery({
+        queryKey: ['hourlyDriversDetails', { filters: JSON.stringify(filters), driver_id: did }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.getHourlyDriverPayDetails(did, filters);
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+
 export function useBillingMutation() {
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
@@ -122,7 +155,6 @@ export function useBillingMutation() {
 
     const updateInterlinerAmounts = useMutation({
         mutationFn: async ({ payload, cid, oid }) => {
-            console.log(payload);
             const res = await BillingsApi.updateInterlinerAmounts(payload)
             return res
         },

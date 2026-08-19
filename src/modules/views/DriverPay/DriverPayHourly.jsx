@@ -1,15 +1,17 @@
 import React, { useTransition } from 'react'
 import { Box, Button, CircularProgress, Grid, MenuItem, Pagination, Select } from '@mui/material'
 import { MainLayout } from '../../layouts'
-import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup } from '../../components'
+import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup, DrawerForm } from '../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
 import useStyles from './DriverPay.styles'
-import DateGroupedSummary from './DateGroupedSummary'
-import { useCommissionDrivers } from '../../hooks/useBillings'
+import DriverHourlyCard from './DriverHourlyCard'
+import { useHourlyDrivers } from '../../hooks/useBillings'
+import DriverTripDetailsTable from './DriverHourlyDetails'
+import { useSnackbar } from 'notistack'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
-export default function DriverPayCommission() {
+export default function DriverPayHourly() {
 
     const { classes, cx } = useStyles()
     const groupApis = React.useRef(new Map());
@@ -19,8 +21,10 @@ export default function DriverPayCommission() {
     const [page, setPage] = React.useState(1);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
+    const [openModal, setOpenModal] = React.useState(false)
+    const { enqueueSnackbar } = useSnackbar()
 
-    const { data: driverPays, isLoading, isError, error } = useCommissionDrivers(appliedFilters, page, rowsPerPage)
+    const { data: driverPays, isLoading, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
@@ -56,6 +60,7 @@ export default function DriverPayCommission() {
         setPage(1);
     }, []);
 
+
     React.useEffect(() => {
         if (isError && error) {
             const message = error.response?.data?.message;
@@ -67,14 +72,14 @@ export default function DriverPayCommission() {
 
     return (
         <MainLayout
-            title='Driver Pay Commissions'
+            title='Driver Pay Hourly'
             sideMenu={SideMenu}
-            activeDrawer={{ active: 'Commission' }}
+            activeDrawer={{ active: 'Hourly' }}
             grid noPanding
         >
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <FilterPayDriverCommission onSearch={handleSearch} />
+                    <FilterPayDriverCommission onSearch={handleSearch} isHourly defaultExpanded />
                 </Grid>
                 <Grid size={12}>
                     {data.length > 0 && (
@@ -97,7 +102,7 @@ export default function DriverPayCommission() {
                             {data && data?.length === 0 ? (
                                 <Box className={classes.emptyState}>
                                     <ReceiptLongRounded sx={{ fontSize: 48, opacity: 0.35, mb: 1 }} />
-                                    <Box sx={{ fontWeight: 700 }}>No Driver match your filters</Box>
+                                    <Box sx={{ fontWeight: 700 }}>No Drivers match your filters</Box>
                                     <Box sx={{ fontSize: 13, mt: 0.5 }}>Try widening the date range or clearing the keyword.</Box>
                                 </Box>
                             ) : (
@@ -106,19 +111,16 @@ export default function DriverPayCommission() {
                                         <CustomerBillingGroup
                                             key={group.driver_id}
                                             driver_id={group.driver_id}
+                                            driverDetails={{ hourly_rate: group.hourly_rate, rate_per_km: group.rate_per_km, mileage_allotment: group.mileage_allotment, fuel_surcharge_type: group.fuel_surcharge_type }}
                                             orderRef={orderRef}
                                             customerId={group.driver_id}
                                             ref={getGroupRef(group.driver_id)}
                                             customerName={group.driver_name}
                                             accountNumber={group.driver_number}
-                                            orders={group.orders}
-                                            OrderCard={DateGroupedSummary}
-                                            isDriverPay
-                                            onApprove={({ driverId, date, amount }) => {
-                                                console.log(driverId);
-                                                console.log(amount);
-                                                console.log(date);
-                                            }}
+                                            orders={group.days}
+                                            openCharges={() => setOpenModal(true)}
+                                            OrderCard={DriverHourlyCard}
+                                            isHourly
                                         />
                                     ))}
                                 </Box>
@@ -152,6 +154,11 @@ export default function DriverPayCommission() {
                     </>
                 }
             </Grid>
+            {openModal &&
+                <DrawerForm title='Driver Details' open={openModal} setOpen={setOpenModal} size='large'>
+                    <DriverTripDetailsTable driverId={orderRef.current} filters={appliedFilters} />
+                </DrawerForm>
+            }
         </MainLayout>
     )
 

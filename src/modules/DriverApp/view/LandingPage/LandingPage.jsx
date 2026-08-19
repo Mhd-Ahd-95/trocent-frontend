@@ -91,7 +91,7 @@ function TripItem({ trip, index, onSelect, isSelected, isActive, hasLiveTrip }) 
 }
 
 export default function DriverLanding() {
-    
+
     useDispatchScreenSync();
 
     const { classes, cx } = useStyles();
