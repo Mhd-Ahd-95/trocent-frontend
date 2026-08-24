@@ -18,14 +18,14 @@ function formatDuration(totalSeconds) {
     return `${s}s`;
 }
 
-function ClockInOut({ hasTrips, clockedInRef }) {
+function ClockInOut({ hasTrips, clockedInRef, isHourly = false }) {
 
     const { classes, cx } = useStyles();
     const { t } = useTranslation();
     const authUser = globalVariables.auth.user;
 
     const { data, isLoading, isFetching } = useDriverClock(authUser?.driver_id);
-    const { data: kmData, isLoading: kmLoading } = useDriverKm(authUser?.driver_id);
+    const { data: kmData, isLoading: kmLoading } = useDriverKm(authUser?.driver_id, isHourly);
 
     const { driverClockInOut, driverKmInOut } = useDriverMutation();
     const [tickSeconds, setTickSeconds] = React.useState(0);
@@ -58,7 +58,7 @@ function ClockInOut({ hasTrips, clockedInRef }) {
     const totalSeconds = completedSeconds + tickSeconds;
     const isClockedIn = Boolean(data?.active_clock_id);
     const isPending = driverClockInOut.isPending;
-    const hasActiveKm = Boolean(kmData?.active_km_id);
+    const hasActiveKm = Boolean(kmData?.active_km_id) && isHourly;
 
     const handleClockIn = async (e) => {
         e.preventDefault()

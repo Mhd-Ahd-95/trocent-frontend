@@ -109,7 +109,7 @@ function KmInScreen({ value, onChange, onSubmit, loading }) {
     );
 }
 
-export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId, language = 'en' }) {
+export default function TripChecklist({ sections, tripId, checklistId, onComplete, driverId, language = 'en', isHourly = false }) {
 
     const { classes } = useStyles();
     const { t } = useTranslation();
@@ -121,7 +121,7 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
     const [animKey, setAnimKey] = React.useState(0);
     const [kmInValue, setKmInValue] = React.useState('');
 
-    const { data: kmData, isLoading: kmLoading } = useDriverKm(driverId);
+    const { data: kmData, isLoading: kmLoading } = useDriverKm(driverId, isHourly);
     const { driverKmInOut } = useDriverMutation();
 
     const hasActiveKm = Boolean(kmData?.active_km_id);
@@ -200,20 +200,20 @@ export default function TripChecklist({ sections, tripId, checklistId, onComplet
                 />
                 <CardContent className={classes.cardBody}>
                     {done ? (
-                        kmLoading ? (
+                       isHourly && kmLoading ?
                             <Box display="flex" alignItems="center" justifyContent="center" py={4}>
                                 <CircularProgress size={26} />
                             </Box>
-                        ) : !hasActiveKm ? (
-                            <KmInScreen
-                                value={kmInValue}
-                                onChange={setKmInValue}
-                                onSubmit={handleKmInSubmit}
-                                loading={driverKmInOut.isPending}
-                            />
-                        ) : (
-                            <CompletionScreen onConfirm={handleComplete} loading={completing} />
-                        )
+                            : isHourly && !hasActiveKm ?
+                                <KmInScreen
+                                    value={kmInValue}
+                                    onChange={setKmInValue}
+                                    onSubmit={handleKmInSubmit}
+                                    loading={driverKmInOut.isPending}
+                                />
+                                :
+                                <CompletionScreen onConfirm={handleComplete} loading={completing} />
+
                     ) : current ? (
                         <Box key={animKey}>
                             <SectionPill name={current.section.name} />

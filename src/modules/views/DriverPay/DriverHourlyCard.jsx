@@ -38,7 +38,7 @@ const formatDurationShort = (value) => {
 const getSeverity = (diffValue) => {
     const minutes = Math.round(durationToSeconds(diffValue) / 60);
     if (!diffValue) return 'good';
-    if (minutes <= 40) return 'good';
+    if (minutes <= 60) return 'good';
     if (minutes <= 90) return 'warn';
     return 'bad';
 };
@@ -228,29 +228,38 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                     )}
                                 </div>
                                 <div className={classes.timelineLabels}>
-                                    <div style={{ flex: '0 0 auto' }}>
-                                        <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                                            <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
-                                            {puSeconds > 0 && <Typography className={classes.tickDuration}>{formatDurationShort(day.pu_diff)}</Typography>}
-                                        </div>
-                                        <Typography className={classes.tickCaption}>Clock in waiting</Typography>
+                                    <div style={{ flex: '0 0 auto', textAlign: 'left' }}>
+                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
+                                        <Typography className={classes.tickCaption}>Clock in</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline' }}>
                                             <Typography className={classes.tickTime}>{day.km_in} KM</Typography>
                                         </div>
                                     </div>
 
-                                    <div style={{ flex: 1, textAlign: 'center' }}>
+                                    {puSeconds > 0 && (
+                                        <div style={{ flexGrow: puSeconds / (totalSeconds || 1), flexBasis: 0, textAlign: 'center' }}>
+                                            <Typography className={classes.tickTime}>{formatDurationShort(day.pu_diff)}</Typography>
+                                            <Typography className={classes.tickCaption}>waiting</Typography>
+                                        </div>
+                                    )}
+
+                                    <div style={{ flexGrow: tripSeconds / (totalSeconds || 1), flexBasis: 0, textAlign: 'center' }}>
                                         <Typography className={classes.tickTime}>
                                             {day.first_pickup || '-'} → {day.last_delivery || '-'}
                                         </Typography>
                                         <Typography className={classes.tickCaption}>on the road</Typography>
                                     </div>
-                                    <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
-                                            {delSeconds > 0 && <Typography className={classes.tickDuration} sx={{ marginRight: '6px', marginLeft: 0 }}>{formatDurationShort(day.delivery_diff)}</Typography>}
-                                            <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
+
+                                    {delSeconds > 0 && (
+                                        <div style={{ flexGrow: delSeconds / (totalSeconds || 1), flexBasis: 0, textAlign: 'center' }}>
+                                            <Typography className={classes.tickTime}>{formatDurationShort(day.delivery_diff)}</Typography>
+                                            <Typography className={classes.tickCaption}>after last stop</Typography>
                                         </div>
-                                        <Typography className={classes.tickCaption}>after last stop · Clock out</Typography>
+                                    )}
+
+                                    <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
+                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
+                                        <Typography className={classes.tickCaption}>Clock out</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
                                             <Typography className={classes.tickTime}>{day.km_out} KM</Typography>
                                         </div>
