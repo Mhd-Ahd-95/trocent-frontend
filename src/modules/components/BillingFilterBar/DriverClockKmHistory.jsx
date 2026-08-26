@@ -344,7 +344,7 @@ function DriverClockHistory(props) {
                         classes={{ root: classes.tabRoot }}
                     />
                     <Tab
-                        label="Km History"
+                        label="Distance History"
                         icon={<DirectionsCar sx={{ fontSize: 17 }} />}
                         iconPosition="start"
                         classes={{ root: classes.tabRoot }}
