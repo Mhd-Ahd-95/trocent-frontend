@@ -37,14 +37,14 @@ export function useDriverClock(did) {
     });
 }
 
-export function useDriverKm(did) {
+export function useDriverKm(did, hourly = false) {
     return useQuery({
         queryKey: ['driverKm', Number(did)],
         queryFn: async () => {
             const response = await DriversApi.driverHasKmIOToday(did);
             return response.data;
         },
-        enabled: !!did,
+        enabled: hourly,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -64,6 +64,38 @@ export function useDriver(cid) {
             return res.data.data;
         },
         enabled: !!cid,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useDriverHistoryClock(did, filters) {
+
+    return useQuery({
+        queryKey: ['driverHistoryClock', { filters: JSON.stringify(filters), did: Number(did) }],
+        queryFn: async () => {
+            const res = await DriversApi.getDriverHistoryClock(Number(did), filters);
+            return res.data;
+        },
+        enabled: !!did,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useDriverHistoryKm(did, filters) {
+
+    return useQuery({
+        queryKey: ['driverHistoryKm', { filters: JSON.stringify(filters), did: Number(did) }],
+        queryFn: async () => {
+            const res = await DriversApi.getDriverHistoryKm(Number(did), filters);
+            return res.data;
+        },
+        enabled: !!did,
         staleTime: 5 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -204,9 +236,9 @@ export function useDriverMutation() {
         onSuccess: (res, { did, kid }) => {
             if (res) {
                 queryClient.invalidateQueries(['driverKm', Number(did)]);
-                const message = kid ? 'You have successfully KM out. Have a great rest of your day!' : 'You are now KM in. Have a safe shift!';
-                const variant = kid ? 'info' : 'success';
-                enqueueSnackbar(message, { variant });
+                // const message = kid ? 'You have successfully KM out. Have a great rest of your day!' : 'You are now KM in. Have a safe shift!';
+                // const variant = kid ? 'info' : 'success';
+                // enqueueSnackbar(message, { variant });
             }
         },
         onError: handleError,
@@ -229,6 +261,36 @@ export function useDriverMutation() {
         onError: handleError,
     });
 
-    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut, updateDriverLanguage, driverKmInOut };
+    const updateDriverKm = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriversApi.updateDriverKm(payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            queryClient.setQueriesData({ queryKey: ['driverHistoryKm'] }, (old = []) => {
+                if (!old) return
+                return old.map(o => Number(o.id) === Number(res.id) ? res : o)
+            })
+            queryClient.invalidateQueries({queryKey: ['hourlyDrivers']})
+        },
+        onError: handleError
+    })
+
+    const updateDriverClock = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriversApi.updateDriverClock(payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            queryClient.setQueriesData({ queryKey: ['driverHistoryClock'] }, (old) => {
+                if (!old) return
+                return old.map(o => Number(o.id) === Number(res.id) ? res : o)
+            })
+            queryClient.invalidateQueries({queryKey: ['hourlyDrivers']})
+        },
+        onError: handleError
+    })
+
+    return { create, update, removeMany, remove, createDriverLogin, driverClockInOut, updateDriverLanguage, driverKmInOut, updateDriverClock, updateDriverKm };
 
 }

@@ -6,12 +6,12 @@ import { useHourlyDriverDetails } from '../../hooks/useBillings';
 import useStyles from './DriverHourly.styles'
 
 const TRIP_COLUMNS = [
-    { key: 'trip_number', label: 'Trip #' },
-    { key: 'order_number', label: 'Order #' },
-    { key: 'route', label: 'Route' },
-    { key: 'pickup', label: 'Pickup (in / out)' },
-    { key: 'delivery', label: 'Delivery (in / out)' },
-    { key: 'delivered_on', label: 'Delivered on', align: 'right' }
+    { key: 'trip_number', label: 'Trip #', width: 90 },
+    { key: 'order_number', label: 'Order #', width: 90 },
+    { key: 'route', label: 'Route', width: 200 },
+    { key: 'pickup', label: 'Pickup (in / out)', width: 130 },
+    { key: 'delivery', label: 'Delivery (in / out)', width: 130 },
+    { key: 'delivered_on', label: 'Delivered on', align: 'right', width: 120 }
 ];
 
 const formatDate = (value) => {
@@ -106,7 +106,7 @@ export default function DriverTripDetailsTable({ driverId, filters }) {
                 </Box>
             ) : (
                 <TableContainer component={Paper} elevation={0} className={classes.tableContainer}>
-                    <Table sx={{ tableLayout: 'fixed' }}>
+                    <Table sx={{ tableLayout: 'fixed', minWidth: 920, width: '100%' }}>
                         <TableHead>
                             <TableRow>
                                 {TRIP_COLUMNS.map((col) => (
@@ -114,6 +114,7 @@ export default function DriverTripDetailsTable({ driverId, filters }) {
                                         key={col.key}
                                         align={col.align || 'left'}
                                         className={classes.tripColumn}
+                                        sx={{ width: col.width, minWidth: col.width }}
                                     >
                                         {col.label}
                                     </TableCell>
@@ -132,17 +133,17 @@ export default function DriverTripDetailsTable({ driverId, filters }) {
                                         '&:last-of-type td': { borderBottom: 'none' }
                                     }}
                                 >
-                                    <TableCell sx={{ py: 1.25 }}>
+                                    <TableCell sx={{ py: 1.25, width: 90 }}>
                                         <Typography sx={{ fontSize: 13, fontWeight: 800, color: primary }}>
                                             # {row.trip_number ?? '—'}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell sx={{ py: 1.25 }}>
+                                    <TableCell sx={{ py: 1.25, width: 90 }}>
                                         <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
                                             # {row.order_number ?? '—'}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell sx={{ py: 1.25 }}>
+                                    <TableCell sx={{ py: 1.25, width: 200 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                             <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: 'text.secondary' }}>
                                                 {row.shipper_city || '—'}
@@ -153,13 +154,13 @@ export default function DriverTripDetailsTable({ driverId, filters }) {
                                             </Typography>
                                         </Box>
                                     </TableCell>
-                                    <TableCell sx={{ py: 1.25 }}>
+                                    <TableCell sx={{ py: 1.25, width: 130 }}>
                                         <TimeRangeCell from={row.pickup_in} to={row.pickup_out} />
                                     </TableCell>
-                                    <TableCell sx={{ py: 1.25 }}>
+                                    <TableCell sx={{ py: 1.25, width: 130 }}>
                                         <TimeRangeCell from={row.delivery_in} to={row.delivery_out} />
                                     </TableCell>
-                                    <TableCell align="right" sx={{ py: 1.25 }}>
+                                    <TableCell align="right" sx={{ py: 1.25, width: 120 }}>
                                         <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'text.secondary' }}>
                                             {formatDate(row.delivered_on)}
                                         </Typography>

@@ -10,7 +10,8 @@ import {
   ExpandMore,
   ReceiptLongOutlined,
   Receipt,
-  LocalAtm
+  LocalAtm,
+  AccountBalanceWalletOutlined
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { RoleContext, ThemeContext, AddressBookContext } from '../../contexts'
@@ -158,7 +159,15 @@ export default function MobileDrawer(props) {
       text: 'Driver Pay', icon: <LocalAtm />,
       options: [
         { text: 'Commission', url: '/driver-pay-commission' },
-        { text: 'Hourly', url: '/driver-pay-hourly' }
+        { text: 'Hourly', url: '/accounting/driver-pay-hourly' }
+      ]
+    },
+    {
+      text: 'Accounting', icon: <AccountBalanceWalletOutlined />,
+      options: [
+        { text: 'Billing Register', url: '/accounting/billing-register' },
+        { text: 'Driver Commission Register', url: '/accounting/driver-commission-register' },
+        { text: 'Driver Hourly Register', url: '/accounting/driver-hourly-register' }
       ]
     },
     {

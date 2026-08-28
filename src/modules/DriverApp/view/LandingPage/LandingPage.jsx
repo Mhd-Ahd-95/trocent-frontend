@@ -222,6 +222,7 @@ export default function DriverLanding() {
                     tripId={selectTrip?.id}
                     checklistId={checklistId}
                     driverId={authedUser?.driver_id}
+                    isHourly={authedUser.driver_pay_type === 'hourly'}
                     onComplete={handleChecklistComplete}
                 />
             )}
@@ -370,6 +371,7 @@ export default function DriverLanding() {
                             <ClockInOut
                                 hasTrips={driverTrips.length > 0}
                                 clockedInRef={clockedInRef}
+                                isHourly={authedUser.driver_pay_type === 'hourly'}
                             />
                         </Grid>
                     </Grid>

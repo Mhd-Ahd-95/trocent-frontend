@@ -1,7 +1,7 @@
 import React, { useTransition } from 'react'
 import { Box, Button, CircularProgress, Grid, MenuItem, Pagination, Select } from '@mui/material'
 import { MainLayout } from '../../layouts'
-import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup, DrawerForm } from '../../components'
+import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup, DrawerForm, DriverClockHistory } from '../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
 import useStyles from './DriverPay.styles'
 import DriverHourlyCard from './DriverHourlyCard'
@@ -24,8 +24,9 @@ export default function DriverPayHourly() {
     const [openModal, setOpenModal] = React.useState(false)
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: driverPays, isLoading, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
+    const { data: driverPays, isLoading, isFetching, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
+    console.log(data);
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
     const handleSearch = React.useCallback((filters) => {
@@ -93,7 +94,7 @@ export default function DriverPayHourly() {
                         </Box>
                     )}
                 </Grid>
-                {isLoading ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
+                {isLoading || isFetching ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
                     <CircularProgress />
                 </Grid>
                     :
@@ -111,14 +112,20 @@ export default function DriverPayHourly() {
                                         <CustomerBillingGroup
                                             key={group.driver_id}
                                             driver_id={group.driver_id}
-                                            driverDetails={{ hourly_rate: group.hourly_rate, rate_per_km: group.rate_per_km, mileage_allotment: group.mileage_allotment, fuel_surcharge_type: group.fuel_surcharge_type }}
+                                            driverDetails={{
+                                                driver_id: group.driver_id,
+                                                hourly_rate: group.hourly_rate,
+                                                rate_per_km: group.rate_per_km,
+                                                mileage_allotment: group.mileage_allotment,
+                                                fuel_surcharge_type: group.fuel_surcharge_type
+                                            }}
                                             orderRef={orderRef}
                                             customerId={group.driver_id}
                                             ref={getGroupRef(group.driver_id)}
                                             customerName={group.driver_name}
                                             accountNumber={group.driver_number}
                                             orders={group.days}
-                                            openCharges={() => setOpenModal(true)}
+                                            openCharges={(nb) => setOpenModal(nb)}
                                             OrderCard={DriverHourlyCard}
                                             isHourly
                                         />
@@ -154,9 +161,15 @@ export default function DriverPayHourly() {
                     </>
                 }
             </Grid>
-            {openModal &&
-                <DrawerForm title='Driver Details' open={openModal} setOpen={setOpenModal} size='large'>
+            {openModal === 1 &&
+                <DrawerForm title='Driver Details' open={openModal === 1} setOpen={setOpenModal}>
                     <DriverTripDetailsTable driverId={orderRef.current} filters={appliedFilters} />
+                </DrawerForm>
+            }
+
+            {openModal === 2 &&
+                <DrawerForm title='Driver History' open={openModal === 2} setOpen={setOpenModal}>
+                    <DriverClockHistory driverId={orderRef.current} filters={appliedFilters} />
                 </DrawerForm>
             }
         </MainLayout>

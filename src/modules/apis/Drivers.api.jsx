@@ -6,7 +6,7 @@ const getDriver = rid => CustomAxios.get(`/api/drivers/${rid}`)
 
 const updateDriver = (rid, ab) => {
     ab.append('_method', 'PUT');
-    return CustomAxios.post(`/api/drivers/${rid}`, ab, {
+    return CustomAxios.post(`/api/drivers/update/${rid}`, ab, {
         headers: {
             "Content-Type": "multipart/form-data",
         }
@@ -38,6 +38,14 @@ const driverHasKmIOToday = (did) => CustomAxios.get(`/api/drivers/km-in-out/${di
 
 const updateDriverLanguage = (did, lang) => CustomAxios.patch(`/api/drivers/language/${did}/${lang}`)
 
+const getDriverHistoryKm = (did, params) => CustomAxios.get(`/api/drivers/history/km/${did}`, { params })
+
+const getDriverHistoryClock = (did, params) => CustomAxios.get(`/api/drivers/history/clock/${did}`, { params })
+
+const updateDriverKm = (data) => CustomAxios.put('/api/drivers/km-in-out/update', data)
+
+const updateDriverClock = (data) => CustomAxios.put('/api/drivers/clock-in-out/update', data)
+
 export default {
     getDriver,
     getDrivers,
@@ -51,5 +59,9 @@ export default {
     getDriverTimeToday,
     updateDriverLanguage,
     driverKmInOut,
-    driverHasKmIOToday
+    driverHasKmIOToday,
+    getDriverHistoryKm,
+    getDriverHistoryClock,
+    updateDriverClock,
+    updateDriverKm
 }

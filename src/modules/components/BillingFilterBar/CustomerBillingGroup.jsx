@@ -1,13 +1,13 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
 import { Accordion, AccordionSummary, AccordionDetails, Box, Chip, Typography } from '@mui/material';
-import { ExpandMoreRounded, RouteRounded } from '@mui/icons-material';
+import { ExpandMoreRounded, History, RouteRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false,
     customerId, isDriverPay, driver_id, onApprove, isHourly, driverDetails }, ref) => {
 
-    const { classes } = useStyles();
+    const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
 
     useImperativeHandle(ref, () => ({
@@ -27,10 +27,10 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
         openCharges(2)
     }
 
-    const handleDetails = (e) => {
+    const handleDetails = (e, nb) => {
         e.stopPropagation()
         orderRef.current = customerId
-        openCharges(true)
+        openCharges(nb)
     }
 
     const dateGroups = React.useMemo(() => {
@@ -76,12 +76,19 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                             {/* <Chip className={classes.orderCountChip} label={dateRangeLabel} /> */}
                         </Box>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                        <Box component="span" role="button" tabIndex={0} className={classes.detailsButton} onClick={handleDetails}>
-                            <RouteRounded sx={{ fontSize: 15 }} />
-                            Show Trip Details
+                    {isHourly &&
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                            <Box component="span" role="button" tabIndex={0} className={cx(classes.historyButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 2)}>
+                                <History sx={{ fontSize: 15 }} />
+                                Driver History
+                            </Box>
+
+                            <Box component="span" role="button" tabIndex={0} className={cx(classes.detailsButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 1)}>
+                                <RouteRounded sx={{ fontSize: 15 }} />
+                                Show Trip Details
+                            </Box>
                         </Box>
-                    </Box>
+                    }
                 </Box>
             </AccordionSummary>
 

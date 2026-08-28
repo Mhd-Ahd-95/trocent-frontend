@@ -27,6 +27,10 @@ export default function CompanyForm(props) {
             contact_person: '',
             phone: '',
             email: '',
+            address: '',
+            city: '',
+            province: '',
+            postal_code: '',
 
             neq: '',
             nir: '',
@@ -64,7 +68,7 @@ export default function CompanyForm(props) {
                 navigate('/companies');
             }
             else {
-                reset();    
+                reset();
             }
         } catch (error) {
             // console.log(error);
@@ -123,6 +127,38 @@ export default function CompanyForm(props) {
                                     fullWidth
                                     variant="outlined"
                                     {...register('email')}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TextInput
+                                    label='Address'
+                                    fullWidth
+                                    variant="outlined"
+                                    {...register('address')}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TextInput
+                                    label='City'
+                                    fullWidth
+                                    variant="outlined"
+                                    {...register('city')}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TextInput
+                                    label='Province'
+                                    fullWidth
+                                    variant="outlined"
+                                    {...register('province')}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TextInput
+                                    label='Postal Code'
+                                    fullWidth
+                                    variant="outlined"
+                                    {...register('postal_code')}
                                 />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
