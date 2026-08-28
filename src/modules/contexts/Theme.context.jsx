@@ -151,6 +151,9 @@ function ThemeContextProvider(props) {
     "Fleet Management": true,
     Settings: true,
     "Access Management": true,
+    'Billing': true,
+    "Driver Pay": true,
+    'Accounting': true
   });
 
   const handleToggleType = () => {

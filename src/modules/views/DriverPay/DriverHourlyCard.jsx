@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Grid, Typography, TextField, InputAdornment, Chip, Box, Collapse, Button } from '@mui/material';
+import { Grid, Typography, TextField, InputAdornment, Chip, Box, Collapse, Button, CircularProgress } from '@mui/material';
 import { CheckCircleRounded, KeyboardArrowRightRounded } from '@mui/icons-material';
 import moment from 'moment';
 import useStyles from './DriverHourly.styles';
+import { useBillingMutation } from '../../hooks/useBillings';
 
 const durationToSeconds = (value) => {
     if (!value) return 0;
@@ -63,6 +64,7 @@ const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
 export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
 
     const { classes, cx } = useStyles();
+    const { approvedDriverPayHourly } = useBillingMutation()
     const [adjustments, setAdjustments] = useState({});
     const [kmAdjustments, setKmAdjustments] = useState(days.reduce((acc, d) => {
         acc[d.date] = d.km_driven || 0
@@ -140,7 +142,7 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
 
     const isDeficit = totals.differenceSeconds > 0;
 
-    const handleApproved = (e) => {
+    const handleApproved = async (e) => {
         e.preventDefault()
         const daysPayload = days.map((day) => {
             const adjustmentHours = Number(adjustments[day.date]) || 0;
@@ -171,7 +173,6 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
             };
         });
         const payload = {
-            driver_id: driverDetails.driver_id,
             days: daysPayload,
             totals: {
                 total_hourly_pay: Number(totals.estPay.toFixed(2)),
@@ -182,6 +183,7 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
             }
         };
         console.log('Approve payload:', payload);
+        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload })
 
     }
 
@@ -337,7 +339,8 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                         <Button
                             variant="contained"
                             color="success"
-                            startIcon={<CheckCircleRounded />}
+                            disabled={approvedDriverPayHourly.isPending}
+                            startIcon={approvedDriverPayHourly.isPending ? <CircularProgress size='18px' /> : <CheckCircleRounded />}
                             onClick={handleApproved}
                             sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 3, py: 1, boxShadow: 2, '&:hover': { boxShadow: 4 } }}
                         >

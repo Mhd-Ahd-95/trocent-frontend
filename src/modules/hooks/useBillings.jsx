@@ -78,8 +78,23 @@ export function useHourlyDriverDetails(driver_id, filters = {}) {
     });
 }
 
+export function useApprovedDriverHourlyTotals(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['approvedDriverHourlyTotals', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.loadApprovedDriverTotals({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 
 export function useBillingMutation() {
+
     const queryClient = useQueryClient()
     const { enqueueSnackbar } = useSnackbar()
 
@@ -214,5 +229,26 @@ export function useBillingMutation() {
         onError: handleError
     })
 
-    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus }
+    const approvedDriverPayHourly = useMutation({
+        mutationFn: async ({ did, payload }) => {
+            const res = await DriverPaysApi.approvedDriverPayHourly(did, payload)
+            return res.data
+        },
+        onSuccess: (res, { did }) => {
+            if (res) {
+                queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old = []) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.filter(o => Number(o.driver_id) !== Number(did))
+                    }
+                })
+                queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
+                queryClient.invalidateQueries({ queryKey: ['approvedDriverHourlyTotals'] })
+            }
+        },
+        onError: handleError
+    })
+
+    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus, approvedDriverPayHourly }
 }

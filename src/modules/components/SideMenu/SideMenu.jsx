@@ -10,7 +10,8 @@ import {
   ExpandMore,
   ReceiptLongOutlined,
   Receipt,
-  LocalAtm
+  LocalAtm,
+  AccountBalanceWalletOutlined
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { useTheme } from '@emotion/react'
@@ -148,7 +149,8 @@ function SideMenu(props) {
     Settings: true,
     "Access Management": true,
     'Billing': true,
-    "Driver Pay": true
+    "Driver Pay": true,
+    'Accounting': true
   });
 
   const itemsLinks = [
@@ -167,6 +169,14 @@ function SideMenu(props) {
       options: [
         { text: 'Commission', url: '/driver-pay-commission' },
         { text: 'Hourly', url: '/driver-pay-hourly' }
+      ]
+    },
+    {
+      text: 'Accounting', icon: <AccountBalanceWalletOutlined />,
+      options: [
+        { text: 'Billing Register', url: '/accounting/billing-register' },
+        { text: 'Driver Commission Register', url: '/accounting/driver-commission-register' },
+        { text: 'Driver Hourly Register', url: '/accounting/driver-hourly-register' }
       ]
     },
     {
