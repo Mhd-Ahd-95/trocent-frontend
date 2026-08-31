@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Paper, Box, CircularProgress, Typography, TextField, InputAdornment, useTheme, alpha, Grid } from '@mui/material';
 import { RouteRounded, Search } from '@mui/icons-material';
 import moment from 'moment';
-import { useHourlyDriverDetails } from '../../hooks/useBillings';
-import useStyles from './DriverHourly.styles'
+import { useHourlyDriverDetails } from '../../../hooks/useBillings';
+import useStyles from './Hourly.styles'
 
 const TRIP_COLUMNS = [
     { key: 'trip_number', label: 'Trip #', width: 90 },

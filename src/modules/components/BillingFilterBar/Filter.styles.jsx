@@ -233,41 +233,6 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
             fontWeight: 800,
             letterSpacing: '0.01em',
             color: isDark ? '#fff' : secondary,
-        },
-        btnAccordion: {
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            height: 30,
-            padding: theme.spacing(0, 1.5),
-            borderRadius: 20,
-            border: '1px solid',
-            background: 'transparent',
-            fontSize: 13.5,
-            fontWeight: 700,
-            fontFamily: 'inherit',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-        },
-        detailsButton: {
-            borderColor: alpha(primary, 0.4),
-            background: 'transparent',
-            color: primary,
-            transition: 'background-color 0.15s ease, border-color 0.15s ease',
-            '&:hover': {
-                borderColor: primary,
-                background: alpha(primary, 0.08),
-            },
-        },
-        historyButton: {
-            borderColor: alpha(theme.palette.info.main, 0.4),
-            background: 'transparent',
-            color: theme.palette.info.main,
-            transition: 'background-color 0.15s ease, border-color 0.15s ease',
-            '&:hover': {
-                borderColor: theme.palette.info.main,
-                background: alpha(theme.palette.info.main, 0.08),
-            },
-        },
+        }
     };
 });

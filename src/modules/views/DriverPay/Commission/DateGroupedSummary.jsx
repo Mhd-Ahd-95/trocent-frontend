@@ -2,9 +2,9 @@ import React, { useState, useMemo, useCallback, useRef } from 'react'
 import { Box, Typography, TextField, Button, Grid, Collapse } from '@mui/material'
 import { TuneRounded } from '@mui/icons-material'
 import moment from 'moment'
-import OrderDriverCard from '../Billing/OrderDriverCard'
-import { money, accessorialsTotal, interlinersTotal } from '../Utils/driverPay'
-import useStyles from './DriverPay.styles'
+import OrderDriverCard from '../../Billing/OrderDriverCard'
+import { money, accessorialsTotal, interlinersTotal } from '../../Utils/driverPay'
+import useStyles from './Commission.styles'
 
 const StatTile = ({ classes, cx, label, value, highlight }) => (
     <Box className={cx(classes.statTile, highlight && classes.statTileHighlight)}>

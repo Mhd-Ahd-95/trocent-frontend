@@ -1,11 +1,11 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Box, Chip, Typography } from '@mui/material';
-import { ExpandMoreRounded, History, RouteRounded } from '@mui/icons-material';
+import { Accordion, AccordionSummary, AccordionDetails, Box, } from '@mui/material';
+import { ExpandMoreRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders, orderRef, openCharges, OrderCard, isInvoicing = false,
-    customerId, isDriverPay, driver_id, onApprove, isHourly, driverDetails }, ref) => {
+    customerId, isDriverPay, driver_id, onApprove, isHourly, isCompanyGroup = false, driverDetails }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -47,16 +47,7 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
             .map(([date, dateOrders]) => ({ date, orders: dateOrders }));
     }, [orders, isDriverPay]);
 
-    const type = isHourly ? 'Day' : 'Order'
-
-    const dateRangeLabel = React.useMemo(() => {
-        if (!isHourly) return
-        if (!orders.length) return '—';
-        const sorted = [...orders].sort((a, b) => moment(a.date).diff(moment(b.date)));
-        const from = moment(sorted[0].date).format('MMM D');
-        const to = moment(sorted[sorted.length - 1].date).format('MMM D, YYYY');
-        return `${orders.length} days · ${from} – ${to}`;
-    }, [orders, isHourly]);
+    const type = isCompanyGroup ? 'Driver' : 'Order'
 
     return (
         <Accordion
@@ -72,30 +63,18 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                         <Box className={classes.customerName}>{customerName}</Box>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                             <Box className={classes.customerMeta}>#{accountNumber}.</Box>
-                            <Box className={classes.customerMeta}>{dateRangeLabel}</Box>
-                            {/* <Chip className={classes.orderCountChip} label={dateRangeLabel} /> */}
+                            <Box className={classes.customerMeta}>
+                                {orders.length} {type}{orders.length !== 1 ? 's' : ''}
+                            </Box>
                         </Box>
                     </Box>
-                    {isHourly &&
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                            <Box component="span" role="button" tabIndex={0} className={cx(classes.historyButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 2)}>
-                                <History sx={{ fontSize: 15 }} />
-                                Driver History
-                            </Box>
-
-                            <Box component="span" role="button" tabIndex={0} className={cx(classes.detailsButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 1)}>
-                                <RouteRounded sx={{ fontSize: 15 }} />
-                                Show Trip Details
-                            </Box>
-                        </Box>
-                    }
                 </Box>
             </AccordionSummary>
 
             <AccordionDetails className={classes.accordionDetails}>
                 {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
                     isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
-                        : isHourly ? <OrderCard days={orders} driverDetails={driverDetails} /> :
+                        : isCompanyGroup ? <OrderCard days={orders} driverDetails={driverDetails} /> :
                             orders.map((order) => (
                                 <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
                             ))

@@ -1,9 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Grid, Typography, TextField, InputAdornment, Chip, Box, Collapse, Button, CircularProgress } from '@mui/material';
-import { CheckCircleRounded, KeyboardArrowRightRounded } from '@mui/icons-material';
+import { Box, Typography, TextField, InputAdornment, Grid, Collapse, Button, CircularProgress, } from '@mui/material';
+import { History, RouteRounded, CheckCircleRounded, KeyboardArrowRightRounded, } from '@mui/icons-material';
 import moment from 'moment';
-import useStyles from './DriverHourly.styles';
-import { useBillingMutation } from '../../hooks/useBillings';
+import useStyles from './Hourly.styles';
+import { useBillingMutation } from '../../../hooks/useBillings';
+
+
+const initials = (name) => name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) ?? '??';
+
+const AVATAR_COLORS = ['#DD9100', '#7c3aed', '#0891b2', '#059669', '#d97706', '#2c3e50'];
+const avatarColor = (seed) => {
+    const idx = seed ? seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length : 0;
+    return AVATAR_COLORS[idx];
+};
 
 const durationToSeconds = (value) => {
     if (!value) return 0;
@@ -20,12 +29,6 @@ const formatSeconds = (totalSeconds) => {
     const m = String(Math.floor((abs % 3600) / 60)).padStart(2, '0');
     const s = String(abs % 60).padStart(2, '0');
     return `${sign}${h}:${m}:${s}`;
-};
-
-const formatTimeSec = (value) => {
-    if (!value) return '—';
-    const parsed = moment(value, ['YYYY-MM-DD HH:mm:ss', 'HH:mm:ss', moment.ISO_8601], true);
-    return parsed.isValid() ? parsed.format('HH:mm:ss') : value;
 };
 
 const formatDurationShort = (value) => {
@@ -55,22 +58,21 @@ const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
         <Typography className={cx(classes.statLabel, highlight && classes.statLabelHighlight)}>
             {label}
         </Typography>
-        <Typography className={cx(classes.statValue, label === 'Difference' ? isDeficit ? classes.statValueError : classes.statValueSuccess : null)}>
+        <Typography className={cx(classes.statValue, label === 'Difference' ? (isDeficit ? classes.statValueError : classes.statValueSuccess) : null)}>
             {value}
         </Typography>
     </Box>
-)
+);
 
-export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
 
-    const { classes, cx } = useStyles();
-    const { approvedDriverPayHourly } = useBillingMutation()
+function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
+
+    const { approvedDriverPayHourly } = useBillingMutation();
     const [adjustments, setAdjustments] = useState({});
     const [kmAdjustments, setKmAdjustments] = useState(days.reduce((acc, d) => {
-        acc[d.date] = d.km_driven || 0
-        return acc
-    }, {}))
-
+        acc[d.date] = d.km_driven || 0;
+        return acc;
+    }, {}));
     const [notes, setNotes] = useState({});
     const [expandedDates, setExpandedDates] = useState(() => new Set());
 
@@ -90,20 +92,9 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
         setKmAdjustments((prev) => ({ ...prev, [date]: value }));
     }, []);
 
-    const dateRangeLabel = useMemo(() => {
-        if (!days.length) return '—';
-        const sorted = [...days].sort((a, b) => moment(a.date).diff(moment(b.date)));
-        const from = moment(sorted[0].date).format('MMM D');
-        const to = moment(sorted[sorted.length - 1].date).format('MMM D, YYYY');
-        return `${days.length} days · ${from} – ${to}`;
-    }, [days]);
-
-
     const totals = useMemo(() => {
-
         const tripSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.trip_hours), 0);
         const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0);
-        const kmsDriven = days.reduce((sum, d) => sum + (d.km_driven || 0), 0);
         const differenceSeconds = clockedSeconds - tripSeconds;
 
         const adjustmentSeconds = days.reduce((sum, day) => {
@@ -114,36 +105,37 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                 cs = cs * (1 + (Number(fuel) / 100));
             }
             sum += cs;
-            return sum
+            return sum;
         }, 0);
-
 
         const adjustedClockedSeconds = clockedSeconds + Object.values(adjustments).reduce((sum, v) => sum + ((Number(v) || 0) * 3600), 0);
         const adjustedKmsDriven = Object.values(kmAdjustments).reduce((sum, v) => sum + (Number(v) || 0), 0);
         const estPay = (adjustmentSeconds / 3600) * (driverDetails?.hourly_rate || 0);
 
         const adjustmentKms = Object.entries(kmAdjustments).reduce((sum, [k, v]) => {
-            const mileage = Number(driverDetails?.mileage_allotment || 0)
+            const mileage = Number(driverDetails?.mileage_allotment || 0);
             if (Number(v) > mileage) {
-                let kp = Number(v) - mileage
+                let kp = Number(v) - mileage;
                 if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
-                    const fuel = days.find(d => d.date === k)?.fuel_surcharge || 0
-                    kp = kp * (1 + (Number(fuel) / 100))
+                    const fuel = days.find((d) => d.date === k)?.fuel_surcharge || 0;
+                    kp = kp * (1 + (Number(fuel) / 100));
                 }
-                sum = kp + sum
+                sum = kp + sum;
             }
-            return sum
-        }, 0)
+            return sum;
+        }, 0);
+
         const estPayKm = adjustmentKms * (driverDetails?.rate_per_km || 0);
-        const estTotals = (estPay || 0) + (estPayKm || 0)
+        const estTotals = (estPay || 0) + (estPayKm || 0);
         const adjustmentsOnly = Object.values(adjustments).reduce((sum, v) => sum + (Number(v) || 0) * 3600, 0);
+
         return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentsOnly, adjustedClockedSeconds, adjustedKmsDriven, estPay, estPayKm, estTotals };
     }, [days, adjustments, driverDetails, kmAdjustments]);
 
     const isDeficit = totals.differenceSeconds > 0;
 
     const handleApproved = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
         const daysPayload = days.map((day) => {
             const adjustmentHours = Number(adjustments[day.date]) || 0;
             const adjustedKm = Number(kmAdjustments[day.date]) || 0;
@@ -179,16 +171,15 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                 total_km_pay: Number(totals.estPayKm.toFixed(2)),
                 total_pay: Number(totals.estTotals.toFixed(2)),
                 adjusted_clocked_total: Number(totals.adjustedClockedSeconds),
-                adjusted_distance_total: Number(totals.adjustedKmsDriven || 0)
-            }
+                adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
+            },
         };
         console.log('Approve payload:', payload);
-        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload })
-
-    }
+        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload });
+    };
 
     return (
-        <Grid container className={classes.root} direction="column" wrap="nowrap">
+        <Grid container className={classes.hourlyRoot} direction="column" wrap="nowrap">
             <Grid size={12} className={classes.statsRow}>
                 <StatTile classes={classes} cx={cx} label="Clocked Hours" value={formatSeconds(totals.clockedSeconds)} />
                 <StatTile classes={classes} cx={cx} label="Trip Hours" value={formatSeconds(totals.tripSeconds)} />
@@ -198,8 +189,9 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                 <StatTile classes={classes} cx={cx} label="Adjusted Distance" value={(totals.adjustedKmsDriven || 0).toFixed(2)} />
                 <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.hourly_rate || 0}/H`} value={`${totals.estPay.toFixed(2)}`} />
                 <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(2)}`} />
-                <StatTile classes={classes} cx={cx} label={`Total Pay`} value={`$${totals?.estTotals.toFixed(2)}`} highlight />
+                <StatTile classes={classes} cx={cx} label="Total Pay" value={`$${totals?.estTotals.toFixed(2)}`} highlight />
             </Grid>
+
             <Grid size={12} className={classes.tableHeaderRow}>
                 <Grid container sx={{ width: '100%' }} alignItems="center">
                     <Grid size={3.2}><Typography className={classes.tableHeaderCell}>Date & Route</Typography></Grid>
@@ -211,8 +203,8 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                     <Grid size={1.3}><Typography className={classes.tableHeaderCell}>Distance</Typography></Grid>
                 </Grid>
             </Grid>
-            {days.map((day) => {
 
+            {days.map((day) => {
                 const severity = getSeverity(day.difference);
                 const isOpen = expandedDates.has(day.date);
                 const puSeconds = durationToSeconds(day.pu_diff);
@@ -266,7 +258,7 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                 </Grid>
                             </Grid>
                         </Grid>
-                        <Collapse in={isOpen} timeout={'auto'}>
+                        <Collapse in={isOpen} timeout="auto">
                             <Grid size={12} className={classes.timelineWrap}>
                                 <div className={classes.timelineBar}>
                                     {puSeconds > 0 && (
@@ -279,7 +271,7 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                 </div>
                                 <div className={classes.timelineLabels}>
                                     <div style={{ flex: '0 0 auto', textAlign: 'left' }}>
-                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_in).format('HH:mm')}</Typography>
+                                        <Typography className={classes.tickTime}>{day.clock_in ? moment.utc(day.clock_in).format('HH:mm') : '-'}</Typography>
                                         <Typography className={classes.tickCaption}>Clock in</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline' }}>
                                             <Typography className={classes.tickTime}>{day.km_in} KM</Typography>
@@ -308,7 +300,7 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                                     )}
 
                                     <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
-                                        <Typography className={classes.tickTime}>{moment.utc(day.clock_out).format('HH:mm')}</Typography>
+                                        <Typography className={classes.tickTime}>{day.clock_out ? moment.utc(day.clock_out).format('HH:mm') : '-'}</Typography>
                                         <Typography className={classes.tickCaption}>Clock out</Typography>
                                         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end' }}>
                                             <Typography className={classes.tickTime}>{day.km_out} KM</Typography>
@@ -333,14 +325,15 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                     </React.Fragment>
                 );
             })}
+
             <Grid size={12} p={2}>
-                <Grid container justifyContent={'flex-end'}>
-                    <Grid size='auto'>
+                <Grid container justifyContent="flex-end">
+                    <Grid size="auto">
                         <Button
                             variant="contained"
                             color="success"
                             disabled={approvedDriverPayHourly.isPending}
-                            startIcon={approvedDriverPayHourly.isPending ? <CircularProgress size='18px' /> : <CheckCircleRounded />}
+                            startIcon={approvedDriverPayHourly.isPending ? <CircularProgress size="18px" /> : <CheckCircleRounded />}
                             onClick={handleApproved}
                             sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 3, py: 1, boxShadow: 2, '&:hover': { boxShadow: 4 } }}
                         >
@@ -350,5 +343,51 @@ export default function DriverHourlyCard({ days = [], driverDetails = {} }) {
                 </Grid>
             </Grid>
         </Grid>
+    );
+}
+
+export default function DriverBillingCard({ driverId, driverName, driverNumber, days = [], driverDetails = {}, driverRef, openModal }) {
+
+    const { classes, cx } = useStyles();
+
+    const handleDetails = (e, target) => {
+        e.stopPropagation();
+        driverRef.current = driverId
+        openModal(target)
+    };
+
+    return (
+        <Box className={classes.root}>
+            <Box className={classes.header}>
+                <Box className={classes.driverInfo}>
+                    <Box className={classes.avatar} sx={{ bgcolor: avatarColor(driverName) }}>
+                        {initials(driverName)}
+                    </Box>
+                    <Box className={classes.identity}>
+                        <Typography className={classes.name}>{driverName}</Typography>
+                        <Box className={classes.metaRow}>
+                            <Typography className={classes.meta}>#{driverNumber}</Typography>
+                            <Box className={classes.dot} />
+                            <Box className={classes.customerMeta}>
+                                {days.length} day{days.length !== 1 ? 's' : ''}
+                            </Box>
+                        </Box>
+                    </Box>
+                </Box>
+                <Box className={classes.actions}>
+                    <Box component="span" role="button" tabIndex={0} className={cx(classes.historyButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 2)}>
+                        <History sx={{ fontSize: 15 }} />
+                        Driver History
+                    </Box>
+                    <Box component="span" role="button" tabIndex={0} className={cx(classes.detailsButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 1)}>
+                        <RouteRounded sx={{ fontSize: 15 }} />
+                        Show Trip Details
+                    </Box>
+                </Box>
+            </Box>
+            <Box className={classes.body}>
+                <HourlyPaySection classes={classes} cx={cx} days={days} driverDetails={driverDetails} />
+            </Box>
+        </Box>
     );
 }

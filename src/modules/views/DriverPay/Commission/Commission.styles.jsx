@@ -220,12 +220,88 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             whiteSpace: 'nowrap',
             flexShrink: 0,
         },
-        
+
         statValueError: {
             color: `${theme.palette.error.main} !important`,
         },
         statValueSuccess: {
             color: `${theme.palette.success.main} !important`,
+        },
+        root: {
+            borderRadius: 14,
+            border: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.08) : alpha(secondary, 0.1),
+            background: isDark ? alpha('#fff', 0.015) : theme.palette.grey[50],
+            overflow: 'hidden',
+        },
+        header: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1.5),
+            padding: theme.spacing(1.5, 2.5),
+            borderBottom: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.06) : alpha(secondary, 0.08),
+            background: theme.palette.background.paper,
+        },
+        avatar: {
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
+            fontSize: 12.5,
+            fontWeight: 800,
+            flexShrink: 0,
+        },
+        identity: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+        },
+        name: {
+            fontSize: 14,
+            fontWeight: 800,
+            color: isDark ? '#fff' : '#0f172a',
+            lineHeight: 1.2,
+        },
+        metaRow: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+        },
+        meta: {
+            fontSize: 11.5,
+            fontWeight: 600,
+            color: theme.palette.text.secondary,
+        },
+        dot: {
+            width: 3,
+            height: 3,
+            borderRadius: '50%',
+            background: theme.palette.text.disabled,
+        },
+        body: {
+            padding: theme.spacing(1.5),
+        },
+        extraChargesWrap: {
+            marginBottom: theme.spacing(2),
+            padding: theme.spacing(1.5),
+            borderRadius: 10,
+            background: isDark ? alpha('#fff', 0.02) : theme.palette.grey[50],
+            border: '1px dashed',
+            borderColor: isDark ? alpha('#fff', 0.1) : alpha(secondary, 0.15),
+        },
+        extraChargeRow: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: theme.spacing(0.75, 1.25),
+            borderRadius: 8,
+            background: theme.palette.background.paper,
+            border: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.06) : alpha(secondary, 0.08),
         },
     };
 });
