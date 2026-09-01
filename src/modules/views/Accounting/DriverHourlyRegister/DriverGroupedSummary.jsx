@@ -76,19 +76,11 @@ const DriverGroupedSummary = React.memo(({ driver, days = [] }) => {
                     <StatTile classes={classes} cx={cx} label="Adjusted Distance" value={`${Number(driver?.adjusted_distance_total || 0).toFixed(2)} km`} />
                     <StatTile classes={classes} cx={cx} label="Hourly Pay" value={money(driver?.total_hourly_pay)} />
                     <StatTile classes={classes} cx={cx} label="KM Pay" value={money(driver?.total_km_pay)} />
+                    <StatTile classes={classes} cx={cx} label="TOTAL PAY" value={money(driver?.total_pay)} highlight />
 
                     <Box className={classes.divider} />
 
                     <Box className={classes.runningTotalGroup} onClick={(e) => e.stopPropagation()}>
-                        <Typography className={classes.runningTotalLabel}>Total pay</Typography>
-                        <Typography className={classes.runningTotalSign}>$</Typography>
-                        <TextField
-                            size="small"
-                            type="number"
-                            className={classes.runningTotalInput}
-                            value={totalPay}
-                            onChange={handleTotalPayChange}
-                        />
                         <Button
                             variant="contained"
                             className={classes.generatePdfButton}

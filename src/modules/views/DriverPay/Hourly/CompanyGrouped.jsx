@@ -6,14 +6,16 @@ import ExtraChargeForm from './ExtraChargeForm';
 import useStyles from './Hourly.styles';
 import DriverHourlyCard from './DriverHourlyCard'
 import DriverTripDetailsTable from './DriverHourlyDetails';
+import { useBillingMutation } from '../../../hooks/useBillings';
 
-const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers = [], appliedFilters = {} }, ref) => {
+const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers = [], appliedFilters = {}, extraCharges = [] }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [extraCharges, setExtraCharges] = useState([]);
     const driverRef = React.useRef()
+    const extraChargeRef = React.useRef()
+    const { addExtraCharge, updateExtraCharge, deleteExtraCharge } = useBillingMutation()
 
     useImperativeHandle(ref, () => ({
         expand: () => setExpanded(true),
@@ -22,18 +24,15 @@ const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers 
 
     const handleChange = useCallback(() => setExpanded((prev) => !prev), []);
 
-    const handleOpenDrawer = useCallback((e) => {
+    const handleOpenDrawer = useCallback((e, nb) => {
         e.stopPropagation();
-        setDrawerOpen(3);
+        setDrawerOpen(nb);
     }, []);
 
-    const handleSaveCharges = useCallback((item) => {
-        setExtraCharges((prev) => ([item, ...prev]));
-    }, []);
-
-    const handleRemoveCharge = useCallback((id) => {
-        setExtraCharges((prev) => prev.filter((it) => it.id !== id));
-    }, []);
+    const handleRemoveCharge = async (e, id) => {
+        e.preventDefault()
+        await deleteExtraCharge.mutateAsync({ id, cid: companyId })
+    }
 
     const totalExtra = extraCharges.reduce((sum, it) => sum + (Number(it.price) || 0), 0);
 
@@ -51,7 +50,7 @@ const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers 
                     <Box
                         component="span" role="button" tabIndex={0}
                         className={cx(classes.extraButton, classes.btnAccordion)}
-                        onClick={handleOpenDrawer}
+                        onClick={(e) => handleOpenDrawer(e, 3)}
                     >
                         <AddCardRounded sx={{ fontSize: 15 }} />
                         Add Extra Charge
@@ -86,13 +85,13 @@ const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers 
                                         ${Number(item.price).toFixed(2)}
                                     </Typography>
                                     <Box className={classes.extraChargeActions}>
-                                        <IconButton size="small" className={classes.extraChargeActionBtn} onClick={handleOpenDrawer}>
+                                        <IconButton size="small" className={classes.extraChargeActionBtn} onClick={(e) => { extraChargeRef.current = item; handleOpenDrawer(e, 4) }}>
                                             <EditRounded sx={{ fontSize: 18 }} />
                                         </IconButton>
                                         <IconButton
                                             size="small"
                                             className={cx(classes.extraChargeActionBtn, classes.extraChargeDeleteBtn)}
-                                            onClick={() => handleRemoveCharge(item.id)}
+                                            onClick={async (e) => handleRemoveCharge(e, item.id)}
                                         >
                                             <DeleteOutlineRounded sx={{ fontSize: 18 }} />
                                         </IconButton>
@@ -118,17 +117,32 @@ const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers 
                                 rate_per_km: driver.rate_per_km,
                                 mileage_allotment: driver.mileage_allotment,
                                 fuel_surcharge_type: driver.fuel_surcharge_type,
+                                company_id: companyId
                             }}
                         />
                     ))}
                 </Box>
             </AccordionDetails>
             {drawerOpen === 3 &&
-                <DrawerForm title={`Extra Charges — ${companyName}`} open={drawerOpen === 3} setOpen={setDrawerOpen}>
+                <DrawerForm title={`Add Extra Charges — ${companyName}`} open={drawerOpen === 3} setOpen={setDrawerOpen}>
                     <ExtraChargeForm
                         companyId={companyId}
-                        initialItems={extraCharges}
-                        onSave={handleSaveCharges}
+                        initialValues={{}}
+                        onSave={async (dt) => await addExtraCharge.mutateAsync(dt)}
+                        onClose={() => setDrawerOpen(false)}
+                    />
+                </DrawerForm>
+            }
+
+            {drawerOpen === 4 &&
+                <DrawerForm title={`Edit Extra Charges — ${companyName}`} open={drawerOpen === 4} setOpen={setDrawerOpen}>
+                    <ExtraChargeForm
+                        companyId={companyId}
+                        initialValues={extraChargeRef.current}
+                        onSave={async (dt) => {
+                            await updateExtraCharge.mutateAsync({ id: extraChargeRef.current.id, payload: dt })
+                            extraChargeRef.current = null
+                        }}
                         onClose={() => setDrawerOpen(false)}
                     />
                 </DrawerForm>

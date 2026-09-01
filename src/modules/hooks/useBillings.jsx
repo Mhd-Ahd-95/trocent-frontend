@@ -162,6 +162,8 @@ export function useBillingMutation() {
                 })
                 queryClient.invalidateQueries({ queryKey: ['order', Number(payload.order_id)], exact: true })
                 queryClient.invalidateQueries({ queryKey: ['invoicing'] })
+                queryClient.invalidateQueries({ queryKey: ['commissionDrivers'] })
+                queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
                 queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
         },
@@ -224,6 +226,10 @@ export function useBillingMutation() {
                         }, [])
                     }
                 })
+                queryClient.invalidateQueries({ queryKey: ['order'] })
+                queryClient.invalidateQueries({ queryKey: ['commissionDrivers'] })
+                queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
             }
         },
         onError: handleError
@@ -234,21 +240,90 @@ export function useBillingMutation() {
             const res = await DriverPaysApi.approvedDriverPayHourly(did, payload)
             return res.data
         },
-        onSuccess: (res, { did }) => {
-            if (res) {
-                queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old = []) => {
-                    if (!old?.data) return
-                    return {
-                        ...old,
-                        data: old.data.filter(o => Number(o.driver_id) !== Number(did))
-                    }
-                })
-                queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
-                queryClient.invalidateQueries({ queryKey: ['approvedDriverHourlyTotals'] })
+        onSuccess: (res, { did, cid }) => {
+            if (!res) return
+
+            queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
+                if (!old?.data) return old
+                return {
+                    ...old,
+                    data: old.data.map(company => Number(company.company_id) === Number(cid) ? { ...company, drivers: company.drivers.filter(driver => Number(driver.driver_id) !== Number(did)) } : company)
+                        .filter(company => company.drivers.length > 0)
+                }
             }
+            )
+            queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
+            queryClient.invalidateQueries({ queryKey: ['approvedDriverHourlyTotals'] })
         },
         onError: handleError
     })
 
-    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus, approvedDriverPayHourly }
+    const saveDriverPayDailyAdjustment = useMutation({
+        mutationFn: async ({ did, payload }) => {
+            const res = await DriverPaysApi.saveDriverPayDailyAdjustment(did, payload)
+            return res.data
+        },
+        onSuccess: (res, { did }) => {
+            queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
+        },
+        onError: handleError
+    })
+
+    const addExtraCharge = useMutation({
+        mutationFn: async (dt) => {
+            const res = await DriverPaysApi.addExtraCharge(dt)
+            return res.data
+        },
+        onSuccess: (res) => {
+            queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
+                if (!old?.data) return
+                return {
+                    ...old,
+                    data: old.data.map(o => Number(o.company_id) === Number(res.company_id) ? { ...o, extra_charges: [res, ...o.extra_charges] } : o)
+                }
+            })
+            enqueueSnackbar('Extra Charge added successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const updateExtraCharge = useMutation({
+        mutationFn: async ({ id, payload }) => {
+            const res = await DriverPaysApi.updateExtraCharge(id, payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
+                if (!old?.data) return
+                return {
+                    ...old,
+                    data: old.data.map(o => Number(o.company_id) === Number(res.company_id) ? { ...o, extra_charges: o.extra_charges.map(ex => Number(ex.id) === Number(res.id) ? res : ex) } : o)
+                }
+            })
+            enqueueSnackbar('Extra Charge updated successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const deleteExtraCharge = useMutation({
+        mutationFn: async ({ id, cid }) => {
+            const res = await DriverPaysApi.deleteExtraCharge(id)
+            return res.data
+        },
+        onSuccess: (res, { id, cid }) => {
+            if (res) {
+                queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(o => Number(o.company_id) === Number(cid) ? { ...o, extra_charges: o.extra_charges.filter(ex => Number(ex.id) !== Number(id)) } : o)
+                    }
+                })
+            }
+            enqueueSnackbar('Extra Charge deleted successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus, approvedDriverPayHourly, addExtraCharge, deleteExtraCharge, updateExtraCharge, saveDriverPayDailyAdjustment }
 }

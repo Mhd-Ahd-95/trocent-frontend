@@ -1,11 +1,10 @@
 import React, { useTransition } from 'react'
 import { Box, Button, CircularProgress, Grid, MenuItem, Pagination, Select } from '@mui/material'
 import { MainLayout } from '../../../layouts'
-import { FilterPayDriverCommission, SideMenu, DrawerForm, DriverClockHistory } from '../../../components'
+import { FilterPayDriverCommission, SideMenu } from '../../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
 import useStyles from './Hourly.styles'
 import { useHourlyDrivers } from '../../../hooks/useBillings'
-import DriverTripDetailsTable from './DriverHourlyDetails'
 import { useSnackbar } from 'notistack'
 import CompanyGrouped from './CompanyGrouped'
 
@@ -16,15 +15,14 @@ export default function DriverPayHourly() {
     const { classes } = useStyles()
     const groupApis = React.useRef(new Map());
     const refCallbackCache = React.useRef(new Map())
-    const orderRef = React.useRef()
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = React.useState(1);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
-    const [openModal, setOpenModal] = React.useState(false)
     const { enqueueSnackbar } = useSnackbar()
 
     const { data: driverPays, isLoading, isFetching, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
+    console.log(driverPays);
     const data = driverPays?.data || []
     const pageCount = Math.max(1, Math.ceil((driverPays?.meta?.total || 0) / rowsPerPage));
 
@@ -115,6 +113,7 @@ export default function DriverPayHourly() {
                                             companyName={company.operating_name || company.legal_name || 'Unassigned Company'}
                                             legalName={company.legal_name}
                                             drivers={company.drivers}
+                                            extraCharges={company.extra_charges || []}
                                             appliedFilters={appliedFilters}
                                         />
                                     ))}

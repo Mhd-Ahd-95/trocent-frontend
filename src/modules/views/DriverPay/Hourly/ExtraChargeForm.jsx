@@ -3,14 +3,12 @@ import { Box, Typography, TextField, InputAdornment, Grid } from '@mui/material'
 import { StyledButton, SubmitButton } from '../../../components';
 
 
-export default function ExtraChargeForm({ companyId, initialItems = [], onSave, onClose }) {
+export default function ExtraChargeForm({ companyId, initialValues = {}, onSave, onClose }) {
 
-    const initial = initialItems[0] || { note: '', price: '' };
-    const [note, setNote] = useState(initial.note ?? '');
-    const [price, setPrice] = useState(initial.price !== undefined && initial.price !== null ? String(initial.price) : '');
+    const [item, setItem] = useState({ note: '', price: '', ...initialValues });
     const [submitted, setSubmitted] = useState(false);
 
-    const isValid = note.trim().length > 0 && price !== '' && !Number.isNaN(Number(price));
+    const isValid = item.note.trim().length > 0 && item.price !== '' && !Number.isNaN(Number(item.price));
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,11 +17,10 @@ export default function ExtraChargeForm({ companyId, initialItems = [], onSave, 
         try {
             const payload = {
                 company_id: companyId,
-                note: note.trim(),
-                price: Number(Number(price).toFixed(2)),
+                note: item.note.trim(),
+                price: Number(Number(item.price).toFixed(2)),
             };
-            console.log('Extra charge payload:', payload);
-            onSave?.(payload);
+            await onSave?.(payload);
         } finally {
             setSubmitted(false);
             onClose?.();
@@ -31,8 +28,7 @@ export default function ExtraChargeForm({ companyId, initialItems = [], onSave, 
     };
 
     const handleReset = () => {
-        setNote(initial.note ?? '');
-        setPrice(initial.price !== undefined && initial.price !== null ? String(initial.price) : '');
+        setItem({ note: '', price: '', ...initialValues });
     };
 
     return (
@@ -45,8 +41,8 @@ export default function ExtraChargeForm({ companyId, initialItems = [], onSave, 
                                 fullWidth
                                 label='Item'
                                 required
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
+                                value={item.note || ''}
+                                onChange={(e) => setItem((prev) => ({ ...prev, note: e.target.value }))}
                                 InputProps={{
                                     sx: { borderRadius: '10px', fontSize: 13, bgcolor: 'grey.50' },
                                 }}
@@ -58,8 +54,8 @@ export default function ExtraChargeForm({ companyId, initialItems = [], onSave, 
                                 type="number"
                                 required
                                 label='Price'
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
+                                value={item.price || ''}
+                                onChange={(e) => setItem((prev) => ({ ...prev, price: Number(e.target.value) }))}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start">$</InputAdornment>,
                                     sx: { borderRadius: '10px', fontSize: 13, bgcolor: 'grey.50' },

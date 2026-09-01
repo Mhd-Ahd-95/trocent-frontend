@@ -66,15 +66,30 @@ const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
 
 
 function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
+    const { approvedDriverPayHourly, saveDriverPayDailyAdjustment } = useBillingMutation();
 
-    const { approvedDriverPayHourly } = useBillingMutation();
-    const [adjustments, setAdjustments] = useState({});
-    const [kmAdjustments, setKmAdjustments] = useState(days.reduce((acc, d) => {
-        acc[d.date] = d.km_driven || 0;
+    const [adjustments, setAdjustments] = useState(() => days.reduce((acc, d) => {
+        if (d.saved_hour_adjustment !== null && d.saved_hour_adjustment !== undefined) {
+            acc[d.date] = d.saved_hour_adjustment;
+        }
         return acc;
     }, {}));
-    const [notes, setNotes] = useState({});
+
+    const [kmAdjustments, setKmAdjustments] = useState(() => days.reduce((acc, d) => {
+        acc[d.date] = (d.saved_km_adjustment !== null && d.saved_km_adjustment !== undefined)
+            ? d.saved_km_adjustment
+            : (d.km_driven || 0);
+        return acc;
+    }, {}));
+
+    const [notes, setNotes] = useState(() => days.reduce((acc, d) => {
+        if (d.saved_note) acc[d.date] = d.saved_note;
+        return acc;
+    }, {}));
+
     const [expandedDates, setExpandedDates] = useState(() => new Set());
+    const [savingDates, setSavingDates] = useState(() => new Set());
+    const lastSavedRef = React.useRef({});
 
     const toggleExpanded = useCallback((date) => {
         setExpandedDates((prev) => {
@@ -174,9 +189,68 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
             },
         };
-        console.log('Approve payload:', payload);
-        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload });
+        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload, cid: driverDetails.company_id });
     };
+
+    const buildDayPayload = useCallback((day) => {
+        const adjustmentHours = Number(adjustments[day.date]) || 0;
+        const adjustedKm = Number(kmAdjustments[day.date]) || 0;
+        let adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
+        if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
+            adjustedClockedSeconds *= (1 + (Number(day.fuel_surcharge || 0) / 100));
+        }
+        const dayHourlyPay = (adjustedClockedSeconds / 3600) * (driverDetails?.hourly_rate || 0);
+        const mileage = Number(driverDetails?.mileage_allotment || 0);
+        let dayKmPay = 0;
+        if (adjustedKm > mileage) {
+            let payableKm = adjustedKm - mileage;
+            if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
+                payableKm *= (1 + (Number(day.fuel_surcharge || 0) / 100));
+            }
+            dayKmPay = payableKm * (driverDetails?.rate_per_km || 0);
+        }
+        return {
+            date: day.date,
+            driver_pay_ids: day.driver_pay_ids || [],
+            adjustment_hours: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
+            adjustment_km: adjustedKm,
+            day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
+            day_km_pay: Number(dayKmPay.toFixed(2)),
+            day_total_pay: Number((dayHourlyPay + dayKmPay).toFixed(2)),
+            note: notes[day.date] || null,
+        };
+    }, [adjustments, kmAdjustments, notes, driverDetails]);
+
+    const persistDay = useCallback(async (e, day) => {
+        e.preventDefault()
+        const dayPayload = buildDayPayload(day);
+        const signature = JSON.stringify(dayPayload);
+
+        if (lastSavedRef.current[day.date] === signature) return;
+
+        setSavingDates((prev) => new Set(prev).add(day.date));
+        try {
+            await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, });
+            lastSavedRef.current[day.date] = signature;
+        } finally {
+            setSavingDates((prev) => {
+                const next = new Set(prev);
+                next.delete(day.date);
+                return next;
+            });
+        }
+    }, [buildDayPayload, saveDriverPayDailyAdjustment, driverDetails.driver_id]);
+
+    const initializedRef = React.useRef(false);
+    React.useEffect(() => {
+        if (initializedRef.current) return;
+        initializedRef.current = true;
+        days.forEach((day) => {
+            if (day.saved_hour_adjustment !== null && day.saved_hour_adjustment !== undefined) {
+                lastSavedRef.current[day.date] = JSON.stringify(buildDayPayload(day));
+            }
+        });
+    }, []);
 
     return (
         <Grid container className={classes.hourlyRoot} direction="column" wrap="nowrap">
@@ -220,7 +294,10 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                                     <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                                         <KeyboardArrowRightRounded className={cx(classes.expandIcon, isOpen && classes.expandIconOpen)} />
                                         <div>
-                                            <Typography className={classes.dateText}>{moment(day.date).format('ddd, MMM D')}</Typography>
+                                            <Typography className={classes.dateText}>
+                                                {moment(day.date).format('ddd, MMM D')}
+                                                {savingDates.has(day.date) && (<CircularProgress size={10} sx={{ ml: 1, verticalAlign: 'middle' }} />)}
+                                            </Typography>
                                             <Typography className={classes.routeText}>{day.shipper_city || '—'} → {day.consignee_city || '—'}</Typography>
                                         </div>
                                     </div>
@@ -241,6 +318,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                                         className={classes.adjustField}
                                         value={adjustments[day.date] ?? ''}
                                         onChange={(e) => handleAdjustmentChange(day.date, e.target.value)}
+                                        onBlur={(e) => persistDay(e, day)}
                                         placeholder="0"
                                         slotProps={{ input: { endAdornment: <InputAdornment position="end">hr</InputAdornment> } }}
                                     />
@@ -252,6 +330,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                                         className={classes.adjustField}
                                         value={kmAdjustments[day.date] ?? ''}
                                         onChange={(e) => handleKmAdjustmentChange(day.date, e.target.value)}
+                                        onBlur={(e) => persistDay(e, day)}
                                         placeholder="0"
                                         slotProps={{ input: { endAdornment: <InputAdornment position="end">km</InputAdornment> } }}
                                     />
@@ -317,6 +396,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                                             placeholder="Add a note for this day's adjustment (e.g. traffic delay, warehouse wait)..."
                                             value={notes[day.date] ?? ''}
                                             onChange={(e) => setNotes((prev) => ({ ...prev, [day.date]: e.target.value }))}
+                                            onBlur={(e) => persistDay(e, day)}
                                         />
                                     </Grid>
                                 </Grid>
