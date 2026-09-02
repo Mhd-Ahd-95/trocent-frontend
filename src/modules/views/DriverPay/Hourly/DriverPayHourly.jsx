@@ -22,7 +22,6 @@ export default function DriverPayHourly() {
     const { enqueueSnackbar } = useSnackbar()
 
     const { data: driverPays, isLoading, isFetching, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
-    console.log(driverPays);
     const data = driverPays?.data || []
     const pageCount = Math.max(1, Math.ceil((driverPays?.meta?.total || 0) / rowsPerPage));
 

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import BillingsApi from "../apis/Billings.api";
 import { useSnackbar } from "notistack";
 import DriverPaysApi from "../apis/DriverPays.api";
+import moment from "moment";
 
 
 export function useBillings(filters = {}, page = 1, pageSize = 10) {
@@ -263,7 +264,36 @@ export function useBillingMutation() {
             const res = await DriverPaysApi.saveDriverPayDailyAdjustment(did, payload)
             return res.data
         },
-        onSuccess: (res, { did }) => {
+        onSuccess: (res, { did, cid }) => {
+            const { note, adjustment_hours, total_km } = res
+            queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
+                if (!old?.data) return
+                return {
+                    ...old,
+                    data: old.data.map(o => {
+                        if (Number(o.company_id) === Number(cid)) {
+                            return {
+                                ...o,
+                                drivers: o.drivers.map(d => {
+                                    if (Number(d.driver_id) === Number(did)) {
+                                        return {
+                                            ...d,
+                                            days: d.days.map(dy => {
+                                                if (dy.date === res.date) {
+                                                    return { ...dy, note, hour_adjustment: Math.round((Number(adjustment_hours) / 3600) * 100) / 100, km_adjustment: total_km }
+                                                }
+                                                return dy
+                                            })
+                                        }
+                                    }
+                                    return d
+                                })
+                            }
+                        }
+                        return o
+                    })
+                }
+            })
             queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
         },
         onError: handleError
@@ -293,13 +323,38 @@ export function useBillingMutation() {
             return res.data
         },
         onSuccess: (res) => {
-            queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
-                if (!old?.data) return
-                return {
-                    ...old,
-                    data: old.data.map(o => Number(o.company_id) === Number(res.company_id) ? { ...o, extra_charges: o.extra_charges.map(ex => Number(ex.id) === Number(res.id) ? res : ex) } : o)
-                }
-            })
+            const cachedHourlyDrivers = queryClient.getQueriesData({ queryKey: ['hourlyDrivers'] })
+            const cachedHourlyDriversRegister = queryClient.getQueriesData({ queryKey: ['approvedDriverHourlyTotals'] })
+            if (cachedHourlyDrivers) {
+                queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(o => Number(o.company_id) === Number(res.company_id) ? { ...o, extra_charges: o.extra_charges.map(ex => Number(ex.id) === Number(res.id) ? res : ex) } : o)
+                    }
+                })
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
+            }
+            if (cachedHourlyDriversRegister) {
+                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(o => {
+                            if (Number(o.company_id) === Number(res.company_id)) {
+                                const newExtraCharges = o.extra_charges.map(ex => Number(ex.id) === Number(res.id) ? res : ex)
+                                return { ...o, extra_charges: newExtraCharges, extra_charges_pay: newExtraCharges.reduce((a, ex) => a = a + Number(ex.price), 0) }
+                            }
+                            return o
+                        })
+                    }
+                })
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
+            }
             enqueueSnackbar('Extra Charge updated successfully', { variant: 'success' })
         },
         onError: handleError

@@ -69,16 +69,15 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
     const { approvedDriverPayHourly, saveDriverPayDailyAdjustment } = useBillingMutation();
 
     const [adjustments, setAdjustments] = useState(() => days.reduce((acc, d) => {
-        if (d.saved_hour_adjustment !== null && d.saved_hour_adjustment !== undefined) {
-            acc[d.date] = d.saved_hour_adjustment;
+        if (d.hour_adjustment !== null && d.hour_adjustment !== undefined) {
+            acc[d.date] = d.hour_adjustment;
         }
         return acc;
     }, {}));
 
     const [kmAdjustments, setKmAdjustments] = useState(() => days.reduce((acc, d) => {
-        acc[d.date] = (d.saved_km_adjustment !== null && d.saved_km_adjustment !== undefined)
-            ? d.saved_km_adjustment
-            : (d.km_driven || 0);
+        acc[d.date] = (d.km_adjustment !== null && d.km_adjustment !== undefined)
+            ? d.km_adjustment : (d.km_driven || 0);
         return acc;
     }, {}));
 
@@ -171,8 +170,10 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
             return {
                 date: day.date,
                 driver_pay_ids: day.driver_pay_ids || [],
-                adjustment_hours: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
-                adjustment_km: adjustedKm,
+                total_hrs: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
+                adjustment_hours: (adjustmentHours * 3600),
+                total_km: adjustedKm,
+                adjustment_km: adjustedKm - Number(day.km_driven),
                 day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
                 day_km_pay: Number(dayKmPay.toFixed(2)),
                 day_total_pay: Number((dayHourlyPay + dayKmPay).toFixed(2)),
@@ -189,6 +190,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
             },
         };
+        console.log(payload);
         await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload, cid: driverDetails.company_id });
     };
 
@@ -212,8 +214,10 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
         return {
             date: day.date,
             driver_pay_ids: day.driver_pay_ids || [],
-            adjustment_hours: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
-            adjustment_km: adjustedKm,
+            total_hrs: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
+            adjustment_hours: (adjustmentHours * 3600),
+            total_km: adjustedKm,
+            adjustment_km: adjustedKm - Number(day.km_driven),
             day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
             day_km_pay: Number(dayKmPay.toFixed(2)),
             day_total_pay: Number((dayHourlyPay + dayKmPay).toFixed(2)),
@@ -230,7 +234,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
 
         setSavingDates((prev) => new Set(prev).add(day.date));
         try {
-            await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, });
+            await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, cid: driverDetails.company_id});
             lastSavedRef.current[day.date] = signature;
         } finally {
             setSavingDates((prev) => {
