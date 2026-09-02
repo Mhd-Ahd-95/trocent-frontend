@@ -298,7 +298,7 @@ const OrderBillingCard = React.memo(({ order, handleCharge, handleInterliner, is
                         <Box className={classes.chargesTitleRow}>
                             <BoxTitle classes={classes} tone="neutral">Charges</BoxTitle>
                             {!isDriverPay &&
-                                <IconButton className={classes.editButton} size="small" onClick={() => handleCharge(order)}>
+                                <IconButton className={classes.editButton} size="small" onClick={() => handleCharge(order, 1)}>
                                     <EditRounded style={{ fontSize: 17 }} />
                                 </IconButton>
                             }

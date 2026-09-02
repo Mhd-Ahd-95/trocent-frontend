@@ -1,13 +1,14 @@
 import React, { useTransition } from "react";
-import { Grid, Box, Select, Pagination, MenuItem, CircularProgress } from "@mui/material";
-import { SideMenu } from "../../../components";
+import { Grid, Box, Select, Pagination, MenuItem, CircularProgress, Typography } from "@mui/material";
+import { CustomerBillingGroup, DrawerForm, SideMenu } from "../../../components";
 import { MainLayout } from "../../../layouts";
 import FilterBarRegister from "../Filterbar/Filterbar";
 import { ReceiptLongRounded } from "@mui/icons-material";
-import DriverGroupedSummary from './DriverGroupedSummary'
 import useStyles from './Driver.styles'
 import { useApprovedDriverHourlyTotals } from "../../../hooks/useBillings";
 import { useSnackbar } from "notistack";
+import CompanySummary from "./CompanySummary";
+import ExtraChargesDisplay from "./ExtraChargeDisplaying";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -19,8 +20,10 @@ export default function DriverHourlyRegister() {
     const [page, setPage] = React.useState(1);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
+    const companyRef = React.useRef()
     const { data: totalDrivers, isLoading, isFetching, isError, error } = useApprovedDriverHourlyTotals(appliedFilters, page, rowsPerPage)
     const data = totalDrivers?.data ?? []
+    const [openDrawer, setOpenDrawer] = React.useState(false)
 
     const meta = totalDrivers?.meta ?? {};
     const pageCount = Math.max(1, meta.lastPage || 1);
@@ -76,10 +79,16 @@ export default function DriverHourlyRegister() {
                             ) : (
                                 <Box className={`${classes.listWrap} ${isPending ? classes.listWrapFetching : ''}`}>
                                     {data.map((group) => (
-                                        <DriverGroupedSummary
-                                            key={group.driver_id}
-                                            driver={group}
-                                            days={group.days}
+                                        <CustomerBillingGroup
+                                            key={group.company_id}
+                                            customerName={group.operating_name}
+                                            accountNumber={group.legal_name}
+                                            orders={group.drivers}
+                                            hourlyRegister
+                                            company={group}
+                                            orderRef={companyRef}
+                                            openCharges={(nb) => setOpenDrawer(nb)}
+                                            OrderCard={CompanySummary}
                                         />
                                     ))}
                                 </Box>
@@ -113,6 +122,30 @@ export default function DriverHourlyRegister() {
                     </>
                 }
             </Grid>
+            {openDrawer === 1 &&
+                <DrawerForm
+                    customTitle={
+                        <Box className={classes.extraChargesHeaderLeft}>
+                            <Box className={classes.extraChargesIconBadge}>
+                                <ReceiptLongRounded sx={{ fontSize: 16 }} />
+                            </Box>
+                            <Box>
+                                <Typography className={classes.extraChargesTitle}>Extra Charges — {companyRef.current?.operating_name} </Typography>
+                                <Typography className={classes.extraChargesSubtitle}>
+                                    {companyRef.current?.extra_charges.length || 0} item{companyRef.current?.extra_charges.length !== 1 ? 's' : ''}
+                                </Typography>
+                            </Box>
+                        </Box>}
+                    open={openDrawer === 1}
+                    setOpen={setOpenDrawer}
+                >
+                    <ExtraChargesDisplay
+                        companyId={companyRef.current?.company_id}
+                        extraCharges={companyRef.current?.extra_charges ?? []}
+                        onClose={() => setOpenDrawer(false)}
+                    />
+                </DrawerForm>
+            }
         </MainLayout>
     )
 

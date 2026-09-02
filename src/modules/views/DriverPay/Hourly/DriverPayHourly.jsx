@@ -1,28 +1,34 @@
 import React, { useTransition } from 'react'
 import { Box, Button, CircularProgress, Grid, MenuItem, Pagination, Select } from '@mui/material'
-import { MainLayout } from '../../layouts'
-import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup } from '../../components'
+import { MainLayout } from '../../../layouts'
+import { FilterPayDriverCommission, SideMenu } from '../../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
-import useStyles from './DriverPay.styles'
-import DateGroupedSummary from './DateGroupedSummary'
-import { useCommissionDrivers } from '../../hooks/useBillings'
+import useStyles from './Hourly.styles'
+import { useHourlyDrivers } from '../../../hooks/useBillings'
+import { useSnackbar } from 'notistack'
+import CompanyGrouped from './CompanyGrouped'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
-export default function DriverPayCommission() {
+export default function DriverPayHourly() {
 
-    const { classes, cx } = useStyles()
+    const { classes } = useStyles()
     const groupApis = React.useRef(new Map());
     const refCallbackCache = React.useRef(new Map())
-    const orderRef = React.useRef()
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = React.useState(1);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
+    const { enqueueSnackbar } = useSnackbar()
 
-    const { data: driverPays, isLoading, isError, error } = useCommissionDrivers(appliedFilters, page, rowsPerPage)
+    const { data: driverPays, isLoading, isFetching, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
-    const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
+    const pageCount = Math.max(1, Math.ceil((driverPays?.meta?.total || 0) / rowsPerPage));
+
+    const totalDriversOnPage = React.useMemo(
+        () => data.reduce((sum, company) => sum + (company.drivers?.length || 0), 0),
+        [data]
+    );
 
     const handleSearch = React.useCallback((filters) => {
         startTransition(() => {
@@ -66,15 +72,10 @@ export default function DriverPayCommission() {
     }, [isError, error])
 
     return (
-        <MainLayout
-            title='Driver Pay Commissions'
-            sideMenu={SideMenu}
-            activeDrawer={{ active: 'Commission' }}
-            grid noPanding
-        >
+        <MainLayout title='Driver Pay Hourly' sideMenu={SideMenu} activeDrawer={{ active: 'Hourly' }} grid noPanding>
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <FilterPayDriverCommission onSearch={handleSearch} />
+                    <FilterPayDriverCommission onSearch={handleSearch} isHourly defaultExpanded />
                 </Grid>
                 <Grid size={12}>
                     {data.length > 0 && (
@@ -88,37 +89,31 @@ export default function DriverPayCommission() {
                         </Box>
                     )}
                 </Grid>
-                {isLoading ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
-                    <CircularProgress />
-                </Grid>
-                    :
+                {isLoading || isFetching ? (
+                    <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
+                        <CircularProgress />
+                    </Grid>
+                ) : (
                     <>
                         <Grid size={12}>
                             {data && data?.length === 0 ? (
                                 <Box className={classes.emptyState}>
                                     <ReceiptLongRounded sx={{ fontSize: 48, opacity: 0.35, mb: 1 }} />
-                                    <Box sx={{ fontWeight: 700 }}>No Driver match your filters</Box>
+                                    <Box sx={{ fontWeight: 700 }}>No Drivers match your filters</Box>
                                     <Box sx={{ fontSize: 13, mt: 0.5 }}>Try widening the date range or clearing the keyword.</Box>
                                 </Box>
                             ) : (
                                 <Box className={`${classes.listWrap} ${isPending ? classes.listWrapFetching : ''}`}>
-                                    {data.map((group) => (
-                                        <CustomerBillingGroup
-                                            key={group.driver_id}
-                                            driver_id={group.driver_id}
-                                            orderRef={orderRef}
-                                            customerId={group.driver_id}
-                                            ref={getGroupRef(group.driver_id)}
-                                            customerName={group.driver_name}
-                                            accountNumber={group.driver_number}
-                                            orders={group.orders}
-                                            OrderCard={DateGroupedSummary}
-                                            isDriverPay
-                                            onApprove={({ driverId, date, amount }) => {
-                                                console.log(driverId);
-                                                console.log(amount);
-                                                console.log(date);
-                                            }}
+                                    {data.map((company) => (
+                                        <CompanyGrouped
+                                            key={company.company_id}
+                                            ref={getGroupRef(`company-${company.company_id}`)}
+                                            companyId={company.company_id}
+                                            companyName={company.operating_name || company.legal_name || 'Unassigned Company'}
+                                            legalName={company.legal_name}
+                                            drivers={company.drivers}
+                                            extraCharges={company.extra_charges || []}
+                                            appliedFilters={appliedFilters}
                                         />
                                     ))}
                                 </Box>
@@ -129,30 +124,17 @@ export default function DriverPayCommission() {
                                 <Box className={classes.paginationInfo}>
                                     {isPending && <CircularProgress size={13} />}
                                     Drivers per page
-                                    <Select
-                                        size="small" value={rowsPerPage}
-                                        className={classes.rowsPerPageSelect}
-                                        onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-                                    >
+                                    <Select size="small" value={rowsPerPage} className={classes.rowsPerPageSelect} onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}>
                                         {PAGE_SIZE_OPTIONS.map((n) => <MenuItem key={n} value={n} sx={{ fontSize: 12.5 }}>{n}</MenuItem>)}
                                     </Select>
-                                    <span>· {data.length} Driver{data.length !== 1 ? 's' : ''} total</span>
+                                    <span>· {totalDriversOnPage} Driver{totalDriversOnPage !== 1 ? 's' : ''} on this page</span>
                                 </Box>
-                                <Pagination
-                                    className={classes.muiPaginationRoot}
-                                    count={pageCount}
-                                    page={page}
-                                    onChange={handlePageChange}
-                                    shape="rounded"
-                                    color="primary"
-                                    siblingCount={1}
-                                />
+                                <Pagination className={classes.muiPaginationRoot} count={pageCount} page={page} onChange={handlePageChange} shape="rounded" color="primary" siblingCount={1} />
                             </Box>
                         </Grid>
                     </>
-                }
+                )}
             </Grid>
         </MainLayout>
     )
-
 }

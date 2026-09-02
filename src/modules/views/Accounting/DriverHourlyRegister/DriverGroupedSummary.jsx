@@ -39,18 +39,9 @@ const DriverGroupedSummary = React.memo(({ driver, days = [] }) => {
 
     const { classes, cx } = useStyles()
     const [expanded, setExpanded] = useState(false)
-    const [totalPay, setTotalPay] = useState(driver?.total_pay ?? 0)
 
     const handleToggle = useCallback(() => {
         setExpanded((prev) => !prev)
-    }, [])
-
-    const handleTotalPayChange = useCallback((e) => {
-        setTotalPay(e.target.value)
-    }, [])
-
-    const handleGeneratePdf = useCallback((e) => {
-        e.stopPropagation()
     }, [])
 
     return (
@@ -76,28 +67,7 @@ const DriverGroupedSummary = React.memo(({ driver, days = [] }) => {
                     <StatTile classes={classes} cx={cx} label="Adjusted Distance" value={`${Number(driver?.adjusted_distance_total || 0).toFixed(2)} km`} />
                     <StatTile classes={classes} cx={cx} label="Hourly Pay" value={money(driver?.total_hourly_pay)} />
                     <StatTile classes={classes} cx={cx} label="KM Pay" value={money(driver?.total_km_pay)} />
-
-                    <Box className={classes.divider} />
-
-                    <Box className={classes.runningTotalGroup} onClick={(e) => e.stopPropagation()}>
-                        <Typography className={classes.runningTotalLabel}>Total pay</Typography>
-                        <Typography className={classes.runningTotalSign}>$</Typography>
-                        <TextField
-                            size="small"
-                            type="number"
-                            className={classes.runningTotalInput}
-                            value={totalPay}
-                            onChange={handleTotalPayChange}
-                        />
-                        <Button
-                            variant="contained"
-                            className={classes.generatePdfButton}
-                            startIcon={<PictureAsPdfRounded sx={{ fontSize: 18 }} />}
-                            onClick={handleGeneratePdf}
-                        >
-                            Generate PDF
-                        </Button>
-                    </Box>
+                    <StatTile classes={classes} cx={cx} label="TOTAL PAY" value={money(driver?.total_pay)} highlight />
                 </Grid>
             </Box>
 
@@ -106,49 +76,58 @@ const DriverGroupedSummary = React.memo(({ driver, days = [] }) => {
                     <Box className={classes.daysTableWrap}>
                         <Box className={classes.daysTableHeaderRow}>
                             <Grid container sx={{ width: '100%' }} alignItems="center">
-                                <Grid size={2}><Typography className={classes.daysTableHeaderCell}>Date</Typography></Grid>
-                                <Grid size={2.5}><Typography className={classes.daysTableHeaderCell}>Note</Typography></Grid>
-                                <Grid size={1.5}><Typography className={classes.daysTableHeaderCell}>Adjusted Hours</Typography></Grid>
-                                <Grid size={1.5}><Typography className={classes.daysTableHeaderCell}>Adjusted KM</Typography></Grid>
-                                <Grid size={1.5}><Typography className={classes.daysTableHeaderCell}>Hourly Pay</Typography></Grid>
-                                <Grid size={1.5}><Typography className={classes.daysTableHeaderCell}>KM Pay</Typography></Grid>
-                                <Grid size={1.5}><Typography className={classes.daysTableHeaderCell}>Total</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Date</Typography></Grid>
+                                <Grid size={1.6}><Typography className={classes.daysTableHeaderCell}>Note</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Adjusted Hours</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Adjusted KM</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total Hrs</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total Km</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Hourly Pay</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>KM Pay</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total</Typography></Grid>
                             </Grid>
                         </Box>
 
                         {days.map((day, idx) => (
                             <Box key={`${day.date}-${idx}`} className={classes.dayRow}>
                                 <Grid container sx={{ width: '100%' }} alignItems="center">
-                                    <Grid size={2}>
+                                    <Grid size={1.3}>
                                         <Typography className={classes.dayCellPrimary}>
                                             {moment(day.date).format('ddd, MMM D, YYYY')}
                                         </Typography>
-                                        {day.note && (
-                                            <Typography className={classes.dayNoteText}>{day.note}</Typography>
-                                        )}
                                     </Grid>
-                                    <Grid size={2.5}>
+                                    <Grid size={1.6}>
                                         <Typography className={classes.dayCellValue}>
                                             {day.note || '-'}
                                         </Typography>
                                     </Grid>
-                                    <Grid size={1.5}>
+                                    <Grid size={1.3}>
                                         <Typography className={classes.dayCellValue}>
                                             {formatSeconds(durationToSeconds(day.adjustment_hours))}
                                         </Typography>
                                     </Grid>
-                                    <Grid size={1.5}>
+                                    <Grid size={1.3}>
                                         <Typography className={classes.dayCellValue}>
                                             {Number(day.adjustment_km || 0).toFixed(2)} km
                                         </Typography>
                                     </Grid>
-                                    <Grid size={1.5}>
+                                    <Grid size={1.3}>
+                                        <Typography className={classes.dayCellValue}>
+                                            {formatSeconds(durationToSeconds(day.total_hrs))}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid size={1.3}>
+                                        <Typography className={classes.dayCellValue}>
+                                            {Number(day.total_km || 0).toFixed(2)} km
+                                        </Typography>
+                                    </Grid>
+                                    <Grid size={1.3}>
                                         <Typography className={classes.dayCellValue}>{money(day.day_hourly_pay)}</Typography>
                                     </Grid>
-                                    <Grid size={1.5}>
+                                    <Grid size={1.3}>
                                         <Typography className={classes.dayCellValue}>{money(day.day_km_pay)}</Typography>
                                     </Grid>
-                                    <Grid size={1.5}>
+                                    <Grid size={1.3}>
                                         <Typography className={cx(classes.dayCellValue, classes.statValueHighlight)}>
                                             {money(day.day_total_pay)}
                                         </Typography>
