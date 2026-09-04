@@ -7,6 +7,7 @@ import useStyles from './Hourly.styles'
 import { useHourlyDrivers } from '../../../hooks/useBillings'
 import { useSnackbar } from 'notistack'
 import CompanyGrouped from './CompanyGrouped'
+import { generateDriverPayHourlyPDF } from './downloadPDF'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -71,6 +72,16 @@ export default function DriverPayHourly() {
         }
     }, [isError, error])
 
+    const downloadDriverPayHourlyPDF = async (company) => {
+        try {
+            const pdf = await generateDriverPayHourlyPDF(company);
+            pdf.save(`drivers_report_DISTRIBUTION_${company.operating_name}.pdf`);
+        } catch (err) {
+            console.log(err.message);
+            enqueueSnackbar?.('Failed to download PDF file', { variant: 'error' });
+        }
+    };
+
     return (
         <MainLayout title='Driver Pay Hourly' sideMenu={SideMenu} activeDrawer={{ active: 'Hourly' }} grid noPanding>
             <Grid container spacing={2}>
@@ -114,6 +125,7 @@ export default function DriverPayHourly() {
                                             drivers={company.drivers}
                                             extraCharges={company.extra_charges || []}
                                             appliedFilters={appliedFilters}
+                                            downloadExcel={() => downloadDriverPayHourlyPDF(company)}
                                         />
                                     ))}
                                 </Box>

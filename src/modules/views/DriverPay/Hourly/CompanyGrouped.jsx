@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
 import { Accordion, AccordionSummary, AccordionDetails, Box, Typography, IconButton } from '@mui/material';
-import { ExpandMoreRounded, AddCardRounded, EditRounded, DeleteOutlineRounded, ReceiptLongRounded } from '@mui/icons-material';
+import { ExpandMoreRounded, AddCardRounded, EditRounded, DeleteOutlineRounded, ReceiptLongRounded, Download } from '@mui/icons-material';
 import { DrawerForm, DriverClockHistory } from '../../../components';
 import ExtraChargeForm from './ExtraChargeForm';
 import useStyles from './Hourly.styles';
@@ -8,7 +8,7 @@ import DriverHourlyCard from './DriverHourlyCard'
 import DriverTripDetailsTable from './DriverHourlyDetails';
 import { useBillingMutation } from '../../../hooks/useBillings';
 
-const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers = [], appliedFilters = {}, extraCharges = [] }, ref) => {
+const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers = [], appliedFilters = {}, extraCharges = [], downloadExcel }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -47,13 +47,27 @@ const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers 
                             <Box className={classes.customerMeta}>{drivers.length} driver{drivers.length !== 1 ? 's' : ''}</Box>
                         </Box>
                     </Box>
-                    <Box
-                        component="span" role="button" tabIndex={0}
-                        className={cx(classes.extraButton, classes.btnAccordion)}
-                        onClick={(e) => handleOpenDrawer(e, 3)}
-                    >
-                        <AddCardRounded sx={{ fontSize: 15 }} />
-                        Add Extra Charge
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box
+                            component="span" role="button" tabIndex={0}
+                            className={cx(classes.detailsButton, classes.btnAccordion)}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                e.preventDefault()
+                                downloadExcel()
+                            }}
+                        >
+                            <Download sx={{ fontSize: 15 }} />
+                            Download Drivers Report
+                        </Box>
+                        <Box
+                            component="span" role="button" tabIndex={0}
+                            className={cx(classes.extraButton, classes.btnAccordion)}
+                            onClick={(e) => handleOpenDrawer(e, 3)}
+                        >
+                            <AddCardRounded sx={{ fontSize: 15 }} />
+                            Add Extra Charge
+                        </Box>
                     </Box>
                 </Box>
             </AccordionSummary>
