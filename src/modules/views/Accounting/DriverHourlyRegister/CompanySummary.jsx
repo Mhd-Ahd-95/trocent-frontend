@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react'
-import { Box, Typography, Button, Grid } from '@mui/material'
+import { Box, Typography, Button, Grid, CircularProgress } from '@mui/material'
 import { PictureAsPdfRounded } from '@mui/icons-material'
 import useStyles from './Driver.styles'
 import DriverGroupedSummary from './DriverGroupedSummary'
+import { useBillingMutation } from '../../../hooks/useBillings'
 
 const money = (value) => `$${Number(value || 0).toFixed(2)}`
 
@@ -38,6 +39,7 @@ const CompanyStatTile = ({ classes, cx, label, value, highlight }) => (
 const CompanySummary = React.memo(({ company, drivers = [] }) => {
 
     const { classes, cx } = useStyles()
+    const { payDriverHourlyRegister } = useBillingMutation()
 
     const totals = React.useMemo(() => {
         const tex = company.extra_charges_pay
@@ -52,9 +54,17 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
         return { tex, tc, td, thp, tkp, tp: tp + tex }
     }, [company])
 
-    const handleGeneratePdf = useCallback((e) => {
+    const handleGeneratePdf = async (e) => {
         e.stopPropagation()
-    }, [])
+        e.preventDefault()
+
+        const payload = {
+            company_id: company.company_id,
+            driver_pay_totals_ids: drivers.map(d => d.driver_pay_totals_id)
+        }
+        console.log(payload);
+        await payDriverHourlyRegister.mutateAsync(payload)
+    }
 
     return (
         <Grid container spacing={2}>
@@ -74,8 +84,9 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
                             <Button
                                 variant="contained"
                                 className={classes.companyGeneratePdfButton}
-                                startIcon={<PictureAsPdfRounded sx={{ fontSize: 18 }} />}
+                                startIcon={payDriverHourlyRegister.isPending ? <CircularProgress size={'20px'} /> : <PictureAsPdfRounded sx={{ fontSize: 18 }} />}
                                 onClick={handleGeneratePdf}
+                                disabled={payDriverHourlyRegister.isPending}
                             >
                                 Generate PDF
                             </Button>
@@ -84,7 +95,13 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
                 </Box>
             </Grid>
             <Grid size={12}>
-                {drivers.map(d => <DriverGroupedSummary key={d.driver_id} driver={d} days={d.days} />)}
+                <Grid container spacing={2}>
+                    {drivers.map(d => (
+                        <Grid size={12} key={d.driver_id}>
+                            <DriverGroupedSummary driver={d} days={d.days} />
+                        </Grid>
+                    ))}
+                </Grid>
             </Grid>
         </Grid>
     )

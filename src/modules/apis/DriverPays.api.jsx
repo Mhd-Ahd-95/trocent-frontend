@@ -19,6 +19,8 @@ const deleteExtraCharge = (id) => CustomAxios.delete(`/api/extra-company-charges
 
 const saveDriverPayDailyAdjustment = (did, payload) => CustomAxios.put(`/api/driver-pays/hourly/day-adjustment/${did}`, payload)
 
+const payDriverHourlyRegister = (payload) => CustomAxios.put('/api/driver-pays/hourly-register', payload)
+
 export default {
     getPendingCommissionDriverPay,
     getPendingHourlyDriverPay,
@@ -28,5 +30,6 @@ export default {
     addExtraCharge,
     deleteExtraCharge,
     updateExtraCharge,
-    saveDriverPayDailyAdjustment
+    saveDriverPayDailyAdjustment,
+    payDriverHourlyRegister
 }

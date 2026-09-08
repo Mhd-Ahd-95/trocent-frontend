@@ -2,7 +2,6 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import BillingsApi from "../apis/Billings.api";
 import { useSnackbar } from "notistack";
 import DriverPaysApi from "../apis/DriverPays.api";
-import moment from "moment";
 
 
 export function useBillings(filters = {}, page = 1, pageSize = 10) {
@@ -380,5 +379,29 @@ export function useBillingMutation() {
         onError: handleError
     })
 
-    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus, approvedDriverPayHourly, addExtraCharge, deleteExtraCharge, updateExtraCharge, saveDriverPayDailyAdjustment }
+    const payDriverHourlyRegister = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.payDriverHourlyRegister(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                enqueueSnackbar('Driver pay hourly register has been successfully paid and generating PDF', { variant: 'success' })
+            }
+        },
+        onError: handleError
+    })
+
+    return {
+        applyAccessorials,
+        driverPayout,
+        updateInterlinerAmounts,
+        updateOrderStatus,
+        approvedDriverPayHourly,
+        addExtraCharge,
+        deleteExtraCharge,
+        updateExtraCharge,
+        saveDriverPayDailyAdjustment,
+        payDriverHourlyRegister
+    }
 }
