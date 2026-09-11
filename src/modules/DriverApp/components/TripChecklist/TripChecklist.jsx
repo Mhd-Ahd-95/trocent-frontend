@@ -87,7 +87,7 @@ function KmInScreen({ value, onChange, onSubmit, loading }) {
                 fullWidth
                 type="number"
                 autoFocus
-                label={t('checklist.kmIn', 'Km In')}
+                label={t('checklist.kmIn', 'KM In')}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 disabled={loading}

@@ -159,7 +159,7 @@ function ClockInOut({ hasTrips, clockedInRef, isHourly = false }) {
                         fullWidth
                         autoFocus
                         type="number"
-                        label={t('clock.kmOut', 'Km Out')}
+                        label={t('clock.kmOut', 'KM Out')}
                         value={kmOutValue}
                         onChange={(e) => setKmOutValue(e.target.value)}
                         disabled={driverKmInOut.isPending}

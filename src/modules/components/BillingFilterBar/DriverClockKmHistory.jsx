@@ -209,14 +209,14 @@ function KmRow({ record, classes, isEditing, onStartEdit, onCancel, onSave, isSa
             {!isEditing ? (
                 <Box className={classes.valuesInline}>
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='caption' fontSize={'11px'} color='textSecondary'>Km In</Typography>
+                        <Typography variant='caption' fontSize={'11px'} color='textSecondary'>KM In</Typography>
                         <Typography className={classes.valueText}>
                             {record.km_in + ' KM' ?? <span className={classes.valueDash}>—</span>}
                         </Typography>
                     </Box>
                     <ArrowRightAltRounded className={classes.arrowIcon} />
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='caption' fontSize={'11px'} color='textSecondary'>Km Out</Typography>
+                        <Typography variant='caption' fontSize={'11px'} color='textSecondary'>KM Out</Typography>
                         <Typography className={classes.valueText}>
                             {record.km_out + ' KM' ?? <span className={classes.valueDash}>—</span>}
                         </Typography>
@@ -226,7 +226,7 @@ function KmRow({ record, classes, isEditing, onStartEdit, onCancel, onSave, isSa
                 <Box className={classes.editRow}>
                     <TextField
                         className={classes.editField}
-                        label="Km in"
+                        label="KM in"
                         type="number"
                         size="small"
                         fullWidth
@@ -238,7 +238,7 @@ function KmRow({ record, classes, isEditing, onStartEdit, onCancel, onSave, isSa
                     <ArrowRightAltRounded className={classes.arrowIcon} />
                     <TextField
                         className={classes.editField}
-                        label="Km out"
+                        label="KM out"
                         type="number"
                         size="small"
                         fullWidth

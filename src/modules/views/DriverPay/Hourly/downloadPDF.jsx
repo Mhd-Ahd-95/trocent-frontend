@@ -175,7 +175,7 @@ export const generateDriverPayHourlyPDF = async (company) => {
         checkAddPage(driverHeaderHeight * 2 + dayRowHeight * (driver.days.length + 1) + 8);
         const driverColWidths = [40, 40];
         drawBox(margin, yPos, driverColWidths[0] + driverColWidths[1], driverHeaderHeight, COLORS.blue);
-        drawRowCells(margin, yPos, driverHeaderHeight, driverColWidths, ['Driver', 'KM Limite'], { bold: true, textColor: COLORS.white, fontSize: 10 });
+        drawRowCells(margin, yPos, driverHeaderHeight, driverColWidths, ['Driver', 'KM Limit'], { bold: true, textColor: COLORS.white, fontSize: 10 });
         yPos += driverHeaderHeight;
 
         drawBox(margin, yPos, driverColWidths[0] + driverColWidths[1], driverHeaderHeight);

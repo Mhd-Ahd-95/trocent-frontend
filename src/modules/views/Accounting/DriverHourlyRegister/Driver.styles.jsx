@@ -410,5 +410,30 @@ export default makeStyles({ name: 'Billing' })((theme) => {
                 color: theme.palette.text.disabled,
             },
         },
+        selectionBar: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: theme.spacing(1.25, 2),
+            borderRadius: 12,
+            background: isDark ? alpha('#fff', 0.03) : theme.palette.grey[100],
+            border: '1px solid',
+            borderColor: isDark ? alpha('#fff', 0.08) : alpha(secondary, 0.1),
+        },
+        selectionBarLeft: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(0.5),
+        },
+        selectionBarText: {
+            fontSize: 13,
+            fontWeight: 700,
+            color: theme.palette.text.secondary,
+        },
+        companyCheckboxWrap: {
+            flex: '0 0 auto',
+            display: 'flex',
+            alignItems: 'center',
+        },
     };
 });

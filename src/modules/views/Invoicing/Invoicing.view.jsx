@@ -20,7 +20,7 @@ export default function InvoicingView() {
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
 
-    const { data: invoicing, isLoading, isError, error } = useInvoicing(appliedFilters, page, rowsPerPage)
+    const { data: invoicing, isLoading, isFetching, isError, error } = useInvoicing(appliedFilters, page, rowsPerPage)
     const data = invoicing?.data || []
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
@@ -91,7 +91,7 @@ export default function InvoicingView() {
                         </Box>
                     )}
                 </Grid>
-                {isLoading ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
+                {isLoading || isFetching ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
                     <CircularProgress />
                 </Grid>
                     :

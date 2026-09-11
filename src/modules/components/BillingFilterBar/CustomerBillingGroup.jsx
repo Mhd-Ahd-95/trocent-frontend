@@ -1,15 +1,15 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Box, } from '@mui/material';
-import { CreditCardOutlined, ExpandMoreRounded } from '@mui/icons-material';
+import { Accordion, AccordionSummary, AccordionDetails, Box, CircularProgress, Checkbox } from '@mui/material';
+import { CreditCardOutlined, Download, ExpandMoreRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders = [], orderRef, openCharges, OrderCard, isInvoicing = false,
-    customerId, isDriverPay, driver_id, onApprove, hourlyRegister = false, company }, ref) => {
+    customerId, isDriverPay, driver_id, onApprove, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
-
+    
     useImperativeHandle(ref, () => ({
         expand: () => setExpanded(true),
         collapse: () => setExpanded(false),
@@ -26,6 +26,12 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
         orderRef.current = order
         openCharges(2)
     }
+
+    const handleToggleSelect = useCallback((e) => {
+        // e.preventDefault();
+        e.stopPropagation();
+        onToggleSelect?.(company.company_id);
+    }, [onToggleSelect, company]);
 
     const dateGroups = React.useMemo(() => {
         if (!isDriverPay) return []
@@ -44,35 +50,55 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
     const type = hourlyRegister ? 'Driver' : 'Order'
 
     return (
-        <Accordion
-            className={classes.accordionRoot}
-            expanded={expanded}
-            onChange={handleChange}
-            disableGutters
-            TransitionProps={{ unmountOnExit: true }}
-        >
+        <Accordion className={classes.accordionRoot} expanded={expanded} onChange={handleChange} disableGutters TransitionProps={{ unmountOnExit: true }}>
             <AccordionSummary className={classes.accordionSummary} expandIcon={<ExpandMoreRounded />}>
                 <Box className={classes.accordionSummaryContent}>
-                    <Box className={classes.customerIdentity}>
-                        <Box className={classes.customerName}>{customerName}</Box>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Box className={classes.customerMeta}>{hourlyRegister ? '' : '#'}{accountNumber}.</Box>
-                            <Box className={classes.customerMeta}>
-                                {orders.length} {type}{orders.length !== 1 ? 's' : ''}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {hourlyRegister &&
+                            <Checkbox
+                                checked={selected}
+                                size="small"
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={handleToggleSelect}
+                                sx={{ p: 0.5, mr: 0.5 }}
+                            />
+                        }
+                        <Box className={classes.customerIdentity}>
+                            <Box className={classes.customerName}>{customerName}</Box>
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                <Box className={classes.customerMeta}>{hourlyRegister ? '' : '#'}{accountNumber}.</Box>
+                                <Box className={classes.customerMeta}>
+                                    {orders.length} {type}{orders.length !== 1 ? 's' : ''}
+                                </Box>
                             </Box>
                         </Box>
                     </Box>
                     {hourlyRegister &&
-                        <Box
-                            component="span" role="button" tabIndex={0}
-                            className={cx(classes.detailsButton, classes.btnAccordion)}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                handleCharge(company, 1)
-                            }}
-                        >
-                            <CreditCardOutlined sx={{ fontSize: 15 }} />
-                            Extra Charges
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <Box
+                                component="span" role="button" tabIndex={0}
+                                className={cx(classes.downloadButton, classes.btnAccordion)}
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    if (downloading) return
+                                    downloadPDF(company)
+                                }}
+                            >
+                                {downloading ? <CircularProgress size={15} /> : <Download sx={{ fontSize: 15 }} />}
+                                Download PDF
+                            </Box>
+                            <Box
+                                component="span" role="button" tabIndex={0}
+                                className={cx(classes.detailsButton, classes.btnAccordion)}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleCharge(company, 1)
+                                }}
+                            >
+                                <CreditCardOutlined sx={{ fontSize: 15 }} />
+                                Extra Charges
+                            </Box>
                         </Box>
                     }
                 </Box>
@@ -93,4 +119,20 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
 }));
 
 CustomerBillingGroup.displayName = 'CustomerBillingGroup';
-export default CustomerBillingGroup;
+// function arePropsEqual(prev, next) {
+//     return (
+//         prev.customerName === next.customerName &&
+//         prev.accountNumber === next.accountNumber &&
+//         prev.orders === next.orders &&
+//         prev.company === next.company &&
+//         prev.hourlyRegister === next.hourlyRegister &&
+//         prev.OrderCard === next.OrderCard &&
+//         prev.openCharges === next.openCharges &&
+//         prev.downloadPDF === next.downloadPDF &&
+//         prev.downloading === next.downloading &&
+//         prev.selected === next.selected &&
+//         prev.onToggleSelect === next.onToggleSelect
+//     );
+// }
+
+export default React.memo(CustomerBillingGroup);

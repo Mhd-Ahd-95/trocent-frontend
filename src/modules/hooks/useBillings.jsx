@@ -386,7 +386,37 @@ export function useBillingMutation() {
         },
         onSuccess: (res, payload) => {
             if (res) {
-                enqueueSnackbar('Driver pay hourly register has been successfully paid and generating PDF', { variant: 'success' })
+                const cid = payload.company_id
+                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                    if (!old.data) return
+                    return {
+                        ...old,
+                        data: old.data.filter(o => Number(o.company_id) !== Number(cid))
+                    }
+                })
+                enqueueSnackbar('Payment recorded — Invoice is being generated and will be emailed shortly', { variant: 'success' })
+            }
+        },
+        onError: handleError
+    })
+
+    const batchPayDriverHourlyRegister = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.batchPayDriverHourlyRegister(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                console.log(res)
+                // const cid = payload.company_id
+                // queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                //     if (!old.data) return
+                //     return {
+                //         ...old,
+                //         data: old.data.filter(o => Number(o.company_id) !== Number(cid))
+                //     }
+                // })
+                enqueueSnackbar('Batch Payment recorded — Invoices are being generated and will be emailed shortly', { variant: 'success' })
             }
         },
         onError: handleError
@@ -402,6 +432,7 @@ export function useBillingMutation() {
         deleteExtraCharge,
         updateExtraCharge,
         saveDriverPayDailyAdjustment,
-        payDriverHourlyRegister
+        payDriverHourlyRegister,
+        batchPayDriverHourlyRegister
     }
 }

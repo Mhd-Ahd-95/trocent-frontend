@@ -21,6 +21,30 @@ const saveDriverPayDailyAdjustment = (did, payload) => CustomAxios.put(`/api/dri
 
 const payDriverHourlyRegister = (payload) => CustomAxios.put('/api/driver-pays/hourly-register', payload)
 
+const batchPayDriverHourlyRegister = (payload) => CustomAxios.put('/api/driver-pays/batch-hourly-register', payload)
+
+const downloadCompanyInvoice = async (payload) => {
+    const response = await CustomAxios.post('/api/driver-pays/hourly-register', payload, { responseType: 'blob', });
+    const blob = new Blob([response.data], { type: 'application/pdf', });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    // console.log(response)
+    // const contentDisposition = response.headers['content-disposition'];
+    let filename = 'company-invoice.pdf';
+    // if (contentDisposition) {
+    //     const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    //     if (match) {
+    //         filename = match[1];
+    //     }
+    // }
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+}
+
 export default {
     getPendingCommissionDriverPay,
     getPendingHourlyDriverPay,
@@ -31,5 +55,7 @@ export default {
     deleteExtraCharge,
     updateExtraCharge,
     saveDriverPayDailyAdjustment,
-    payDriverHourlyRegister
+    payDriverHourlyRegister,
+    batchPayDriverHourlyRegister,
+    downloadCompanyInvoice
 }

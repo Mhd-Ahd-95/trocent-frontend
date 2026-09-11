@@ -1,14 +1,15 @@
-import React, { useTransition } from "react";
-import { Grid, Box, Select, Pagination, MenuItem, CircularProgress, Typography } from "@mui/material";
+import React, { useTransition, useState, useCallback, useMemo, useEffect } from "react";
+import { Grid, Box, Select, Pagination, MenuItem, CircularProgress, Typography, Checkbox, Button } from "@mui/material";
 import { CustomerBillingGroup, DrawerForm, SideMenu } from "../../../components";
 import { MainLayout } from "../../../layouts";
 import FilterBarRegister from "../Filterbar/Filterbar";
-import { ReceiptLongRounded } from "@mui/icons-material";
+import { ReceiptLongRounded, PictureAsPdfRounded } from "@mui/icons-material";
 import useStyles from './Driver.styles'
-import { useApprovedDriverHourlyTotals } from "../../../hooks/useBillings";
+import { useApprovedDriverHourlyTotals, useBillingMutation } from "../../../hooks/useBillings";
 import { useSnackbar } from "notistack";
 import CompanySummary from "./CompanySummary";
 import ExtraChargesDisplay from "./ExtraChargeDisplaying";
+import DriverPaysApi from "../../../apis/DriverPays.api";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -17,30 +18,38 @@ export default function DriverHourlyRegister() {
     const { classes } = useStyles()
     const { enqueueSnackbar } = useSnackbar()
     const [isPending, startTransition] = useTransition();
-    const [page, setPage] = React.useState(1);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
-    const [appliedFilters, setAppliedFilters] = React.useState(null);
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [appliedFilters, setAppliedFilters] = useState(null);
     const companyRef = React.useRef()
     const { data: totalDrivers, isLoading, isFetching, isError, error } = useApprovedDriverHourlyTotals(appliedFilters, page, rowsPerPage)
     const data = totalDrivers?.data ?? []
-    const [openDrawer, setOpenDrawer] = React.useState(false)
+    const [openDrawer, setOpenDrawer] = useState(false)
+    const [downloading, setDownloading] = React.useState(false)
+
+    const { batchPayDriverHourlyRegister } = useBillingMutation()
+    const [selectedIds, setSelectedIds] = useState(() => new Set());
 
     const meta = totalDrivers?.meta ?? {};
     const pageCount = Math.max(1, meta.lastPage || 1);
 
-    const handleSearch = React.useCallback((filters) => {
+    // useEffect(() => {
+    //     setSelectedIds(new Set(data.map(c => c.company_id)));
+    // }, [data]);
+
+    const handleSearch = useCallback((filters) => {
         startTransition(() => {
             setAppliedFilters(filters);
             setPage(1);
         });
     }, []);
 
-    const handleRowsPerPageChange = React.useCallback((count) => {
+    const handleRowsPerPageChange = useCallback((count) => {
         setRowsPerPage(count);
         setPage(1);
     }, []);
 
-    const handlePageChange = React.useCallback((_, newPage) => setPage(newPage), []);
+    const handlePageChange = useCallback((_, newPage) => setPage(newPage), []);
 
     React.useEffect(() => {
         if (isError && error) {
@@ -50,6 +59,52 @@ export default function DriverHourlyRegister() {
             enqueueSnackbar(errorMessage, { variant: 'error' });
         }
     }, [isError, error])
+
+    const toggleCompanySelected = useCallback((companyId) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(companyId)) next.delete(companyId);
+            else next.add(companyId);
+            return next;
+        });
+    }, []);
+
+    const allSelected = data.length > 0 && selectedIds.size === data.length;
+    const someSelected = selectedIds.size > 0 && !allSelected;
+
+    const handleToggleSelectAll = useCallback(() => {
+        setSelectedIds(prev => (prev.size === data.length ? new Set() : new Set(data.map(c => c.company_id))));
+    }, [data]);
+
+    // const selectedCompanies = useMemo(
+    //     () => data.filter(c => selectedIds.has(c.company_id)),
+    //     [data, selectedIds]
+    // );
+
+    const handleBulkGeneratePdf = async (e) => {
+        e.preventDefault()
+        const selectedCompanies = data.filter(c => selectedIds.has(c.company_id))
+        const payload = selectedCompanies.map(company => ({
+            company_id: company.company_id,
+            driver_pay_totals_ids: company.drivers.map(d => d.driver_pay_totals_id),
+        }))
+        await batchPayDriverHourlyRegister.mutateAsync(payload)
+    }
+
+    const downloadPDF = async (company) => {
+        setDownloading(true)
+        try {
+            const payload = {
+                company_id: company.company_id,
+                driver_pay_totals_ids: company.drivers.map(d => d.driver_pay_totals_id)
+            }
+            await DriverPaysApi.downloadCompanyInvoice(payload)
+        }
+        catch (err) {
+
+        }
+        finally { setDownloading(false) }
+    }
 
     return (
         <MainLayout
@@ -64,6 +119,39 @@ export default function DriverHourlyRegister() {
                         onSearch={handleSearch}
                     />
                 </Grid>
+
+                {!isLoading && !isFetching && data.length > 0 && (
+                    <Grid size={12}>
+                        <Box className={classes.selectionBar}>
+                            <Box className={classes.selectionBarLeft}>
+                                <Checkbox
+                                    checked={allSelected}
+                                    indeterminate={someSelected}
+                                    onChange={handleToggleSelectAll}
+                                    size="small"
+                                />
+                                <Typography className={classes.selectionBarText}>
+                                    {selectedIds.size > 0
+                                        ? `${selectedIds.size} of ${data.length} selected`
+                                        : `Select all (${data.length})`}
+                                </Typography>
+                            </Box>
+                            {selectedIds.size > 0 && (
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={batchPayDriverHourlyRegister.isPending ? <CircularProgress size={18} color="inherit" /> : <PictureAsPdfRounded sx={{ fontSize: 18 }} />}
+                                    onClick={handleBulkGeneratePdf}
+                                    sx={{ textTransform: 'capitalize', fontWeight: 'bold', borderRadius: 2 }}
+                                    disabled={batchPayDriverHourlyRegister.isPending}
+                                >
+                                    Generate PDF ({selectedIds.size})
+                                </Button>
+                            )}
+                        </Box>
+                    </Grid>
+                )}
+
                 {isLoading || isFetching ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
                     <CircularProgress />
                 </Grid>
@@ -89,6 +177,10 @@ export default function DriverHourlyRegister() {
                                             orderRef={companyRef}
                                             openCharges={(nb) => setOpenDrawer(nb)}
                                             OrderCard={CompanySummary}
+                                            downloadPDF={downloadPDF}
+                                            downloading={downloading}
+                                            selected={selectedIds.has(group.company_id)}
+                                            onToggleSelect={toggleCompanySelected}
                                         />
                                     ))}
                                 </Box>

@@ -218,6 +218,16 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
                 background: alpha(secondary, 0.08),
             },
         },
+        downloadButton: {
+            borderColor: alpha(primary, 0.4),
+            background: 'transparent',
+            color: primary,
+            transition: 'background-color 0.15s ease, border-color 0.15s ease',
+            '&:hover': {
+                borderColor: primary,
+                background: alpha(primary, 0.08),
+            },
+        },
         customerIdentity: {
             display: 'flex',
             flexDirection: 'column',
