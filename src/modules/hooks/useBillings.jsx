@@ -92,6 +92,19 @@ export function useApprovedDriverHourlyTotals(filters = {}, page = 1, pageSize =
     });
 }
 
+export function useDriverPayHourlyRegistered(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['driverPayHourlyRegistered', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.loadDriverHourlyRegistered({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
 
 export function useBillingMutation() {
 

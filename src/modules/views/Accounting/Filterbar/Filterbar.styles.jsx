@@ -88,7 +88,7 @@ export default makeStyles({ name: 'Billing' })((theme, props) => {
                 gridTemplateColumns: '1fr 1fr',
             },
             [theme.breakpoints.up('md')]: {
-                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateColumns: props?.registered ? 'repeat(5, 1fr)' : 'repeat(3, 1fr)',
             },
         },
         labelText: {

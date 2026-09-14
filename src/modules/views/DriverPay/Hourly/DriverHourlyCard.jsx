@@ -191,6 +191,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
             },
         };
+        console.log(payload)
         await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload, cid: driverDetails.company_id });
     };
 

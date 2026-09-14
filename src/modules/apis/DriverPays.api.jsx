@@ -45,6 +45,8 @@ const downloadCompanyInvoice = async (payload) => {
     window.URL.revokeObjectURL(url);
 }
 
+const loadDriverHourlyRegistered = async (params = {}) => CustomAxios.get('/api/driver-pays/driver-hourly-registered', { params })
+
 export default {
     getPendingCommissionDriverPay,
     getPendingHourlyDriverPay,
@@ -57,5 +59,6 @@ export default {
     saveDriverPayDailyAdjustment,
     payDriverHourlyRegister,
     batchPayDriverHourlyRegister,
-    downloadCompanyInvoice
+    downloadCompanyInvoice,
+    loadDriverHourlyRegistered
 }

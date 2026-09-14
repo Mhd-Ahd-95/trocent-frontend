@@ -10,6 +10,7 @@ import { useSnackbar } from "notistack";
 import CompanySummary from "./CompanySummary";
 import ExtraChargesDisplay from "./ExtraChargeDisplaying";
 import DriverPaysApi from "../../../apis/DriverPays.api";
+import { useNavigate } from "react-router-dom";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -106,16 +107,20 @@ export default function DriverHourlyRegister() {
         finally { setDownloading(false) }
     }
 
+    const navigate = useNavigate()
+
     return (
         <MainLayout
             title='Driver Pay Hourly Register'
             sideMenu={SideMenu}
             activeDrawer={{ active: 'Driver Hourly Register' }}
+            button
+            btnProps={{ label: 'Registered', onClick: () => navigate('/accounting/driver-hourly-registered') }}
         >
             <Grid container spacing={2}>
                 <Grid size={12}>
                     <FilterBarRegister
-                        EMPTY_FILTER={{ approvedDateFrom: '', approvedDateTo: '', keyword: '' }}
+                        EMPTY_FILTERS={{ approvedDateFrom: '', approvedDateTo: '', keyword: '' }}
                         onSearch={handleSearch}
                     />
                 </Grid>

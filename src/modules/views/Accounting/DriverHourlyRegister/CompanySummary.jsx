@@ -39,7 +39,7 @@ const CompanyStatTile = ({ classes, cx, label, value, highlight }) => (
 const CompanySummary = React.memo(({ company, drivers = [] }) => {
 
     const { classes, cx } = useStyles()
-    const { payDriverHourlyRegister } = useBillingMutation()
+    const { batchPayDriverHourlyRegister } = useBillingMutation()
 
     const totals = React.useMemo(() => {
         const tex = company.extra_charges_pay
@@ -62,7 +62,7 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
             company_id: company.company_id,
             driver_pay_totals_ids: drivers.map(d => d.driver_pay_totals_id)
         }
-        await payDriverHourlyRegister.mutateAsync(payload)
+        await batchPayDriverHourlyRegister.mutateAsync([payload])
     }
 
     return (
@@ -83,9 +83,9 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
                             <Button
                                 variant="contained"
                                 className={classes.companyGeneratePdfButton}
-                                startIcon={payDriverHourlyRegister.isPending ? <CircularProgress size={'20px'} /> : <PictureAsPdfRounded sx={{ fontSize: 18 }} />}
+                                startIcon={batchPayDriverHourlyRegister.isPending ? <CircularProgress size={'20px'} /> : <PictureAsPdfRounded sx={{ fontSize: 18 }} />}
                                 onClick={handleGeneratePdf}
-                                disabled={payDriverHourlyRegister.isPending}
+                                disabled={batchPayDriverHourlyRegister.isPending}
                             >
                                 Generate PDF
                             </Button>
