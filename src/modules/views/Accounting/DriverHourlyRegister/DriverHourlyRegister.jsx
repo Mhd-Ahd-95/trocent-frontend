@@ -115,7 +115,7 @@ export default function DriverHourlyRegister() {
             sideMenu={SideMenu}
             activeDrawer={{ active: 'Driver Hourly Register' }}
             button
-            btnProps={{ label: 'Registered', onClick: () => navigate('/accounting/driver-hourly-registered') }}
+            btnProps={{ label: 'Registered Payments', onClick: () => navigate('/accounting/driver-hourly-registered') }}
         >
             <Grid container spacing={2}>
                 <Grid size={12}>

@@ -47,6 +47,8 @@ const downloadCompanyInvoice = async (payload) => {
 
 const loadDriverHourlyRegistered = async (params = {}) => CustomAxios.get('/api/driver-pays/driver-hourly-registered', { params })
 
+const resendCompaniesinvoice = async (data) => CustomAxios.put('/api/driver-pays/resend-companies-invoice', data)
+
 export default {
     getPendingCommissionDriverPay,
     getPendingHourlyDriverPay,
@@ -60,5 +62,6 @@ export default {
     payDriverHourlyRegister,
     batchPayDriverHourlyRegister,
     downloadCompanyInvoice,
-    loadDriverHourlyRegistered
+    loadDriverHourlyRegistered,
+    resendCompaniesinvoice
 }

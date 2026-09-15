@@ -420,6 +420,28 @@ export function useBillingMutation() {
         },
         onSuccess: (res, payload) => {
             if (res) {
+                const companies = payload.map(p => p.company_id)
+                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                    if (!old.data) return
+                    return {
+                        ...old,
+                        data: old.data.filter(o => !companies.includes(Number(o.company_id)))
+                    }
+                })
+                queryClient.invalidateQueries({ queryKey: ['driverPayHourlyRegistered'] })
+                enqueueSnackbar('Batch Payment recorded — Invoices are being generated and will be emailed shortly', { variant: 'success' })
+            }
+        },
+        onError: handleError
+    })
+
+    const resendCompaniesInvoice = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.resendCompaniesinvoice(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
                 console.log(res)
                 // const cid = payload.company_id
                 // queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
@@ -429,7 +451,8 @@ export function useBillingMutation() {
                 //         data: old.data.filter(o => Number(o.company_id) !== Number(cid))
                 //     }
                 // })
-                enqueueSnackbar('Batch Payment recorded — Invoices are being generated and will be emailed shortly', { variant: 'success' })
+                // queryClient.invalidateQueries({ queryKey: ['driverPayHourlyRegistered'] })
+                enqueueSnackbar('Resend requested — the selected invoices are being re-sent now.', { variant: 'info' })
             }
         },
         onError: handleError
@@ -446,6 +469,7 @@ export function useBillingMutation() {
         updateExtraCharge,
         saveDriverPayDailyAdjustment,
         payDriverHourlyRegister,
-        batchPayDriverHourlyRegister
+        batchPayDriverHourlyRegister,
+        resendCompaniesInvoice
     }
 }
