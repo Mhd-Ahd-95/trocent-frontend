@@ -166,16 +166,16 @@ function OrderForm(props) {
 
   const onSubmit = async (data, e) => {
     e.preventDefault()
+    if (initialValues['order_status'] === 'billed') {
+      enqueueSnackbar('Order is Billed unable to update', { variant: 'warning' })
+      return
+    }
     let payload = OrderEngine.format_request(data)
     const action = e?.nativeEvent?.submitter?.id;
     if (editMode) {
       const touched = methods.formState.touchedFields
       const orderUpdates = OrderEngine.getOrderUpdates(touched, initialValues, data)
       payload['order_updates'] = orderUpdates
-    }
-    if (payload['order_status'] === 'billed') {
-      enqueueSnackbar('Order is Billed unable to update', { variant: 'warning' })
-      return
     }
     if (payload['order_status'] === 'pending') {
       payload['order_status'] = 'entered'

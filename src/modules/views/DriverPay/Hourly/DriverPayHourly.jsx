@@ -74,6 +74,7 @@ export default function DriverPayHourly() {
 
     const downloadDriverPayHourlyPDF = async (company) => {
         try {
+            console.log(company);
             const pdf = await generateDriverPayHourlyPDF(company);
             pdf.save(`drivers_report_DISTRIBUTION_${company.operating_name}.pdf`);
         } catch (err) {
@@ -83,7 +84,13 @@ export default function DriverPayHourly() {
     };
 
     return (
-        <MainLayout title='Driver Pay Hourly' sideMenu={SideMenu} activeDrawer={{ active: 'Hourly' }} grid noPanding>
+        <MainLayout
+            title='Driver Pay Hourly'
+            sideMenu={SideMenu}
+            activeDrawer={{ active: 'Hourly' }}
+            grid
+            noPanding
+        >
             <Grid container spacing={2}>
                 <Grid size={12}>
                     <FilterPayDriverCommission onSearch={handleSearch} isHourly defaultExpanded />

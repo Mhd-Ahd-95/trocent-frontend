@@ -81,29 +81,13 @@ function MainLayout(props) {
         <Grid container sx={{ width: "100%" }}>
           <Grid size={12}>
             <MainContent noPadding={props.noPadding ? "true" : "false"}>
-              <Grid
-                container
-                spacing={props.noPadding ? 0 : 1}
-                direction={"column"}
-              >
+              <Grid container spacing={props.noPadding ? 0 : 1} direction={"column"}              >
                 <Grid size="auto">{Breadcrumbs && Breadcrumbs}</Grid>
                 <Grid size={12}>
-                  <Grid
-                    container
-                    justifyContent={"space-between"}
-                    alignItems={"center"}
-                  >
+                  <Grid container justifyContent={"space-between"} alignItems={"center"}                  >
                     {!props.untitled &&
                       <Grid>
-                        <Typography
-                          variant="h5"
-                          color="textPrimary"
-                          gutterBottom
-                          sx={{
-                            fontWeight: 700,
-                            marginBottom: -0.2,
-                          }}
-                        >
+                        <Typography variant="h5" color="textPrimary" gutterBottom sx={{ fontWeight: 700, marginBottom: -0.2, }}>
                           {props.title}
                         </Typography>
                       </Grid>
@@ -124,13 +108,7 @@ function MainLayout(props) {
                     )}
                   </Grid>
                 </Grid>
-                <Grid
-                  sx={
-                    props.grid
-                      ? { display: "grid", paddingTop: 3 }
-                      : { paddingTop: 3 }
-                  }
-                >
+                <Grid sx={props.grid ? { display: "grid", paddingTop: 3 } : { paddingTop: 3 }}>
                   {props.children}
                 </Grid>
               </Grid>

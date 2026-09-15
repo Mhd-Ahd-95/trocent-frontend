@@ -2,7 +2,6 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import BillingsApi from "../apis/Billings.api";
 import { useSnackbar } from "notistack";
 import DriverPaysApi from "../apis/DriverPays.api";
-import moment from "moment";
 
 
 export function useBillings(filters = {}, page = 1, pageSize = 10) {
@@ -93,6 +92,19 @@ export function useApprovedDriverHourlyTotals(filters = {}, page = 1, pageSize =
     });
 }
 
+export function useDriverPayHourlyRegistered(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['driverPayHourlyRegistered', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.loadDriverHourlyRegistered({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
 
 export function useBillingMutation() {
 
@@ -380,5 +392,84 @@ export function useBillingMutation() {
         onError: handleError
     })
 
-    return { applyAccessorials, driverPayout, updateInterlinerAmounts, updateOrderStatus, approvedDriverPayHourly, addExtraCharge, deleteExtraCharge, updateExtraCharge, saveDriverPayDailyAdjustment }
+    const payDriverHourlyRegister = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.payDriverHourlyRegister(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                const cid = payload.company_id
+                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                    if (!old.data) return
+                    return {
+                        ...old,
+                        data: old.data.filter(o => Number(o.company_id) !== Number(cid))
+                    }
+                })
+                enqueueSnackbar('Payment recorded — Invoice is being generated and will be emailed shortly', { variant: 'success' })
+            }
+        },
+        onError: handleError
+    })
+
+    const batchPayDriverHourlyRegister = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.batchPayDriverHourlyRegister(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                const companies = payload.map(p => p.company_id)
+                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                    if (!old.data) return
+                    return {
+                        ...old,
+                        data: old.data.filter(o => !companies.includes(Number(o.company_id)))
+                    }
+                })
+                queryClient.invalidateQueries({ queryKey: ['driverPayHourlyRegistered'] })
+                enqueueSnackbar('Batch Payment recorded — Invoices are being generated and will be emailed shortly', { variant: 'success' })
+            }
+        },
+        onError: handleError
+    })
+
+    const resendCompaniesInvoice = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.resendCompaniesinvoice(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                console.log(res)
+                // const cid = payload.company_id
+                // queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                //     if (!old.data) return
+                //     return {
+                //         ...old,
+                //         data: old.data.filter(o => Number(o.company_id) !== Number(cid))
+                //     }
+                // })
+                // queryClient.invalidateQueries({ queryKey: ['driverPayHourlyRegistered'] })
+                enqueueSnackbar('Resend requested — the selected invoices are being re-sent now.', { variant: 'info' })
+            }
+        },
+        onError: handleError
+    })
+
+    return {
+        applyAccessorials,
+        driverPayout,
+        updateInterlinerAmounts,
+        updateOrderStatus,
+        approvedDriverPayHourly,
+        addExtraCharge,
+        deleteExtraCharge,
+        updateExtraCharge,
+        saveDriverPayDailyAdjustment,
+        payDriverHourlyRegister,
+        batchPayDriverHourlyRegister,
+        resendCompaniesInvoice
+    }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useTransition, useRef } from 'react';
+import React, { useState, useCallback, useTransition, useRef } from 'react';
 import { Box, MenuItem, Select, CircularProgress, Pagination, Button, Grid } from '@mui/material';
 import { ReceiptLongRounded, UnfoldMoreRounded, UnfoldLessRounded, RequestQuote } from '@mui/icons-material';
 import { MainLayout } from '../../layouts';
@@ -22,7 +22,7 @@ export default function BillingView() {
     const orderRef = React.useRef()
     const [openDrawer, setOpenDrawer] = React.useState(false)
     const { enqueueSnackbar } = useSnackbar()
-    const { data: billingOrders, isLoading, isError, error } = useBillings(appliedFilters, page, rowsPerPage)
+    const { data: billingOrders, isLoading, isFetching, isError, error } = useBillings(appliedFilters, page, rowsPerPage)
     const data = billingOrders?.data || []
 
     const groupApis = useRef(new Map());
@@ -98,7 +98,7 @@ export default function BillingView() {
                         </Box>
                     )}
                 </Grid>
-                {isLoading ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
+                {isLoading || isFetching ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
                     <CircularProgress />
                 </Grid>
                     :

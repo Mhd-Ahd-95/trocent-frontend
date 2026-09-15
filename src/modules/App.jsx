@@ -37,7 +37,8 @@ import {
   DriverPayHourly,
   DriverHourlyRegister,
   DriverCommissionRegister,
-  BillingRegister
+  BillingRegister,
+  RegisteredPayments
 } from './views'
 import { DriverDeliveries, LandingPage, StopActions, FreightOrder } from './DriverApp/view'
 import { ScrollToTop } from './components'
@@ -116,6 +117,7 @@ function App() {
           <Route path='/driver-pay-commission' Component={DriverPayCommission} />
           <Route path='/driver-pay-hourly' Component={DriverPayHourly} />
           <Route path='/accounting/driver-hourly-register' Component={DriverHourlyRegister} />
+          <Route path='/accounting/driver-hourly-registered' Component={RegisteredPayments} />
           <Route path='/accounting/driver-commission-register' Component={DriverCommissionRegister} />
           <Route path='/accounting/billing-register' Component={BillingRegister} />
         </Route>

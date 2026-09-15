@@ -81,7 +81,7 @@ const DriverGroupedSummary = React.memo(({ driver, days = [] }) => {
                                 <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Adjusted Hours</Typography></Grid>
                                 <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Adjusted KM</Typography></Grid>
                                 <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total Hrs</Typography></Grid>
-                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total Km</Typography></Grid>
+                                <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total KM</Typography></Grid>
                                 <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Hourly Pay</Typography></Grid>
                                 <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>KM Pay</Typography></Grid>
                                 <Grid size={1.3}><Typography className={classes.daysTableHeaderCell}>Total</Typography></Grid>

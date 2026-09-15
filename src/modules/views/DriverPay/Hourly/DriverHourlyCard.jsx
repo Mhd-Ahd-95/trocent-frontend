@@ -66,6 +66,7 @@ const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
 
 
 function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
+
     const { approvedDriverPayHourly, saveDriverPayDailyAdjustment } = useBillingMutation();
 
     const [adjustments, setAdjustments] = useState(() => days.reduce((acc, d) => {
@@ -190,7 +191,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
             },
         };
-        console.log(payload);
+        console.log(payload)
         await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload, cid: driverDetails.company_id });
     };
 
@@ -234,7 +235,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
 
         setSavingDates((prev) => new Set(prev).add(day.date));
         try {
-            await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, cid: driverDetails.company_id});
+            await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, cid: driverDetails.company_id });
             lastSavedRef.current[day.date] = signature;
         } finally {
             setSavingDates((prev) => {
@@ -244,17 +245,6 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
             });
         }
     }, [buildDayPayload, saveDriverPayDailyAdjustment, driverDetails.driver_id]);
-
-    const initializedRef = React.useRef(false);
-    React.useEffect(() => {
-        if (initializedRef.current) return;
-        initializedRef.current = true;
-        days.forEach((day) => {
-            if (day.saved_hour_adjustment !== null && day.saved_hour_adjustment !== undefined) {
-                lastSavedRef.current[day.date] = JSON.stringify(buildDayPayload(day));
-            }
-        });
-    }, []);
 
     return (
         <Grid container className={classes.hourlyRoot} direction="column" wrap="nowrap">
@@ -300,7 +290,7 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                                         <div>
                                             <Typography className={classes.dateText}>
                                                 {moment(day.date).format('ddd, MMM D')}
-                                                {savingDates.has(day.date) && (<CircularProgress size={10} sx={{ ml: 1, verticalAlign: 'middle' }} />)}
+                                                {savingDates.has(day.date) && (<CircularProgress size={15} sx={{ ml: 1, verticalAlign: 'middle' }} />)}
                                             </Typography>
                                             <Typography className={classes.routeText}>{day.shipper_city || '—'} → {day.consignee_city || '—'}</Typography>
                                         </div>

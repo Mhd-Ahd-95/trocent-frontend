@@ -19,6 +19,36 @@ const deleteExtraCharge = (id) => CustomAxios.delete(`/api/extra-company-charges
 
 const saveDriverPayDailyAdjustment = (did, payload) => CustomAxios.put(`/api/driver-pays/hourly/day-adjustment/${did}`, payload)
 
+const payDriverHourlyRegister = (payload) => CustomAxios.put('/api/driver-pays/hourly-register', payload)
+
+const batchPayDriverHourlyRegister = (payload) => CustomAxios.put('/api/driver-pays/batch-hourly-register', payload)
+
+const downloadCompanyInvoice = async (payload) => {
+    const response = await CustomAxios.post('/api/driver-pays/hourly-register', payload, { responseType: 'blob', });
+    const blob = new Blob([response.data], { type: 'application/pdf', });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    // console.log(response)
+    // const contentDisposition = response.headers['content-disposition'];
+    let filename = 'company-invoice.pdf';
+    // if (contentDisposition) {
+    //     const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    //     if (match) {
+    //         filename = match[1];
+    //     }
+    // }
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+}
+
+const loadDriverHourlyRegistered = async (params = {}) => CustomAxios.get('/api/driver-pays/driver-hourly-registered', { params })
+
+const resendCompaniesinvoice = async (data) => CustomAxios.put('/api/driver-pays/resend-companies-invoice', data)
+
 export default {
     getPendingCommissionDriverPay,
     getPendingHourlyDriverPay,
@@ -28,5 +58,10 @@ export default {
     addExtraCharge,
     deleteExtraCharge,
     updateExtraCharge,
-    saveDriverPayDailyAdjustment
+    saveDriverPayDailyAdjustment,
+    payDriverHourlyRegister,
+    batchPayDriverHourlyRegister,
+    downloadCompanyInvoice,
+    loadDriverHourlyRegistered,
+    resendCompaniesinvoice
 }
