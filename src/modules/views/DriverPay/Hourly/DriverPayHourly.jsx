@@ -74,7 +74,6 @@ export default function DriverPayHourly() {
 
     const downloadDriverPayHourlyPDF = async (company) => {
         try {
-            console.log(company);
             const pdf = await generateDriverPayHourlyPDF(company);
             pdf.save(`drivers_report_DISTRIBUTION_${company.operating_name}.pdf`);
         } catch (err) {

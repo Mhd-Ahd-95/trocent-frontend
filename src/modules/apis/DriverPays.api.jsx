@@ -3,6 +3,12 @@ import CustomAxios from "./customAxios";
 
 const getPendingCommissionDriverPay = (params = {}) => CustomAxios.get('/api/driver-pays/commissions', { params })
 
+const approvedDriverPayCommission = (payload) => CustomAxios.post('/api/driver-pays/commissions', payload)
+
+const saveDriverPayCommissionPayout = (payload) => CustomAxios.put('/api/driver-pays/commissions', payload)
+
+
+
 const getPendingHourlyDriverPay = (params = {}) => CustomAxios.get('/api/driver-pays/hourly', { params })
 
 const getHourlyDriverPayDetails = (did, params = {}) => CustomAxios.get(`/api/driver-pays/hourly/details/${did}`, { params })
@@ -63,5 +69,7 @@ export default {
     batchPayDriverHourlyRegister,
     downloadCompanyInvoice,
     loadDriverHourlyRegistered,
-    resendCompaniesinvoice
+    resendCompaniesinvoice,
+    approvedDriverPayCommission,
+    saveDriverPayCommissionPayout
 }

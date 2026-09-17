@@ -5,11 +5,11 @@ import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders = [], orderRef, openCharges, OrderCard, isInvoicing = false,
-    customerId, isDriverPay, driver_id, onApprove, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect }, ref) => {
+    customerId, isDriverPay, driver_id, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
-    
+
     useImperativeHandle(ref, () => ({
         expand: () => setExpanded(true),
         collapse: () => setExpanded(false),
@@ -106,7 +106,7 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
 
             <AccordionDetails className={classes.accordionDetails}>
                 {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
-                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
+                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} />))
                         : hourlyRegister ? <OrderCard company={company} drivers={orders} /> :
                             orders.map((order) => (
                                 <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />

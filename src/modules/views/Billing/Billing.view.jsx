@@ -9,11 +9,14 @@ import AccessorialCharges from './CustomerAccessorials'
 import { useSnackbar } from 'notistack';
 import OrderBillingCard from './OrderBillingCard';
 import InterlinerCharge from './InterlinerCharge';
+import { useDispatchScreenSync } from '../../hooks/useDispatchScreenSync';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 export default function BillingView() {
 
+    // useDispatchScreenSync()
+    
     const { classes } = useStyles();
     const [appliedFilters, setAppliedFilters] = useState(null);
     const [page, setPage] = useState(1);

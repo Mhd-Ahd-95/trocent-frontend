@@ -17,6 +17,12 @@ export function useUpdateOrderStatus() {
         const invalidateInterliners = newDispatchedOrders.some(t => t.update_interliner)
         const key = dispatchKeys.trips(trip_type);
         const cachedTrips = queryClient.getQueryData(key);
+
+        // const checkOrderCompleted = newDispatchedOrders.some(ndo => (ndo.leg_type === 'delivery' || ndo.leg_type === 'single') && ndo.order_status === 'completed')
+        // if (checkOrderCompleted) {
+        //     queryClient.invalidateQueries({ queryKey: ['billings'] })
+        // }
+
         if (trip_status === 'completed') {
             if (cachedTrips) {
                 queryClient.setQueryData(key, (old = []) => old.filter(o => Number(o.id) !== Number(trip_id)));

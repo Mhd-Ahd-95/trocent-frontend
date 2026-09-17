@@ -4,6 +4,7 @@ import { CalendarToday, Place, LocalShippingRounded, AccessTime, StickyNote2Roun
 import moment from 'moment'
 import useStyles from './Billing.styles'
 import { money } from '../Utils/driverPay'
+import { useBillingMutation } from '../../hooks/useBillings'
 
 const SERVICE_CHIP_CLASS = {
     Direct: 'serviceChipDirect',
@@ -38,11 +39,12 @@ const LegLine = ({ classes, leg }) => (
     </Typography>
 )
 
-const PayoutInput = ({ classes, placeholder, value, onChange }) => (
+const PayoutInput = ({ classes, placeholder, value, onChange, onBlur }) => (
     <TextField
         className={classes.payoutInput}
         size="small"
         value={value ?? ''}
+        onBlur={onBlur}
         type="number"
         onChange={(e) => {
             const val = e.target.value
@@ -60,6 +62,8 @@ const OrderDriverCard = React.memo(({ order, onPayoutChange, driver }) => {
     const unit = order.freights?.length > 0 ? order.freights[0].unit : 'lbs'
     const isInterliner = (order.interliners?.length || 0) > 0
 
+    const { saveDriverPayCommissionPayout } = useBillingMutation()
+
     const pickupNotes = React.useMemo(() => order.order_notes.filter(on => on.note_type === 'pickup'), [order.order_notes])
     const deliveryNotes = React.useMemo(() => order.order_notes.filter(on => on.note_type === 'delivery'), [order.order_notes])
 
@@ -74,6 +78,14 @@ const OrderDriverCard = React.memo(({ order, onPayoutChange, driver }) => {
         setPayout(value)
         onPayoutChange?.(order.order_id, value)
     }, [order.order_id, onPayoutChange])
+
+    const updatePayoutInput = async (e) => {
+        e.preventDefault()
+        const payout = e.target.value || 0
+        if (Number(order.driver_payout) === Number(payout)) return
+        const payload = { driver_id: driver.driver_id, driver_pay_id: order.driver_pay_id, payout: Number(payout) || 0 }
+        await saveDriverPayCommissionPayout.mutateAsync(payload)
+    }
 
     return (
         <Box className={classes.orderCard}>
@@ -255,6 +267,7 @@ const OrderDriverCard = React.memo(({ order, onPayoutChange, driver }) => {
                                 <PayoutInput
                                     classes={classes}
                                     value={payout}
+                                    onBlur={updatePayoutInput}
                                     onChange={handleChange}
                                     placeholder={`#${driver.driver_number}`}
                                 />
