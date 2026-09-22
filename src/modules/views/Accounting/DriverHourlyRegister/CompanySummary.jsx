@@ -60,7 +60,7 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
 
         const payload = {
             company_id: company.company_id,
-            driver_pay_totals_ids: drivers.map(d => d.driver_pay_totals_id)
+            driver_pay_totals_ids: drivers.map(d => d.driver_pay_hourly_totals_id)
         }
         await batchPayDriverHourlyRegister.mutateAsync([payload])
     }

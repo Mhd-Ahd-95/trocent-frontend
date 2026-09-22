@@ -6,6 +6,7 @@ import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/i
 import useStyles from './Commission.styles'
 import DateGroupedSummary from './DateGroupedSummary'
 import { useCommissionDrivers } from '../../../hooks/useBillings'
+import { useSnackbar } from 'notistack'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -19,9 +20,11 @@ export default function DriverPayCommission() {
     const [page, setPage] = React.useState(1);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [appliedFilters, setAppliedFilters] = React.useState(null);
+    const { enqueueSnackbar } = useSnackbar()
 
     const { data: driverPays, isLoading, isError, error } = useCommissionDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
+
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));
 
     const handleSearch = React.useCallback((filters) => {
@@ -114,11 +117,6 @@ export default function DriverPayCommission() {
                                             orders={group.orders}
                                             OrderCard={DateGroupedSummary}
                                             isDriverPay
-                                            onApprove={({ driverId, date, amount }) => {
-                                                console.log(driverId);
-                                                console.log(amount);
-                                                console.log(date);
-                                            }}
                                         />
                                     ))}
                                 </Box>

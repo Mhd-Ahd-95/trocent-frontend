@@ -15,7 +15,7 @@ const LabeledField = ({ label, icon, children, classes }) => (
     </Box>
 );
 
-const FilterBarRegisterBatch = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExpanded = false }) => {
+const FilterBarRegisterBatch = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExpanded = false, commissionRegistered = false }) => {
 
     const theme = useTheme();
     const isDark = theme.palette.mode === 'dark';
@@ -138,7 +138,7 @@ const FilterBarRegisterBatch = React.memo(({ EMPTY_FILTERS = {}, onSearch, defau
                         <LabeledField classes={classes} label="Keyword" icon={<Search sx={{ fontSize: 11 }} />}>
                             <TextField
                                 size="small" fullWidth className={classes.inputRoot}
-                                placeholder="#Driver, Driver name, Company..."
+                                placeholder={commissionRegistered ? '#Driver, Driver name...' : "#Driver, Driver name, Company..."}
                                 value={filters.keyword}
                                 onChange={(e) => setField('keyword', e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

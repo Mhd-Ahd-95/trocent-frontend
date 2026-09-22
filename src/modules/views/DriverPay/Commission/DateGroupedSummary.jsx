@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react'
-import { Box, Typography, TextField, Button, Grid, Collapse } from '@mui/material'
-import { TuneRounded } from '@mui/icons-material'
+import { Box, Typography, TextField, Button, Grid, Collapse, CircularProgress } from '@mui/material'
+import { CheckCircleRounded, TuneRounded } from '@mui/icons-material'
 import moment from 'moment'
 import OrderDriverCard from '../../Billing/OrderDriverCard'
 import { money, accessorialsTotal, interlinersTotal } from '../../Utils/driverPay'
 import useStyles from './Commission.styles'
+import { useBillingMutation } from '../../../hooks/useBillings'
 
 const StatTile = ({ classes, cx, label, value, highlight }) => (
     <Box className={cx(classes.statTile, highlight && classes.statTileHighlight)}>
@@ -17,8 +18,9 @@ const StatTile = ({ classes, cx, label, value, highlight }) => (
     </Box>
 )
 
-const DateGroupedSummary = React.memo(({ date, orders, driver, onApprove }) => {
+const DateGroupedSummary = React.memo(({ date, orders, driver }) => {
 
+    const { approvedDriverPayCommission } = useBillingMutation()
     const { classes, cx } = useStyles()
     const [expanded, setExpanded] = useState(false)
     const hasOpened = useRef(false)
@@ -59,10 +61,12 @@ const DateGroupedSummary = React.memo(({ date, orders, driver, onApprove }) => {
         setRunningTotal(val)
     }, [])
 
-    const handleApprove = useCallback((e) => {
+    const handleApprove = async (e) => {
+        e.preventDefault()
         e.stopPropagation()
-        onApprove?.({ driverId: driver?.driver_id, date, amount: Number(runningTotal) })
-    }, [driver, date, runningTotal, onApprove])
+        const payload = { driver_id: driver?.driver_id, date, payout: Number(runningTotal), driver_pay_ids: orders.map(o => o.driver_pay_id) }
+        await approvedDriverPayCommission.mutateAsync(payload)
+    }
 
 
     return (
@@ -106,6 +110,8 @@ const DateGroupedSummary = React.memo(({ date, orders, driver, onApprove }) => {
                             variant="contained"
                             className={classes.approveButton}
                             onClick={handleApprove}
+                            startIcon={approvedDriverPayCommission.isPending ? <CircularProgress size={18} color='inherit' /> : <CheckCircleRounded />}
+                            disabled={approvedDriverPayCommission.isPending}
                         >
                             Approve
                         </Button>

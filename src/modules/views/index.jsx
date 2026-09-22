@@ -36,3 +36,4 @@ export { default as DriverHourlyRegister } from './Accounting/DriverHourlyRegist
 export { default as DriverCommissionRegister } from './Accounting/DriverCommissionRegister/DriverCommissionRegister'
 export { default as BillingRegister } from './Accounting/BillingRegister/BillingRegister'
 export { default as RegisteredPayments } from './Accounting/DriverHourlyRegister/RegisteredPayments'
+export { default as DriverCommissionRegistered } from './Accounting/DriverCommissionRegister/DriverCommissionRegistered'

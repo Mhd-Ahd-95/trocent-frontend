@@ -1,31 +1,31 @@
 import React, { useTransition, useState, useCallback } from "react";
-import { Grid, Box, Select, Pagination, MenuItem, CircularProgress } from "@mui/material";
-import { CustomerBillingGroup, SideMenu } from "../../../components";
+import { Box, CircularProgress, Grid, Pagination, Select, MenuItem } from "@mui/material";
+import { Breadcrumbs, SideMenu } from "../../../components";
 import { MainLayout } from "../../../layouts";
-import FilterBarRegister from "../Filterbar/Filterbar";
-import { ReceiptLongRounded } from "@mui/icons-material";
+import FilterBarRegisterBatch from "../Filterbar/FilterbarBatchStatus";
 import useStyles from './Driver.styles'
-import { useDriverPayCommissionApproved } from "../../../hooks/useBillings";
 import { useSnackbar } from "notistack";
-import { useNavigate } from "react-router-dom";
-import DriverTotals from "./DriverTotals";
+import { useDriverPayCommissionRegistered } from "../../../hooks/useBillings";
+import { ReceiptLongRounded } from "@mui/icons-material";
+import DriverCommissionRegisterRow from "./DriverCommissionRegisterRow";
+import DriverPaysApi from "../../../apis/DriverPays.api";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
-export default function DriverCommissionRegister() {
+export default function DriverCommissionRegistered() {
 
     const { classes } = useStyles()
     const { enqueueSnackbar } = useSnackbar()
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [appliedFilters, setAppliedFilters] = useState(null);
-    const { data: drivers, isLoading, isFetching, isError, error } = useDriverPayCommissionApproved(appliedFilters, page, rowsPerPage)
-    const data = drivers?.data ?? []
+    const [appliedFilters, setAppliedFilters] = useState({ payDateFrom: '', payDateTo: '', batch_number: '', keyword: '', quickFilter: 'today' });
 
-    const meta = drivers?.meta ?? {};
-    const pageCount = Math.max(1, meta.lastPage || 1);
 
+    const { data: registered, isLoading, isFetching, isError, error } = useDriverPayCommissionRegistered(appliedFilters, page, rowsPerPage)
+    const data = registered?.data || []
+    const total = registered?.total || 0
+    const pageCount = Math.max(1, registered?.lastPage || 1);
 
     const handleSearch = useCallback((filters) => {
         startTransition(() => {
@@ -50,48 +50,47 @@ export default function DriverCommissionRegister() {
         }
     }, [isError, error])
 
-    const navigate = useNavigate()
-
     return (
         <MainLayout
-            title='Driver Pay Commission Register'
+            title='Driver Commission Invoices'
             sideMenu={SideMenu}
             grid
             activeDrawer={{ active: 'Driver Commission Register' }}
-            button
-            btnProps={{ label: 'Commission Invoices', onClick: () => navigate('/accounting/driver-commission-registered'), icon: <ReceiptLongRounded /> }}
+            breadcrumbs={
+                <Breadcrumbs
+                    items={[
+                        { text: 'Driver Commission Register', url: '/accounting/driver-commission-register' },
+                        { text: 'Invoice Register' }
+                    ]}
+                />
+            }
         >
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <FilterBarRegister
-                        EMPTY_FILTERS={{ approvedDateFrom: '', approvedDateTo: '', keyword: '' }}
+                    <FilterBarRegisterBatch
+                        EMPTY_FILTERS={{ payDateFrom: '', payDateTo: '', batch_number: '', keyword: '', quickFilter: 'today' }}
                         onSearch={handleSearch}
+                        commissionRegistered
                     />
                 </Grid>
-
                 {isLoading || isFetching ? <Grid container component={Box} justifyContent={'center'} width={'100%'} py={15}>
                     <CircularProgress />
                 </Grid>
                     :
                     <>
                         <Grid size={12}>
-                            {data && data?.length === 0 ? (
+                            {data.length === 0 ? (
                                 <Box className={classes.emptyState}>
                                     <ReceiptLongRounded sx={{ fontSize: 48, opacity: 0.35, mb: 1 }} />
-                                    <Box sx={{ fontWeight: 700 }}>No Drivers match your filters</Box>
-                                    <Box sx={{ fontSize: 13, mt: 0.5 }}>Try widening the date range or clearing the keyword.</Box>
+                                    <Box sx={{ fontWeight: 700 }}>No commission invoices match your filters</Box>
+                                    <Box sx={{ fontSize: 13, mt: 0.5 }}>Try widening the date range or clearing the keyword or batch number.</Box>
                                 </Box>
                             ) : (
                                 <Box className={`${classes.listWrap} ${isPending ? classes.listWrapFetching : ''}`}>
-                                    {data.map((driver) => (
-                                        <CustomerBillingGroup
-                                            key={driver.driver_id}
-                                            driver_id={driver.driver_id}
-                                            customerName={driver.driver_name}
-                                            accountNumber={driver.driver_number}
-                                            orders={driver.totals}
-                                            commissionRegister
-                                            OrderCard={DriverTotals}
+                                    {data.map((register) => (
+                                        <DriverCommissionRegisterRow
+                                            key={register.id}
+                                            register={register}
                                         />
                                     ))}
                                 </Box>
@@ -101,7 +100,7 @@ export default function DriverCommissionRegister() {
                             <Box className={classes.paginationBar}>
                                 <Box className={classes.paginationInfo}>
                                     {isPending && <CircularProgress size={13} />}
-                                    Drivers per page
+                                    Invoices per page
                                     <Select
                                         size="small" value={rowsPerPage}
                                         className={classes.rowsPerPageSelect}
@@ -109,7 +108,7 @@ export default function DriverCommissionRegister() {
                                     >
                                         {PAGE_SIZE_OPTIONS.map((n) => <MenuItem key={n} value={n} sx={{ fontSize: 12.5 }}>{n}</MenuItem>)}
                                     </Select>
-                                    <span>· {meta.total ?? 0} Driver{meta.total !== 1 ? 's' : ''} total</span>
+                                    <span>· {total ?? 0} Invoice{total !== 1 ? 's' : ''} total</span>
                                 </Box>
                                 <Pagination
                                     className={classes.muiPaginationRoot}

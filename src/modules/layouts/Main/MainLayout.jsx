@@ -97,6 +97,7 @@ function MainLayout(props) {
                         <StyledButton
                           color={props.btnProps?.color || 'primary'}
                           py={1}
+                          startIcon={props.btnProps?.icon ? props.btnProps.icon : null}
                           variant="contained"
                           textTransform="capitalize"
                           size="small"

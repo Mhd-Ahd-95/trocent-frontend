@@ -106,6 +106,34 @@ export function useDriverPayHourlyRegistered(filters = {}, page = 1, pageSize = 
     });
 }
 
+export function useDriverPayCommissionApproved(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['driverPayCommissionApproved', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.loadDriverPayCommissionApproved({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useDriverPayCommissionRegistered(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['driverPayCommissionRegistered', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const res = await DriverPaysApi.loadDriverCommissionRegistered({ ...filters, page, pageSize });
+            return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 export function useBillingMutation() {
 
     const queryClient = useQueryClient()
@@ -442,7 +470,6 @@ export function useBillingMutation() {
         },
         onSuccess: (res, payload) => {
             if (res) {
-                console.log(res)
                 // const cid = payload.company_id
                 // queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
                 //     if (!old.data) return
@@ -454,6 +481,86 @@ export function useBillingMutation() {
                 // queryClient.invalidateQueries({ queryKey: ['driverPayHourlyRegistered'] })
                 enqueueSnackbar('Resend requested — the selected invoices are being re-sent now.', { variant: 'info' })
             }
+        },
+        onError: handleError
+    })
+
+    const approvedDriverPayCommission = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.approvedDriverPayCommission(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (!res) return
+            const { driver_id, driver_pay_ids } = payload
+            queryClient.setQueriesData({ queryKey: ['commissionDrivers'] }, (old) => {
+                if (!old?.data) return old
+                return {
+                    ...old,
+                    data: old.data.map(group => {
+                        if (Number(group.driver_id) !== Number(driver_id)) return group
+                        return {
+                            ...group,
+                            orders: group.orders.filter(
+                                order => !driver_pay_ids.includes(order.driver_pay_id)
+                            ),
+                        }
+                    }).filter(group => group.orders.length > 0)
+                }
+            })
+            queryClient.invalidateQueries({ queryKey: ['driverPayCommissionApproved'] })
+            enqueueSnackbar('Driver Pay Commission has been approved successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const saveDriverPayCommissionPayout = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.saveDriverPayCommissionPayout(payload)
+            return res.data
+        },
+        onSuccess: (res, payload) => {
+            if (res) {
+                queryClient.setQueriesData({ queryKey: ['commissionDrivers'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(d => Number(d.driver_id) === Number(payload.driver_id) ?
+                            { ...d, orders: d.orders.map(o => Number(o.driver_pay_id) === Number(payload.driver_pay_id) ? { ...o, driver_payout: payload.payout } : o) } : d
+                        )
+                    }
+                })
+            }
+        },
+        onError: handleError
+    })
+
+    const driverPayCommissionRegisterAndDownloadPDF = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.driverPayCommissionRegisterAndDownloadPDF(payload)
+            return res
+        },
+        onSuccess: (res, payload) => {
+            const cid = payload.company_id
+            queryClient.setQueriesData({ queryKey: ['driverPayCommissionApproved'] }, (old) => {
+                if (!old.data) return
+                return {
+                    ...old,
+                    data: old.data.filter(o => Number(o.driver_id) !== Number(payload.driver_id))
+                }
+            })
+            queryClient.invalidateQueries({ queryKey: ['driverPayCommissionRegistered'] })
+        },
+        onError: handleError
+    })
+
+    const downloadDriverCommissionPDF = useMutation({
+        mutationFn: async (registerId) => {
+            const res = await DriverPaysApi.downloadDriverCommissionPdf(registerId)
+            return res
+        },
+        onSuccess: (res) => {
+            //
         },
         onError: handleError
     })
@@ -470,6 +577,10 @@ export function useBillingMutation() {
         saveDriverPayDailyAdjustment,
         payDriverHourlyRegister,
         batchPayDriverHourlyRegister,
-        resendCompaniesInvoice
+        resendCompaniesInvoice,
+        saveDriverPayCommissionPayout,
+        approvedDriverPayCommission,
+        driverPayCommissionRegisterAndDownloadPDF,
+        downloadDriverCommissionPDF
     }
 }

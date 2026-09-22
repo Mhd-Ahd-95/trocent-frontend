@@ -49,7 +49,7 @@ export function useDispatchScreenSync() {
         })
 
         channel.listen('.dispatch.driver.orderStatus', (trip) => {
-            driverUpdateOrders(trip)
+            driverUpdateOrders(trip) // update order status when driver: arrived shipper or arrived receiver
         })
 
         channel.listen('.refreshDriverPayHourlyRegistered', (ref) => {

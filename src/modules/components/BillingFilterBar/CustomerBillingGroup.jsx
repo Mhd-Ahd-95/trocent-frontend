@@ -5,11 +5,11 @@ import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders = [], orderRef, openCharges, OrderCard, isInvoicing = false,
-    customerId, isDriverPay, driver_id, onApprove, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect }, ref) => {
+    customerId, isDriverPay, driver_id, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect, commissionRegister }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
-    
+
     useImperativeHandle(ref, () => ({
         expand: () => setExpanded(true),
         collapse: () => setExpanded(false),
@@ -47,7 +47,7 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
             .map(([date, dateOrders]) => ({ date, orders: dateOrders }));
     }, [orders, isDriverPay]);
 
-    const type = hourlyRegister ? 'Driver' : 'Order'
+    const type = hourlyRegister ? 'Driver' : commissionRegister ? 'Day' : 'Order'
 
     return (
         <Accordion className={classes.accordionRoot} expanded={expanded} onChange={handleChange} disableGutters TransitionProps={{ unmountOnExit: true }}>
@@ -106,8 +106,8 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
 
             <AccordionDetails className={classes.accordionDetails}>
                 {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
-                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} onApprove={onApprove} />))
-                        : hourlyRegister ? <OrderCard company={company} drivers={orders} /> :
+                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} />))
+                        : hourlyRegister ? <OrderCard company={company} drivers={orders} /> : commissionRegister ? <OrderCard totals={orders} driver_id={driver_id} /> :
                             orders.map((order) => (
                                 <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
                             ))

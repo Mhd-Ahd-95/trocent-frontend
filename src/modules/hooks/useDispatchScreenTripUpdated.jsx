@@ -16,6 +16,12 @@ export function useDispatchScreenTripUpdated() {
             const key = dispatchKeys.trips(trip_type);
             const cachedTrips = queryClient.getQueryData(key);
             const cachedDriverTrips = queryClient.getQueryData(['driverTrips', Number(trip.driver_id)])
+
+            //billing live
+            // if (trip_type === 'driver' && trip.trip_status === 'completed'){
+            //     queryClient.invalidateQueries({ queryKey: ['billings'] }) 
+            // }
+
             if (cachedTrips) {
                 const alreadyExist = cachedTrips.find(t => Number(t.id) === Number(trip.id))
                 if (alreadyExist) {
