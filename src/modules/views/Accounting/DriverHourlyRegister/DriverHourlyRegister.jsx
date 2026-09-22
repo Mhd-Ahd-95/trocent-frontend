@@ -25,6 +25,7 @@ export default function DriverHourlyRegister() {
     const companyRef = React.useRef()
     const { data: totalDrivers, isLoading, isFetching, isError, error } = useApprovedDriverHourlyTotals(appliedFilters, page, rowsPerPage)
     const data = totalDrivers?.data ?? []
+
     const [openDrawer, setOpenDrawer] = useState(false)
     const [downloading, setDownloading] = React.useState(false)
 
@@ -34,9 +35,6 @@ export default function DriverHourlyRegister() {
     const meta = totalDrivers?.meta ?? {};
     const pageCount = Math.max(1, meta.lastPage || 1);
 
-    // useEffect(() => {
-    //     setSelectedIds(new Set(data.map(c => c.company_id)));
-    // }, [data]);
 
     const handleSearch = useCallback((filters) => {
         startTransition(() => {
@@ -77,17 +75,12 @@ export default function DriverHourlyRegister() {
         setSelectedIds(prev => (prev.size === data.length ? new Set() : new Set(data.map(c => c.company_id))));
     }, [data]);
 
-    // const selectedCompanies = useMemo(
-    //     () => data.filter(c => selectedIds.has(c.company_id)),
-    //     [data, selectedIds]
-    // );
-
     const handleBulkGeneratePdf = async (e) => {
         e.preventDefault()
         const selectedCompanies = data.filter(c => selectedIds.has(c.company_id))
         const payload = selectedCompanies.map(company => ({
             company_id: company.company_id,
-            driver_pay_totals_ids: company.drivers.map(d => d.driver_pay_totals_id),
+            driver_pay_totals_ids: company.drivers.map(d => d.driver_pay_hourly_totals_id),
         }))
         await batchPayDriverHourlyRegister.mutateAsync(payload)
     }
@@ -97,7 +90,7 @@ export default function DriverHourlyRegister() {
         try {
             const payload = {
                 company_id: company.company_id,
-                driver_pay_totals_ids: company.drivers.map(d => d.driver_pay_totals_id)
+                driver_pay_totals_ids: company.drivers.map(d => d.driver_pay_hourly_totals_id)
             }
             await DriverPaysApi.downloadCompanyInvoice(payload)
         }
