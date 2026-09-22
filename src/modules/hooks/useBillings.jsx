@@ -541,7 +541,15 @@ export function useBillingMutation() {
             return res
         },
         onSuccess: (res, payload) => {
-            console.log(res)
+            const cid = payload.company_id
+            queryClient.setQueriesData({ queryKey: ['driverPayCommissionApproved'] }, (old) => {
+                if (!old.data) return
+                return {
+                    ...old,
+                    data: old.data.filter(o => Number(o.driver_id) !== Number(payload.driver_id))
+                }
+            })
+            queryClient.invalidateQueries({ queryKey: ['driverPayCommissionRegistered'] })
         },
         onError: handleError
     })
