@@ -20,7 +20,7 @@ export default function RegisteredPayments() {
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [appliedFilters, setAppliedFilters] = useState(null);
+    const [appliedFilters, setAppliedFilters] = useState({ payDateFrom: '', payDateTo: '', batch_number: '', keyword: '', quickFilter: 'today' });
     const { resendCompaniesInvoice } = useBillingMutation()
 
     const { data: registeredCompanies, isLoading, isFetching, isError, error } = useDriverPayHourlyRegistered(appliedFilters, page, rowsPerPage)
@@ -84,7 +84,7 @@ export default function RegisteredPayments() {
 
     return (
         <MainLayout
-            title='Registered Payments'
+            title='Driver Hourly Invoices'
             sideMenu={SideMenu}
             activeDrawer={{ active: 'Driver Hourly Register' }}
             grid

@@ -1,4 +1,4 @@
-import React, { useTransition, useState, useCallback, useMemo, useEffect } from "react";
+import React, { useTransition, useState, useCallback } from "react";
 import { Grid, Box, Select, Pagination, MenuItem, CircularProgress, Typography, Checkbox, Button } from "@mui/material";
 import { CustomerBillingGroup, DrawerForm, SideMenu } from "../../../components";
 import { MainLayout } from "../../../layouts";
@@ -115,7 +115,7 @@ export default function DriverHourlyRegister() {
             sideMenu={SideMenu}
             activeDrawer={{ active: 'Driver Hourly Register' }}
             button
-            btnProps={{ label: 'Registered Payments', onClick: () => navigate('/accounting/driver-hourly-registered') }}
+            btnProps={{ label: 'Hourly Invoices', onClick: () => navigate('/accounting/driver-hourly-registered'), icon: <ReceiptLongRounded /> }}
         >
             <Grid container spacing={2}>
                 <Grid size={12}>

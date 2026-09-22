@@ -106,6 +106,34 @@ export function useDriverPayHourlyRegistered(filters = {}, page = 1, pageSize = 
     });
 }
 
+export function useDriverPayCommissionApproved(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['driverPayCommissionApproved', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const response = await DriverPaysApi.loadDriverPayCommissionApproved({ ...filters, page, pageSize });
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
+export function useDriverPayCommissionRegistered(filters = {}, page = 1, pageSize = 10) {
+    return useQuery({
+        queryKey: ['driverPayCommissionRegistered', { filters: JSON.stringify(filters), page, pageSize }],
+        queryFn: async () => {
+            const res = await DriverPaysApi.loadDriverCommissionRegistered({ ...filters, page, pageSize });
+            return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        retry: 0,
+    });
+}
+
 export function useBillingMutation() {
 
     const queryClient = useQueryClient()
@@ -480,6 +508,7 @@ export function useBillingMutation() {
                     }).filter(group => group.orders.length > 0)
                 }
             })
+            queryClient.invalidateQueries({ queryKey: ['driverPayCommissionApproved'] })
             enqueueSnackbar('Driver Pay Commission has been approved successfully', { variant: 'success' })
         },
         onError: handleError
@@ -506,6 +535,28 @@ export function useBillingMutation() {
         onError: handleError
     })
 
+    const driverPayCommissionRegisterAndDownloadPDF = useMutation({
+        mutationFn: async (payload) => {
+            const res = await DriverPaysApi.driverPayCommissionRegisterAndDownloadPDF(payload)
+            return res
+        },
+        onSuccess: (res, payload) => {
+            console.log(res)
+        },
+        onError: handleError
+    })
+
+    const downloadDriverCommissionPDF = useMutation({
+        mutationFn: async (registerId) => {
+            const res = await DriverPaysApi.downloadDriverCommissionPdf(registerId)
+            return res
+        },
+        onSuccess: (res) => {
+            //
+        },
+        onError: handleError
+    })
+
     return {
         applyAccessorials,
         driverPayout,
@@ -520,6 +571,8 @@ export function useBillingMutation() {
         batchPayDriverHourlyRegister,
         resendCompaniesInvoice,
         saveDriverPayCommissionPayout,
-        approvedDriverPayCommission
+        approvedDriverPayCommission,
+        driverPayCommissionRegisterAndDownloadPDF,
+        downloadDriverCommissionPDF
     }
 }
