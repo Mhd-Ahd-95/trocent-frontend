@@ -450,7 +450,7 @@ export default function DriverBillingCard({ driverId, driverName, driverNumber, 
                 <Box className={classes.actions}>
                     <Box component="span" role="button" tabIndex={0} className={cx(classes.historyButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 2)}>
                         <History sx={{ fontSize: 15 }} />
-                        Driver History
+                        Time & KM Adjustment
                     </Box>
                     <Box component="span" role="button" tabIndex={0} className={cx(classes.detailsButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 1)}>
                         <RouteRounded sx={{ fontSize: 15 }} />

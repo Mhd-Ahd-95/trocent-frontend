@@ -143,7 +143,7 @@ export default function DriverHourlyRegister() {
                                     sx={{ textTransform: 'capitalize', fontWeight: 'bold', borderRadius: 2 }}
                                     disabled={batchPayDriverHourlyRegister.isPending}
                                 >
-                                    Generate PDF ({selectedIds.size})
+                                    Send All Invoices ({selectedIds.size})
                                 </Button>
                             )}
                         </Box>

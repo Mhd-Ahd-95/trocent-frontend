@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, CircularProgress, Switch, FormControl, Autocomplete, MenuItem, TextField, Typography, Button, RadioGroup, Box, FormControlLabel, Radio, FormHelperText } from '@mui/material'
+import { Grid, CircularProgress, Switch, FormControl, Autocomplete, MenuItem, TextField, Typography, Button, RadioGroup, Box, Divider, Stack, FormControlLabel, Radio, FormHelperText, Tooltip } from '@mui/material'
 import { TextInput, StyledButton, SubmitButton, AccordionComponent, CustomFormControlLabel } from '../../components'
 import initialInputs from './initialInputs'
 import { useForm, Controller, useFieldArray, useWatch } from 'react-hook-form'
@@ -7,7 +7,7 @@ import global from '../../global'
 import { useCompanies } from '../../hooks/useComapnies'
 import { DatePicker } from '@mui/x-date-pickers'
 import { v4 as uuidv4 } from "uuid";
-import { Add } from '@mui/icons-material'
+import { Add, AccessTime, LocalGasStation, DirectionsCar } from '@mui/icons-material'
 import DriverDocument from './DriverDocument'
 import { useNavigate } from 'react-router-dom'
 import moment from 'moment'
@@ -51,6 +51,9 @@ export default function DriverForm(props) {
             hourly_rate: 0,
             rate_per_km: 0,
             mileage_allotment: 0,
+            mileage_allotment_type: 'daily',
+            fca_override: 0,
+            use_fca_override: false,
             fuel_surcharge_type: '',
             driver_documents: [],
             ...initialValues
@@ -319,7 +322,6 @@ export default function DriverForm(props) {
                         <Controller
                             name='driver_pay_type'
                             control={control}
-                            // rules={{ required: 'Driver Pay Type is a required field' }}
                             render={({ field: payTypeField }) => (
                                 <>
                                     <RadioGroup
@@ -330,12 +332,16 @@ export default function DriverForm(props) {
                                             payTypeField.onChange(value)
                                             if (value === 'hourly') {
                                                 setValue('commission_percentage', 0)
+                                                setValue('mileage_allotment_type', 'daily')
                                             }
                                             else if (value === 'commission') {
                                                 setValue('hourly_rate', 0)
                                                 setValue('rate_per_km', 0)
                                                 setValue('mileage_allotment', 0)
                                                 setValue('fuel_surcharge_type', '')
+                                                setValue('fca_override', 0)
+                                                setValue('use_fca_override', false)
+                                                setValue('mileage_allotment_type', '')
                                             }
                                             else {
                                                 setValue('commission_percentage', 0)
@@ -347,29 +353,28 @@ export default function DriverForm(props) {
                                         }}
                                     >
                                         <Grid container spacing={2}>
-                                            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-                                                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, height: '100%' }}>
-                                                    <FormControlLabel value='hourly' control={<Radio />} label='Hourly' />
-                                                    <Grid container spacing={3} sx={{ mt: 1 }}>
+                                            <Grid size={{ xs: 12, sm: 12, md: 12, lg: 4 }}>
+                                                <Box sx={{ border: '1px solid', borderColor: driverPerType === 'hourly' ? 'primary.main' : 'divider', borderRadius: 3, height: '100%' }}>
+                                                    <FormControlLabel value='hourly' control={<Radio />} label='Hourly' sx={{ m: 0 }} />
+                                                    <Grid container spacing={3} sx={{ mt: 1, p: 2 }}>
                                                         <Grid size={{ xs: 12, sm: 6 }}>
                                                             <Controller
                                                                 name='hourly_rate'
                                                                 control={control}
                                                                 defaultValue={0}
                                                                 render={({ field }) => (
-                                                                    <TextField
+                                                                    <TextInput
                                                                         {...field}
                                                                         label='Hourly Rate $'
                                                                         type='number'
                                                                         disabled={driverPerType !== 'hourly'}
                                                                         variant='outlined'
-                                                                        fullWidth size='small'
+                                                                        fullWidth
                                                                         onChange={(e) => {
                                                                             const value = e.target.value
                                                                             if (value === '') field.onChange('')
                                                                             if (value < 0) return
                                                                             else field.onChange(Number(value))
-
                                                                         }}
                                                                         onFocus={(e) => e.target.select()}
                                                                     />
@@ -382,50 +387,126 @@ export default function DriverForm(props) {
                                                                 control={control}
                                                                 defaultValue={0}
                                                                 render={({ field }) => (
-                                                                    <TextField {...field} label='Rate per KM / Mile' type='number' variant='outlined' fullWidth size='small'
+                                                                    <TextInput {...field} label='Rate per KM / Mile' type='number' variant='outlined' fullWidth
                                                                         onChange={(e) => {
                                                                             const value = e.target.value
                                                                             if (value === '') field.onChange('')
                                                                             else if (value < 0) return
                                                                             else field.onChange(Number(value))
+                                                                        }}
+                                                                        disabled={driverPerType !== 'hourly'}
+                                                                        onFocus={(e) => e.target.select()} />
+                                                                )}
+                                                            />
+                                                        </Grid>
 
-                                                                        }}
-                                                                        disabled={driverPerType !== 'hourly'}
-                                                                        onFocus={(e) => e.target.select()} />
-                                                                )}
-                                                            />
+                                                        <Grid size={12}>
+                                                            <Divider sx={{ mb: 1.5 }} />
+                                                            <Stack direction='row' alignItems='center' spacing={0.75} sx={{ mb: 1 }}>
+                                                                <Typography variant='body2' fontWeight={500} color='text.secondary'>
+                                                                    Mileage Allotment
+                                                                </Typography>
+                                                            </Stack>
+                                                            <Grid container spacing={2} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', p: 2 }}>
+                                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                                    <Controller
+                                                                        name='mileage_allotment'
+                                                                        control={control}
+                                                                        defaultValue={0}
+                                                                        render={({ field }) => (
+                                                                            <TextInput {...field} label='Amount' type='number' variant='outlined' fullWidth
+                                                                                onChange={(e) => {
+                                                                                    const value = e.target.value
+                                                                                    if (value === '') field.onChange('')
+                                                                                    else if (value < 0) return
+                                                                                    else field.onChange(Number(value))
+                                                                                }}
+                                                                                disabled={driverPerType !== 'hourly'}
+                                                                                onFocus={(e) => e.target.select()} />
+                                                                        )}
+                                                                    />
+                                                                </Grid>
+                                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                                    <Controller
+                                                                        name='mileage_allotment_type'
+                                                                        control={control}
+                                                                        defaultValue='daily'
+                                                                        render={({ field }) => (
+                                                                            <RadioGroup {...field} sx={{ width: '100%', height: '100%' }} row>
+                                                                                <Grid container spacing={2}>
+                                                                                    <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                                                                                        <FormControlLabel value='daily' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='daily' />
+                                                                                    </Grid>
+                                                                                    <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                                                                                        <FormControlLabel value='weekly' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='weekly' />
+                                                                                    </Grid>
+                                                                                </Grid>
+                                                                            </RadioGroup>
+                                                                        )}
+                                                                    />
+                                                                </Grid>
+                                                            </Grid>
                                                         </Grid>
                                                         <Grid size={12}>
-                                                            <Controller
-                                                                name='mileage_allotment'
-                                                                control={control}
-                                                                defaultValue={0}
-                                                                render={({ field }) => (
-                                                                    <TextField {...field} label='Mileage Allotment' type='number' variant='outlined' fullWidth size='small'
-                                                                        onChange={(e) => {
-                                                                            const value = e.target.value
-                                                                            if (value === '') field.onChange('')
-                                                                            else if (value < 0) return
-                                                                            else field.onChange(Number(value))
-                                                                        }}
-                                                                        disabled={driverPerType !== 'hourly'}
-                                                                        onFocus={(e) => e.target.select()} />
-                                                                )}
-                                                            />
+                                                            <Divider sx={{ mb: 1.5 }} />
+                                                            <Stack direction='row' alignItems='center' spacing={0.75} sx={{ mb: 1 }}>
+                                                                <Typography variant='body2' fontWeight={500} color='text.secondary'>
+                                                                    Fuel Override
+                                                                </Typography>
+                                                            </Stack>
+                                                            <Grid container spacing={2} alignItems='center' sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', p: 2 }} >
+                                                                <Grid size={8}>
+                                                                    <Controller
+                                                                        name='fca_override'
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <TextInput {...field} label='FCA' type='number' variant='outlined' fullWidth
+                                                                                onChange={(e) => {
+                                                                                    const value = e.target.value
+                                                                                    if (value === '') field.onChange('')
+                                                                                    else if (value < 0) return
+                                                                                    else field.onChange(Number(value))
+                                                                                }}
+                                                                                disabled={driverPerType !== 'hourly'}
+                                                                                onFocus={(e) => e.target.select()} />
+                                                                        )}
+                                                                    />
+                                                                </Grid>
+                                                                <Grid size={4}>
+                                                                    <FormControl>
+                                                                        <CustomFormControlLabel
+                                                                            control={
+                                                                                <Controller
+                                                                                    name={'use_fca_override'}
+                                                                                    control={control}
+                                                                                    render={({ field: controllerField }) => (
+                                                                                        <Switch
+                                                                                            {...controllerField}
+                                                                                            checked={controllerField.value || false}
+                                                                                            onChange={e => controllerField.onChange(e.target.checked)}
+                                                                                        />
+                                                                                    )}
+                                                                                />
+                                                                            }
+                                                                            label='Use FCA'
+                                                                        />
+                                                                    </FormControl>
+                                                                </Grid>
+                                                            </Grid>
                                                         </Grid>
                                                         <Grid size={12}>
-                                                            <Typography variant='body2' fontWeight={500} sx={{ mb: 0.5 }}>
-                                                                Fuel Surcharge
-                                                            </Typography>
+                                                            <Divider sx={{ mb: 1.5 }} />
+                                                            <Stack direction='row' alignItems='center' spacing={0.75} sx={{ mb: 0.5 }}>
+                                                                <Typography variant='body2' fontWeight={500} color='text.secondary'>
+                                                                    Fuel Surcharge
+                                                                </Typography>
+                                                            </Stack>
                                                             <Controller
                                                                 name='fuel_surcharge_type'
                                                                 control={control}
                                                                 defaultValue='none'
                                                                 render={({ field }) => (
-                                                                    <RadioGroup
-                                                                        {...field}
-                                                                        sx={{ width: '100%' }}
-                                                                    >
+                                                                    <RadioGroup {...field} sx={{ width: '100%' }}>
                                                                         <Grid container spacing={1}>
                                                                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                                                 <FormControlLabel value='' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='None' />
@@ -447,17 +528,17 @@ export default function DriverForm(props) {
                                                     </Grid>
                                                 </Box>
                                             </Grid>
-                                            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-                                                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, height: '100%' }}>
-                                                    <FormControlLabel value='commission' control={<Radio />} label='Commission' />
-                                                    <Grid container spacing={3} sx={{ mt: 1 }}>
+                                            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 4 }}>
+                                                <Box sx={{ border: '1px solid', borderColor: driverPerType === 'commission' ? 'primary.main' : 'divider', borderRadius: 3, height: '100%' }}>
+                                                    <FormControlLabel value='commission' control={<Radio />} label='Commission' sx={{ m: 0 }} />
+                                                    <Grid container spacing={3} sx={{ mt: 1, p: 2 }}>
                                                         <Grid size={12}>
                                                             <Controller
                                                                 name='commission_percentage'
                                                                 control={control}
                                                                 defaultValue={0}
                                                                 render={({ field }) => (
-                                                                    <TextField
+                                                                    <TextInput
                                                                         {...field}
                                                                         label='Percentage %'
                                                                         type='number'
@@ -465,7 +546,6 @@ export default function DriverForm(props) {
                                                                         onFocus={(e) => e.target.select()}
                                                                         variant='outlined'
                                                                         fullWidth
-                                                                        size='small'
                                                                         onChange={(e) => {
                                                                             const value = e.target.value
                                                                             if (value === '') field.onChange('')
@@ -479,9 +559,9 @@ export default function DriverForm(props) {
                                                     </Grid>
                                                 </Box>
                                             </Grid>
-                                            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-                                                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, height: '100%' }}>
-                                                    <FormControlLabel value='' control={<Radio />} label='None' />
+                                            <Grid size={{ xs: 12, sm: 12, md: 6, lg: 4 }}>
+                                                <Box sx={{ border: '1px solid', borderColor: driverPerType === '' ? 'primary.main' : 'divider', borderRadius: 3, height: '100%' }}>
+                                                    <FormControlLabel value='' control={<Radio />} label='None' sx={{ m: 0 }} />
                                                 </Box>
                                             </Grid>
 
