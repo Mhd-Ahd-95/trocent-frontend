@@ -435,10 +435,10 @@ export default function DriverForm(props) {
                                                                             <RadioGroup {...field} sx={{ width: '100%', height: '100%' }} row>
                                                                                 <Grid container spacing={2}>
                                                                                     <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                                                                                        <FormControlLabel value='daily' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='daily' />
+                                                                                        <FormControlLabel value='daily' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='Daily' />
                                                                                     </Grid>
                                                                                     <Grid size={{ xs: 12, sm: 6, md: 6 }}>
-                                                                                        <FormControlLabel value='weekly' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='weekly' />
+                                                                                        <FormControlLabel value='weekly' control={<Radio size='small' disabled={driverPerType !== 'hourly'} />} label='Weekly' />
                                                                                     </Grid>
                                                                                 </Grid>
                                                                             </RadioGroup>
@@ -488,7 +488,7 @@ export default function DriverForm(props) {
                                                                                     )}
                                                                                 />
                                                                             }
-                                                                            label='Use FCA'
+                                                                            label='FCA Override'
                                                                         />
                                                                     </FormControl>
                                                                 </Grid>

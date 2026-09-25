@@ -149,6 +149,7 @@ export function useDriverMutation() {
                 queryClient.invalidateQueries({ queryKey: ['drivers'], exact: true })
             }
             queryClient.invalidateQueries({ queryKey: ['undispatchedDriversCount'], exact: true })
+            queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
             enqueueSnackbar('Driver has been created successfully', { variant: 'success' });
         },
         onError: handleError,
@@ -172,6 +173,7 @@ export function useDriverMutation() {
                 queryClient.invalidateQueries({ queryKey: ['driver', Number(updated.id)], exact: true })
                 queryClient.invalidateQueries({ queryKey: ['order'] })
                 queryClient.invalidateQueries({ queryKey: ['dispatch', 'trips', 'driver'] })
+                queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
                 enqueueSnackbar('Driver has been updated successfully', { variant: 'success' });
             },
             onError: handleError,
@@ -271,7 +273,7 @@ export function useDriverMutation() {
                 if (!old) return
                 return old.map(o => Number(o.id) === Number(res.id) ? res : o)
             })
-            queryClient.invalidateQueries({queryKey: ['hourlyDrivers']})
+            queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
         },
         onError: handleError
     })
@@ -286,7 +288,7 @@ export function useDriverMutation() {
                 if (!old) return
                 return old.map(o => Number(o.id) === Number(res.id) ? res : o)
             })
-            queryClient.invalidateQueries({queryKey: ['hourlyDrivers']})
+            queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
         },
         onError: handleError
     })

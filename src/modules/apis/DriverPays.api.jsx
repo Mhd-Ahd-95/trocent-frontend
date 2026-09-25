@@ -66,10 +66,8 @@ const driverPayCommissionRegisterAndDownloadPDF = async (payload) => {
 
     let filename = 'driver-invoice.pdf';
     const contentDisposition = response.headers['content-disposition'];
-    console.log(contentDisposition);
     if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        console.log(match);
         if (match) filename = match[1];
     }
 
@@ -91,10 +89,8 @@ const downloadDriverCommissionPdf = async (registerId) => {
 
     let filename = 'driver-invoice.pdf';
     const contentDisposition = response.headers['content-disposition'];
-    console.log(contentDisposition);
     if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        console.log(match);
         if (match) filename = match[1];
     }
 

@@ -9,7 +9,6 @@ const money = (value) => `$${Number(value || 0).toFixed(2)}`;
 
 const DriverCommissionRegisterRow = React.memo(({ register }) => {
 
-    console.log(register);
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(false);
     const { downloadDriverCommissionPDF } = useBillingMutation()
