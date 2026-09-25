@@ -112,40 +112,57 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
         const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0);
         const differenceSeconds = clockedSeconds - tripSeconds;
 
-        const adjustmentSeconds = days.reduce((sum, day) => {
-            const v = adjustments[day.date];
-            let cs = durationToSeconds(day.clocked_hours) + ((Number(v) || 0) * 3600);
-            if (driverDetails?.fuel_surcharge_type === 'both' || driverDetails?.fuel_surcharge_type === 'hourly') {
-                const fuel = day?.fuel_surcharge || 0;
-                cs = cs * (1 + (Number(fuel) / 100));
+        const mileage = Number(driverDetails?.mileage_allotment || 0);
+        const hourlyRate = Number(driverDetails?.hourly_rate || 0);
+        const kmRate = Number(driverDetails?.rate_per_km || 0);
+        const surchargeType = driverDetails?.fuel_surcharge_type;
+
+        let adjustmentsOnlySeconds = 0;
+        let adjustedClockedSeconds = clockedSeconds;
+        let adjustedKmsDriven = 0;
+        let estPay = 0;
+        let estPayKm = 0;
+        let fuelHourTotal = 0;
+        let fuelKmTotal = 0;
+
+        days.forEach((day) => {
+
+            const adjustmentHours = Number(adjustments[day.date]) || 0;
+            const adjustedKm = Number(kmAdjustments[day.date]) || 0;
+            const fuelPct = Number(day.fuel_surcharge || 0) / 100;
+            adjustmentsOnlySeconds += adjustmentHours * 3600;
+            adjustedKmsDriven += adjustedKm;
+
+            const adjustedClockedSecondsForDay = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
+            const hourRateWithoutFuel = (adjustedClockedSecondsForDay / 3600) * hourlyRate;
+            let hourFuel = 0;
+            if (['both', 'hourly'].includes(surchargeType)) {
+                hourFuel = fuelPct * hourRateWithoutFuel;
             }
-            sum += cs;
-            return sum;
-        }, 0);
+            estPay += hourRateWithoutFuel + hourFuel;
+            fuelHourTotal += hourFuel;
 
-        const adjustedClockedSeconds = clockedSeconds + Object.values(adjustments).reduce((sum, v) => sum + ((Number(v) || 0) * 3600), 0);
-        const adjustedKmsDriven = Object.values(kmAdjustments).reduce((sum, v) => sum + (Number(v) || 0), 0);
-        const estPay = (adjustmentSeconds / 3600) * (driverDetails?.hourly_rate || 0);
-
-        const adjustmentKms = Object.entries(kmAdjustments).reduce((sum, [k, v]) => {
-            const mileage = Number(driverDetails?.mileage_allotment || 0);
-            if (Number(v) > mileage) {
-                let kp = Number(v) - mileage;
-                if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
-                    const fuel = days.find((d) => d.date === k)?.fuel_surcharge || 0;
-                    kp = kp * (1 + (Number(fuel) / 100));
+            let kmRateWithoutFuel = 0;
+            let kmFuel = 0;
+            if (adjustedKm > mileage) {
+                const payableKm = adjustedKm - mileage;
+                kmRateWithoutFuel = payableKm * kmRate;
+                if (['both', 'mileage'].includes(surchargeType)) {
+                    kmFuel = fuelPct * kmRateWithoutFuel;
                 }
-                sum = kp + sum;
             }
-            return sum;
-        }, 0);
+            estPayKm += kmRateWithoutFuel + kmFuel;
+            fuelKmTotal += kmFuel;
+        });
+        adjustedClockedSeconds = clockedSeconds + adjustmentsOnlySeconds;
+        const totalFuel = fuelHourTotal + fuelKmTotal;
+        const estTotals = estPay + estPayKm;
 
-        const estPayKm = adjustmentKms * (driverDetails?.rate_per_km || 0);
-        const estTotals = (estPay || 0) + (estPayKm || 0);
-        const adjustmentsOnly = Object.values(adjustments).reduce((sum, v) => sum + (Number(v) || 0) * 3600, 0);
-
-        return { tripSeconds, clockedSeconds, differenceSeconds, adjustmentsOnly, adjustedClockedSeconds, adjustedKmsDriven, estPay, estPayKm, estTotals };
-    }, [days, adjustments, driverDetails, kmAdjustments]);
+        return {
+            tripSeconds, clockedSeconds, differenceSeconds, adjustmentsOnly: adjustmentsOnlySeconds, adjustedClockedSeconds, adjustedKmsDriven,
+            estPay, estPayKm, fuelHourTotal, fuelKmTotal, totalFuel, estTotals,
+        };
+    }, [days, adjustments, kmAdjustments, driverDetails]);
 
     const isDeficit = totals.differenceSeconds > 0;
 
@@ -154,19 +171,25 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
         const daysPayload = days.map((day) => {
             const adjustmentHours = Number(adjustments[day.date]) || 0;
             const adjustedKm = Number(kmAdjustments[day.date]) || 0;
-            let adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
+            const adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
+            const convertToHour = (adjustedClockedSeconds / 3600)
+            const hourRateWithoutFuel = convertToHour * (driverDetails?.hourly_rate || 0);
+            let hourFuel = 0
             if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
-                adjustedClockedSeconds *= (1 + (Number(day.fuel_surcharge || 0) / 100));
+                hourFuel = (Number(day.fuel_surcharge || 0) / 100) * hourRateWithoutFuel
             }
-            const dayHourlyPay = (adjustedClockedSeconds / 3600) * (driverDetails?.hourly_rate || 0);
+            const dayHourlyPay = hourRateWithoutFuel + hourFuel
+
             const mileage = Number(driverDetails?.mileage_allotment || 0);
             let dayKmPay = 0;
+            let kmFuel = 0
             if (adjustedKm > mileage) {
-                let payableKm = adjustedKm - mileage;
+                const payableKm = adjustedKm - mileage;
+                const kmRateWithoutFuel = payableKm * (driverDetails?.rate_per_km || 0);
                 if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
-                    payableKm *= (1 + (Number(day.fuel_surcharge || 0) / 100));
+                    kmFuel = (Number(day.fuel_surcharge || 0) / 100) * kmRateWithoutFuel
                 }
-                dayKmPay = payableKm * (driverDetails?.rate_per_km || 0);
+                dayKmPay = kmRateWithoutFuel + kmFuel
             }
             return {
                 date: day.date,
@@ -174,6 +197,8 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 total_hrs: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
                 adjustment_hours: (adjustmentHours * 3600),
                 total_km: adjustedKm,
+                fuel_hour: hourFuel,
+                fuel_km: kmFuel,
                 adjustment_km: adjustedKm - Number(day.km_driven),
                 day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
                 day_km_pay: Number(dayKmPay.toFixed(2)),
@@ -187,6 +212,9 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 total_hourly_pay: Number(totals.estPay.toFixed(2)),
                 total_km_pay: Number(totals.estPayKm.toFixed(2)),
                 total_pay: Number(totals.estTotals.toFixed(2)),
+                total_fuel_hour: Number(totals.fuelHourTotal.toFixed(2)),
+                total_fuel_km: Number(totals.fuelKmTotal.toFixed(2)),
+                total_fuel: Number(totals.totalFuel.toFixed(2)),
                 adjusted_clocked_total: Number(totals.adjustedClockedSeconds),
                 adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
             },
@@ -197,19 +225,25 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
     const buildDayPayload = useCallback((day) => {
         const adjustmentHours = Number(adjustments[day.date]) || 0;
         const adjustedKm = Number(kmAdjustments[day.date]) || 0;
-        let adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
+        const adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
+        const convertToHour = (adjustedClockedSeconds / 3600)
+        const hourRateWithoutFuel = convertToHour * (driverDetails?.hourly_rate || 0)
+        let hourFuel = 0
         if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
-            adjustedClockedSeconds *= (1 + (Number(day.fuel_surcharge || 0) / 100));
+            hourFuel = (Number(day.fuel_surcharge || 0) / 100) * hourRateWithoutFuel
         }
-        const dayHourlyPay = (adjustedClockedSeconds / 3600) * (driverDetails?.hourly_rate || 0);
+        const dayHourlyPay = hourRateWithoutFuel + hourFuel
+
         const mileage = Number(driverDetails?.mileage_allotment || 0);
         let dayKmPay = 0;
+        let kmFuel = 0
         if (adjustedKm > mileage) {
-            let payableKm = adjustedKm - mileage;
+            const payableKm = adjustedKm - mileage;
+            const kmRateWithoutFuel = payableKm * (driverDetails?.rate_per_km || 0)
             if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
-                payableKm *= (1 + (Number(day.fuel_surcharge || 0) / 100));
+                kmFuel = (Number(day.fuel_surcharge || 0) / 100) * kmRateWithoutFuel
             }
-            dayKmPay = payableKm * (driverDetails?.rate_per_km || 0);
+            dayKmPay = kmRateWithoutFuel + kmFuel
         }
         return {
             date: day.date,
@@ -217,6 +251,8 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
             total_hrs: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
             adjustment_hours: (adjustmentHours * 3600),
             total_km: adjustedKm,
+            fuel_hour: hourFuel,
+            fuel_km: kmFuel,
             adjustment_km: adjustedKm - Number(day.km_driven),
             day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
             day_km_pay: Number(dayKmPay.toFixed(2)),
@@ -450,7 +486,7 @@ export default function DriverBillingCard({ driverId, driverName, driverNumber, 
                 <Box className={classes.actions}>
                     <Box component="span" role="button" tabIndex={0} className={cx(classes.historyButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 2)}>
                         <History sx={{ fontSize: 15 }} />
-                        Driver History
+                        Time & KM Adjustment
                     </Box>
                     <Box component="span" role="button" tabIndex={0} className={cx(classes.detailsButton, classes.btnAccordion)} onClick={(e) => handleDetails(e, 1)}>
                         <RouteRounded sx={{ fontSize: 15 }} />

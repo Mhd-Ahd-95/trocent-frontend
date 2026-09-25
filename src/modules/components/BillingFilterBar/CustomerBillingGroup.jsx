@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Box, CircularProgress, Checkbox } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Box, CircularProgress, Checkbox, IconButton } from '@mui/material';
 import { CreditCardOutlined, Download, ExpandMoreRounded } from '@mui/icons-material';
 import useStyles from './Filter.styles';
 import moment from 'moment';
@@ -75,9 +75,9 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                     </Box>
                     {hourlyRegister &&
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <Box
+                            <IconButton
                                 component="span" role="button" tabIndex={0}
-                                className={cx(classes.downloadButton, classes.btnAccordion)}
+                                disabled={downloading}
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
@@ -85,9 +85,8 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                                     downloadPDF(company)
                                 }}
                             >
-                                {downloading ? <CircularProgress size={15} /> : <Download sx={{ fontSize: 15 }} />}
-                                Download PDF
-                            </Box>
+                                {downloading ? <CircularProgress size={20} /> : <Download sx={{ fontSize: 25 }} color='primary' />}
+                            </IconButton>
                             <Box
                                 component="span" role="button" tabIndex={0}
                                 className={cx(classes.detailsButton, classes.btnAccordion)}

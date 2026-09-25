@@ -58,7 +58,7 @@ const CompanyGrouped = forwardRef(({ companyId, companyName, legalName, drivers 
                             }}
                         >
                             <Download sx={{ fontSize: 15 }} />
-                            Download Drivers Report
+                            Download Audit Report
                         </Box>
                         <Box
                             component="span" role="button" tabIndex={0}

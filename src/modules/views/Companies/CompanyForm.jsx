@@ -35,6 +35,7 @@ export default function CompanyForm(props) {
             neq: '',
             nir: '',
             ifta: '',
+            tax_information: '',
 
             auto_insurance_company: '',
             auto_policy_number: '',
@@ -183,6 +184,14 @@ export default function CompanyForm(props) {
                                     fullWidth
                                     variant="outlined"
                                     {...register('ifta')}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TextInput
+                                    label='Tax Information'
+                                    fullWidth
+                                    variant="outlined"
+                                    {...register('tax_information')}
                                 />
                             </Grid>
                         </Grid>

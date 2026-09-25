@@ -20,12 +20,10 @@ function DriverTotals({ totals = [], driver_id }) {
     const { driverPayCommissionRegisterAndDownloadPDF } = useBillingMutation()
 
     const handleGeneratePDF = async () => {
-        console.log({ driver_id, driverCommissionIds });
         const payload = {
             driver_id,
             driver_commission_ids: driverCommissionIds
         }
-        console.log(payload);
         await driverPayCommissionRegisterAndDownloadPDF.mutateAsync(payload)
     };
 

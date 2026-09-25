@@ -87,7 +87,7 @@ const CompanySummary = React.memo(({ company, drivers = [] }) => {
                                 onClick={handleGeneratePdf}
                                 disabled={batchPayDriverHourlyRegister.isPending}
                             >
-                                Generate PDF
+                                Send Invoice
                             </Button>
                         </Box>
                     </Grid>
