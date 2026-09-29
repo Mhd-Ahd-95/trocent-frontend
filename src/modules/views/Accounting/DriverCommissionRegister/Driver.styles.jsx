@@ -70,6 +70,13 @@ export default makeStyles({ name: 'Billing' })((theme) => {
         totalsToolbar: {
             display: 'flex',
             justifyContent: 'space-between',
+            borderRadius: 16,
+            padding: theme.spacing(1, 2.25),
+            background: isDark
+                ? `linear-gradient(135deg, ${alpha(secondary, 0.9)} 0%, ${alpha(secondary, 0.55)} 100%)`
+                : `linear-gradient(135deg, ${secondary} 0%, ${alpha(secondary, 0.85)} 100%)`,
+            boxShadow: `0 8px 24px ${alpha(secondary, 0.28)}`,
+            // marginBottom: theme.spacing(2),
         },
         dateCard: {
             border: '1px solid',
@@ -261,6 +268,73 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             color: theme.palette.text.secondary,
             letterSpacing: '0.02em',
             marginTop: 2,
+        },
+        companyStatTile: {
+            flex: '1 1 0',
+            boxSizing: 'border-box',
+            borderRadius: 10,
+            padding: theme.spacing(1, 2.5),
+            textAlign: 'center',
+            background: alpha('#fff', 0.1),
+            border: '1px solid',
+            borderColor: alpha('#fff', 0.16),
+            backdropFilter: 'blur(6px)',
+        },
+        companyStatTileHighlight: {
+            background: `linear-gradient(135deg, ${primary} 0%, ${alpha(primary, 0.75)} 100%)`,
+            border: '1px solid',
+            letterSpacing: '1px',
+            borderColor: alpha(primary, 0.5),
+            boxShadow: `0 4px 16px ${alpha(primary, 0.45)}`,
+        },
+        companyStatLabel: {
+            fontSize: 12,
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: alpha('#fff', 0.75),
+            marginBottom: 4,
+            whiteSpace: 'nowrap',
+        },
+        companyStatLabelHighlight: {
+            color: alpha('#fff', 1),
+            // letterSpacing: '1px',
+        },
+        companyStatValue: {
+            fontSize: 16,
+            fontWeight: 800,
+            color: '#fff',
+            whiteSpace: 'nowrap',
+        },
+        companyStatValueHighlight: {
+            fontSize: 18,
+            fontWeight: 900,
+            color: '#fff',
+        },
+        companyRunningTotalGroup: {
+            flex: '0 0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+            paddingLeft: theme.spacing(0.5),
+        },
+        companyGeneratePdfButton: {
+            height: 40,
+            padding: theme.spacing(0, 2.25),
+            fontSize: 13,
+            fontWeight: 700,
+            textTransform: 'none',
+            borderRadius: 9,
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            background: primary,
+            color: '#fff',
+            boxShadow: 'none',
+            border: '2px solid ' + primary,
+            '&:hover': {
+                background: alpha(primary, 0.8),
+                boxShadow: 'none',
+            },
         },
     };
 

@@ -24,7 +24,6 @@ export default function DriverPayHourly() {
 
     const { data: driverPays, isLoading, isFetching, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
-
     const pageCount = Math.max(1, Math.ceil((driverPays?.meta?.total || 0) / rowsPerPage));
 
     const totalDriversOnPage = React.useMemo(

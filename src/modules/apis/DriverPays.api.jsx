@@ -101,6 +101,12 @@ const downloadDriverCommissionPdf = async (registerId) => {
     window.URL.revokeObjectURL(url);
 }
 
+const addExtraDriverCharge = (dt) => CustomAxios.post(`/api/extra-driver-charges`, dt)
+
+const updateExtraDriverCharge = (id, dt) => CustomAxios.put(`/api/extra-driver-charges/${id}`, dt)
+
+const deleteExtraDriverCharge = (id) => CustomAxios.delete(`/api/extra-driver-charges/${id}`)
+
 export default {
     getPendingCommissionDriverPay,
     getPendingHourlyDriverPay,
@@ -121,5 +127,8 @@ export default {
     loadDriverPayCommissionApproved,
     driverPayCommissionRegisterAndDownloadPDF,
     loadDriverCommissionRegistered,
-    downloadDriverCommissionPdf
+    downloadDriverCommissionPdf,
+    addExtraDriverCharge,
+    updateExtraDriverCharge,
+    deleteExtraDriverCharge
 }

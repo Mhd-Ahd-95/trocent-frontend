@@ -1,12 +1,12 @@
 import React, { useTransition } from 'react'
 import { Box, Button, CircularProgress, Grid, MenuItem, Pagination, Select } from '@mui/material'
 import { MainLayout } from '../../../layouts'
-import { FilterPayDriverCommission, SideMenu, CustomerBillingGroup } from '../../../components'
+import { FilterPayDriverCommission, SideMenu } from '../../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
 import useStyles from './Commission.styles'
-import DateGroupedSummary from './DateGroupedSummary'
 import { useCommissionDrivers } from '../../../hooks/useBillings'
 import { useSnackbar } from 'notistack'
+import DriverGrouped from './DriverGrouped'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -15,7 +15,6 @@ export default function DriverPayCommission() {
     const { classes, cx } = useStyles()
     const groupApis = React.useRef(new Map());
     const refCallbackCache = React.useRef(new Map())
-    const orderRef = React.useRef()
     const [isPending, startTransition] = useTransition();
     const [page, setPage] = React.useState(1);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -106,17 +105,14 @@ export default function DriverPayCommission() {
                             ) : (
                                 <Box className={`${classes.listWrap} ${isPending ? classes.listWrapFetching : ''}`}>
                                     {data.map((group) => (
-                                        <CustomerBillingGroup
+                                        <DriverGrouped
                                             key={group.driver_id}
-                                            driver_id={group.driver_id}
-                                            orderRef={orderRef}
-                                            customerId={group.driver_id}
+                                            extraCharges={group?.extra_charges || []}
+                                            driverId={group.driver_id}
                                             ref={getGroupRef(group.driver_id)}
-                                            customerName={group.driver_name}
-                                            accountNumber={group.driver_number}
+                                            driverName={group.driver_name}
+                                            driverNumber={group.driver_number}
                                             orders={group.orders}
-                                            OrderCard={DateGroupedSummary}
-                                            isDriverPay
                                         />
                                     ))}
                                 </Box>

@@ -28,7 +28,7 @@ const DriverCommissionRegisterRow = React.memo(({ register }) => {
                 className={cx(classes.dateHeader, expanded && classes.commissionRegisterHeaderExpanded, classes.commissionRegisterHeader)}
                 sx={{ flexDirection: { xs: 'column', lg: 'row' }, alignItems: { xs: 'stretch', lg: 'center' } }}
             >
-                <Box className={classes.dateBlock} sx={{ order: { xs: 1, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
+                <Box className={classes.dateBlock} sx={{ flexWrap: 'wrap', order: { xs: 1, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
                     <Box className={classes.dateIconWrap}>
                         {register.invoice_number}
                     </Box>
@@ -41,7 +41,7 @@ const DriverCommissionRegisterRow = React.memo(({ register }) => {
                         </Box>
                     </Box>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: { xs: 'space-between', lg: 'flex-start' }, gap: { xs: 2, lg: 8 }, order: { xs: 2, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: { xs: 'space-between', lg: 'flex-start' }, gap: { xs: 2, lg: 8 }, order: { xs: 2, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
                     <Box>
                         <Typography className={classes.commissionMetaLabel}>Batch #</Typography>
                         <Typography className={classes.commissionMetaValue}>{register.batch_number || '-'}</Typography>
@@ -51,7 +51,7 @@ const DriverCommissionRegisterRow = React.memo(({ register }) => {
                         <Typography className={classes.commissionMetaValue}>{moment(register.pay_date).format('MMM D, YYYY')}</Typography>
                     </Box>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: { xs: 'space-between', lg: 'flex-start' }, gap: { xs: 2, lg: 8 }, order: { xs: 3, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: { xs: 'space-between', lg: 'flex-start' }, gap: { xs: 2, lg: 8 }, order: { xs: 3, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
                     <Box>
                         <Typography className={classes.commissionMetaLabel}>Issued</Typography>
                         <Typography className={classes.commissionMetaValue}>{moment(register.issued_at).format('MMM D, YYYY')}</Typography>
@@ -60,8 +60,12 @@ const DriverCommissionRegisterRow = React.memo(({ register }) => {
                         <Typography className={classes.commissionMetaLabel}>Due</Typography>
                         <Typography className={classes.commissionMetaValue}>{moment(register.due_at).format('MMM D, YYYY')}</Typography>
                     </Box>
+                    <Box>
+                        <Typography className={classes.commissionMetaLabel}>Extra Charges</Typography>
+                        <Typography className={classes.commissionMetaValue}>{money(register.extra_charges)}</Typography>
+                    </Box>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: { xs: 'space-between', lg: 'flex-start' }, alignItems: 'center', gap: { xs: 2, lg: 3 }, order: { xs: 4, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: { xs: 'space-between', lg: 'flex-start' }, alignItems: 'center', gap: { xs: 2, lg: 3 }, order: { xs: 4, lg: 0 }, width: { xs: '100%', lg: 'auto' } }}>
                     <Box className={classes.totalPayBlock}>
                         <Typography className={classes.totalPayLabel}>Total Pay</Typography>
                         <Typography className={classes.totalPayValue}>{money(register.total_pay)}</Typography>

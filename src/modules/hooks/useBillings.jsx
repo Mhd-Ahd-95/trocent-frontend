@@ -375,7 +375,7 @@ export function useBillingMutation() {
                 })
             }
             else {
-                queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
+                queryClient.invalidateQueries({ queryKey: ['approvedDriverHourlyTotals'] })
             }
             if (cachedHourlyDriversRegister) {
                 queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
@@ -565,6 +565,106 @@ export function useBillingMutation() {
         onError: handleError
     })
 
+    const addExtraDriverCharge = useMutation({
+        mutationFn: async (dt) => {
+            const res = await DriverPaysApi.addExtraDriverCharge(dt)
+            return res.data
+        },
+        onSuccess: (res) => {
+            queryClient.setQueriesData({ queryKey: ['commissionDrivers'] }, (old) => {
+                if (!old?.data) return
+                return {
+                    ...old,
+                    data: old.data.map(o => Number(o.driver_id) === Number(res.driver_id) ? { ...o, extra_charges: [res, ...o.extra_charges] } : o)
+                }
+            })
+            enqueueSnackbar('Extra driver Charge has been added successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const updateExtraDriverCharge = useMutation({
+        mutationFn: async ({ id, payload }) => {
+            const res = await DriverPaysApi.updateExtraDriverCharge(id, payload)
+            return res.data
+        },
+        onSuccess: (res) => {
+            const cachedHourlyDrivers = queryClient.getQueriesData({ queryKey: ['commissionDrivers'] })
+            const cachedHourlyDriversRegister = queryClient.getQueriesData({ queryKey: ['driverPayCommissionApproved'] })
+            if (cachedHourlyDrivers) {
+                queryClient.setQueriesData({ queryKey: ['commissionDrivers'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(o => Number(o.driver_id) === Number(res.driver_id) ? { ...o, extra_charges: o.extra_charges.map(ex => Number(ex.id) === Number(res.id) ? res : ex) } : o)
+                    }
+                })
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['commissionDrivers'] })
+            }
+            if (cachedHourlyDriversRegister) {
+                queryClient.setQueriesData({ queryKey: ['driverPayCommissionApproved'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(o => {
+                            if (Number(o.driver_id) === Number(res.driver_id)) {
+                                const newExtraCharges = o.extra_charges.map(ex => Number(ex.id) === Number(res.id) ? res : ex)
+                                return { ...o, extra_charges: newExtraCharges }
+                            }
+                            return o
+                        })
+                    }
+                })
+            }
+            else {
+                queryClient.invalidateQueries({ queryKey: ['driverPayCommissionApproved'] })
+            }
+            enqueueSnackbar('Extra driver Charge has been updated successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
+    const deleteExtraDriverCharge = useMutation({
+        mutationFn: async ({ id, did }) => {
+            const res = await DriverPaysApi.deleteExtraDriverCharge(id)
+            return res.data
+        },
+        onSuccess: (res, { id, did }) => {
+            if (res) {
+                queryClient.setQueriesData({ queryKey: ['commissionDrivers'] }, (old) => {
+                    if (!old?.data) return
+                    return {
+                        ...old,
+                        data: old.data.map(o => Number(o.driver_id) === Number(did) ? { ...o, extra_charges: o.extra_charges.filter(ex => Number(ex.id) !== Number(id)) } : o)
+                    }
+                })
+                const cachedHourlyDriversRegister = queryClient.getQueriesData({ queryKey: ['driverPayCommissionApproved'] })
+                if (cachedHourlyDriversRegister) {
+                    queryClient.setQueriesData({ queryKey: ['driverPayCommissionApproved'] }, (old) => {
+                        if (!old?.data) return
+                        return {
+                            ...old,
+                            data: old.data.map(o => {
+                                if (Number(o.driver_id) === Number(did)) {
+                                    const newExtraCharges = o.extra_charges.filter(ex => Number(ex.id) !== Number(id))
+                                    return { ...o, extra_charges: newExtraCharges }
+                                }
+                                return o
+                            })
+                        }
+                    })
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['driverPayCommissionApproved'] })
+                }
+            }
+            enqueueSnackbar('Extra driver Charge has been deleted successfully', { variant: 'success' })
+        },
+        onError: handleError
+    })
+
     return {
         applyAccessorials,
         driverPayout,
@@ -581,6 +681,9 @@ export function useBillingMutation() {
         saveDriverPayCommissionPayout,
         approvedDriverPayCommission,
         driverPayCommissionRegisterAndDownloadPDF,
-        downloadDriverCommissionPDF
+        downloadDriverCommissionPDF,
+        addExtraDriverCharge,
+        updateExtraDriverCharge,
+        deleteExtraDriverCharge
     }
 }

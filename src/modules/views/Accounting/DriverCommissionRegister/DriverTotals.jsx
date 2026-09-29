@@ -11,9 +11,20 @@ const LEG_TYPE_CONFIG = {
     both: { label: 'Pickup & Delivery', short: 'P / D', color: 'success' },
 };
 
+const DriverStatTile = ({ classes, cx, label, value, highlight }) => (
+    <Box className={cx(classes.companyStatTile, highlight && classes.companyStatTileHighlight)}>
+        <Typography className={cx(classes.companyStatLabel, highlight && classes.companyStatLabelHighlight)}>
+            {label}
+        </Typography>
+        <Typography className={cx(classes.companyStatValue, highlight && classes.companyStatValueHighlight)}>
+            {value}
+        </Typography>
+    </Box>
+)
+
 const formatMoney = (value) => Number(value ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
-function DriverTotals({ totals = [], driver_id }) {
+function DriverTotals({ totals = [], driver_id, extra_charges = [] }) {
 
     const { classes, cx } = useStyles();
     const driverCommissionIds = useMemo(() => totals.map((t) => t.commission_total_id), [totals]);
@@ -27,25 +38,31 @@ function DriverTotals({ totals = [], driver_id }) {
         await driverPayCommissionRegisterAndDownloadPDF.mutateAsync(payload)
     };
 
-    const total = useMemo(() => totals.reduce((acc, curr) => acc = acc + curr.total_pay, 0)) ?? 0
+    const { allPayment, extraCharges } = useMemo(() => {
+        const total = totals.reduce((acc, curr) => acc = acc + Number(curr.total_pay), 0) ?? 0
+        const extraCharges = extra_charges.reduce((acc, curr) => acc + Number(curr.price), 0) ?? 0
+        const allPayment = total + extraCharges
+        return { allPayment, extraCharges }
+    }, [extra_charges, totals]) ?? 0
 
     return (
         <Box className={classes.totalsRoot}>
             <Box className={classes.totalsToolbar}>
-                <Box className={classes.totalsBox}>
-                    <Typography className={classes.totals}>Totals: </Typography>
-                    <Typography className={classes.totalsValue}>{formatMoney(total)}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <DriverStatTile classes={classes} cx={cx} label="Extra Charge" value={formatMoney(extraCharges || 0)} />
+                    <DriverStatTile classes={classes} cx={cx} label="TOTAL PAY" value={formatMoney(allPayment || 0)} highlight />
                 </Box>
-                <Button
-                    variant="contained"
-                    size='large'
-                    startIcon={driverPayCommissionRegisterAndDownloadPDF.isPending ? <CircularProgress size={'18px'} /> : <PictureAsPdfRounded />}
-                    onClick={handleGeneratePDF}
-                    disabled={driverPayCommissionRegisterAndDownloadPDF.isPending}
-                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
-                >
-                    {driverPayCommissionRegisterAndDownloadPDF.isPending ? 'Generating...' : 'Generate PDF'}
-                </Button>
+                <Box className={classes.companyRunningTotalGroup} onClick={(e) => e.stopPropagation()}>
+                    <Button
+                        variant="contained"
+                        className={classes.companyGeneratePdfButton}
+                        startIcon={driverPayCommissionRegisterAndDownloadPDF.isPending ? <CircularProgress size={'18px'} /> : <PictureAsPdfRounded />}
+                        onClick={handleGeneratePDF}
+                        disabled={driverPayCommissionRegisterAndDownloadPDF.isPending}
+                    >
+                        {driverPayCommissionRegisterAndDownloadPDF.isPending ? 'Generating...' : 'Generate PDF'}
+                    </Button>
+                </Box>
             </Box>
             {totals.map((total) => (
                 <Box key={total.commission_total_id} className={classes.dateCard}>
