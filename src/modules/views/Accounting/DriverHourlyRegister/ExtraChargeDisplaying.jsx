@@ -4,9 +4,9 @@ import { EditRounded, DeleteOutlineRounded, ReceiptLongRounded, CheckRounded, Cl
 import useStyles from './Driver.styles'
 import { useBillingMutation } from '../../../hooks/useBillings'
 
-function ExtraChargeRow({ item, index, companyId, classes, cx, onClose }) {
+function ExtraChargeRow({ item, index, companyId, classes, cx, onClose, isDriverCharge, extraChargeRef, openModal }) {
 
-    const { updateExtraCharge, deleteExtraCharge } = useBillingMutation()
+    const { updateExtraCharge, deleteExtraCharge, updateExtraDriverCharge } = useBillingMutation()
 
     const [isEditing, setIsEditing] = useState(false)
     const [draft, setDraft] = useState({ note: item.note, price: String(item.price) })
@@ -25,14 +25,25 @@ function ExtraChargeRow({ item, index, companyId, classes, cx, onClose }) {
 
     const handleSaveEdit = useCallback(async () => {
         if (!isDraftValid) return
-        await updateExtraCharge.mutateAsync({ id: item.id, payload: { note: draft.note.trim(), price: Number(draft.price), company_id: companyId }, })
+        if (isDriverCharge) {
+            await updateExtraDriverCharge.mutateAsync({ id: item.id, payload: { note: draft.note.trim(), price: Number(draft.price), driver_id: companyId }, })
+        }
+        else {
+            await updateExtraCharge.mutateAsync({ id: item.id, payload: { note: draft.note.trim(), price: Number(draft.price), company_id: companyId }, })
+        }
         setIsEditing(false)
         onClose?.()
     }, [isDraftValid, draft, item.id, updateExtraCharge])
 
     const handleRemove = useCallback(async () => {
-        await deleteExtraCharge.mutateAsync({ id: item.id, cid: companyId })
-        onClose?.()
+        if (isDriverCharge) {
+            extraChargeRef.current = { id: item.id, driver_id: companyId, note: item.note }
+            openModal()
+        }
+        else {
+            await deleteExtraCharge.mutateAsync({ id: item.id, cid: companyId })
+            onClose?.()
+        }
     }, [item.id, companyId, deleteExtraCharge])
 
     const isBusy = updateExtraCharge.isPending || deleteExtraCharge.isPending
@@ -102,7 +113,7 @@ function ExtraChargeRow({ item, index, companyId, classes, cx, onClose }) {
     )
 }
 
-export default function ExtraChargesDisplay({ companyId, extraCharges = [], onClose }) {
+export default function ExtraChargesDisplay({ companyId, extraCharges = [], onClose, isDriverCharge, extraChargeRef, openModal }) {
 
     const { classes, cx } = useStyles()
 
@@ -123,10 +134,13 @@ export default function ExtraChargesDisplay({ companyId, extraCharges = [], onCl
                     <ExtraChargeRow
                         key={item.id}
                         item={item}
+                        openModal={openModal}
+                        extraChargeRef={extraChargeRef}
                         index={idx}
                         companyId={companyId}
                         classes={classes}
                         cx={cx}
+                        isDriverCharge={isDriverCharge}
                         onClose={onClose}
                     />
                 ))}

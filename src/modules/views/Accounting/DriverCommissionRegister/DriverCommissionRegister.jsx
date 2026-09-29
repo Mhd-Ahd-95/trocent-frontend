@@ -1,14 +1,15 @@
 import React, { useTransition, useState, useCallback } from "react";
-import { Grid, Box, Select, Pagination, MenuItem, CircularProgress } from "@mui/material";
-import { CustomerBillingGroup, SideMenu } from "../../../components";
+import { Grid, Box, Select, Pagination, MenuItem, CircularProgress, Typography } from "@mui/material";
+import { ConfirmModal, CustomerBillingGroup, DrawerForm, Modal, SideMenu } from "../../../components";
 import { MainLayout } from "../../../layouts";
 import FilterBarRegister from "../Filterbar/Filterbar";
-import { ReceiptLongRounded } from "@mui/icons-material";
+import { ReceiptLongRounded, SettingsPowerRounded } from "@mui/icons-material";
 import useStyles from './Driver.styles'
-import { useDriverPayCommissionApproved } from "../../../hooks/useBillings";
+import { useBillingMutation, useDriverPayCommissionApproved } from "../../../hooks/useBillings";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import DriverTotals from "./DriverTotals";
+import ExtraChargesDisplay from "../DriverHourlyRegister/ExtraChargeDisplaying";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -20,8 +21,13 @@ export default function DriverCommissionRegister() {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [appliedFilters, setAppliedFilters] = useState(null);
+    const [openDrawer, setOpenDrawer] = useState(false)
     const { data: drivers, isLoading, isFetching, isError, error } = useDriverPayCommissionApproved(appliedFilters, page, rowsPerPage)
+    const driverRef = React.useRef()
+    const extraChargeRef = React.useRef()
     const data = drivers?.data ?? []
+    const { deleteExtraDriverCharge } = useBillingMutation()
+    const [openModal, setOpenModal] = React.useState(false)
 
     const meta = drivers?.meta ?? {};
     const pageCount = Math.max(1, meta.lastPage || 1);
@@ -90,8 +96,11 @@ export default function DriverCommissionRegister() {
                                             customerName={driver.driver_name}
                                             accountNumber={driver.driver_number}
                                             orders={driver.totals}
+                                            company={driver}
+                                            orderRef={driverRef}
                                             commissionRegister
-                                            OrderCard={DriverTotals}
+                                            openCharges={(nb) => setOpenDrawer(nb)}
+                                            OrderCard={(props) => <DriverTotals {...props} extra_charges={driver.extra_charges} />}
                                         />
                                     ))}
                                 </Box>
@@ -125,6 +134,49 @@ export default function DriverCommissionRegister() {
                     </>
                 }
             </Grid>
+            {openDrawer === 1 &&
+                <DrawerForm
+                    customTitle={
+                        <Box className={classes.extraChargesHeaderLeft}>
+                            <Box className={classes.extraChargesIconBadge}>
+                                <ReceiptLongRounded sx={{ fontSize: 16 }} />
+                            </Box>
+                            <Box>
+                                <Typography className={classes.extraChargesTitle}>Extra Charges — {driverRef.current?.driver_name} </Typography>
+                                <Typography className={classes.extraChargesSubtitle}>
+                                    {driverRef.current?.extra_charges.length || 0} item{driverRef.current?.extra_charges.length !== 1 ? 's' : ''}
+                                </Typography>
+                            </Box>
+                        </Box>}
+                    open={openDrawer === 1}
+                    setOpen={setOpenDrawer}
+                >
+                    <ExtraChargesDisplay
+                        companyId={driverRef.current?.driver_id}
+                        extraChargeRef={extraChargeRef}
+                        openModal={() => setOpenModal(true)}
+                        extraCharges={driverRef.current?.extra_charges ?? []}
+                        onClose={() => setOpenDrawer(false)}
+                        isDriverCharge
+                    />
+                </DrawerForm>
+            }
+            <Modal open={openModal} handleClose={() => setOpenModal(false)}>
+                <ConfirmModal
+                    title={
+                        <>
+                            Delete Extra Charge {' '}
+                            <strong style={{ fontSize: 15, paddingInline: 5 }}>"{extraChargeRef.current?.note}"</strong>
+                        </>
+                    }
+                    subtitle='Are you sure you want to continue?'
+                    handleClose={() => setOpenModal(false)}
+                    handleSubmit={async () => {
+                        await deleteExtraDriverCharge.mutateAsync({ id: extraChargeRef.current?.id, did: extraChargeRef.current?.driver_id })
+                        setOpenDrawer(false)
+                    }}
+                />
+            </Modal>
         </MainLayout>
     )
 

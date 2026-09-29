@@ -1,57 +1,107 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Box, Typography, TextField, InputAdornment, Grid, Collapse, Button, CircularProgress, } from '@mui/material';
-import { History, RouteRounded, CheckCircleRounded, KeyboardArrowRightRounded, } from '@mui/icons-material';
-import moment from 'moment';
-import useStyles from './Hourly.styles';
-import { useBillingMutation } from '../../../hooks/useBillings';
+import React, { useState, useMemo, useCallback } from 'react'
+import { Box, Typography, TextField, InputAdornment, Grid, Collapse, Button, CircularProgress, } from '@mui/material'
+import { History, RouteRounded, CheckCircleRounded, KeyboardArrowRightRounded, } from '@mui/icons-material'
+import moment from 'moment'
+import useStyles from './Hourly.styles'
+import { useBillingMutation } from '../../../hooks/useBillings'
 
 
-const initials = (name) => name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) ?? '??';
+const initials = (name) => name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) ?? '??'
 
-const AVATAR_COLORS = ['#DD9100', '#7c3aed', '#0891b2', '#059669', '#d97706', '#2c3e50'];
+const AVATAR_COLORS = ['#DD9100', '#7c3aed', '#0891b2', '#059669', '#d97706', '#2c3e50']
 const avatarColor = (seed) => {
-    const idx = seed ? seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length : 0;
-    return AVATAR_COLORS[idx];
-};
+    const idx = seed ? seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length : 0
+    return AVATAR_COLORS[idx]
+}
 
 const durationToSeconds = (value) => {
-    if (!value) return 0;
-    const parts = String(value).split(':').map(Number);
-    if (parts.length !== 3 || parts.some(Number.isNaN)) return 0;
-    const [h, m, s] = parts;
-    return h * 3600 + m * 60 + s;
-};
+    if (!value) return 0
+    const parts = String(value).split(':').map(Number)
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return 0
+    const [h, m, s] = parts
+    return h * 3600 + m * 60 + s
+}
 
 const formatSeconds = (totalSeconds) => {
-    const sign = totalSeconds < 0 ? '-' : '';
-    const abs = Math.abs(Math.round(totalSeconds));
-    const h = String(Math.floor(abs / 3600)).padStart(2, '0');
-    const m = String(Math.floor((abs % 3600) / 60)).padStart(2, '0');
-    const s = String(abs % 60).padStart(2, '0');
-    return `${sign}${h}:${m}:${s}`;
-};
+    const sign = totalSeconds < 0 ? '-' : ''
+    const abs = Math.abs(Math.round(totalSeconds))
+    const h = String(Math.floor(abs / 3600)).padStart(2, '0')
+    const m = String(Math.floor((abs % 3600) / 60)).padStart(2, '0')
+    const s = String(abs % 60).padStart(2, '0')
+    return `${sign}${h}:${m}:${s}`
+}
 
 const formatDurationShort = (value) => {
-    const totalMinutes = Math.round(durationToSeconds(value) / 60);
-    if (totalMinutes < 60) return `${totalMinutes}m`;
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    return m ? `${h}h ${m}m` : `${h}h`;
-};
+    const totalMinutes = Math.round(durationToSeconds(value) / 60)
+    if (totalMinutes < 60) return `${totalMinutes}m`
+    const h = Math.floor(totalMinutes / 60)
+    const m = totalMinutes % 60
+    return m ? `${h}h ${m}m` : `${h}h`
+}
 
 const getSeverity = (diffValue) => {
-    const minutes = Math.round(durationToSeconds(diffValue) / 60);
-    if (!diffValue) return 'good';
-    if (minutes <= 60) return 'good';
-    if (minutes <= 90) return 'warn';
-    return 'bad';
-};
+    const minutes = Math.round(durationToSeconds(diffValue) / 60)
+    if (!diffValue) return 'good'
+    if (minutes <= 60) return 'good'
+    if (minutes <= 90) return 'warn'
+    return 'bad'
+}
 
 const STATUS_META = {
     good: { label: 'On track' },
     warn: { label: 'Some idle' },
     bad: { label: 'Review needed' },
-};
+}
+
+const getWeekKey = (date) => moment(date).startOf('isoWeek').format('YYYY-MM-DD')
+
+const getPayableKmByDay = (days, kmAdjustments, driverDetails) => {
+
+    const allotment = Number(driverDetails?.mileage_allotment || 0)
+    const isWeekly = driverDetails?.mileage_allotment_type === 'weekly'
+    const result = {}
+    let freeLeft = allotment
+    let currentWeek = null;
+    [...days].sort((a, b) => String(a.date).localeCompare(String(b.date))).forEach((day) => {
+        const km = Number(kmAdjustments[day.date]) || 0
+        const week = getWeekKey(day.date)
+        if (!isWeekly || week !== currentWeek) {
+            freeLeft = allotment
+            currentWeek = week
+        }
+        const freeUsed = Math.min(km, freeLeft)
+        freeLeft -= freeUsed
+        result[day.date] = km - freeUsed
+    })
+    return result
+}
+
+const calcDay = (day, adjustmentValue, kmValue, payableKm, driverDetails) => {
+    const hourlyRate = Number(driverDetails?.hourly_rate || 0)
+    const kmRate = Number(driverDetails?.rate_per_km || 0)
+    const surchargeType = driverDetails?.fuel_surcharge_type
+    const fuelPct = Number(day.fuel_surcharge || 0) / 100
+
+    const adjustmentHours = Number(adjustmentValue) || 0
+    const adjustedKm = Number(kmValue) || 0
+    const adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + adjustmentHours * 3600
+
+    const hourRateWithoutFuel = (adjustedClockedSeconds / 3600) * hourlyRate
+    const hourFuel = ['both', 'hourly'].includes(surchargeType) ? fuelPct * hourRateWithoutFuel : 0
+
+    const kmRateWithoutFuel = payableKm * kmRate
+    const kmFuel = ['both', 'mileage'].includes(surchargeType) ? fuelPct * kmRateWithoutFuel : 0
+
+    return {
+        adjustmentHours,
+        adjustedKm,
+        adjustedClockedSeconds,
+        hourFuel,
+        kmFuel,
+        dayHourlyPay: hourRateWithoutFuel + hourFuel,
+        dayKmPay: kmRateWithoutFuel + kmFuel,
+    }
+}
 
 const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
     <Box className={cx(classes.statTile, highlight && classes.statTileHighlight)}>
@@ -62,150 +112,102 @@ const StatTile = ({ classes, cx, label, value, highlight, isDeficit }) => (
             {value}
         </Typography>
     </Box>
-);
-
+)
 
 function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
 
-    const { approvedDriverPayHourly, saveDriverPayDailyAdjustment } = useBillingMutation();
+    const { approvedDriverPayHourly, saveDriverPayDailyAdjustment } = useBillingMutation()
 
     const [adjustments, setAdjustments] = useState(() => days.reduce((acc, d) => {
         if (d.hour_adjustment !== null && d.hour_adjustment !== undefined) {
-            acc[d.date] = d.hour_adjustment;
+            acc[d.date] = d.hour_adjustment
         }
-        return acc;
-    }, {}));
+        return acc
+    }, {}))
 
     const [kmAdjustments, setKmAdjustments] = useState(() => days.reduce((acc, d) => {
         acc[d.date] = (d.km_adjustment !== null && d.km_adjustment !== undefined)
-            ? d.km_adjustment : (d.km_driven || 0);
-        return acc;
-    }, {}));
+            ? d.km_adjustment : (d.km_driven || 0)
+        return acc
+    }, {}))
 
     const [notes, setNotes] = useState(() => days.reduce((acc, d) => {
-        if (d.saved_note) acc[d.date] = d.saved_note;
-        return acc;
-    }, {}));
+        const savedNote = d.note ?? null
+        if (savedNote) acc[d.date] = savedNote
+        return acc
+    }, {}))
 
-    const [expandedDates, setExpandedDates] = useState(() => new Set());
-    const [savingDates, setSavingDates] = useState(() => new Set());
-    const lastSavedRef = React.useRef({});
+    const [expandedDates, setExpandedDates] = useState(() => new Set())
+    const [savingDates, setSavingDates] = useState(() => new Set())
+    const lastSavedRef = React.useRef({})
 
     const toggleExpanded = useCallback((date) => {
         setExpandedDates((prev) => {
-            const next = new Set(prev);
-            next.has(date) ? next.delete(date) : next.add(date);
-            return next;
-        });
-    }, []);
+            const next = new Set(prev)
+            next.has(date) ? next.delete(date) : next.add(date)
+            return next
+        })
+    }, [])
 
-    const handleAdjustmentChange = useCallback((date, value) => {
-        setAdjustments((prev) => ({ ...prev, [date]: value }));
-    }, []);
-
-    const handleKmAdjustmentChange = useCallback((date, value) => {
-        setKmAdjustments((prev) => ({ ...prev, [date]: value }));
-    }, []);
+    const handleAdjustmentChange = useCallback((date, value) => setAdjustments((prev) => ({ ...prev, [date]: value })), [])
+    const handleKmAdjustmentChange = useCallback((date, value) => setKmAdjustments((prev) => ({ ...prev, [date]: value })), [])
+    const payableKmByDay = useMemo(() => getPayableKmByDay(days, kmAdjustments, driverDetails), [days, kmAdjustments, driverDetails])
 
     const totals = useMemo(() => {
-        const tripSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.trip_hours), 0);
-        const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0);
-        const differenceSeconds = clockedSeconds - tripSeconds;
+        const tripSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.trip_hours), 0)
+        const clockedSeconds = days.reduce((sum, d) => sum + durationToSeconds(d.clocked_hours), 0)
+        const differenceSeconds = clockedSeconds - tripSeconds
 
-        const mileage = Number(driverDetails?.mileage_allotment || 0);
-        const hourlyRate = Number(driverDetails?.hourly_rate || 0);
-        const kmRate = Number(driverDetails?.rate_per_km || 0);
-        const surchargeType = driverDetails?.fuel_surcharge_type;
-
-        let adjustmentsOnlySeconds = 0;
-        let adjustedClockedSeconds = clockedSeconds;
-        let adjustedKmsDriven = 0;
-        let estPay = 0;
-        let estPayKm = 0;
-        let fuelHourTotal = 0;
-        let fuelKmTotal = 0;
+        let adjustmentsOnlySeconds = 0
+        let adjustedKmsDriven = 0
+        let estPay = 0
+        let estPayKm = 0
+        let fuelHourTotal = 0
+        let fuelKmTotal = 0
 
         days.forEach((day) => {
+            const c = calcDay(day, adjustments[day.date], kmAdjustments[day.date], payableKmByDay[day.date] || 0, driverDetails)
+            adjustmentsOnlySeconds += c.adjustmentHours * 3600
+            adjustedKmsDriven += c.adjustedKm
+            estPay += c.dayHourlyPay
+            estPayKm += c.dayKmPay
+            fuelHourTotal += c.hourFuel
+            fuelKmTotal += c.kmFuel
+        })
 
-            const adjustmentHours = Number(adjustments[day.date]) || 0;
-            const adjustedKm = Number(kmAdjustments[day.date]) || 0;
-            const fuelPct = Number(day.fuel_surcharge || 0) / 100;
-            adjustmentsOnlySeconds += adjustmentHours * 3600;
-            adjustedKmsDriven += adjustedKm;
-
-            const adjustedClockedSecondsForDay = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
-            const hourRateWithoutFuel = (adjustedClockedSecondsForDay / 3600) * hourlyRate;
-            let hourFuel = 0;
-            if (['both', 'hourly'].includes(surchargeType)) {
-                hourFuel = fuelPct * hourRateWithoutFuel;
-            }
-            estPay += hourRateWithoutFuel + hourFuel;
-            fuelHourTotal += hourFuel;
-
-            let kmRateWithoutFuel = 0;
-            let kmFuel = 0;
-            if (adjustedKm > mileage) {
-                const payableKm = adjustedKm - mileage;
-                kmRateWithoutFuel = payableKm * kmRate;
-                if (['both', 'mileage'].includes(surchargeType)) {
-                    kmFuel = fuelPct * kmRateWithoutFuel;
-                }
-            }
-            estPayKm += kmRateWithoutFuel + kmFuel;
-            fuelKmTotal += kmFuel;
-        });
-        adjustedClockedSeconds = clockedSeconds + adjustmentsOnlySeconds;
-        const totalFuel = fuelHourTotal + fuelKmTotal;
-        const estTotals = estPay + estPayKm;
+        const adjustedClockedSeconds = clockedSeconds + adjustmentsOnlySeconds
+        const totalFuel = fuelHourTotal + fuelKmTotal
+        const estTotals = estPay + estPayKm
 
         return {
             tripSeconds, clockedSeconds, differenceSeconds, adjustmentsOnly: adjustmentsOnlySeconds, adjustedClockedSeconds, adjustedKmsDriven,
             estPay, estPayKm, fuelHourTotal, fuelKmTotal, totalFuel, estTotals,
-        };
-    }, [days, adjustments, kmAdjustments, driverDetails]);
+        }
+    }, [days, adjustments, kmAdjustments, payableKmByDay, driverDetails])
 
-    const isDeficit = totals.differenceSeconds > 0;
+    const isDeficit = totals.differenceSeconds > 0
+
+    const buildDayPayload = useCallback((day) => {
+        const c = calcDay(day, adjustments[day.date], kmAdjustments[day.date], payableKmByDay[day.date] || 0, driverDetails)
+        return {
+            date: day.date,
+            driver_pay_ids: day.driver_pay_ids || [],
+            total_hrs: c.adjustedClockedSeconds,
+            adjustment_hours: c.adjustmentHours * 3600,
+            total_km: c.adjustedKm,
+            fuel_hour: c.hourFuel,
+            fuel_km: c.kmFuel,
+            adjustment_km: c.adjustedKm - Number(day.km_driven),
+            day_hourly_pay: Number(c.dayHourlyPay.toFixed(2)),
+            day_km_pay: Number(c.dayKmPay.toFixed(2)),
+            day_total_pay: Number((c.dayHourlyPay + c.dayKmPay).toFixed(2)),
+            note: notes[day.date] || null,
+        }
+    }, [adjustments, kmAdjustments, notes, payableKmByDay, driverDetails])
 
     const handleApproved = async (e) => {
-        e.preventDefault();
-        const daysPayload = days.map((day) => {
-            const adjustmentHours = Number(adjustments[day.date]) || 0;
-            const adjustedKm = Number(kmAdjustments[day.date]) || 0;
-            const adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
-            const convertToHour = (adjustedClockedSeconds / 3600)
-            const hourRateWithoutFuel = convertToHour * (driverDetails?.hourly_rate || 0);
-            let hourFuel = 0
-            if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
-                hourFuel = (Number(day.fuel_surcharge || 0) / 100) * hourRateWithoutFuel
-            }
-            const dayHourlyPay = hourRateWithoutFuel + hourFuel
-
-            const mileage = Number(driverDetails?.mileage_allotment || 0);
-            let dayKmPay = 0;
-            let kmFuel = 0
-            if (adjustedKm > mileage) {
-                const payableKm = adjustedKm - mileage;
-                const kmRateWithoutFuel = payableKm * (driverDetails?.rate_per_km || 0);
-                if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
-                    kmFuel = (Number(day.fuel_surcharge || 0) / 100) * kmRateWithoutFuel
-                }
-                dayKmPay = kmRateWithoutFuel + kmFuel
-            }
-            return {
-                date: day.date,
-                driver_pay_ids: day.driver_pay_ids || [],
-                total_hrs: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
-                adjustment_hours: (adjustmentHours * 3600),
-                total_km: adjustedKm,
-                fuel_hour: hourFuel,
-                fuel_km: kmFuel,
-                adjustment_km: adjustedKm - Number(day.km_driven),
-                day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
-                day_km_pay: Number(dayKmPay.toFixed(2)),
-                day_total_pay: Number((dayHourlyPay + dayKmPay).toFixed(2)),
-                note: notes[day.date] || null,
-            };
-        });
+        e.preventDefault()
+        const daysPayload = days.map((day) => buildDayPayload(day))
         const payload = {
             days: daysPayload,
             totals: {
@@ -218,68 +220,36 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 adjusted_clocked_total: Number(totals.adjustedClockedSeconds),
                 adjusted_distance_total: Number(totals.adjustedKmsDriven || 0),
             },
-        };
-        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload, cid: driverDetails.company_id });
-    };
-
-    const buildDayPayload = useCallback((day) => {
-        const adjustmentHours = Number(adjustments[day.date]) || 0;
-        const adjustedKm = Number(kmAdjustments[day.date]) || 0;
-        const adjustedClockedSeconds = durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600);
-        const convertToHour = (adjustedClockedSeconds / 3600)
-        const hourRateWithoutFuel = convertToHour * (driverDetails?.hourly_rate || 0)
-        let hourFuel = 0
-        if (['both', 'hourly'].includes(driverDetails?.fuel_surcharge_type)) {
-            hourFuel = (Number(day.fuel_surcharge || 0) / 100) * hourRateWithoutFuel
         }
-        const dayHourlyPay = hourRateWithoutFuel + hourFuel
-
-        const mileage = Number(driverDetails?.mileage_allotment || 0);
-        let dayKmPay = 0;
-        let kmFuel = 0
-        if (adjustedKm > mileage) {
-            const payableKm = adjustedKm - mileage;
-            const kmRateWithoutFuel = payableKm * (driverDetails?.rate_per_km || 0)
-            if (['both', 'mileage'].includes(driverDetails?.fuel_surcharge_type)) {
-                kmFuel = (Number(day.fuel_surcharge || 0) / 100) * kmRateWithoutFuel
-            }
-            dayKmPay = kmRateWithoutFuel + kmFuel
-        }
-        return {
-            date: day.date,
-            driver_pay_ids: day.driver_pay_ids || [],
-            total_hrs: durationToSeconds(day.clocked_hours) + (adjustmentHours * 3600),
-            adjustment_hours: (adjustmentHours * 3600),
-            total_km: adjustedKm,
-            fuel_hour: hourFuel,
-            fuel_km: kmFuel,
-            adjustment_km: adjustedKm - Number(day.km_driven),
-            day_hourly_pay: Number(dayHourlyPay.toFixed(2)),
-            day_km_pay: Number(dayKmPay.toFixed(2)),
-            day_total_pay: Number((dayHourlyPay + dayKmPay).toFixed(2)),
-            note: notes[day.date] || null,
-        };
-    }, [adjustments, kmAdjustments, notes, driverDetails]);
+        await approvedDriverPayHourly.mutateAsync({ did: driverDetails.driver_id, payload, cid: driverDetails.company_id })
+    }
 
     const persistDay = useCallback(async (e, day) => {
         e.preventDefault()
-        const dayPayload = buildDayPayload(day);
-        const signature = JSON.stringify(dayPayload);
 
-        if (lastSavedRef.current[day.date] === signature) return;
+        const isWeekly = driverDetails?.mileage_allotment_type === 'weekly'
+        const targets = isWeekly ? days.filter((d) => getWeekKey(d.date) === getWeekKey(day.date)) : [day]
+        for (const target of targets) {
+            const dayPayload = buildDayPayload(target)
+            const signature = JSON.stringify(dayPayload)
+            const lastSaved = lastSavedRef.current[target.date]
 
-        setSavingDates((prev) => new Set(prev).add(day.date));
-        try {
-            await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, cid: driverDetails.company_id });
-            lastSavedRef.current[day.date] = signature;
-        } finally {
-            setSavingDates((prev) => {
-                const next = new Set(prev);
-                next.delete(day.date);
-                return next;
-            });
+            if (lastSaved === signature) continue
+            if (target.date !== day.date && lastSaved === undefined) continue
+
+            setSavingDates((prev) => new Set(prev).add(target.date))
+            try {
+                await saveDriverPayDailyAdjustment.mutateAsync({ did: driverDetails.driver_id, payload: dayPayload, cid: driverDetails.company_id })
+                lastSavedRef.current[target.date] = signature
+            } finally {
+                setSavingDates((prev) => {
+                    const next = new Set(prev)
+                    next.delete(target.date)
+                    return next
+                })
+            }
         }
-    }, [buildDayPayload, saveDriverPayDailyAdjustment, driverDetails.driver_id]);
+    }, [days, buildDayPayload, saveDriverPayDailyAdjustment, driverDetails.driver_id, driverDetails.company_id, driverDetails.mileage_allotment_type])
 
     return (
         <Grid container className={classes.hourlyRoot} direction="column" wrap="nowrap">
@@ -294,7 +264,6 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 <StatTile classes={classes} cx={cx} label={`Est. Pay @ ${driverDetails?.rate_per_km || 0}/KM`} value={`${totals?.estPayKm.toFixed(2)}`} />
                 <StatTile classes={classes} cx={cx} label="Total Pay" value={`$${totals?.estTotals.toFixed(2)}`} highlight />
             </Grid>
-
             <Grid size={12} className={classes.tableHeaderRow}>
                 <Grid container sx={{ width: '100%' }} alignItems="center">
                     <Grid size={3.2}><Typography className={classes.tableHeaderCell}>Date & Route</Typography></Grid>
@@ -308,12 +277,12 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
             </Grid>
 
             {days.map((day) => {
-                const severity = getSeverity(day.difference);
-                const isOpen = expandedDates.has(day.date);
-                const puSeconds = durationToSeconds(day.pu_diff);
-                const tripSeconds = durationToSeconds(day.trip_hours);
-                const delSeconds = durationToSeconds(day.delivery_diff);
-                const totalSeconds = puSeconds + tripSeconds + delSeconds;
+                const severity = getSeverity(day.difference)
+                const isOpen = expandedDates.has(day.date)
+                const puSeconds = durationToSeconds(day.pu_diff)
+                const tripSeconds = durationToSeconds(day.trip_hours)
+                const delSeconds = durationToSeconds(day.delivery_diff)
+                const totalSeconds = puSeconds + tripSeconds + delSeconds
 
                 return (
                     <React.Fragment key={day.date}>
@@ -369,13 +338,9 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                         <Collapse in={isOpen} timeout="auto">
                             <Grid size={12} className={classes.timelineWrap}>
                                 <div className={classes.timelineBar}>
-                                    {puSeconds > 0 && (
-                                        <div className={classes.segmentIdle} style={{ flexGrow: puSeconds / (totalSeconds || 1), flexBasis: 0 }} />
-                                    )}
+                                    {puSeconds > 0 && (<div className={classes.segmentIdle} style={{ flexGrow: puSeconds / (totalSeconds || 1), flexBasis: 0 }} />)}
                                     <div className={classes.segmentActive} style={{ flexGrow: tripSeconds / (totalSeconds || 1), flexBasis: 0 }} />
-                                    {delSeconds > 0 && (
-                                        <div className={classes.segmentIdle} style={{ flexGrow: delSeconds / (totalSeconds || 1), flexBasis: 0 }} />
-                                    )}
+                                    {delSeconds > 0 && (<div className={classes.segmentIdle} style={{ flexGrow: delSeconds / (totalSeconds || 1), flexBasis: 0 }} />)}
                                 </div>
                                 <div className={classes.timelineLabels}>
                                     <div style={{ flex: '0 0 auto', textAlign: 'left' }}>
@@ -385,28 +350,24 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                                             <Typography className={classes.tickTime}>{day.km_in} KM</Typography>
                                         </div>
                                     </div>
-
                                     {puSeconds > 0 && (
                                         <div style={{ flexGrow: puSeconds / (totalSeconds || 1), flexBasis: 0, textAlign: 'center' }}>
                                             <Typography className={classes.tickTime}>{formatDurationShort(day.pu_diff)}</Typography>
                                             <Typography className={classes.tickCaption}>waiting</Typography>
                                         </div>
                                     )}
-
                                     <div style={{ flexGrow: tripSeconds / (totalSeconds || 1), flexBasis: 0, textAlign: 'center' }}>
                                         <Typography className={classes.tickTime}>
                                             {day.first_pickup || '-'} → {day.last_delivery || '-'}
                                         </Typography>
                                         <Typography className={classes.tickCaption}>on the road</Typography>
                                     </div>
-
                                     {delSeconds > 0 && (
                                         <div style={{ flexGrow: delSeconds / (totalSeconds || 1), flexBasis: 0, textAlign: 'center' }}>
                                             <Typography className={classes.tickTime}>{formatDurationShort(day.delivery_diff)}</Typography>
                                             <Typography className={classes.tickCaption}>after last stop</Typography>
                                         </div>
                                     )}
-
                                     <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
                                         <Typography className={classes.tickTime}>{day.clock_out ? moment.utc(day.clock_out).format('HH:mm') : '-'}</Typography>
                                         <Typography className={classes.tickCaption}>Clock out</Typography>
@@ -432,9 +393,8 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                             </Grid>
                         </Collapse>
                     </React.Fragment>
-                );
+                )
             })}
-
             <Grid size={12} p={2}>
                 <Grid container justifyContent="flex-end">
                     <Grid size="auto">
@@ -452,18 +412,18 @@ function HourlyPaySection({ classes, cx, days = [], driverDetails = {} }) {
                 </Grid>
             </Grid>
         </Grid>
-    );
+    )
 }
 
 export default function DriverBillingCard({ driverId, driverName, driverNumber, days = [], driverDetails = {}, driverRef, openModal }) {
 
-    const { classes, cx } = useStyles();
+    const { classes, cx } = useStyles()
 
     const handleDetails = (e, target) => {
-        e.stopPropagation();
+        e.stopPropagation()
         driverRef.current = driverId
         openModal(target)
-    };
+    }
 
     return (
         <Box className={classes.root}>
@@ -498,5 +458,5 @@ export default function DriverBillingCard({ driverId, driverName, driverNumber, 
                 <HourlyPaySection classes={classes} cx={cx} days={days} driverDetails={driverDetails} />
             </Box>
         </Box>
-    );
+    )
 }

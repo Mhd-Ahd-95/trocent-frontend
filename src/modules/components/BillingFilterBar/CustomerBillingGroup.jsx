@@ -5,7 +5,7 @@ import useStyles from './Filter.styles';
 import moment from 'moment';
 
 const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvoicing, accountNumber, orders = [], orderRef, openCharges, OrderCard, isInvoicing = false,
-    customerId, isDriverPay, driver_id, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect, commissionRegister }, ref) => {
+    customerId, driver_id, hourlyRegister = false, company, downloadPDF, downloading, selected, onToggleSelect, commissionRegister }, ref) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(true);
@@ -32,20 +32,6 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
         e.stopPropagation();
         onToggleSelect?.(company.company_id);
     }, [onToggleSelect, company]);
-
-    const dateGroups = React.useMemo(() => {
-        if (!isDriverPay) return []
-        const map = new Map();
-        orders.forEach((o) => {
-            const dateField = o.leg_type === 'pickup' ? o.pickup_at : o.delivery_at
-            const key = moment(dateField).format('YYYY-MM-DD');
-            if (!map.has(key)) map.set(key, []);
-            map.get(key).push(o);
-        });
-        return Array.from(map.entries())
-            .sort((a, b) => moment(b[0]).diff(moment(a[0])))
-            .map(([date, dateOrders]) => ({ date, orders: dateOrders }));
-    }, [orders, isDriverPay]);
 
     const type = hourlyRegister ? 'Driver' : commissionRegister ? 'Day' : 'Order'
 
@@ -100,16 +86,28 @@ const CustomerBillingGroup = React.memo(forwardRef(({ customerName, customerInvo
                             </Box>
                         </Box>
                     }
+                    {commissionRegister &&
+                        <Box
+                            component="span" role="button" tabIndex={0}
+                            className={cx(classes.detailsButton, classes.btnAccordion)}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleCharge(company, 1)
+                            }}
+                        >
+                            <CreditCardOutlined sx={{ fontSize: 15 }} />
+                            Extra Charges
+                        </Box>
+                    }
                 </Box>
             </AccordionSummary>
 
             <AccordionDetails className={classes.accordionDetails}>
-                {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} /> :
-                    isDriverPay ? dateGroups.map(({ date, orders: dateOrders }) => (<OrderCard key={date} date={date} orders={dateOrders} driver={{ driver_id, driver_number: accountNumber }} />))
-                        : hourlyRegister ? <OrderCard company={company} drivers={orders} /> : commissionRegister ? <OrderCard totals={orders} driver_id={driver_id} /> :
-                            orders.map((order) => (
-                                <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
-                            ))
+                {OrderCard ? isInvoicing ? <OrderCard orders={orders} customerInvoicing={customerInvoicing} customerId={customerId} />
+                    : hourlyRegister ? <OrderCard company={company} drivers={orders} /> : commissionRegister ? <OrderCard totals={orders} driver_id={driver_id} /> :
+                        orders.map((order) => (
+                            <OrderCard key={order.order_id} order={order} handleCharge={handleCharge} handleInterliner={handleInterliner} />
+                        ))
                     : null
                 }
             </AccordionDetails>

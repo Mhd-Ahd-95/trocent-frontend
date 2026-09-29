@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, InputAdornment, Grid } from '@mui/material';
+import { Box, TextField, InputAdornment, Grid } from '@mui/material';
 import { StyledButton, SubmitButton } from '../../../components';
 
 
-export default function ExtraChargeForm({ companyId, initialValues = {}, onSave, onClose }) {
+export default function ExtraChargeForm({ companyId, initialValues = {}, onSave, onClose, isDriverCharge }) {
 
     const [item, setItem] = useState({ note: '', price: '', ...initialValues });
     const [submitted, setSubmitted] = useState(false);
@@ -15,11 +15,11 @@ export default function ExtraChargeForm({ companyId, initialValues = {}, onSave,
         if (!isValid) return;
         setSubmitted(true);
         try {
-            const payload = {
-                company_id: companyId,
+            const subPayload = {
                 note: item.note.trim(),
                 price: Number(Number(item.price).toFixed(2)),
-            };
+            }
+            const payload = isDriverCharge ? { driver_id: companyId, ...subPayload } : { company_id: companyId, ...subPayload };
             await onSave?.(payload);
         } finally {
             setSubmitted(false);
