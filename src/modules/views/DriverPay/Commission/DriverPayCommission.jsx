@@ -4,7 +4,7 @@ import { MainLayout } from '../../../layouts'
 import { FilterPayDriverCommission, SideMenu } from '../../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
 import useStyles from './Commission.styles'
-import { useCommissionDrivers } from '../../../hooks/useBillings'
+import { useDriverPayCommission } from '../../../hooks/useBillings'
 import { useSnackbar } from 'notistack'
 import DriverGrouped from './DriverGrouped'
 
@@ -21,7 +21,7 @@ export default function DriverPayCommission() {
     const [appliedFilters, setAppliedFilters] = React.useState(null);
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: driverPays, isLoading, isError, error } = useCommissionDrivers(appliedFilters, page, rowsPerPage)
+    const { data: driverPays, isLoading, isError, error } = useDriverPayCommission(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
 
     const pageCount = Math.max(1, Math.ceil(data?.length / rowsPerPage));

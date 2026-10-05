@@ -6,7 +6,7 @@ import { useBillingMutation } from '../../../hooks/useBillings'
 
 function ExtraChargeRow({ item, index, companyId, classes, cx, onClose, isDriverCharge, extraChargeRef, openModal }) {
 
-    const { updateExtraCharge, deleteExtraCharge, updateExtraDriverCharge } = useBillingMutation()
+    const { updateExtraCharge, updateExtraDriverCharge } = useBillingMutation()
 
     const [isEditing, setIsEditing] = useState(false)
     const [draft, setDraft] = useState({ note: item.note, price: String(item.price) })
@@ -36,17 +36,9 @@ function ExtraChargeRow({ item, index, companyId, classes, cx, onClose, isDriver
     }, [isDraftValid, draft, item.id, updateExtraCharge])
 
     const handleRemove = useCallback(async () => {
-        if (isDriverCharge) {
-            extraChargeRef.current = { id: item.id, driver_id: companyId, note: item.note }
-            openModal()
-        }
-        else {
-            await deleteExtraCharge.mutateAsync({ id: item.id, cid: companyId })
-            onClose?.()
-        }
-    }, [item.id, companyId, deleteExtraCharge])
-
-    const isBusy = updateExtraCharge.isPending || deleteExtraCharge.isPending
+        extraChargeRef.current = { id: item.id, driver_id: companyId, note: item.note }
+        openModal()
+    }, [item.id, companyId])
 
     if (isEditing) {
         return (
@@ -74,12 +66,12 @@ function ExtraChargeRow({ item, index, companyId, classes, cx, onClose, isDriver
                     <IconButton
                         size="small"
                         className={classes.extraChargeSaveBtn}
-                        disabled={!isDraftValid || isBusy}
+                        disabled={!isDraftValid}
                         onClick={handleSaveEdit}
                     >
                         <CheckRounded sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton size="small" className={classes.extraChargeActionBtn} disabled={isBusy} onClick={handleCancelEdit}>
+                    <IconButton size="small" className={classes.extraChargeActionBtn} onClick={handleCancelEdit}>
                         <CloseRounded sx={{ fontSize: 18 }} />
                     </IconButton>
                 </Box>
@@ -97,13 +89,12 @@ function ExtraChargeRow({ item, index, companyId, classes, cx, onClose, isDriver
                 ${Number(item.price).toFixed(2)}
             </Typography>
             <Box className={classes.extraChargeActions}>
-                <IconButton size="small" className={classes.extraChargeActionBtn} disabled={isBusy} onClick={handleStartEdit}>
+                <IconButton size="small" className={classes.extraChargeActionBtn} onClick={handleStartEdit}>
                     <EditRounded sx={{ fontSize: 20 }} />
                 </IconButton>
                 <IconButton
                     size="small"
                     className={cx(classes.extraChargeActionBtn, classes.extraChargeDeleteBtn)}
-                    disabled={isBusy}
                     onClick={handleRemove}
                 >
                     <DeleteOutlineRounded sx={{ fontSize: 20 }} />

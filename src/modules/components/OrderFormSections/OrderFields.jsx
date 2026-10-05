@@ -85,6 +85,6 @@ export const orderFields = {
     delivery_out: "waiting_time",
     delivery_at: "waiting_time",
     billing_invoice_date: "waiting_time",
-    billing_invoice: "waiting_time",
+    billing_invoice_number: "waiting_time",
     billing_invoiced: "waiting_time"
 }

@@ -32,7 +32,7 @@ export function useInvoicing(filters = {}, page = 1, pageSize = 10) {
     });
 }
 
-export function useCommissionDrivers(filters = {}, page = 1, pageSize = 10) {
+export function useDriverPayCommission(filters = {}, page = 1, pageSize = 10) {
     return useQuery({
         queryKey: ['commissionDrivers', { filters: JSON.stringify(filters), page, pageSize }],
         queryFn: async () => {
@@ -46,7 +46,7 @@ export function useCommissionDrivers(filters = {}, page = 1, pageSize = 10) {
     });
 }
 
-export function useHourlyDrivers(filters = {}, page = 1, pageSize = 10) {
+export function useDriverPayHourly(filters = {}, page = 1, pageSize = 10) {
     const hasDateRange = Boolean(filters?.start_date || filters?.end_date);
     const keyword = filters?.keyword ? filters.keyword.split(',') : []
     return useQuery({
@@ -63,10 +63,10 @@ export function useHourlyDrivers(filters = {}, page = 1, pageSize = 10) {
     });
 }
 
-export function useHourlyDriverDetails(driver_id, filters = {}) {
+export function useDriverPayHourlyDetails(driver_id, filters = {}) {
     const did = Number(driver_id)
     return useQuery({
-        queryKey: ['hourlyDriversDetails', { filters: JSON.stringify(filters), driver_id: did }],
+        queryKey: ['driverPayHourlyDetails', { filters: JSON.stringify(filters), driver_id: did }],
         queryFn: async () => {
             const response = await DriverPaysApi.getHourlyDriverPayDetails(did, filters);
             return response.data;
@@ -78,9 +78,9 @@ export function useHourlyDriverDetails(driver_id, filters = {}) {
     });
 }
 
-export function useApprovedDriverHourlyTotals(filters = {}, page = 1, pageSize = 10) {
+export function useDriverPayHourlyApproved(filters = {}, page = 1, pageSize = 10) {
     return useQuery({
-        queryKey: ['approvedDriverHourlyTotals', { filters: JSON.stringify(filters), page, pageSize }],
+        queryKey: ['driverPayHourlyApproved', { filters: JSON.stringify(filters), page, pageSize }],
         queryFn: async () => {
             const response = await DriverPaysApi.loadApprovedDriverTotals({ ...filters, page, pageSize });
             return response.data;
@@ -293,8 +293,8 @@ export function useBillingMutation() {
                 }
             }
             )
-            queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
-            queryClient.invalidateQueries({ queryKey: ['approvedDriverHourlyTotals'] })
+            queryClient.invalidateQueries({ queryKey: ['driverPayHourlyDetails'] })
+            queryClient.invalidateQueries({ queryKey: ['driverPayHourlyApproved'] })
         },
         onError: handleError
     })
@@ -334,7 +334,7 @@ export function useBillingMutation() {
                     })
                 }
             })
-            queryClient.invalidateQueries({ queryKey: ['hourlyDriversDetails'] })
+            queryClient.invalidateQueries({ queryKey: ['driverPayHourlyDetails'] })
         },
         onError: handleError
     })
@@ -364,7 +364,7 @@ export function useBillingMutation() {
         },
         onSuccess: (res) => {
             const cachedHourlyDrivers = queryClient.getQueriesData({ queryKey: ['hourlyDrivers'] })
-            const cachedHourlyDriversRegister = queryClient.getQueriesData({ queryKey: ['approvedDriverHourlyTotals'] })
+            const cachedHourlyDriversRegister = queryClient.getQueriesData({ queryKey: ['driverPayHourlyApproved'] })
             if (cachedHourlyDrivers) {
                 queryClient.setQueriesData({ queryKey: ['hourlyDrivers'] }, (old) => {
                     if (!old?.data) return
@@ -375,10 +375,10 @@ export function useBillingMutation() {
                 })
             }
             else {
-                queryClient.invalidateQueries({ queryKey: ['approvedDriverHourlyTotals'] })
+                queryClient.invalidateQueries({ queryKey: ['driverPayHourlyApproved'] })
             }
             if (cachedHourlyDriversRegister) {
-                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                queryClient.setQueriesData({ queryKey: ['driverPayHourlyApproved'] }, (old) => {
                     if (!old?.data) return
                     return {
                         ...old,
@@ -414,6 +414,25 @@ export function useBillingMutation() {
                         data: old.data.map(o => Number(o.company_id) === Number(cid) ? { ...o, extra_charges: o.extra_charges.filter(ex => Number(ex.id) !== Number(id)) } : o)
                     }
                 })
+                const cachedHourlyDriversRegister = queryClient.getQueriesData({ queryKey: ['driverPayHourlyApproved'] })
+                if (cachedHourlyDriversRegister) {
+                    queryClient.setQueriesData({ queryKey: ['driverPayHourlyApproved'] }, (old) => {
+                        if (!old?.data) return
+                        return {
+                            ...old,
+                            data: old.data.map(o => {
+                                if (Number(o.company_id) === Number(cid)) {
+                                    const newExtraCharges = o.extra_charges.filter(ex => Number(ex.id) !== Number(id))
+                                    return { ...o, extra_charges: newExtraCharges, extra_charges_pay: newExtraCharges.reduce((a, ex) => a = a + Number(ex.price), 0) }
+                                }
+                                return o
+                            })
+                        }
+                    })
+                }
+                else {
+                    queryClient.invalidateQueries({ queryKey: ['driverPayHourlyApproved'] })
+                }
             }
             enqueueSnackbar('Extra Charge deleted successfully', { variant: 'success' })
         },
@@ -428,7 +447,7 @@ export function useBillingMutation() {
         onSuccess: (res, payload) => {
             if (res) {
                 const cid = payload.company_id
-                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                queryClient.setQueriesData({ queryKey: ['driverPayHourlyApproved'] }, (old) => {
                     if (!old.data) return
                     return {
                         ...old,
@@ -449,7 +468,7 @@ export function useBillingMutation() {
         onSuccess: (res, payload) => {
             if (res) {
                 const companies = payload.map(p => p.company_id)
-                queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
+                queryClient.setQueriesData({ queryKey: ['driverPayHourlyApproved'] }, (old) => {
                     if (!old.data) return
                     return {
                         ...old,
@@ -470,15 +489,6 @@ export function useBillingMutation() {
         },
         onSuccess: (res, payload) => {
             if (res) {
-                // const cid = payload.company_id
-                // queryClient.setQueriesData({ queryKey: ['approvedDriverHourlyTotals'] }, (old) => {
-                //     if (!old.data) return
-                //     return {
-                //         ...old,
-                //         data: old.data.filter(o => Number(o.company_id) !== Number(cid))
-                //     }
-                // })
-                // queryClient.invalidateQueries({ queryKey: ['driverPayHourlyRegistered'] })
                 enqueueSnackbar('Resend requested — the selected invoices are being re-sent now.', { variant: 'info' })
             }
         },

@@ -605,17 +605,6 @@ export default class OrderEngine {
         })
     }
 
-    // get_customer_rate_sheet = async (cid) => {
-    //     try {
-    //         const res = await RateSheetsApi.loadRateSheetsByCustomerAndType(Number(cid))
-    //         this.customerRateSheets = res.data
-    //     } catch (error) {
-    //         console.error('Failed to load rate sheets:', error)
-    //         this.enqueueSnackbar('Failed to load rate sheets', { variant: 'error' })
-    //         this.customerRateSheets = []
-    //     }
-    // }
-
     get_fuel_surcharge_by_date = async (odate) => {
         try {
             const res = await FuelSurchargeAPI.getFuelSurchargeByDate(odate)
@@ -875,7 +864,7 @@ export default class OrderEngine {
             pickup_signee: data.pickup_signee,
             delivery_signee: data.delivery_signee,
             billing_invoice_date: data.billing_invoice_date,
-            billing_invoice: data.billing_invoice,
+            billing_invoice_number: data.billing_invoice_number,
             billing_invoiced: data.billing_invoiced,
             total_pickup: data.total_pickup,
             total_delivery: data.total_delivery,

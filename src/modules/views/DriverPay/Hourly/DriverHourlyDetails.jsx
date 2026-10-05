@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Paper, Box, CircularProgress, Typography, TextField, InputAdornment, useTheme, alpha, Grid } from '@mui/material';
 import { RouteRounded, Search } from '@mui/icons-material';
 import moment from 'moment';
-import { useHourlyDriverDetails } from '../../../hooks/useBillings';
+import { useDriverPayHourlyDetails } from '../../../hooks/useBillings';
 import useStyles from './Hourly.styles'
 
 const TRIP_COLUMNS = [
@@ -46,7 +46,7 @@ export default function DriverTripDetailsTable({ driverId, filters }) {
 
     const { classes } = useStyles()
     const theme = useTheme();
-    const { data, isLoading } = useHourlyDriverDetails(driverId, filters);
+    const { data, isLoading } = useDriverPayHourlyDetails(driverId, filters);
     const rows = data?.data || [];
 
     const isDark = theme.palette.mode === 'dark';

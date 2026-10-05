@@ -4,7 +4,7 @@ import { MainLayout } from '../../../layouts'
 import { FilterPayDriverCommission, SideMenu } from '../../../components'
 import { ReceiptLongRounded, UnfoldLessRounded, UnfoldMoreRounded } from '@mui/icons-material'
 import useStyles from './Hourly.styles'
-import { useHourlyDrivers } from '../../../hooks/useBillings'
+import { useDriverPayHourly } from '../../../hooks/useBillings'
 import { useSnackbar } from 'notistack'
 import CompanyGrouped from './CompanyGrouped'
 import { generateDriverPayHourlyPDF } from './downloadPDF'
@@ -22,7 +22,7 @@ export default function DriverPayHourly() {
     const [appliedFilters, setAppliedFilters] = React.useState(null);
     const { enqueueSnackbar } = useSnackbar()
 
-    const { data: driverPays, isLoading, isFetching, isError, error } = useHourlyDrivers(appliedFilters, page, rowsPerPage)
+    const { data: driverPays, isLoading, isFetching, isError, error } = useDriverPayHourly(appliedFilters, page, rowsPerPage)
     const data = driverPays?.data || []
     const pageCount = Math.max(1, Math.ceil((driverPays?.meta?.total || 0) / rowsPerPage));
 

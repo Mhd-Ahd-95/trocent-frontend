@@ -14,7 +14,7 @@ const LabeledField = ({ label, icon, children, classes }) => (
     </Box>
 );
 
-const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExpanded = false }) => {
+const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExpanded = false, billingRegister }) => {
 
     const { classes, cx } = useStyles();
     const [expanded, setExpanded] = useState(defaultExpanded);
@@ -54,20 +54,20 @@ const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExp
             <Collapse in={expanded}>
                 <Box className={classes.filterBody}>
                     <Box className={classes.filterGrid}>
-                        <LabeledField classes={classes} label="Approved Date From" icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
+                        <LabeledField classes={classes} label={billingRegister ? "Invoice Date From" : "Approved Date From"} icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
                             <TextField
                                 type="date" size="small" fullWidth className={classes.inputRoot}
-                                value={filters.approvedDateFrom}
-                                onChange={(e) => setField('approvedDateFrom', e.target.value)}
+                                value={billingRegister ? filters.invoice_date_from : filters.approvedDateFrom}
+                                onChange={(e) => setField(billingRegister ? 'invoice_date_from' : 'approvedDateFrom', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                             />
                         </LabeledField>
 
-                        <LabeledField classes={classes} label="Approved Date To" icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
+                        <LabeledField classes={classes} label={billingRegister ? "Invoice Date To" : "Approved Date To"} icon={<CalendarTodayRounded sx={{ fontSize: 11 }} />}>
                             <TextField
                                 type="date" size="small" fullWidth className={classes.inputRoot}
-                                value={filters.approvedDateTo}
-                                onChange={(e) => setField('approvedDateTo', e.target.value)}
+                                value={billingRegister ? filters.invoice_date_to : filters.approvedDateTo}
+                                onChange={(e) => setField(billingRegister ? 'invoice_date_to' : 'approvedDateTo', e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                             />
                         </LabeledField>
@@ -75,7 +75,7 @@ const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExp
                         <LabeledField classes={classes} label="Keyword" icon={<Search sx={{ fontSize: 11 }} />}>
                             <TextField
                                 size="small" fullWidth className={classes.inputRoot}
-                                placeholder="#Driver, Driver name..."
+                                placeholder={billingRegister ? "#Customer, #Order..." : "#Driver, Driver name..."}
                                 value={filters.keyword}
                                 onChange={(e) => setField('keyword', e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
