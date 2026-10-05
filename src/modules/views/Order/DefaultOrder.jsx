@@ -145,7 +145,7 @@ export const defaultOrderValue = {
   pickup_signee: '',
   delivery_signee: '',
   billing_invoice_date: moment(new Date()).format('YYYY-MM-DD'),
-  billing_invoice: '',
+  billing_invoice_number: '',
   billing_invoiced: false,
   total_pickup: 0,
   total_delivery: 0,

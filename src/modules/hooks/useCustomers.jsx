@@ -161,6 +161,7 @@ export function useCustomerMutation() {
             queryClient.invalidateQueries({ queryKey: ['customer', Number(updated.id)] });
             queryClient.invalidateQueries({ queryKey: ['customerAccessorials', Number(updated.id)] });
             queryClient.invalidateQueries({ queryKey: ['order'] });
+            queryClient.invalidateQueries({ queryKey: ['invoicing'] })
             enqueueSnackbar('Customer has been updated successfully', { variant: 'success' });
         },
         onError: handleError,

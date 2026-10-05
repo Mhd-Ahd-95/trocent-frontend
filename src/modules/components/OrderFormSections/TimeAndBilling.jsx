@@ -412,7 +412,7 @@ export default function TimeAndBilling(props) {
               </Grid>
               <Grid size={{ xs: 12, sm: 12, md: 4 }}>
                 <Controller
-                  name='billing_invoice'
+                  name='billing_invoice_number'
                   control={control}
                   render={({ field }) => (
                     <TextInput

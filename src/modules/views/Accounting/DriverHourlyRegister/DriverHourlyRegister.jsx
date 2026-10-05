@@ -1,11 +1,11 @@
 import React, { useTransition, useState, useCallback } from "react";
 import { Grid, Box, Select, Pagination, MenuItem, CircularProgress, Typography, Checkbox, Button } from "@mui/material";
-import { CustomerBillingGroup, DrawerForm, SideMenu } from "../../../components";
+import { ConfirmModal, CustomerBillingGroup, DrawerForm, Modal, SideMenu } from "../../../components";
 import { MainLayout } from "../../../layouts";
 import FilterBarRegister from "../Filterbar/Filterbar";
 import { ReceiptLongRounded, PictureAsPdfRounded } from "@mui/icons-material";
 import useStyles from './Driver.styles'
-import { useApprovedDriverHourlyTotals, useBillingMutation } from "../../../hooks/useBillings";
+import { useDriverPayHourlyApproved, useBillingMutation } from "../../../hooks/useBillings";
 import { useSnackbar } from "notistack";
 import CompanySummary from "./CompanySummary";
 import ExtraChargesDisplay from "./ExtraChargeDisplaying";
@@ -23,11 +23,16 @@ export default function DriverHourlyRegister() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [appliedFilters, setAppliedFilters] = useState(null);
     const companyRef = React.useRef()
-    const { data: totalDrivers, isLoading, isFetching, isError, error } = useApprovedDriverHourlyTotals(appliedFilters, page, rowsPerPage)
+    const { data: totalDrivers, isLoading, isFetching, isError, error } = useDriverPayHourlyApproved(appliedFilters, page, rowsPerPage)
     const data = totalDrivers?.data ?? []
+
+    const [openModal, setOpenModal] = React.useState(false)
+    const extraChargeRef = React.useRef()
 
     const [openDrawer, setOpenDrawer] = useState(false)
     const [downloading, setDownloading] = React.useState(false)
+
+    const { deleteExtraCharge } = useBillingMutation()
 
     const { batchPayDriverHourlyRegister } = useBillingMutation()
     const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -230,12 +235,30 @@ export default function DriverHourlyRegister() {
                     setOpen={setOpenDrawer}
                 >
                     <ExtraChargesDisplay
+                        extraChargeRef={extraChargeRef}
+                        openModal={() => setOpenModal(true)}
                         companyId={companyRef.current?.company_id}
                         extraCharges={companyRef.current?.extra_charges ?? []}
                         onClose={() => setOpenDrawer(false)}
                     />
                 </DrawerForm>
             }
+            <Modal open={openModal} handleClose={() => setOpenModal(false)}>
+                <ConfirmModal
+                    title={
+                        <>
+                            Delete Extra Charge {' '}
+                            <strong style={{ fontSize: 15, paddingInline: 5 }}>"{extraChargeRef.current?.note}"</strong>
+                        </>
+                    }
+                    subtitle='Are you sure you want to continue?'
+                    handleClose={() => setOpenModal(false)}
+                    handleSubmit={async () => {
+                        await deleteExtraCharge.mutateAsync({ id: extraChargeRef.current?.id, cid: extraChargeRef.current?.driver_id })
+                        setOpenDrawer(false)
+                    }}
+                />
+            </Modal>
         </MainLayout>
     )
 
