@@ -267,6 +267,7 @@ export function useBillingMutation() {
                         }, [])
                     }
                 })
+                queryClient.invalidateQueries({ queryKey: ['billingUnregister'] })
                 queryClient.invalidateQueries({ queryKey: ['order'] })
                 queryClient.invalidateQueries({ queryKey: ['commissionDrivers'] })
                 queryClient.invalidateQueries({ queryKey: ['hourlyDrivers'] })
