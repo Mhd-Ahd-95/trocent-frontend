@@ -32,7 +32,7 @@ const DateGroupedSummary = React.memo(({ date, orders, driver }) => {
         }, {})
     )
 
-    const [runningTotal, setRunningTotal] = useState(() => orders.reduce((sum, o) => sum + Number(o.driver_payout || 0), 0))
+    const [runningTotal, setRunningTotal] = useState(() => orders.reduce((sum, o) => sum + Number(o.driver_payout || 0), 0)?.toFixed(2))
 
     const totals = useMemo(() => {
         let freight = 0, fuel = 0, subTotal = 0, accessorials = 0, interliners = 0
@@ -120,16 +120,15 @@ const DateGroupedSummary = React.memo(({ date, orders, driver }) => {
             </Box>
             <Collapse in={expanded} timeout={'auto'}>
                 <Grid container spacing={2} sx={{ p: 2 }}>
-                    <Grid size={12}>
-                        {orders.map(order => (
+                    {orders.map(order => (
+                        <Grid size={12} key={`${order.order_id}-${driver?.driver_id}`}>
                             <OrderDriverCard
-                                key={`${order.order_id}-${driver?.driver_id}`}
                                 order={order}
                                 driver={driver}
                                 onPayoutChange={handlePayoutChange}
                             />
-                        ))}
-                    </Grid>
+                        </Grid>
+                    ))}
                 </Grid>
             </Collapse>
         </Box>

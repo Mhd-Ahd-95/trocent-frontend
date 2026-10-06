@@ -31,7 +31,7 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             display: 'flex',
             alignItems: 'center',
             gap: theme.spacing(2),
-            padding: theme.spacing(2, 2.5),
+            padding: theme.spacing(1.5, 2.5),
             borderRadius: 16,
             border: '1px solid',
             borderColor: isDark ? alpha('#fff', 0.1) : alpha(secondary, 0.15),
@@ -99,6 +99,15 @@ export default makeStyles({ name: 'Billing' })((theme) => {
                 gridTemplateColumns: 'repeat(2, 1fr)',
             },
         },
+        cardAmountsAudit: {
+            gridTemplateColumns: 'repeat(6, minmax(90px, 1fr))',
+            columnGap: theme.spacing(6),
+            [theme.breakpoints.down('1340')]: {
+                columnGap: theme.spacing(2),
+                rowGap: theme.spacing(2),
+                gridTemplateColumns: 'repeat(2, 1fr)',
+            },
+        },
         amountLabel: {
             fontSize: 11,
             textTransform: 'uppercase',
@@ -132,7 +141,7 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: theme.spacing(1.25, 2),
+            padding: theme.spacing(1.5, 2),
             borderRadius: 12,
             background: isDark ? alpha('#fff', 0.03) : theme.palette.grey[100],
             border: '1px solid',
@@ -147,6 +156,96 @@ export default makeStyles({ name: 'Billing' })((theme) => {
             fontSize: 13,
             fontWeight: 700,
             color: theme.palette.text.secondary,
+        },
+        paginationBar: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: theme.spacing(1.5),
+            padding: theme.spacing(2, 0.5, 0.5),
+        },
+        paginationInfo: {
+            fontSize: 12.5,
+            color: theme.palette.text.secondary,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+        },
+        rowsPerPageSelect: {
+            height: 32,
+            fontSize: 12.5,
+            fontWeight: 600,
+            borderRadius: 8,
+        },
+        muiPaginationRoot: {
+            '& .MuiPaginationItem-root': {
+                fontWeight: 700,
+                fontSize: 13,
+                borderRadius: 9,
+            },
+            '& .Mui-selected': {
+                background: `${primary} !important`,
+                color: '#fff',
+                boxShadow: `0 3px 10px ${alpha(primary, 0.4)}`,
+            },
+        },
+        group: {
+            display: 'flex',
+            border: '1px solid #ccc',
+            borderRadius: 10,
+            flexDirection: 'column',
+            gap: theme.spacing(1.5),
+        },
+        groupHeader: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1.5),
+            borderBottom: '1px solid #ccc',
+            padding: theme.spacing(1, 2),
+            flexWrap: 'wrap',
+            position: 'relative',
+            '&:before': {
+                content: '""',
+                borderTopLeftRadius: 10,
+                position: 'absolute',
+                top: 0,
+                left: -0.5,
+                height: '100%',
+                width: '4px',
+                background: primary
+            }
+        },
+        groupName: {
+            fontSize: 16,
+            fontWeight: 800,
+        },
+        groupMeta: {
+            fontSize: 13,
+            color: theme.palette.text.secondary,
+        },
+        groupActions: {
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+            flexWrap: 'wrap',
+        },
+        groupTotal: {
+            fontSize: 14,
+            fontWeight: 700,
+            color: success,
+            fontVariantNumeric: 'tabular-nums',
+            paddingLeft: theme.spacing(1),
+        },
+        groupRows: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing(1.5),
+            padding: theme.spacing(1.5, 2)
+        },
+        cardAction: {
+            flexShrink: 0,
         },
     };
 

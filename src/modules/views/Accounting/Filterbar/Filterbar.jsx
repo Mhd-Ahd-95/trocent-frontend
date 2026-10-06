@@ -14,9 +14,9 @@ const LabeledField = ({ label, icon, children, classes }) => (
     </Box>
 );
 
-const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExpanded = false, billingRegister }) => {
+const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExpanded = false, billingRegister, billingRegistered }) => {
 
-    const { classes, cx } = useStyles();
+    const { classes, cx } = useStyles({ billingRegistered });
     const [expanded, setExpanded] = useState(defaultExpanded);
     const [filters, setFilters] = useState(EMPTY_FILTERS);
 
@@ -95,31 +95,31 @@ const FilterBarRegister = React.memo(({ EMPTY_FILTERS = {}, onSearch, defaultExp
                                 }}
                             />
                         </LabeledField>
-                        {/* {!isInvoicing &&
-                            <LabeledField classes={classes} label="Carrier Type" icon={<LocalShippingRounded sx={{ fontSize: 11 }} />}>
+                        {billingRegistered &&
+                            <LabeledField classes={classes} label="Audit Number" icon={<Search sx={{ fontSize: 11 }} />}>
                                 <TextField
-                                    select size="small" fullWidth className={classes.inputRoot}
-                                    value={filters.carrierType}
-                                    onChange={(e) => setField('carrierType', e.target.value, true)}
-                                >
-                                    {CARRIER_TYPE_OPTIONS.map((opt) => (
-                                        <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                                    ))}
-                                </TextField>
+                                    size="small" fullWidth className={classes.inputRoot}
+                                    placeholder={"#Audit..."}
+                                    value={filters.audit_number}
+                                    onChange={(e) => setField('audit_number', e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search sx={{ fontSize: 16, opacity: 0.4 }} />
+                                            </InputAdornment>
+                                        ),
+                                        endAdornment: filters.keyword ? (
+                                            <InputAdornment position="end">
+                                                <IconButton size="small" onClick={() => setField('keyword', '')}>
+                                                    <CloseRounded sx={{ fontSize: 14 }} />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ) : null,
+                                    }}
+                                />
                             </LabeledField>
                         }
-                        <LabeledField classes={classes} label="Sort By" icon={<SortRounded sx={{ fontSize: 11 }} />}>
-                            <TextField
-                                select size="small" fullWidth className={classes.inputRoot}
-                                value={filters.sortBy}
-                                onChange={(e) => setField('sortBy', e.target.value, true)}
-                            >
-                                <MenuItem value={''}>All</MenuItem>
-                                {SORT_OPTIONS.map((opt) => (
-                                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                                ))}
-                            </TextField>
-                        </LabeledField> */}
                     </Box>
 
                     <Box className={classes.filterActionsRow}>

@@ -336,6 +336,34 @@ export default makeStyles({ name: 'Billing' })((theme) => {
                 boxShadow: 'none',
             },
         },
+         extraChargesHeaderLeft: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1.25),
+        },
+        extraChargesIconBadge: {
+            width: 32,
+            height: 32,
+            borderRadius: 9,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            background: `linear-gradient(135deg, ${primary} 0%, ${alpha(primary, 0.7)} 100%)`,
+            color: '#fff',
+            boxShadow: `0 3px 10px ${alpha(primary, 0.35)}`,
+        },
+        extraChargesTitle: {
+            fontSize: 13,
+            fontWeight: 800,
+            color: isDark ? '#fff' : '#0f172a',
+            lineHeight: 1.3,
+        },
+        extraChargesSubtitle: {
+            fontSize: 11,
+            fontWeight: 600,
+            color: theme.palette.text.secondary,
+        },
     };
 
 

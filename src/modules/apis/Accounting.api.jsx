@@ -7,9 +7,12 @@ const loadBillingRegistered = (params = {}) => CustomAxios.get('/api/accounting/
 
 const registerInvoices = (payload) => CustomAxios.put('/api/accounting/register-invoices', payload)
 
+const resendCustomerInvoices = payload => CustomAxios.put('/api/accounting/registered/resend-invoices', payload)
+
 
 export default {
     loadBillingRegistered,
     loadBillingUnregister,
-    registerInvoices
+    registerInvoices,
+    resendCustomerInvoices
 }
