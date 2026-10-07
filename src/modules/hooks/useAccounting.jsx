@@ -47,7 +47,6 @@ export function useAccountingMutation() {
 
     const registerInvoices = useMutation({
         mutationFn: async (rows) => {
-            console.log(rows);
             const res = await AccountingApi.registerInvoices(rows.map(({ id, type }) => ({ id, type })));
             return res.data;
         },
