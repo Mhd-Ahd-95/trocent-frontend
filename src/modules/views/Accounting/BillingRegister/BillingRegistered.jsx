@@ -95,10 +95,9 @@ export default function BillingRegistered() {
 
     const handleResend = async (e, rows) => {
         e.preventDefault()
-        console.log(rows);
         const payload = toResendPayload(rows);
-        console.log(rows);
         await resendInvoices.mutateAsync(payload)
+        setSelectedIds(new Set())
     }
 
     const handleResendRow = async (e, row) => await handleResend(e, [row])
